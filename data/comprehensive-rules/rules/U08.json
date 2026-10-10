@@ -1,0 +1,2333 @@
+[
+  {
+    "key": "turn.general.phases",
+    "parent": "500",
+    "order": 1,
+    "text": "A turn has four phases, in this order: the planning phase, the battle phase, the regroup phase and the deployment phase.",
+    "examples": [
+      {
+        "text": "A live-draft turn goes draft, planning, the haste step, then the battle phase.",
+        "test": "20-draft.test.ts::haste step still works after a draft turn (gates compose)"
+      }
+    ],
+    "see": [
+      "501",
+      "505",
+      "506",
+      "507"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.7",
+          "quote": "system, divided into the following sequence of phases:"
+        },
+        {
+          "ref": "Manual p.7",
+          "quote": "1. Planning Phase: Players prepare for the turn ahead"
+        },
+        {
+          "ref": "Manual p.7",
+          "quote": "2. Battle Phase: The sole interactive phase of the"
+        },
+        {
+          "ref": "Manual p.7",
+          "quote": "3. Regroup Phase: Serving as a clean-up step, this"
+        },
+        {
+          "ref": "Manual p.7",
+          "quote": "4. Deployment Phase: Players play most of their cards"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "20-draft.test.ts",
+        "08-cards2.test.ts",
+        "419-cr-planning.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Rulebook 2023 p.5 names the same sequence with older names (Untap/Draw/Draft/Mana, Attack…After Combat, Regroup, Main). The end-of-turn step at the close of deployment is 507 (U09).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.general.global",
+    "parent": "500",
+    "order": 2,
+    "text": "Turns are global: all players go through the same phases at the same time, and they sync up at the end of each step.",
+    "examples": [],
+    "see": [
+      "100"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "Turns in Algomancy are global, meaning all players share the same phases, and sync up at the end of each step."
+        },
+        {
+          "ref": "Manual p.7",
+          "quote": "The core of Algomancy revolves around its global turn"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "U01 concepts.general.turns says the same at 100; this is the turn-structure statement. Engine differs on \"sync up at the end of each step\": a seat that has finished the draft step (or constructed's recycle) starts its resource step while the other seat is still drafting (F-U08-4, D-U08-10). The rule states print (authority order). 20-draft.test.ts was removed from the sources because it asserts the divergence. The divergence itself is pinned by an \"engine differs\" test in 419-cr-planning.test.ts (not listed in sources, since it asserts the engine behaviour, not this rule).",
+    "sourceHashes": {},
+    "engineDiffers": [
+      "F-U08-4"
+    ]
+  },
+  {
+    "key": "turn.general.initiative",
+    "parent": "500",
+    "order": 3,
+    "text": "In each turn one player has the initiative. In a 1v1 game the initiative player (IT) acts first and the non-initiative player (NIT) acts after them.",
+    "examples": [],
+    "see": [
+      "103",
+      "508",
+      "904"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "the game . The Initiative-Team (IT) must make all of their"
+        },
+        {
+          "ref": "Manual p.20",
+          "quote": "plays first, allowing the Non-initiative-Team (NIT) to act"
+        },
+        {
+          "ref": "Manual p.20",
+          "quote": "later. In 1v1, players are considered their own teams."
+        },
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "together and are required to act first in all situations. For example, during the mana and main"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Who gets the initiative at the start is 103 (U01); passing it is 508 (U09). Which planning steps follow IT-first order: turn.planning.order. RAQ 1540678747953569832#1 (IT puts triggers on the stack first) belongs to 706. Engine differs: the initiative player acts first in battle, but the resource step, the haste step and deployment run for both seats at once as hidden simultaneous segments (a digital half of R18, Annex D). The rule states print: F-U08-1, D-U08-11. The divergence itself is pinned by an \"engine differs\" test in 419-cr-planning.test.ts (not listed in sources, since it asserts the engine behaviour, not this rule).",
+    "sourceHashes": {},
+    "engineDiffers": [
+      "F-U08-1"
+    ]
+  },
+  {
+    "key": "turn.general.initiative.not-token",
+    "parent": "turn.general.initiative",
+    "order": 1,
+    "text": "The initiative is not a token. The Initiative token of the physical game only marks which player has it.",
+    "examples": [],
+    "see": [
+      "304"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.11",
+          "quote": "Randomly assign a player The Initiative. Give this"
+        },
+        {
+          "ref": "Manual p.11",
+          "quote": "player the Initiative Token."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1353864175910387742#7",
+          "quote": "The initiative is not a token."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "The RAQ write-up lists what is and is not a token; item 8 is \"Initiative ❌\". The second sentence restates Manual p.11.",
+    "sourceHashes": {
+      "RAQ 1353864175910387742#7": "188674b77531951ffc18c386967d26357e32678d959b9d09708e3802f6e593ce"
+    },
+    "untestableReason": "the initiative is a seat index in the game state, not an object any effect could reach, so no state could show it being treated as a token",
+    "untested": true
+  },
+  {
+    "key": "turn.general.interactive",
+    "parent": "500",
+    "order": 4,
+    "text": "The battle phase is the only interactive phase of the turn.",
+    "examples": [
+      {
+        "text": "Neither the planning phase nor the deployment phase gives anyone priority; in the battle phase the attacking player holds priority once the attack is declared.",
+        "test": "419-cr-planning.test.ts::cr:turn.general.interactive — planning and deployment give nobody priority; the battle phase does once an attack is declared"
+      }
+    ],
+    "see": [
+      "turn.planning.no-interaction",
+      "505",
+      "703"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.7",
+          "quote": "2. Battle Phase: The sole interactive phase of the"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "419-cr-planning.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Planning has no interaction (turn.planning.no-interaction). Deployment is not interactive either: Manual p.26 \"it is not possible to interact with other players\" (507, U09).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.general.next-turn",
+    "parent": "500",
+    "order": 5,
+    "text": "When the deployment phase and its end-of-turn step are over, the turn is over. The initiative and any packs pass to the next player clockwise (see 508), and the next turn begins with its planning phase.",
+    "examples": [
+      {
+        "text": "After turn 1 ends, turn 2 opens with each player drawing 2 and the draft step open again.",
+        "test": "20-draft.test.ts::turns 2-3 draw 2 and re-open the draft step; packs refresh on turn 4 (N+1 cycle)"
+      }
+    ],
+    "see": [
+      "507",
+      "508"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.26",
+          "quote": "After the deployment and end of turn, the turn is over."
+        },
+        {
+          "ref": "Manual p.26",
+          "quote": "The initiative token and any draft packs are passed to"
+        },
+        {
+          "ref": "Manual p.26",
+          "quote": "turn structure is repeated again, starting in the planning phase."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "20-draft.test.ts",
+        "419-cr-planning.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.planning.what",
+    "parent": "501",
+    "order": 1,
+    "text": "The planning phase is the first phase of the turn. In it, players prepare for the turn ahead by curating their hands and preparing their resources.",
+    "examples": [
+      {
+        "text": "In a live draft the turn opens in planning: first only the draft commit is offered, then only the resource actions and done.",
+        "test": "419-cr-planning.test.ts::cr:turn.planning.what — a turn opens in planning, where the only actions are curating the hand and preparing resources"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.7",
+          "quote": "1. Planning Phase: Players prepare for the turn ahead"
+        },
+        {
+          "ref": "Manual p.7",
+          "quote": "by curating their hands and preparing their resources. This phase sets the stage for the upcoming"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "419-cr-planning.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.planning.steps",
+    "parent": "501",
+    "order": 2,
+    "text": "The planning phase has five steps, taken in this order.",
+    "examples": [
+      {
+        "text": "On turn 2 of a live draft: expended resources are open again and 2 cards are drawn, the draft step is open and resource actions wait for it, and the haste step opens only after the resource step.",
+        "test": "419-cr-planning.test.ts::cr:turn.planning.steps — refresh and draw at the turn start, then the draft, then resources, then the haste step"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.27",
+          "quote": "1. Refresh resources"
+        },
+        {
+          "ref": "Manual p.27",
+          "quote": "2. Draw 2 cards"
+        },
+        {
+          "ref": "Manual p.27",
+          "quote": "3. Draft (Draw 2 recycle 2 in constructed)"
+        },
+        {
+          "ref": "Manual p.27",
+          "quote": "4. Gather and activate resources"
+        },
+        {
+          "ref": "Manual p.27",
+          "quote": "5. Play"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "20-draft.test.ts",
+        "419-cr-planning.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.27 lists five numbered planning steps; the fifth reads \"5. Play [haste glyph] cards\" (the glyph is lost in the page text; the scan shows the haste chevrons). Manual p.18 places the haste step \"After the resource step\". The UI rules reference mirrors this list (ui/test 286), which is our text, not a source.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.planning.steps.refresh",
+    "parent": "turn.planning.steps",
+    "order": 1,
+    "text": "Refresh: each player's expended resources refresh.",
+    "examples": [
+      {
+        "text": "A resource expended to pay debt in one turn is open again for mana in the next.",
+        "test": "35-rot-debt-trash.test.ts::R39: partial payment is fine and the remainder carries to the next turn"
+      }
+    ],
+    "see": [
+      "106"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.27",
+          "quote": "1. Refresh resources"
+        },
+        {
+          "ref": "Manual p.14",
+          "quote": "Expended resources refresh at the beginning of a turn."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "35-rot-debt-trash.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "A dormant resource stays dormant: refreshing applies to expended resources (106).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.planning.steps.draw",
+    "parent": "turn.planning.steps",
+    "order": 2,
+    "text": "The draw step: see 503.",
+    "examples": [],
+    "see": [
+      "503"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.27",
+          "quote": "2. Draw 2 cards"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {},
+    "untestableReason": "a pointer to 503, which carries the tested rules",
+    "untested": true
+  },
+  {
+    "key": "turn.planning.steps.draft",
+    "parent": "turn.planning.steps",
+    "order": 3,
+    "text": "The draft step: see 503. In constructed, this step is a draw of 2 and a recycle of 2.",
+    "examples": [
+      {
+        "text": "Turn 2 of constructed: the hand gains 4 (2 for the draw step, 2 for the draft step), then 2 cards are recycled, a net gain of 2.",
+        "test": "419-cr-planning.test.ts::cr:turn.planning.steps.draft — in constructed the draft step adds a draw of 2 to the draw step, and then 2 cards are recycled"
+      }
+    ],
+    "see": [
+      "503"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.27",
+          "quote": "3. Draft (Draw 2 recycle 2 in constructed)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "419-cr-planning.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.planning.steps.resource",
+    "parent": "turn.planning.steps",
+    "order": 4,
+    "text": "The resource step: see 502.",
+    "examples": [],
+    "see": [
+      "502"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.27",
+          "quote": "4. Gather and activate resources"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {},
+    "untestableReason": "a pointer to 502, which carries the tested rules",
+    "untested": true
+  },
+  {
+    "key": "turn.planning.steps.haste",
+    "parent": "turn.planning.steps",
+    "order": 5,
+    "text": "The haste step: see 504.",
+    "examples": [],
+    "see": [
+      "504"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.18",
+          "quote": "After the resource step is the very short haste step, where players can only play"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {},
+    "untestableReason": "a pointer to 504, which carries the tested rules",
+    "untested": true
+  },
+  {
+    "key": "turn.planning.no-interaction",
+    "parent": "501",
+    "order": 3,
+    "text": "There is no player interaction in the planning phase. No player receives priority in it, and nothing a player does in it can be responded to.",
+    "examples": [
+      {
+        "text": "In the resource step nobody holds priority, and an attempt to pass priority is refused.",
+        "test": "419-cr-planning.test.ts::cr:turn.planning.no-interaction — nobody holds priority in the resource step, and passing priority there is refused"
+      }
+    ],
+    "see": [
+      "turn.haste.immediate",
+      "703"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.7",
+          "quote": "There is no player interaction during this step."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R97",
+          "quote": "There is no priority during the mana step, but you can play haste cards"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "08-cards2.test.ts",
+        "15-water-b.test.ts",
+        "419-cr-planning.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Rulebook 2023 p.7 says it of the mana step (its name for resources + haste). R97 quotes calebgannon in rules-questions; that quote is not in the RAQ register, so it is cited through R97. The draw and draft steps involve no plays at all.",
+    "sourceHashes": {
+      "R97": "85b25c9bc3cbe10d572a877ca22452c29e74fb0333d60ff88d3a690d1c3d98d6"
+    }
+  },
+  {
+    "key": "turn.planning.order",
+    "parent": "501",
+    "order": 4,
+    "text": "In a 1v1 game, the refresh, the draw step and the draft step happen for both players simultaneously. The resource step and the haste step are taken first by the initiative player and then by the non-initiative player.",
+    "examples": [],
+    "see": [
+      "turn.general.initiative",
+      "502",
+      "504"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.27",
+          "quote": "IT FIRST, THEN NIT"
+        },
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "phases, the initiative team must make all of their plays first while the non-intiative gets to wait"
+        },
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "and see what they do before taking their actions."
+        },
+        {
+          "ref": "Manual p.20",
+          "quote": "Teams always act together in all situations and phases of"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "Manual p.27 (The Turn, TEAMS/1V1 column) marks each step with a legend colour: steps 1-3 of planning \"SIMULTANEOUSLY\", steps 4 (Gather and activate resources) and 5 (Play haste cards) \"IT FIRST, THEN NIT\", and deployment IT first too. The colours are read off the scan (rendered page 27); the page text keeps only the legend words, so the quotes cannot carry the mapping. Rulebook 2023 p.5 states it in prose for the mana phase. R18 (its standing, digital half; not cited as a source because it states the opposite) and the hidden-simultaneous-segment model run the resource and haste steps for both seats at once, interleaved and hidden: D-U08-1, F-U08-1. Printed beats an R-ruling under the authority order, so the rule states print. The divergence itself is pinned by an \"engine differs\" test in 419-cr-planning.test.ts (not listed in sources, since it asserts the engine behaviour, not this rule).",
+    "sourceHashes": {},
+    "engineDiffers": [
+      "F-U08-1"
+    ],
+    "rebuttal": "Already flagged: the record carries engineDiffers [\"F-U08-1\"] (stripped from the verifier's view). The rule states print under the authority order; the verifier's measurement agrees with F-U08-1. R18 is removed from the sources because its quoted sentence states the engine model the rule departs from; the conflict stays recorded in D-U08-1."
+  },
+  {
+    "key": "turn.planning.order.sync",
+    "parent": "turn.planning.order",
+    "order": 1,
+    "text": "A step of the planning phase ends for all players together. No player begins the resource step until every player has finished the draft step.",
+    "examples": [],
+    "see": [
+      "turn.draw.draft"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "Turns in Algomancy are global, meaning all players share the same phases, and sync up at the end of each step."
+        },
+        {
+          "ref": "Manual p.16",
+          "quote": "Once all players have passed their pack, the draft step"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "Engine differs: 20-draft.test.ts \"planning is gated until you commit; open again after (opponent still drafting)\" lets a seat that has committed its draft activate and recycle while the other seat is still drafting, and the verifier measured the same for constructed's recycle. Not bound as an example, since it shows the divergence. F-U08-4, D-U08-10. The divergence itself is pinned by an \"engine differs\" test in 419-cr-planning.test.ts (not listed in sources, since it asserts the engine behaviour, not this rule).",
+    "sourceHashes": {},
+    "engineDiffers": [
+      "F-U08-4"
+    ],
+    "rebuttal": "The divergence was flagged: the record carried engineDiffers (stripped from the verifier's view), now pointed at the narrower finding F-U08-4. Under the authority order print (Rulebook 2023 p.5, Manual p.16) beats engine behaviour, which no ruling states; the rule states print and the engine early start is the filed finding, with the question in D-U08-10."
+  },
+  {
+    "key": "turn.resource.what",
+    "parent": "502",
+    "order": 1,
+    "text": "The resource step is the step of the planning phase in which players create and activate resources.",
+    "examples": [
+      {
+        "text": "A player creates a resource and activates one in the resource step; in the haste step both actions are refused.",
+        "test": "419-cr-planning.test.ts::cr:turn.resource.what — resources are created and activated in the resource step and refused in the haste step"
+      }
+    ],
+    "see": [
+      "106"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.18",
+          "quote": "The resource step of the planning phase is when players have the ability to create and activate resources."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "419-cr-planning.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "What a resource is, dormant and active, the activation limit, Shards and Prismites: 106 (U02). This section is the step procedure only.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.resource.actions",
+    "parent": "502",
+    "order": 2,
+    "text": "In the resource step, a player may take these actions.",
+    "examples": [
+      {
+        "text": "With an active Prismite, the resource step offers creating a resource, activating a dormant one, and exchanging the Prismite.",
+        "test": "419-cr-planning.test.ts::cr:turn.resource.actions — the resource step menu offers creating, activating and exchanging a Prismite"
+      }
+    ],
+    "see": [
+      "106"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.18",
+          "quote": "The resource step of the planning phase is when players have the ability to create and activate resources."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "01-planning.test.ts",
+        "419-cr-planning.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Order among the three actions: the sources set none.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.resource.actions.create",
+    "parent": "turn.resource.actions",
+    "order": 1,
+    "text": "Create a resource by recycling a card from their hand. The resource enters play dormant. There is no limit to how many resources a player may create.",
+    "examples": [
+      {
+        "text": "Recycling a hand card for a fire resource puts a dormant fire resource into play and the card into the recycle pile.",
+        "test": "01-planning.test.ts::setup & planning"
+      }
+    ],
+    "see": [
+      "106",
+      "408"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.18",
+          "quote": "outside the game by recycling a card from hand (putting it on the bottom of the"
+        },
+        {
+          "ref": "Manual p.18",
+          "quote": "All resources spawn dormant (come into play face down). Players may activate a"
+        },
+        {
+          "ref": "Manual p.18",
+          "quote": "maximum of two resources per turn by turning them face up. There is no limit to"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "01-planning.test.ts",
+        "308-recycle-for-prismite.test.ts",
+        "419-cr-planning.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Prismites and Shards may be made too (R299): 106 concepts.resources.recycle.prismite-shard (U02). Where the recycled card goes (past the mark): 408 (U07).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.resource.actions.activate",
+    "parent": "turn.resource.actions",
+    "order": 2,
+    "text": "Activate dormant resources by turning them face up, up to two activations per turn.",
+    "examples": [
+      {
+        "text": "After two activations in one turn, a third is refused.",
+        "test": "01-planning.test.ts::setup & planning"
+      }
+    ],
+    "see": [
+      "106"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.18",
+          "quote": "maximum of two resources per turn by turning them face up. There is no limit to"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "01-planning.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Shards count toward the two; an affinity bonus Shard enters dormant (106, U02).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.resource.actions.exchange",
+    "parent": "turn.resource.actions",
+    "order": 3,
+    "text": "Exchange an active Prismite for a resource of one of the game's elements. A dormant Prismite cannot be exchanged.",
+    "examples": [
+      {
+        "text": "Two starting Prismites are activated, then one is exchanged for a fire resource, which keeps its active state.",
+        "test": "01-planning.test.ts::R17/prismites: dormant start, no affinity, planning exchange into any element"
+      }
+    ],
+    "see": [
+      "106"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.18",
+          "quote": "typically receive the two activations for the first turn. Active Prismites may be"
+        },
+        {
+          "ref": "Manual p.18",
+          "quote": "exchanged for other resources, meaning players essentially get to pick their two"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R17",
+          "quote": "exchange: during planning, an **active** (face-up) Prismite may be swapped for a"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "01-planning.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The exchange uses no activation and can earn the affinity Shard (R132): 106 (U02). Whether the Prismite card's \"Do this only during the mana step\" also allows the exchange in the haste step: D-U08-3.",
+    "sourceHashes": {
+      "R17": "c78170a2f331384beebbcde66f1a2516c8e755a0394858386cbe11aaddd93980"
+    }
+  },
+  {
+    "key": "turn.resource.ends",
+    "parent": "502",
+    "order": 3,
+    "text": "The resource step ends when every player has created and activated all the resources they want.",
+    "examples": [
+      {
+        "text": "One player declaring done leaves the other free to keep activating; the haste step opens only when both are done.",
+        "test": "419-cr-planning.test.ts::cr:turn.resource.ends — one player finishing does not end the resource step; the haste step opens only when every player is done"
+      }
+    ],
+    "see": [
+      "504"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.18",
+          "quote": "The planning phase ends when all players have created and activated their desired resources."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "419-cr-planning.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "Manual p.18 says \"the planning phase ends\" here, but places the haste step after the resource step on the same page, and p.27 lists the haste step as the fifth planning step; this rule reads the sentence as the end of the resource step: D-U08-2. In this client a player ends their own resource step by declaring done (donePlanning).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.resource.debt",
+    "parent": "502",
+    "order": 4,
+    "text": "At the end of their resource step, a player with debt pays 1 mana for each debt, and each mana paid removes one debt. The payment is automatic: it is not a choice and needs no action.",
+    "examples": [
+      {
+        "text": "A player with 5 open fire and 3 debt ends the resource step with 0 debt and 2 open mana.",
+        "test": "35-rot-debt-trash.test.ts::R39: debt is paid automatically when the resource step ends — 1 mana per debt"
+      }
+    ],
+    "see": [
+      "112"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R39",
+          "quote": "must pay 1 mana per debt, each mana removing one debt. Partial payment is"
+        },
+        {
+          "ref": "R39",
+          "quote": "penalty for being unable to pay. It is not a choice and needs no action —"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "35-rot-debt-trash.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R39 attributes this to Caleb (2024-09-10, refined 2024-12-02) via the owner; no designer quote is in the pack, so the basis is the ruling. Partial payment and carry-over are 112 (U04).",
+    "sourceHashes": {
+      "R39": "debc7c151864dc3d009a2a7bf83abe345cd8dd0ede423ace88265d353766d801"
+    }
+  },
+  {
+    "key": "turn.resource.debt.last",
+    "parent": "turn.resource.debt",
+    "order": 1,
+    "text": "Paying debt is the last thing in the resource step. After it the player can activate no more resources this turn, and the mana spent on debt is not available to play cards this turn.",
+    "examples": [
+      {
+        "text": "With 3 open mana and 2 debt, the player is left 1 mana: no resource action is offered and a [3] unit cannot be played in deployment.",
+        "test": "35-rot-debt-trash.test.ts::R39: debt-paid mana is genuinely gone — no more resources can be activated, and the card is unplayable"
+      }
+    ],
+    "see": [
+      "112"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R39",
+          "quote": "it is deliberately the LAST thing in the resource step so that no further"
+        },
+        {
+          "ref": "R39",
+          "quote": "mana can be activated afterwards, and the mana spent is unavailable for"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "35-rot-debt-trash.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R39": "debc7c151864dc3d009a2a7bf83abe345cd8dd0ede423ace88265d353766d801"
+    }
+  },
+  {
+    "key": "turn.draw.draw",
+    "parent": "503",
+    "order": 1,
+    "text": "In the draw step, each player draws 2 cards.",
+    "examples": [
+      {
+        "text": "On turn 2 of a live draft each player's 6-card hand becomes 8.",
+        "test": "20-draft.test.ts::turns 2-3 draw 2 and re-open the draft step; packs refresh on turn 4 (N+1 cycle)"
+      }
+    ],
+    "see": [
+      "401",
+      "402"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.16",
+          "quote": "Players draw 2 cards during the draw step on every"
+        },
+        {
+          "ref": "Rulebook 2023 p.6",
+          "quote": "Players draw 2 cards during the draw step on every turn after the first."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "20-draft.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.draw.draw.first-turn",
+    "parent": "turn.draw.draw",
+    "order": 1,
+    "text": "In a live draft, no player draws in the draw step of the first turn: each player's first draw was dealt with their opening hand (see 103).",
+    "examples": [
+      {
+        "text": "A live draft opens on turn 1 with 6-card hands (4 + the 2 first-turn draws) and 10-card packs, the draft step already open.",
+        "test": "20-draft.test.ts::createGame draft: 6-card hands (opening 4 + turn-1 draws), 10-card packs, draft step open"
+      }
+    ],
+    "see": [
+      "103"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.16",
+          "quote": "their opening hand, in which case they should not draw"
+        },
+        {
+          "ref": "Rulebook 2023 p.6",
+          "quote": "Players draw 2 cards during the draw step on every turn after the first."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1451507918171013252#0",
+          "quote": "The draft is 16 cards to navigate: a 6-card hand and a 10-card pack."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "20-draft.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "U01 states the setup side (concepts.starting.no-first-draw). For constructed's first turn see turn.draw.constructed.first-turn. The RAQ claim's 6 + 10 split is the register's arithmetic; calebgannon's own words say only \"the 16 card draft\". The split follows from Manual p.16 (first draws dealt with the opening hand) and the 10-card pack.",
+    "sourceHashes": {
+      "RAQ 1451507918171013252#0": "9e135f6cc10d4fc5dbc4286c083de7dde20fe625cc166cd3d32c51d066b1c16f"
+    }
+  },
+  {
+    "key": "turn.draw.draw.order",
+    "parent": "turn.draw.draw",
+    "order": 2,
+    "text": "Players draw in clockwise order, starting with the initiative player.",
+    "examples": [
+      {
+        "text": "In a live draft the initiative player takes the top 2 cards of the shared deck at the turn flip, and the other player the next 2.",
+        "test": "419-cr-planning.test.ts::cr:turn.draw.draw.order — turn draws come off the shared deck clockwise from the initiative player"
+      }
+    ],
+    "see": [
+      "turn.general.initiative"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.16",
+          "quote": "Players draw cards and are dealt packs from the"
+        },
+        {
+          "ref": "Manual p.16",
+          "quote": "shared deck clockwise starting with the initiative"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "419-cr-planning.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "Matters only with a shared deck (live draft), where it decides which cards each player gets. No test title in the pack asserts the order.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.draw.draft",
+    "parent": "503",
+    "order": 2,
+    "text": "In the draft step of a live draft, each player combines the cards in their hand with the cards in their pack, then chooses which cards of the combined pile to keep in hand. The rest go back into the pack.",
+    "examples": [
+      {
+        "text": "A player keeps three pack cards and puts three hand cards into the pack; the hand keeps its size.",
+        "test": "20-draft.test.ts::a real merge: swapped cards land where chosen, hand size is conserved"
+      }
+    ],
+    "see": [
+      "409",
+      "902"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.16",
+          "quote": "hand with the cards in their pack. Then they are able"
+        },
+        {
+          "ref": "Manual p.16",
+          "quote": "to freely select which cards from the resulting pile they"
+        },
+        {
+          "ref": "Manual p.16",
+          "quote": "wish to keep in their hand and which cards should go"
+        },
+        {
+          "ref": "Manual p.16",
+          "quote": "back into the pack. Players must always leave exactly"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "20-draft.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Rulebook 2023 p.6 says the NON-TOKEN, NON-RESOURCE cards in hand join the pile; 409 (U07 zones.pack.drafting) uses that wording. Under the Manual, tokens never stay in a hand and resources are created straight into play, so the two agree in practice.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.draw.draft.ten",
+    "parent": "turn.draw.draft",
+    "order": 1,
+    "text": "A player must leave exactly 10 cards in the pack, so they end the draft step with as many cards in hand as they began it with.",
+    "examples": [
+      {
+        "text": "A draft that would leave 9 cards in the pack is refused.",
+        "test": "20-draft.test.ts::bad commits are rejected: wrong count, duplicates, out of range, wrong mode"
+      }
+    ],
+    "see": [
+      "409"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.16",
+          "quote": "10 cards in the pack at the end of this step, so they will"
+        },
+        {
+          "ref": "Manual p.16",
+          "quote": "exit the draft step with the same number of cards in"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "20-draft.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "A custom live-draft game may set another pack size (R292, digital; 902/Annex D).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.draw.draft.free",
+    "parent": "turn.draw.draft",
+    "order": 2,
+    "text": "Within that limit the choice is free: a player may keep their whole hand and take nothing, exchange their whole hand for pack cards, or anything in between.",
+    "examples": [
+      {
+        "text": "A player who keeps their hand exactly passes the pack exactly as dealt.",
+        "test": "20-draft.test.ts::no-op commit preserves hand and pack exactly; both commits pass the packs"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.6",
+          "quote": "you can completely exchange your entire hand for a completely new set of cards, or anything in-between!"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "20-draft.test.ts",
+        "419-cr-planning.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.draw.draft.pass",
+    "parent": "turn.draw.draft",
+    "order": 3,
+    "text": "When a player has finished drafting, they pass their pack clockwise to the next player. The draft step is complete once every player has passed their pack.",
+    "examples": [
+      {
+        "text": "In 1v1, once both players have finished, the two packs change hands.",
+        "test": "20-draft.test.ts::no-op commit preserves hand and pack exactly; both commits pass the packs"
+      }
+    ],
+    "see": [
+      "409",
+      "turn.planning.order"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.16",
+          "quote": "make sure the pack contains 10 cards and pass it clockwise"
+        },
+        {
+          "ref": "Manual p.16",
+          "quote": "to the next player as an indicator that they are finished."
+        },
+        {
+          "ref": "Manual p.16",
+          "quote": "Once all players have passed their pack, the draft step"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "20-draft.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.draw.draft.skip",
+    "parent": "turn.draw.draft",
+    "order": 4,
+    "text": "An effect may make a player skip their draft step.",
+    "examples": [
+      {
+        "text": "With Worldbender in play in a live draft, its controller is never offered the pack and ends the step with 3 more cards: the 2 drawn in the draw step and Worldbender's 1.",
+        "test": "28-metal-c.test.ts::Worldbender in a live draft: the pack is never offered, the hand gains 3, and life is untouched"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Worldbender",
+          "quote": "Skip your draft step. When you do, draw a card."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "28-metal-c.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.draw.refresh",
+    "parent": "503",
+    "order": 3,
+    "text": "After every cycle of N+1 turns, where N is the number of players, every pack is recycled and each player is dealt a new pack of 10 cards. In 1v1 this happens after the third turn, right before the fourth draft.",
+    "examples": [
+      {
+        "text": "Turns 2 and 3 reuse the dealt packs; turn 4 opens with every pack recycled and new 10-card packs dealt.",
+        "test": "20-draft.test.ts::turns 2-3 draw 2 and re-open the draft step; packs refresh on turn 4 (N+1 cycle)"
+      }
+    ],
+    "see": [
+      "408",
+      "409"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.16",
+          "quote": "Additionally, after each cycle of N+1 turns, where N"
+        },
+        {
+          "ref": "Manual p.16",
+          "quote": "is the number of players, all of the existing packs are"
+        },
+        {
+          "ref": "Rulebook 2023 p.6",
+          "quote": "For 1v1, this happens after the third turn, right before the fourth draft."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "20-draft.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "U07 zones.pack.refresh states the zone side. Recycled pack cards go past the mark (R296): 408.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.draw.refresh.second-look",
+    "parent": "turn.draw.refresh",
+    "order": 1,
+    "text": "So each player drafts a second time from the pack they were first dealt before the packs are refreshed.",
+    "examples": [
+      {
+        "text": "In 1v1, the pack a player is dealt on turn 1 comes back to them on turn 3 with what they left in it.",
+        "test": "20-draft.test.ts::\"comes back to you\" (turn 1) is true: your own pack returns on turn 3"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.16",
+          "quote": "player will draft a second time from the pack they were"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "20-draft.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.draw.constructed",
+    "parent": "503",
+    "order": 4,
+    "text": "In constructed there are no packs. In the draft step each player draws 2 more cards from their own deck and then recycles 2 cards from their hand. Since this comes straight after the draw step, the two are taken together: draw 4, then recycle 2.",
+    "examples": [
+      {
+        "text": "On turn 2 of constructed each player draws 4 and must put 2 back before doing anything else.",
+        "test": "34-constructed.test.ts::turn 2 reopens the draw phase: 4 more cards, bottoming pending again"
+      },
+      {
+        "text": "Worldbender skips the constructed draft step: its controller draws only the draw step's 2 plus Worldbender's 1, recycles nothing, and loses 3 life.",
+        "test": "28-metal-c.test.ts::Worldbender in constructed: no draw-4-put-2-back — the hand gains 3 and 3 life is paid"
+      }
+    ],
+    "see": [
+      "408",
+      "901"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.16",
+          "quote": "In this mode, there are no packs or shared deck. During"
+        },
+        {
+          "ref": "Manual p.16",
+          "quote": "the draft step in constructed, players simply draw 2"
+        },
+        {
+          "ref": "Manual p.16",
+          "quote": "cards from their own deck and recycle 2 cards from"
+        },
+        {
+          "ref": "Manual p.16",
+          "quote": "two steps by drawing 4 cards, then recycling 2."
+        },
+        {
+          "ref": "Rulebook 2023 p.6",
+          "quote": "In constructed, there is no deck to draft from, so the draft step and the draw step are combined into one draw phase. During"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1451507918171013252#1",
+          "quote": "Constructed uses pre-built decks; you draw 4 and recycle 2."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "34-constructed.test.ts",
+        "28-metal-c.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1451507918171013252#1": "70dc284b16f2e12988e1aeb8f37cec154072a9946d794f28d922dca7e0149e92"
+    }
+  },
+  {
+    "key": "turn.draw.constructed.choice",
+    "parent": "turn.draw.constructed",
+    "order": 1,
+    "text": "The player chooses which 2 cards of their hand to recycle. Until they have, they can take no other planning action.",
+    "examples": [
+      {
+        "text": "While the 2 cards are owed, only the choice of 2 is offered; ending planning or recycling for a resource is refused.",
+        "test": "34-constructed.test.ts::nothing moves until the 2 cards go back; bottoming keeps the given order"
+      }
+    ],
+    "see": [
+      "408"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.6",
+          "quote": "the draw phase in constructed, players draw 4 cards, then select 2 cards from their hand and put them on the bottom of the"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "34-constructed.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "The second sentence (no other planning action until the 2 go back) is asserted by the test but stated by no source; it follows from the step order (turn.planning.steps). Recycled cards go past the mark (R296, 408), so the \"any order\" of Rulebook 2023 p.6 has no effect (U07 zones.recycle.mark.order).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.draw.constructed.first-turn",
+    "parent": "turn.draw.constructed",
+    "order": 2,
+    "text": "The draw of 4 and the recycle of 2 happen on the first turn of a constructed game too.",
+    "examples": [
+      {
+        "text": "A constructed game opens with 8 cards in each hand (an opening 4 and the turn-1 draw of 4) and the recycle of 2 pending.",
+        "test": "34-constructed.test.ts::createGame constructed: per-seat decks, opening 4 + draw 4, bottoming open"
+      }
+    ],
+    "see": [
+      "103",
+      "901"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.16",
+          "quote": "Players draw 2 cards during the draw step on every"
+        },
+        {
+          "ref": "Manual p.16",
+          "quote": "the draft step in constructed, players simply draw 2"
+        },
+        {
+          "ref": "Manual p.16",
+          "quote": "two steps by drawing 4 cards, then recycling 2."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "34-constructed.test.ts",
+        "419-cr-planning.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "low",
+    "notes": "Rests on \"every turn\" (Manual p.16). The first-turn shortcut (the first draws dealt with the opening hand, so no draw on turn 1) is written for live draft, and no source gives constructed's opening hand size; the engine deals 4 and then draws 4. D-U08-5. Rulebook 2023 p.6 (\"every turn after the first\") reads the other way, but it describes an older opening and the Manual supersedes it; added to D-U08-5. No source states this rule outright: it is inferred from \"every turn\" plus the constructed draft step.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.draw.state-checks",
+    "parent": "503",
+    "order": 5,
+    "text": "Drawing and drafting are actions like any other: a unit that a change in hand size leaves with 0 defense, or with damage equal to its defense, dies as soon as the action is over, except as the constructed sub-rule below says (see 713).",
+    "examples": [
+      {
+        "text": "A Dreadspawn Horror (-1/-1 per card in hand) taken to 0 defense by the turn draw dies at once, before any other action is taken.",
+        "test": "380-no-action-ends-dead.test.ts::R313: the turn draw that takes Dreadspawn Horror to 0 defense kills it at the turn flip"
+      }
+    ],
+    "see": [
+      "713"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R313",
+          "quote": "point. So no action — a draw, a draft, a recycle, a resource activation — may"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "380-no-action-ends-dead.test.ts",
+        "419-cr-planning.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "The bound test runs in shared mode (no draft step); the verifier's probe measured the same in a live draft, where the unit dies before the draft.",
+    "sourceHashes": {
+      "R313": "6c536935adcecdfb3146b70a3361020198a639dee554a71382a12123f8832a85"
+    }
+  },
+  {
+    "key": "turn.draw.state-checks.draft-pile",
+    "parent": "turn.draw.state-checks",
+    "order": 1,
+    "text": "In the draft step the combined pile of hand and pack is never a hand: only the cards a player keeps count toward their hand size.",
+    "examples": [
+      {
+        "text": "A Dreadspawn Horror whose controller holds 1 card, draws 2 and keeps 3 through the draft ends the step a 4/2 and lives.",
+        "test": "380-no-action-ends-dead.test.ts::R313 draft: 1 card in hand, then the turn draw and the draft — a 4/2 that lives"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R313",
+          "quote": "the hand↔pack merge is a single action that never shows its 13-card middle."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "380-no-action-ends-dead.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R313": "6c536935adcecdfb3146b70a3361020198a639dee554a71382a12123f8832a85"
+    }
+  },
+  {
+    "key": "turn.draw.state-checks.constructed",
+    "parent": "turn.draw.state-checks",
+    "order": 2,
+    "text": "In constructed, the draw of 4 and the recycle of 2 count as one step. A player's units are not checked for death until that player has recycled their 2 cards, so they are judged on the hand that remains.",
+    "examples": [
+      {
+        "text": "With 1 card in hand, a Dreadspawn Horror goes through draw 4 and put back 2 and ends a 4/2.",
+        "test": "380-no-action-ends-dead.test.ts::R313 constructed: drawing 4 does not kill before the 2 go back — 1 card in hand ends a 4/2"
+      },
+      {
+        "text": "With 3 cards in hand it nets to 5 and dies once its controller has put 2 back.",
+        "test": "380-no-action-ends-dead.test.ts::R313 constructed: 3 cards in hand nets to 5 — it dies once its controller has bottomed"
+      }
+    ],
+    "see": [
+      "713",
+      "901"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R313",
+          "quote": "- **Constructed's draw phase is one step.** Draw 4 and put 2 back are two"
+        },
+        {
+          "ref": "R313",
+          "quote": "actions, but a seat's units are not checked while that seat still owes its"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "380-no-action-ends-dead.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "The owner's call (2026-10-06, quoted in R313); no designer source: D-U08-7.",
+    "sourceHashes": {
+      "R313": "6c536935adcecdfb3146b70a3361020198a639dee554a71382a12123f8832a85"
+    }
+  },
+  {
+    "key": "turn.haste.what",
+    "parent": "504",
+    "order": 1,
+    "text": "The haste step is the last step of the planning phase. It comes after the resource step.",
+    "examples": [
+      {
+        "text": "After both players finish the resource step the phase is still planning, with the haste step open.",
+        "test": "08-cards2.test.ts::Molten Upheaval + the haste step: haste cards play between planning and battle (R18)"
+      }
+    ],
+    "see": [
+      "turn.planning.steps"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.18",
+          "quote": "After the resource step is the very short haste step, where players can only play"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R97",
+          "quote": "2. `legalActions`' `phase === 'planning' && s.hasteDone` branch — the client's affordance."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "08-cards2.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "Manual p.27 lists it as the fifth planning step; Manual p.18 says \"the planning phase ends\" when resources are done: D-U08-2. Rulebook 2023 p.7 folds haste plays into its \"mana step\": D-U08-3.",
+    "sourceHashes": {
+      "R97": "85b25c9bc3cbe10d572a877ca22452c29e74fb0333d60ff88d3a690d1c3d98d6"
+    }
+  },
+  {
+    "key": "turn.haste.plays",
+    "parent": "504",
+    "order": 2,
+    "text": "In the haste step, players may play only haste cards.",
+    "examples": [
+      {
+        "text": "Molten Upheaval, a haste card, is refused in the resource step and accepted in the haste step.",
+        "test": "08-cards2.test.ts::Molten Upheaval + the haste step: haste cards play between planning and battle (R18)"
+      }
+    ],
+    "see": [
+      "207",
+      "803"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.18",
+          "quote": "After the resource step is the very short haste step, where players can only play"
+        },
+        {
+          "ref": "Manual p.18",
+          "quote": "haste cards (with the"
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "Haste cards can also"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "08-cards2.test.ts",
+        "15-water-b.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The haste timing glyph: 207 (U05); a haste card may also be played in deployment (Manual p.13 \"also\"). Grants and permissions that widen the step: turn.haste.grants, turn.haste.mods.slurpr, turn.haste.prophesy.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.haste.plays.battle-stays",
+    "parent": "turn.haste.plays",
+    "order": 1,
+    "text": "A card with battle timing cannot be played in the haste step, even when an effect gives it haste or lets it be played as if it had haste. This holds for units and spell units alike.",
+    "examples": [
+      {
+        "text": "Under Dispatch Courier, a battle unit in hand is still not playable in the haste step.",
+        "test": "26-metal-a.test.ts::Dispatch Courier: a {Battle} unit stays a battle card even with the grant"
+      },
+      {
+        "text": "Nor is a battle spell unit.",
+        "test": "396-raq-timing.test.ts::RAQ Dispatch Courier: a Battle spell unit is not playable in the haste step either"
+      }
+    ],
+    "see": [
+      "207"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1465292396664193171#0",
+          "quote": "No, despite gaining :haste: they can still only be played during :battle:."
+        },
+        {
+          "ref": "RAQ 1465292396664193171#1",
+          "quote": "Nor can a {Battle} spell unit."
+        },
+        {
+          "ref": "RAQ 1464899726796390433#0",
+          "quote": "battle cards are designed to be played in battle only. Not all of them will cause problems but I think some will"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R97",
+          "quote": "> A: **No, despite gaining {Haste} they can still only be played during {Battle}.**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "26-metal-a.test.ts",
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "RAQ 1464899726796390433#1 (2025-03-24: haste adds the haste step to a card's timings, so a battle card with haste works there) is OUTDATED: calebgannon reversed it himself on 2026-01-25. D-U08-8.",
+    "sourceHashes": {
+      "R97": "85b25c9bc3cbe10d572a877ca22452c29e74fb0333d60ff88d3a690d1c3d98d6",
+      "RAQ 1464899726796390433#0": "29919fd7167ef4b5d8270f68bc27b34a37b2a2600b7c520143430f818c931ee3",
+      "RAQ 1465292396664193171#0": "b9818845b89b995e2deb3a2c33684e65ecbf762c87aec010da8a4401369be1b9",
+      "RAQ 1465292396664193171#1": "5dc7d77443715228d9d2f69544025a49d12a72cb332616ef18c1b528d96c8d0c"
+    }
+  },
+  {
+    "key": "turn.haste.immediate",
+    "parent": "504",
+    "order": 3,
+    "text": "A card played in the haste step resolves immediately. It does not use the stack, no player receives priority, and no player can respond to it.",
+    "examples": [
+      {
+        "text": "Tidal Menace played in the haste step is in play at once as a 7/2.",
+        "test": "15-water-b.test.ts::Tidal Menace: {Haste} 7/2 — playable in the haste step, resolves immediately (R18)"
+      }
+    ],
+    "see": [
+      "turn.planning.no-interaction",
+      "703"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.7",
+          "quote": "There is no player interaction during this step."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R18 (its immediate-resolution half)",
+          "quote": "finish planning: each haste play **resolves immediately** (planning is not interactive —"
+        },
+        {
+          "ref": "R97",
+          "quote": "There is no priority during the mana step, but you can play haste cards"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R18",
+          "relation": "its skip and auto-done halves reversed by R224 and R228; the immediate-resolution half stands"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "15-water-b.test.ts",
+        "08-cards2.test.ts",
+        "419-cr-planning.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R18": "173a218909c8fb0ad90ca065574c7c87e7bc161a123c016e913e2ebd2bc3efc8",
+      "R97": "85b25c9bc3cbe10d572a877ca22452c29e74fb0333d60ff88d3a690d1c3d98d6"
+    }
+  },
+  {
+    "key": "turn.haste.ends",
+    "parent": "504",
+    "order": 4,
+    "text": "The haste step ends when every player has played all the haste cards they want to play, which may be none.",
+    "examples": [
+      {
+        "text": "The step closes into the battle phase only after both players have declared they are done.",
+        "test": "200-haste-step-is-unconditional.test.ts::R228 §5: no seat is auto-done, and BOTH have to close the step"
+      }
+    ],
+    "see": [
+      "505"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.18",
+          "quote": "symbol). This step ends when all players have played all"
+        },
+        {
+          "ref": "Manual p.18",
+          "quote": "the haste cards they wanted to play (which can be none)."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "08-cards2.test.ts",
+        "200-haste-step-is-unconditional.test.ts",
+        "419-cr-planning.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "In this client each player declares done (doneHaste). The order between the players (IT first): turn.planning.order.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.haste.always",
+    "parent": "504",
+    "order": 5,
+    "text": "The haste step happens every turn, whether or not any player has anything they could play in it.",
+    "examples": [
+      {
+        "text": "On turn 1, with only two dormant Prismites each, the step still opens for both players.",
+        "test": "08-cards2.test.ts::the haste step opens even when nobody has a legal haste play (R228)"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R224",
+          "quote": "\"Always offer the step.\""
+        },
+        {
+          "ref": "R228",
+          "quote": "could act**. Both halves are gone."
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R18",
+          "relation": "reversed in part: its \"skipped outright when nobody has a legal haste play\" (by R224 and R228)"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "08-cards2.test.ts",
+        "200-haste-step-is-unconditional.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Owner call with no designer source (D-U08-6). R224/R228 also give a digital reason (the step's presence must not reveal a hidden hand); that half is Annex D (U23).",
+    "sourceHashes": {
+      "R224": "3ab7ef37de58aea988afdf9d11612f4c93f1bb94cdc927d01c6655ec4a0e38d9",
+      "R228": "16bea3f046e8e094455935cda2136af98531afe99ccc1b19d5d897918137a179"
+    }
+  },
+  {
+    "key": "turn.haste.always.no-auto-done",
+    "parent": "turn.haste.always",
+    "order": 1,
+    "text": "No player is treated as finished with the haste step because they have nothing to play. Each player finishes the step themselves, and a player may stay in it holding nothing they could play.",
+    "examples": [
+      {
+        "text": "A player with nothing playable may sit in the step and finish it whenever they choose.",
+        "test": "200-haste-step-is-unconditional.test.ts::R228 §5: a bluff is a real move — you may sit in the step holding nothing"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R228",
+          "quote": "outright when it said no for everybody, and **mark any other seat done before it"
+        },
+        {
+          "ref": "R228",
+          "quote": "could act**. Both halves are gone."
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R18",
+          "relation": "reversed in part: its \"a player with no legal haste play is auto-marked done\" (by R224 and R228)"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "200-haste-step-is-unconditional.test.ts",
+        "419-cr-planning.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "The client may send \"done\" for a player with nothing hasteable unless they turn on bluff haste (R236): a client convenience, Annex D (U23), not a change to this rule.",
+    "sourceHashes": {
+      "R228": "16bea3f046e8e094455935cda2136af98531afe99ccc1b19d5d897918137a179"
+    }
+  },
+  {
+    "key": "turn.haste.end-event",
+    "parent": "504",
+    "order": 6,
+    "text": "The end of the haste step is an event. An ability that triggers \"at the end of [Haste]\" triggers then, before the battle phase begins, including in a turn in which nobody played anything in the step.",
+    "examples": [
+      {
+        "text": "Keeper of Tithes creates an X/X for its controller's expended resources as the step closes.",
+        "test": "38-light-a.test.ts::Keeper of Tithes: at the end of [Haste] it creates an X/X for your expended resources"
+      },
+      {
+        "text": "The end of the step is announced exactly once.",
+        "test": "200-haste-step-is-unconditional.test.ts::R228 §5: the step still ENDS properly — endOfHaste fires exactly once"
+      }
+    ],
+    "see": [
+      "706"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Keeper of Tithes",
+          "quote": "At the end of [Haste], if X is not 0, create an X/X unit, where X is the number of expended resources you have."
+        },
+        {
+          "ref": "card: Debt Plant",
+          "quote": "At the end of [Haste], your units gain +1/+0 until regroup for every 2 expended resources you have."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R50",
+          "quote": "fires even when R18 **skipped** the step outright — the haste step is part of"
+        },
+        {
+          "ref": "R50",
+          "quote": "the turn whether or not anyone had a card for it, and an optimisation must not"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "38-light-a.test.ts",
+        "200-haste-step-is-unconditional.test.ts",
+        "44-hybrids-ld-a.test.ts",
+        "419-cr-planning.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R50 is an owner call (the event seam); the cards print the trigger. R50's \"skipped\" clause is now moot (turn.haste.always) but the event still fires every turn.",
+    "sourceHashes": {
+      "R50": "fd11d0aa87980d21d5d6ceec5fd6a6799f46773021b756073facbec0a6a3346f"
+    }
+  },
+  {
+    "key": "turn.haste.end-event.during",
+    "parent": "turn.haste.end-event",
+    "order": 1,
+    "text": "An instruction a card carries out \"during [Haste]\" happens in the haste step. This client asks for it as the step ends.",
+    "examples": [
+      {
+        "text": "Prediction Prophet asks its controller for a number at the end of the haste step, and creates a 5/5 at the start of deployment if it matched.",
+        "test": "40-light-c.test.ts::Prediction Prophet: the [Haste] prediction is a real decision, and matching it creates a 5/5 (R90)"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Prediction Prophet",
+          "quote": "During [Haste], predict your life total."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R90 (its end-of-step timing half)",
+          "quote": "the prediction is asked for at the tail of the step, which is"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R90",
+          "relation": "its prediction-menu cap (0 … life + 5) superseded by R197"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "40-light-c.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "The Everywhere also names a card \"During [Haste]\" (R91, 38-light-a); this rule does not claim when the client asks for that one.",
+    "sourceHashes": {
+      "R90": "f3b53f3681ec6c68f9c0f68e2340690a26ede79a27d8ca3966485dcb5bbeb6ae"
+    }
+  },
+  {
+    "key": "turn.haste.grants",
+    "parent": "504",
+    "order": 7,
+    "text": "An effect may let a player play, in the haste step, a card that lacks haste, \"as if it had [Haste]\". The grant changes only when the card may be played.",
+    "examples": [
+      {
+        "text": "Dispatch Courier lets its controller play a deploy unit in the haste step.",
+        "test": "26-metal-a.test.ts::Dispatch Courier: \"play a unit during the mana step as if it had [Haste]\""
+      },
+      {
+        "text": "Writhing Host in its owner's bin lets them play a deploy unit in the haste step, erasing the Host as the additional cost.",
+        "test": "42-dark-b.test.ts::Writhing Host (R123): a deploy unit in hand is offered at haste timing, and playing it erases the Host from the bin"
+      }
+    ],
+    "see": [
+      "turn.haste.plays",
+      "803"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Dispatch Courier",
+          "quote": "Each turn, you may play a unit during the mana step as if it had [Haste]."
+        },
+        {
+          "ref": "card: Writhing Host",
+          "quote": "If I am in your bin, you may play a unit as if it had [Haste] by erasing me as an additional cost to play that unit."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R123",
+          "quote": "it had [Haste]\" is TIMING ONLY — the played unit never carries the attribute."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "26-metal-a.test.ts",
+        "42-dark-b.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "Whether the played card GAINS haste: the RAQ write-up says \"despite gaining :haste:\", R123 says the unit never carries it. This rule states only the timing: D-U08-4. Courier prints \"mana step\"; R97 reads it as the haste step: D-U08-3.",
+    "sourceHashes": {
+      "R123": "d0fcb30a403a6a548112e80a8c50c406fcdcd37ce268553acc6c891a079cf9fb"
+    }
+  },
+  {
+    "key": "turn.haste.grants.each-turn",
+    "parent": "turn.haste.grants",
+    "order": 1,
+    "text": "A grant that says \"Each turn\" allows one such play per turn for each card that grants it: two Dispatch Couriers allow two plays.",
+    "examples": [
+      {
+        "text": "One Courier grants one play: a second unit in the same haste step is refused.",
+        "test": "26-metal-a.test.ts::Dispatch Courier: the \"Each turn\" allowance is one, and one Courier grants one"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Dispatch Courier",
+          "quote": "Each turn, you may play a unit during the mana step as if it had [Haste]."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R97",
+          "quote": "twice as permissive, but two Couriers each print \"Each turn, you may play a unit\" and two of"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "26-metal-a.test.ts",
+        "419-cr-planning.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "The two-Courier case is R97's reasoning; the test title covers one Courier only.",
+    "sourceHashes": {
+      "R97": "85b25c9bc3cbe10d572a877ca22452c29e74fb0333d60ff88d3a690d1c3d98d6"
+    }
+  },
+  {
+    "key": "turn.haste.mods",
+    "parent": "504",
+    "order": 8,
+    "text": "Mods are applied in deployment, not in the haste step, even when the mod card has haste. The exceptions are a card that allows mods in the haste step (the sub-rule below) and a Virus applied in battle (see 723).",
+    "examples": [
+      {
+        "text": "A graft with haste is offered in deployment and never in the haste step.",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 point 1: a graft is offered in deployment and never in the haste step or in battle, even for a Haste card"
+      },
+      {
+        "text": "Without a Slurpr, applying a mod in the haste step is refused.",
+        "test": "40-light-c.test.ts::without a Slurpr the [Haste] refusal is unchanged — modding is a deployment action"
+      }
+    ],
+    "see": [
+      "507",
+      "720",
+      "723"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.26",
+          "quote": "in preparation for the following combat. They do so by"
+        },
+        {
+          "ref": "Manual p.26",
+          "quote": "playing cards, activating abilities and modifying cards"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#0",
+          "quote": "Yes. Always in deployment. No matter what cards speed is"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R95 (its Slurpr haste-sibling half)",
+          "quote": "`illegal('modding is a deployment action (or a battle Virus)')`) and in `doGraft`."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts",
+        "40-light-c.test.ts",
+        "419-cr-planning.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The RAQ write-up is about grafts; the Manual p.26 and the engine refusal (quoted in R95) cover augments too. A Virus may also be applied in battle (723).",
+    "sourceHashes": {
+      "R95": "f6a27c0893397fad2912dfff4be2be9bf0c4a8aceb667dc2d5dee7b44247c7eb",
+      "RAQ 1355115946032889914#0": "570bdde45f267e2fa36e032e03d4220f54649c976e64bfc3afdf08fb321d1661"
+    }
+  },
+  {
+    "key": "turn.haste.mods.slurpr",
+    "parent": "turn.haste.mods",
+    "order": 1,
+    "text": "A card that says so can allow mods in the haste step: Slurpr lets its controller apply other mods, augments and grafts alike, during [Haste] as if it were deployment.",
+    "examples": [
+      {
+        "text": "With Slurpr in play, a mod is applied during the haste step.",
+        "test": "40-light-c.test.ts::Slurpr: mods may be applied during [Haste] as if it was deployment"
+      }
+    ],
+    "see": [
+      "720"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Slurpr",
+          "quote": "You can apply other mods during [Haste] as if it was deployment."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R95 (its Slurpr haste-sibling half)",
+          "quote": "**\"Other mods\" is augments AND grafts** — R37's word for both — which is why `ctx.kind` is"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "40-light-c.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R95": "f6a27c0893397fad2912dfff4be2be9bf0c4a8aceb667dc2d5dee7b44247c7eb"
+    }
+  },
+  {
+    "key": "turn.haste.prophesy",
+    "parent": "504",
+    "order": 9,
+    "text": "A card whose prophecy condition ends in [Haste] may be prophesied in the haste step as well as in deployment. Any other prophecy may be prophesied only in deployment.",
+    "examples": [
+      {
+        "text": "A banner ending in [Haste] may be prophesied in the haste step.",
+        "test": "257-prophecy-release-timing.test.ts::R277: a banner marked [Haste] may be prophesied during the haste step"
+      },
+      {
+        "text": "An unmarked banner is refused there.",
+        "test": "257-prophecy-release-timing.test.ts::R277: an UNMARKED banner is still deployment-only — the haste step refuses it"
+      }
+    ],
+    "see": [
+      "803"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R277 (its release-timing and prophesy-window halves)",
+          "quote": "2. **A trailing `[Haste]` in the printed CONDITION widens the PROPHESY"
+        },
+        {
+          "ref": "R277 (its release-timing and prophesy-window halves)",
+          "quote": "window** to include the haste step. R42 allows prophesying only during"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R277",
+          "relation": "its aside that the banner cost is plain mana with no affinity superseded by R301"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "257-prophecy-release-timing.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "The owner's reading of the marker (2026-08-30, quoted in R277: \"That's why it has that symbol\"); no designer source: D-U08-9. Prophecy itself is 803 (U21). F-U08-2: a test title still says prophesying is illegal in the haste step without qualification.",
+    "sourceHashes": {
+      "R277": "a15231bf2271c9aab105f7a42c442a15aa13dd28828796307c02c4a2817084af"
+    }
+  },
+  {
+    "key": "turn.haste.prophesy.release",
+    "parent": "turn.haste.prophesy",
+    "order": 1,
+    "text": "The [Haste] marker does not move a fulfilled prophecy's release: the card is played from the cache only at its printed timing.",
+    "examples": [
+      {
+        "text": "A fulfilled battle card with a [Haste]-marked banner is not offered in the haste step.",
+        "test": "257-prophecy-release-timing.test.ts::R277: the marker does not move a fulfilled release out of battle and into the haste step"
+      }
+    ],
+    "see": [
+      "803"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R277 (its release-timing and prophesy-window halves)",
+          "quote": "1. **The RELEASE is always at the card's printed timing.** R42 governs, without"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "257-prophecy-release-timing.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R277": "a15231bf2271c9aab105f7a42c442a15aa13dd28828796307c02c4a2817084af"
+    }
+  }
+]

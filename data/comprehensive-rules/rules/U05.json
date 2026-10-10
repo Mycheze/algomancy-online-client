@@ -1,0 +1,2925 @@
+[
+  {
+    "key": "card.general.parts",
+    "parent": "200",
+    "order": 1,
+    "text": "An Algomancy card can show these parts: a name, a mana cost, an affinity requirement, a timing icon, stats (power and defense), a type line of types and attributes, abilities, and a set symbol. Every card has a name; the other parts appear only on the cards that need them. Some cards also print an alternative-cost banner (203) or an augment symbol (208).",
+    "examples": [],
+    "see": [
+      "201",
+      "202",
+      "203",
+      "204",
+      "205",
+      "206",
+      "207",
+      "208",
+      "209"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "Algomancy cards each have the following characteristics:"
+        },
+        {
+          "ref": "Manual p.12",
+          "quote": "All cards have a card name."
+        },
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "▪ Some cards will have special timing icons (4), which modify when and how"
+        },
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "▪ Most cards have Abilities (7), which describe the card’s effects."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.12 lists name, mana cost, affinity, stats, timing, types and attributes, abilities, set symbol; Rulebook 2023 p.3 lists the same with older words (Threshold, health, main phase): D-U05-1. Neither anatomy page shows the banner or the augment symbol; those come from Manual p.32/p.40 and R301.",
+    "sourceHashes": {},
+    "untestableReason": "a list of the parts of the printed card face; nothing in play depends on it",
+    "untested": true
+  },
+  {
+    "key": "card.general.printed-card-governs",
+    "parent": "200",
+    "order": 2,
+    "text": "The physical printed card is the source of truth for what a card says. Where the transcription a client reads differs from the printed card, the printed card governs and the transcription is corrected; the difference is not a ruling on the card.",
+    "examples": [
+      {
+        "text": "Interdiction Rift's type line is {Battle} Cosmic Spell: the transcription's \"AI\" is a typo, not a subtype.",
+        "test": "209-interdiction-rift-type-line.test.ts::§1 Interdiction Rift is \"{Battle} Cosmic Spell\" — the owner's ruling, exactly"
+      },
+      {
+        "text": "Arbiter of Armistice has no {Switch} on its type line, whatever an older transcription said.",
+        "test": "137-multiplier-and-mode.test.ts::R157 §25: Arbiter of Armistice's printed type line has no {Switch}, and nothing else moved"
+      }
+    ],
+    "see": [
+      "101"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R240",
+          "quote": "**Read the card art.** `data/cards/*.jpg` is the actual source of truth, and it is"
+        },
+        {
+          "ref": "R240",
+          "quote": "> \"Correct, that's a typo in the oracle text. **{Battle} Cosmic Spell is correct. AI"
+        },
+        {
+          "ref": "R157 §25",
+          "quote": "> *\"That's an error on your part. The card does not have a [Switch] thing. It"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R162",
+          "relation": "its Interdiction Rift whitespace-only repair superseded by R240"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "209-interdiction-rift-type-line.test.ts",
+        "137-multiplier-and-mode.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Owner rulings (R240 quotes the owner; R157 §25 quotes the owner). R301 is the same lesson for banner pips. Whether a CR needs this rule at all is a judgement: it governs the client's data, but a judge comparing texts needs to know the transcription is not authority. R240/R162 still describe a patch layer that was removed: D-U05-12.",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
+      "R240": "07a6e64a34bd01c02a1010a64c2a0b0518b7e1a52d7aaa5154312829c65714be"
+    }
+  },
+  {
+    "key": "card.name.every-card",
+    "parent": "201",
+    "order": 1,
+    "text": "Every card has a name.",
+    "examples": [
+      {
+        "text": "Every one of the 400-odd cards in the pool has a name.",
+        "test": "416-cr-parts-of-a-card.test.ts::cr:card.name.every-card — every card in the pool has a non-empty name, the one it is filed under"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.12",
+          "quote": "All cards have a card name."
+        },
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "▪ All cards have a name (1)."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "416-cr-parts-of-a-card.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Section 201 is otherwise about how the name is used; uniqueness of names in a deck is a format question (900s).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "card.name.another",
+    "parent": "201",
+    "order": 2,
+    "text": "\"Other\" and \"another\" compare objects, never names. Two cards with the same name are two different things, and each is \"another\" to the other.",
+    "examples": [
+      {
+        "text": "A unit wearing two Rotbeast augments: each Rotbeast's trigger moves the other one.",
+        "test": "121-another-identity.test.ts::R131 Rotbeast: a SECOND Rotbeast augment is \"another\" — each moves the other"
+      }
+    ],
+    "see": [
+      "110"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R131",
+          "quote": "So an \"other\"/\"another\" clause **never** filters by CARD NAME. Two copies of a"
+        },
+        {
+          "ref": "R131",
+          "quote": "card are two things, and each is \"another\" to the other. Excluding by name"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "121-another-identity.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Owner ruling R131 (verbatim quote of the owner inside it). How the identity is tracked in a bin is 405 (U07).",
+    "sourceHashes": {
+      "R131": "43728cea609c04e1a04453063a2d517487923b3450504286c64547f2bde9262b"
+    }
+  },
+  {
+    "key": "card.name.unique-token",
+    "parent": "201",
+    "order": 3,
+    "text": "Where a card speaks of a \"unique\" token, a token is identified by its name and its X together: a Robot 2 and a Robot 5 are two unique tokens.",
+    "examples": [
+      {
+        "text": "Automaton of Abundance with a batch of a Robot 3, a Robot 2 and a Robot 1 makes three extra Robots.",
+        "test": "26-metal-a.test.ts::R157 §24: a batch of a Robot 3, a Robot 2 and a Robot 1 yields THREE extras"
+      }
+    ],
+    "see": [
+      "304"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 §24",
+          "quote": "> *\"'Unique' means unique (name, X) pair — you get two extras.\"*"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R104",
+          "relation": "its unique-by-kind (name only) reading reversed by R157 §24"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "26-metal-a.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R104 (heading: \"its unique-by-kind reversed by R157\") is history. Placed under Name because it is the one ruling on what a token's name includes.",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
+    }
+  },
+  {
+    "key": "card.name.front-face",
+    "parent": "201",
+    "order": 4,
+    "text": "A card with a back face exists as its front face in every zone other than play. A transformed card that leaves play turns back over, and is binned under its front name. A back face is not a token.",
+    "examples": [
+      {
+        "text": "A transformed Scholar of the Void killed in play goes to the bin as Scholar of the Void.",
+        "test": "135-exchange-and-zones.test.ts::R157 §10: a transformed Scholar killed in play BINS as \"Scholar of the Void\""
+      }
+    ],
+    "see": [
+      "108",
+      "710"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 §10",
+          "quote": "> *\"Turns back over. In all zones, other than play, it exists as the front"
+        },
+        {
+          "ref": "R157 §10",
+          "quote": "> side. And the back is NOT a token.\"*"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "135-exchange-and-zones.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Faces in general are 108/710 (U03/U16); this is the name half only.",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
+    }
+  },
+  {
+    "key": "card.name.copy",
+    "parent": "201",
+    "order": 5,
+    "text": "A copy takes the name of the card it copies while it is a copy, but the physical card keeps its own name: when it leaves play it is binned, erased or returned to hand as itself.",
+    "examples": [
+      {
+        "text": "A Borrower of Forms that copied a Good Whale and dies puts Borrower of Forms in the bin.",
+        "test": "26-metal-a.test.ts::R118: a Borrower that became something else still bins as BORROWER OF FORMS (ruling 1)"
+      },
+      {
+        "text": "Recalled, it returns to the hand as Borrower of Forms.",
+        "test": "393-raq-mods.test.ts::RAQ Borrower of Forms: recalled, it goes back to the hand as Borrower of Forms"
+      }
+    ],
+    "see": [
+      "710"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1372468222158180424#7",
+          "quote": "you do get BoFy back to hand, but original unit/mods were Erased on BoFy resolution."
+        },
+        {
+          "ref": "RAQ 1372468222158180424#2",
+          "quote": "If he dies, then he goes to bin/discard, but anything he was mimicking is Erased (BoFy erased it on resolution)."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R118 (its ruling 1)",
+          "quote": "**1. SPLIT IDENTITY.** A copy changes the **game name** — statics, \"name a card\","
+        },
+        {
+          "ref": "R118 (its ruling 1)",
+          "quote": "and then dies puts **Borrower of Forms** in the bin."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "26-metal-a.test.ts",
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R118 is partly superseded (ruling 2 halves, a radiating bullet); ruling 1 stands. Round 1: the second designer quote is now the _passer source words (\"goes to bin/discard\", not \"as Borrower of Forms\"); the \"as Borrower of Forms\" is the owner's R118 ruling 1.",
+    "sourceHashes": {
+      "R118": "8f2152953664acdc1df1d45379d1fdf6265769716124a1ff041806a57357bdc9",
+      "RAQ 1372468222158180424#2": "6f8f74f0bbd6cae24ae79c2d4e11976bcd397801eac98203b560daddc106f8b4",
+      "RAQ 1372468222158180424#7": "5ed960b6abd609c253a7137d312a9ab7690d5ea072fca8bb89494e251dfbcf54"
+    }
+  },
+  {
+    "key": "card.cost-orb.mana-cost",
+    "parent": "202",
+    "order": 1,
+    "text": "The cost orb shows the card's mana cost: the number of resources a player must expend to play it.",
+    "examples": [
+      {
+        "text": "Good Whale (cost orb 6) cannot be played with five resources; played with seven, it expends six and leaves one open.",
+        "test": "416-cr-parts-of-a-card.test.ts::cr:card.cost-orb.mana-cost — Good Whale (mana 6) is refused with five resources and costs exactly six expended resources to play"
+      }
+    ],
+    "see": [
+      "106",
+      "111"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.12",
+          "quote": "This many resources must be"
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "Mana cost: To play a card, a player must expend a"
+        },
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "▪ A mana cost (2) that must be paid in order to be played."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "416-cr-parts-of-a-card.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Paying costs in general is 111 (U04); resources are 106 (U02).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "card.cost-orb.pips",
+    "parent": "202",
+    "order": 2,
+    "text": "The pips with the cost are the card's affinity requirement. To play the card, its controller must have at least that many resources of each pip's element among their resources. The requirement is met, not paid: expended resources count toward it.",
+    "examples": [
+      {
+        "text": "Two wood resources and any number of shards can pay for many [gg] cards in one turn.",
+        "test": "396-raq-timing.test.ts::RAQ Mana question: affinity counts resources already spent — two wood pay for many gg cards"
+      }
+    ],
+    "see": [
+      "105"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "Affinity: To have the ability to play a card, a player"
+        },
+        {
+          "ref": "Manual p.12",
+          "quote": "Resource types needed to be"
+        },
+        {
+          "ref": "Manual p.12",
+          "quote": "present among your resources"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1358299200953126963#0",
+          "quote": "The affinity dots just require you have at least that many resources of that type somewhere in your manabase"
+        },
+        {
+          "ref": "RAQ 1358299200953126963#0",
+          "quote": "You don't care if it's tapped or not"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts",
+        "416-cr-parts-of-a-card.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "Caleb's own words in the \"Mana question\" thread (not marked [Solved], but calebgannon is authority). Affinity itself is 105 (U02). This RAQ claim was not in the U05 pack; added from the extract.",
+    "sourceHashes": {
+      "RAQ 1358299200953126963#0": "a8f1d0df77e16b5c51a375da78459cfc29f5a6ac8c8fb39360681c1875061d10"
+    }
+  },
+  {
+    "key": "card.cost-orb.pips-not-cost",
+    "parent": "202",
+    "order": 3,
+    "text": "The pips are not part of a card's cost. Where a card or rule refers to a card's cost, it means the mana number alone.",
+    "examples": [
+      {
+        "text": "Resurrect (\"cost 2 or less\") can return Chitin Shredder, whose cost orb is 2 with two earth pips: its cost is 2, not 4.",
+        "test": "416-cr-parts-of-a-card.test.ts::cr:card.cost-orb.pips-not-cost — Resurrect (cost 2 or less) offers Chitin Shredder, whose cost orb is 2 with two pips, and its cost in play reads 2"
+      }
+    ],
+    "see": [
+      "111"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 §1",
+          "quote": "> *\"Pips aren't a relevant part of looking at the cost of a card in Algomancy."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "416-cr-parts-of-a-card.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Owner call. Consistent with the Manual, which lists MANA COST and AFFINITY as separate characteristics.",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
+    }
+  },
+  {
+    "key": "card.cost-orb.printed-cost",
+    "parent": "202",
+    "order": 4,
+    "text": "An effect that reads a card's cost reads its printed cost. Effects that make a card cost more or less to play do not change the cost other effects read.",
+    "examples": [
+      {
+        "text": "Squish paid at 4 under Stasis Sentry and Tranquility is still a 2-cost spell to Arcane Concentrator and Channeled Amalgam.",
+        "test": "390-raq-stack.test.ts::RAQ printed cost: Arcane Concentrator and Channeled Amalgam read a taxed Squish as a 2"
+      },
+      {
+        "text": "Tides of the Cosmos' \"total cost 8 or less\" is not shrunk by Tranquility.",
+        "test": "396-raq-timing.test.ts::RAQ Tides 8: the total cost of 8 or less reads printed costs — Tranquility does not shrink it"
+      }
+    ],
+    "see": [
+      "111"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353980184042143835#0",
+          "quote": "Concentrator AND Tides mention 'cost' and in both cases it points printed value"
+        },
+        {
+          "ref": "RAQ 1396955380000755795#9",
+          "quote": "meaning you only look at printed cost of spells."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts",
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "Both are _passer [Solved] write-ups. The X case is the exception in 202.5: a paid X replaces the printed X.",
+    "sourceHashes": {
+      "RAQ 1353980184042143835#0": "571d78408552d997fc6dccfe62ce8ed362c2e803ed38050b6f78aaf40a9cf157",
+      "RAQ 1396955380000755795#9": "de10d99276d0257274713007cb2c31386ce950e93d282737522fb0f38c8dfa06"
+    }
+  },
+  {
+    "key": "card.cost-orb.x",
+    "parent": "202",
+    "order": 5,
+    "text": "A cost orb may show X. While a card with X in its cost is being cast, X is the amount chosen and paid, and that amount is the card's cost.",
+    "examples": [
+      {
+        "text": "Unstable Apparition cast at X = 0 really costs 0.",
+        "test": "133-x-cost-semantics.test.ts::R157 §1 — Unstable Apparition at X = 0: the spell really costs 0, so no Fireball"
+      }
+    ],
+    "see": [
+      "107",
+      "111"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 §1",
+          "quote": "> And paying X replaces the letter X on the printed card temporarily.\"*"
+        },
+        {
+          "ref": "R157 §1",
+          "quote": "So \"that spell's cost\" = **the X actually paid**."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "133-x-cost-semantics.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Owner call. X in general is 107 (U02).",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
+    }
+  },
+  {
+    "key": "card.cost-orb.x-outside-cast",
+    "parent": "202",
+    "order": 6,
+    "text": "A card with X in its cost has a cost of 0 wherever no X has been paid for it: in the deck, the hand, the cache, the bin, or as a unit in play. An X spell played by an effect that plays cards for free is played with X = 0.",
+    "examples": [
+      {
+        "text": "Tides of the Cosmos counts an X spell as cost 0 against its budget of 8, and plays it at X = 0.",
+        "test": "396-raq-timing.test.ts::RAQ Tides 6a: an X spell counts as cost 0 against the budget and is played at X = 0"
+      },
+      {
+        "text": "Living Vault offers an X-cost card in hand at pay [0].",
+        "test": "39-light-b.test.ts::Living Vault: an X-cost card in hand is offered at pay [0] (R157 §1)"
+      }
+    ],
+    "see": [
+      "107"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1396955380000755795#6",
+          "quote": "6. Any spells with X cost can only be played with X=0 making most of them useless"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R158 §1",
+          "quote": "The middle row is a decision, not an approximation: nobody has paid an X for a"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts",
+        "39-light-b.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "R158 is the engine-shape ruling that implements R157 §1; its §3 is reversed by R326, §1 stands. The \"unit in play\" case is R158's table row only. R158 still says Living Vault refuses X cards; the 39-light-b test says otherwise: D-U05-13. R158 is not in the U05 pack (classified 107/111/702); added from the register. Round 1: the designer quote is now the _passer source words, which state only \"X=0\"; \"cost 0 against the budget\" is the test's (396 Tides 6a), not the designer's.",
+    "sourceHashes": {
+      "R158": "fe9ff19c6119330409f62bf10183f580ae08a886557ffdeac9f762cf6a40f3b3",
+      "RAQ 1396955380000755795#6": "157742c7f3c00e6be2652e8065fd782217905a77d6f55e3a25cb893c4bc09bd8"
+    }
+  },
+  {
+    "key": "card.cost-orb.copy",
+    "parent": "202",
+    "order": 7,
+    "text": "A copy has the cost of the card it copies.",
+    "examples": [
+      {
+        "text": "A Borrower of Forms that copied a Robot costs 0, so Lumengrove Lurker can recall it.",
+        "test": "393-raq-mods.test.ts::RAQ Borrower of Forms: a Borrower that copied a Robot costs 0, so Lumengrove Lurker can recall it"
+      }
+    ],
+    "see": [
+      "710"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1372468222158180424#10",
+          "quote": "but his cost would be 0. (For things like Deformant, Lumengrove Lurker, Death Greeter or Abduct)"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R336",
+          "quote": "## R336 — A copy is read by its face: cost, type, graft host, copied grafts; and a fresh copy is not Unstable (reverses R118 ruling 2's Unstable half)"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "The designer answer is about one case (a copied Robot 3 costs 0); R336's heading generalises it. R336 is not in the U05 pack; added from the register. Copies are 710 (U16).",
+    "sourceHashes": {
+      "R336": "aab6004b9ea90667dc7257f50d7ed11f5ab5579c84b8a3a337abb5521da54278",
+      "RAQ 1372468222158180424#10": "17f53867d9afb07f1a9252d7660ee4a8ce56504270c17b75478a4d7262378f13"
+    }
+  },
+  {
+    "key": "card.banner.what",
+    "parent": "203",
+    "order": 1,
+    "text": "Some cards print a banner that offers another way to play the card, for a cost of its own: Ambush and Prophecy are printed this way. A banner shows its own mana cost and affinity pips, and a Prophecy banner also shows a condition.",
+    "examples": [
+      {
+        "text": "Every printed Prophecy banner carries affinity pips.",
+        "test": "313-prophecy-affinity.test.ts::R301 §1: every printed prophecy banner carries affinity pips"
+      }
+    ],
+    "see": [
+      "803"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Good Whale",
+          "quote": "[Battle] Ambush [4bb]"
+        },
+        {
+          "ref": "card: Shib",
+          "quote": "[4lb] Ambush [Battle]"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R301",
+          "quote": "same banner on the same cards — has always worked this way."
+        },
+        {
+          "ref": "R301",
+          "quote": "pips in it — Angel of Anguish `[1ld]`, Shib's Ambush `[4lb]`, Vengeance `[2lr]` — and the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "313-prophecy-affinity.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "The transcription writes an Ambush banner into the text (\"[Battle] Ambush [4bb]\") and keeps a Prophecy banner out of the text entirely (printed.json carries it as a separate field), so a Prophecy banner cannot be quoted as card text. Whether the \"Discard me\" lines (Sacrifice Dude, Dropslime, Nothyr) are banners: sources silent, D-U05-9. Ambush and Prophecy themselves are 803 (U21).",
+    "sourceHashes": {
+      "R301": "f0096724daf9e43ba46ad14d47b9a962c1d6031bccf6e0ec7f7ac42b780154ba"
+    }
+  },
+  {
+    "key": "card.banner.cost",
+    "parent": "203",
+    "order": 2,
+    "text": "A banner's cost is paid like any other cost, in place of the card's cost orb: its own mana is spent and its own affinity pips are required.",
+    "examples": [
+      {
+        "text": "Mana without the banner's affinity does not buy a prophecy.",
+        "test": "313-prophecy-affinity.test.ts::R301 §2: mana without the affinity does not buy a prophecy"
+      },
+      {
+        "text": "The banner is priced on its own pips, not the card's.",
+        "test": "36-cache-prophecy.test.ts::R42/R301: the banner is priced on its own pips, not the card's"
+      },
+      {
+        "text": "Lurking Slimebeast ambushes for 3 mana with one water pip.",
+        "test": "14-water-a.test.ts::Lurking Slimebeast: [Battle] Ambush [3b] = 3 mana at one water pip (R22)"
+      }
+    ],
+    "see": [
+      "111",
+      "803"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Lurking Slimebeast",
+          "quote": "[Battle] Ambush [3b]"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R301",
+          "quote": "A prophecy banner is a cost like any other: its mana is **spent** and its affinity is"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R42",
+          "relation": "its 'plain mana number, no affinity' clause corrected by R301"
+        },
+        {
+          "ruling": "R277",
+          "relation": "its no-affinity aside superseded by R301"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "313-prophecy-affinity.test.ts",
+        "36-cache-prophecy.test.ts",
+        "14-water-a.test.ts",
+        "416-cr-parts-of-a-card.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R301 (owner, on being shown the scans) for Prophecy; it says Ambush \"has always worked this way\". The pips are required, not spent (313 \"the affinity is REQUIRED, not spent\"), which is 202.2 applied to the banner.",
+    "sourceHashes": {
+      "R301": "f0096724daf9e43ba46ad14d47b9a962c1d6031bccf6e0ec7f7ac42b780154ba"
+    }
+  },
+  {
+    "key": "card.banner.not-the-cards-cost",
+    "parent": "203",
+    "order": 3,
+    "text": "A banner's cost is not the card's cost. Anything that reads the card's cost reads its cost orb, even when the card is played through its banner.",
+    "examples": [
+      {
+        "text": "Lurking Slimebeast played through its Ambush banner (3 mana) still has a cost of 4, its cost orb.",
+        "test": "416-cr-parts-of-a-card.test.ts::cr:card.banner.not-the-cards-cost — a unit played through its Ambush banner still costs its cost-orb mana"
+      }
+    ],
+    "see": [
+      "202"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1396955380000755795#2",
+          "quote": "(you still look at 'main' cost of the card, even if you used it as Ambush/Prophecy)"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "416-cr-parts-of-a-card.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "medium",
+    "notes": "_passer [Solved] Tides write-up, point 3: said of Tides' \"total cost 8 or less\". Generalised here to every reader of a card's cost; the write-up states it for Tides only. No test isolates the cost read; 404-raq-fix-tides plays an Ambush through Tides but does not test the budget.",
+    "sourceHashes": {
+      "RAQ 1396955380000755795#2": "77de5a844f35441967e41307ee3973785fb17ed41d274524ef807b1a94bb45de"
+    }
+  },
+  {
+    "key": "card.banner.prophecy",
+    "parent": "203",
+    "order": 4,
+    "text": "Prophesying pays a Prophecy banner's cost and puts the card into the cache with the banner's condition attached. Once the condition has been fulfilled, the card may be played from the cache for free and ignoring affinity, at its printed timing (see 803).",
+    "examples": [
+      {
+        "text": "A fulfilled prophecy whose card needs earth affinity its controller lacks is released from the cache with nothing paid.",
+        "test": "36-cache-prophecy.test.ts::R42: a released prophecy is FREE and ignores affinity"
+      },
+      {
+        "text": "A fulfilled {Battle} card is still refused at deployment.",
+        "test": "36-cache-prophecy.test.ts::R42: normal TIMING still applies — a {Battle} release is refused at deployment"
+      }
+    ],
+    "see": [
+      "403",
+      "803"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R301",
+          "quote": "Everything else in R42 stands: prophesying is still deployment-only, a fulfilled prophecy"
+        },
+        {
+          "ref": "R301",
+          "quote": "still releases the card for free and still ignores affinity on the way out (Caleb"
+        },
+        {
+          "ref": "R42 (its prophesy half)",
+          "quote": "with its prophecy attached. Only a card that says so may be prophesied from"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R42",
+          "relation": "window amended by R277; source zone amended by R308; no-affinity cost corrected by R301"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "313-prophecy-affinity.test.ts",
+        "36-cache-prophecy.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "An overview only; the full Prophecy rules are 803 (U21). R42 attributes deployment-only (Caleb 2025-05-09) and free-and-affinity-free (Caleb 2024-10-28) to the designer by date, but no RAQ claim in the pack carries those words, so the basis is the ruling. Round 1: example 1 rebound from 313-prophecy-affinity (which never releases the card) to 36-cache-prophecy; the R42 quote is about prophesying, so it is scoped to that half.",
+    "sourceHashes": {
+      "R301": "f0096724daf9e43ba46ad14d47b9a962c1d6031bccf6e0ec7f7ac42b780154ba",
+      "R42": "0cabff7c580b27609be02ba24c31e41a18554c7829734d450a6abfeecdc1c81c"
+    }
+  },
+  {
+    "key": "card.banner.timing",
+    "parent": "203",
+    "order": 5,
+    "text": "A timing icon printed in a banner governs only the play the banner offers, not the card.",
+    "examples": [],
+    "see": [
+      "207"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.40",
+          "quote": "The battle symbol in front of the ability denotes that"
+        },
+        {
+          "ref": "Manual p.40",
+          "quote": "you can play cards as an ambush during battle, even if the"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R277 (its release and prophesy-window halves)",
+          "quote": "1. **The RELEASE is always at the card's printed timing.** R42 governs, without"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "General statement of 203.5a and 203.5b; the same holds for a \"Discard me\" line (207.8).",
+    "sourceHashes": {
+      "R277": "a15231bf2271c9aab105f7a42c442a15aa13dd28828796307c02c4a2817084af"
+    },
+    "untestableReason": "a summary of 203.5a and 203.5b, each demonstrated there"
+  },
+  {
+    "key": "card.banner.timing.ambush",
+    "parent": "card.banner.timing",
+    "order": 1,
+    "text": "A [Battle] icon on an Ambush banner lets the card be played as an Ambush during battle even though the card itself has no Battle timing.",
+    "examples": [
+      {
+        "text": "Good Whale, a deployment unit, ambushes into the attacking column for [4bb] during battle.",
+        "test": "08-cards2.test.ts::Good Whale: the parked Ambush mode works ([4bb], into the attacking column)"
+      }
+    ],
+    "see": [
+      "803"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.40",
+          "quote": "you can play cards as an ambush during battle, even if the"
+        },
+        {
+          "ref": "Manual p.40",
+          "quote": "card itself doesn’t have battle timing."
+        },
+        {
+          "ref": "card: Good Whale",
+          "quote": "[Battle] Ambush [4bb]"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "08-cards2.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.40, AMBUSH.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "card.banner.timing.prophecy-haste",
+    "parent": "card.banner.timing",
+    "order": 2,
+    "text": "A [Haste] icon at the end of a Prophecy condition lets the card be prophesied during the haste step as well as during deployment. It does not change when the card may be played once the prophecy is fulfilled: that is always its printed timing.",
+    "examples": [
+      {
+        "text": "Divine Intervention (\"Your life is 5 or less [Haste]\") may be prophesied in the haste step.",
+        "test": "257-prophecy-release-timing.test.ts::R277: a banner marked [Haste] may be prophesied during the haste step"
+      },
+      {
+        "text": "The marker does not move the fulfilled release of a Battle card into the haste step.",
+        "test": "257-prophecy-release-timing.test.ts::R277: the marker does not move a fulfilled release out of battle and into the haste step"
+      },
+      {
+        "text": "An unmarked banner is still refused in the haste step.",
+        "test": "257-prophecy-release-timing.test.ts::R277: an UNMARKED banner is still deployment-only — the haste step refuses it"
+      }
+    ],
+    "see": [
+      "504",
+      "803"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R277 (its release and prophesy-window halves)",
+          "quote": "2. **A trailing `[Haste]` in the printed CONDITION widens the PROPHESY"
+        },
+        {
+          "ref": "R277 (its release and prophesy-window halves)",
+          "quote": "   The owner, 2026-08-30: *\"Divine Intervention can be Prophecied during the"
+        },
+        {
+          "ref": "R277 (its release and prophesy-window halves)",
+          "quote": "1. **The RELEASE is always at the card's printed timing.** R42 governs, without"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R42",
+          "relation": "its deployment-only prophesy window amended by R277"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "257-prophecy-release-timing.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Owner call (R277, quoting the owner). One card prints the marker (Divine Intervention).",
+    "sourceHashes": {
+      "R277": "a15231bf2271c9aab105f7a42c442a15aa13dd28828796307c02c4a2817084af"
+    }
+  },
+  {
+    "key": "card.type-line.what",
+    "parent": "204",
+    "order": 1,
+    "text": "The type line describes what the card is. It holds the card's attributes, its subtypes and its card type, and on some cards the augment symbol (208).",
+    "examples": [],
+    "see": [
+      "300"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.12",
+          "quote": "Describes the qualities of the"
+        },
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "▪ Attributes (6) describe the qualities of the card, including some combat abilities, denoted in bold."
+        },
+        {
+          "ref": "card: Good Whale",
+          "quote": "{Piercing} Whale Unit"
+        },
+        {
+          "ref": "card: Trashling",
+          "quote": "[Augment] {Unaware} Scrap Robot {Virus} Unit"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.12 \"TYPES AND ATTRIBUTES\". The transcription also writes the timing icon and the Virus icon into the type line ({Battle}, {Haste}, {Virus}); on the printed card they are icons (207, 204.7).",
+    "sourceHashes": {},
+    "untestableReason": "a description of the printed card face; nothing to execute",
+    "untested": true
+  },
+  {
+    "key": "card.type-line.card-type",
+    "parent": "204",
+    "order": 2,
+    "text": "The type line of a card that can be played ends with its card type: Unit, Spell, or Spell Unit (a spell that is also a unit). A token's type line says so: Token Unit for a unit token, Spell Token for a spell token. A resource card's type line ends with Resource.",
+    "examples": [
+      {
+        "text": "Every type line in the card pool ends with the card type that matches its kind, with no exceptions.",
+        "test": "416-cr-parts-of-a-card.test.ts::cr:card.type-line.card-type — every printed type line ends Unit / Spell / Spell Unit / Token Unit / Spell Token / Resource, matching its kind"
+      }
+    ],
+    "see": [
+      "301",
+      "302",
+      "303",
+      "304"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "Some spells also have the unit type. Rather than being"
+        },
+        {
+          "ref": "card: Jelly",
+          "quote": "{Battle} Jellyfish Spell Unit"
+        },
+        {
+          "ref": "card: Robot",
+          "quote": "Robot Token Unit"
+        },
+        {
+          "ref": "card: Fireball",
+          "quote": "{Battle} {Burst} Spell Token"
+        },
+        {
+          "ref": "card: Earth Resource",
+          "quote": "[e] Earth Resource"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R284",
+          "quote": "Jelly, fifteen more). A spellToken's reads \"Spell Token\"."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "416-cr-parts-of-a-card.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Card types are section 300 (U06). Round 1: the three resource cards in the pool (Earth, Fire and Water Resource) print \"<Element> Resource\", so the first sentence is scoped to playable cards and the last names them; resources are 106 (U02).",
+    "sourceHashes": {
+      "R284": "df3133daddea821f11261091b347598f8bca431d9ca1bbbceede4a387fc15fb7"
+    },
+    "untestableReason": "a description of the printed type line; what each type does is demonstrated under 300"
+  },
+  {
+    "key": "card.type-line.card-type.spell-unit",
+    "parent": "card.type-line.card-type",
+    "order": 1,
+    "text": "A Spell Unit is both a spell and a unit: an effect that asks for a unit or for a spell accepts it.",
+    "examples": [
+      {
+        "text": "Hooba-Pon playing a spell unit counts as playing a spell.",
+        "test": "396-raq-timing.test.ts::RAQ Hooba-Pon spell unit: it counts as playing a spell"
+      }
+    ],
+    "see": [
+      "303"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R284",
+          "quote": "A {Spell Unit} answers **both** halves, on the permissive reading, and the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R284 says it of Void Memory's \"[unit or spell]\"; the RAQ \"Spell Units played when you can play a unit\" thread (quoted in R97) agrees for \"playing a spell\". Spell units are 303 (U06).",
+    "sourceHashes": {
+      "R284": "df3133daddea821f11261091b347598f8bca431d9ca1bbbceede4a387fc15fb7"
+    }
+  },
+  {
+    "key": "card.type-line.subtypes",
+    "parent": "204",
+    "order": 3,
+    "text": "The words of the type line other than its markers and its card type are subtypes, such as Whale, Squid or Jellyfish. A marker may stand among them.",
+    "examples": [
+      {
+        "text": "No subtype word appears on exactly one card unexplained.",
+        "test": "209-interdiction-rift-type-line.test.ts::§3 signature two: no subtype word appears on exactly one card unexplained"
+      }
+    ],
+    "see": [
+      "300"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Good Whale",
+          "quote": "{Piercing} Whale Unit"
+        },
+        {
+          "ref": "card: Trashling",
+          "quote": "[Augment] {Unaware} Scrap Robot {Virus} Unit"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R240",
+          "quote": "space *and* the `AI`, which is not a subtype of this card and is not a subtype at all."
+        },
+        {
+          "ref": "R240",
+          "quote": "spurious token is, by construction, a population-of-one subtype. The pool has twenty real"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "209-interdiction-rift-type-line.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "No source says what a subtype does in play: D-U05-7. R162/R157 also record the owner's repair of Might of the Grove's duplicated \"Tree\". Round 1: Trashling's {Virus} marker sits between its subtypes (Scrap Robot) and Unit, so \"between\" became \"other than\".",
+    "sourceHashes": {
+      "R240": "07a6e64a34bd01c02a1010a64c2a0b0518b7e1a52d7aaa5154312829c65714be"
+    }
+  },
+  {
+    "key": "card.type-line.attributes",
+    "parent": "204",
+    "order": 4,
+    "text": "An attribute printed on the type line is part of the card's rules. It is an attribute, not an ability.",
+    "examples": [
+      {
+        "text": "Whispering Mantid has an empty text box; its whole rules content is {Sneaky} on its type line.",
+        "test": "262-type-line-attributes.test.ts::R282: a card whose only rules content is a type-line attribute stops saying no rules text"
+      }
+    ],
+    "see": [
+      "109",
+      "802"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Whispering Mantid",
+          "quote": "[Augment] {Sneaky} Insect Sprite Unit"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R282",
+          "quote": "> *\"That's cause they're attributes in the type line, not abilities. Attributes"
+        },
+        {
+          "ref": "R282",
+          "quote": "## R282 — A type-line attribute is rules text, and it belongs in the text box"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "262-type-line-attributes.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "Owner's words in R282. The example test is a ui test about display (R282's digital half); the game half is the owner's sentence. Attributes are 802 (U19/U20).",
+    "sourceHashes": {
+      "R282": "75937cf1adfaa54c08a624eb297a4b93fe7c606be13c115240236e53fecaef1d"
+    }
+  },
+  {
+    "key": "card.type-line.attribute-colours",
+    "parent": "204",
+    "order": 5,
+    "text": "Attributes are printed in bold yellow (gold) or purple. Yellow attributes are combat attributes, which are shared by the units in the same column of a formation (see 603 and 802). Purple attributes, such as Burst and Unstable, are non-combat attributes and are not shared in formation.",
+    "examples": [
+      {
+        "text": "Aberrant Statweaver attacking behind Chitin Shredder is Powerful through the column, but Chitin Shredder does not become Unstable: when it dies it is binned, while the Statweaver is erased.",
+        "test": "416-cr-parts-of-a-card.test.ts::cr:card.type-line.attribute-colours — a column shares the combat attribute Powerful, but the column-mate of an Unstable unit is not Unstable and is binned, not erased"
+      }
+    ],
+    "see": [
+      "603",
+      "802",
+      "803"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.12",
+          "quote": "modifiers, denoted in bold"
+        },
+        {
+          "ref": "Manual p.12",
+          "quote": "yellow or purple."
+        },
+        {
+          "ref": "Manual p.24",
+          "quote": "Combat attributes (denoted in gold text) are shared by"
+        },
+        {
+          "ref": "Manual p.25",
+          "quote": "Some attributes, like burst and unstable, are written in a"
+        },
+        {
+          "ref": "Manual p.25",
+          "quote": "These attributes are not shared in formation, and simply"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "416-cr-parts-of-a-card.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "Rulebook 2023 p.12 says units in a column share attributes without the purple exception: D-U05-2. This document numbers Burst and Unstable under 803, not 802: D-U05-10.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "card.type-line.order",
+    "parent": "204",
+    "order": 6,
+    "text": "Attributes apply in the order they are printed, top to bottom.",
+    "examples": [
+      {
+        "text": "Tough then Balanced gives a different unit from Balanced then Tough.",
+        "test": "08-cards2.test.ts::R19: layer-4 application order — Tough→Balanced ≠ Balanced→Tough"
+      }
+    ],
+    "see": [
+      "709"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.42",
+          "quote": "A: Attributes apply in order from top to bottom. So if"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "08-cards2.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "Manual p.42 Q&A on Tough and Balanced. The full order (type line, then augments, then column) is R19, 709 (U16).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "card.type-line.icons-not-attributes",
+    "parent": "204",
+    "order": 7,
+    "text": "A timing icon is not an attribute. A card whose only marking is its timing icon has no attributes.",
+    "examples": [
+      {
+        "text": "Tidal Menace ({Haste}, no text) is treated as having no attributes and no rules text.",
+        "test": "262-type-line-attributes.test.ts::R282: a card with no attribute and no text still says nothing, and the guard does not reach it"
+      }
+    ],
+    "see": [
+      "207"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Tidal Menace",
+          "quote": "{Haste} Lizard Fish Beast Unit"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R282",
+          "quote": "A genuine vanilla still says nothing. Tidal Menace has no text and no"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "262-type-line-attributes.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "Inferred from R282 calling Tidal Menace, whose transcribed type line starts \"{Haste}\", a card with \"no attributes\". The Virus icon is likewise not in the engine's attribute list, but no ruling says so in words.",
+    "sourceHashes": {
+      "R282": "75937cf1adfaa54c08a624eb297a4b93fe7c606be13c115240236e53fecaef1d"
+    }
+  },
+  {
+    "key": "card.text-box.abilities",
+    "parent": "205",
+    "order": 1,
+    "text": "The text box holds the card's abilities, which describe its effects. Most cards have abilities; some have none.",
+    "examples": [],
+    "see": [
+      "109"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.12",
+          "quote": "Most cards have abilities,"
+        },
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "▪ Most cards have Abilities (7), which describe the card’s effects."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Abilities as such are 109 (U03) and 705–708 (U15).",
+    "sourceHashes": {},
+    "untestableReason": "a description of the printed card face; nothing to execute",
+    "untested": true
+  },
+  {
+    "key": "card.text-box.reminder",
+    "parent": "205",
+    "order": 2,
+    "text": "Reminder text, in italics, restates what an attribute or keyword does. An [Augment] mentioned inside reminder text is not an augment symbol (see 208.4a).",
+    "examples": [
+      {
+        "text": "Reconfigure mentions [Augment] in its reminder text and is not an augment.",
+        "test": "48-playtest-hotfix.test.ts::a spell that merely mentions [Augment] in reminder text is not an augment"
+      }
+    ],
+    "see": [
+      "208"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.24",
+          "quote": "engage in combat. These cards have a reminder text in"
+        },
+        {
+          "ref": "Manual p.24",
+          "quote": "italics to help players remember what each attribute"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R55",
+          "quote": "text is **not** a marker — that is what keeps **Reconfigure**, a spell that"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "48-playtest-hotfix.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "No source says whether reminder text has rules force of its own: D-U05-11.",
+    "sourceHashes": {
+      "R55": "638e68004e564670113de924f89d7f039f7f4319cd39c7556b90fbb62c69e08c"
+    }
+  },
+  {
+    "key": "card.text-box.brackets",
+    "parent": "205",
+    "order": 3,
+    "text": "Text in square brackets in a text box is either an additional cost or a choice between modes. A bracketed cost must be paid, and a bracketed mode chosen, to play the card.",
+    "examples": [
+      {
+        "text": "Darkblast's [Discard a card] is a cost: with no other card in hand it cannot be cast.",
+        "test": "45-hybrids-ld-b.test.ts::Darkblast: R35 — with nothing else in hand the cost is unpayable and the CAST is illegal"
+      },
+      {
+        "text": "Retribution Thing's \"[lost or gained]\" is a mode: X is one of the two, never the sum.",
+        "test": "38-light-a.test.ts::R157 §21: the printed \"[lost or gained]\" is a MODE, so X is one ledger and never the sum"
+      }
+    ],
+    "see": [
+      "111",
+      "702"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "Additional costs: Some cards also have brackets “[]”"
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "must be resolved in order to play a card. This can be"
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "additional actions that are paid as a cost or modes"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 §21",
+          "quote": "> *\"All text on cards that's in [square brackets] like that is either an"
+        },
+        {
+          "ref": "R157 §21",
+          "quote": "> additional cost or a modal choice. The additional cost must be paid in order"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "45-hybrids-ld-b.test.ts",
+        "38-light-a.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Manual p.13 and the owner (R157 §21) agree. Costs are 111 (U04); casting is 702 (U14).",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
+    }
+  },
+  {
+    "key": "card.text-box.brackets.who-and-when",
+    "parent": "card.text-box.brackets",
+    "order": 1,
+    "text": "The owner of the effect pays a bracketed cost and chooses a bracketed mode, as the card or ability is put on the stack — never on resolution.",
+    "examples": [
+      {
+        "text": "Void Memory's caster declares \"unit\" or \"spell\" at cast; each opponent then discards one of that type if able.",
+        "test": "97-mode-conformance.test.ts::R284: Void Memory declares its half at cast, and a hand with no card of that type reveals"
+      },
+      {
+        "text": "A mode fixed at cast is not re-picked when the board changes afterwards.",
+        "test": "136-triggers-and-modes.test.ts::R157 §21: the mode is FIXED at cast — a ledger that moves afterwards does not re-pick it"
+      }
+    ],
+    "see": [
+      "702",
+      "703"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R284",
+          "quote": "> B]. […] The owner of the effect chooses the mode or pays the additional cost"
+        },
+        {
+          "ref": "R284",
+          "quote": "> on cast. Not on resolution or any other time. […] All modal/additional costs"
+        },
+        {
+          "ref": "R157 §21",
+          "quote": "> to put it on the stack and the modal choice (happening on this card) must be"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "97-mode-conformance.test.ts",
+        "136-triggers-and-modes.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Owner rulings R284 and R157 §21. Manual p.13 also says targets are chosen \"as the card is being played\" (110).",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
+      "R284": "df3133daddea821f11261091b347598f8bca431d9ca1bbbceede4a387fc15fb7"
+    }
+  },
+  {
+    "key": "card.text-box.brackets.unbracketed",
+    "parent": "card.text-box.brackets",
+    "order": 2,
+    "text": "A payment written in prose rather than in brackets, such as \"unless its controller pays\", is not the owner's: the player it names decides it, when the effect resolves.",
+    "examples": [],
+    "see": [
+      "111"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R284",
+          "quote": "Abduct's ransom is prose, not a bracket, and that is exactly why it is the"
+        },
+        {
+          "ref": "R284",
+          "quote": "| R6's unbracketed *\"unless its controller pays\"* (Abduct) | the opponent | resolution |"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R284 §2 table, contrasting brackets with R6. R6 itself is not in the pack.",
+    "sourceHashes": {
+      "R284": "df3133daddea821f11261091b347598f8bca431d9ca1bbbceede4a387fc15fb7"
+    },
+    "untestableReason": "no test in the pack isolates Abduct's ransom timing; a verifier probe would be needed"
+  },
+  {
+    "key": "card.text-box.brackets.symbols",
+    "parent": "card.text-box.brackets",
+    "order": 3,
+    "text": "Only bracketed prose is a cost or a mode. Symbols the transcription writes in brackets, such as [Augment], [Switch1], [once] or a cost like [2] or [4bb], are not bracketed text.",
+    "examples": [
+      {
+        "text": "Every card printing a modal bracket declares its modes, and nothing declares a mode it does not print.",
+        "test": "97-mode-conformance.test.ts::R57: nothing declares a mode it does not print"
+      }
+    ],
+    "see": [
+      "111"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R284",
+          "quote": "> *\"All cards that have square brackets **in the actual oracle text** are"
+        },
+        {
+          "ref": "R284",
+          "quote": "than a marker like `[Augment]`, `[Switch1]`, `[once]`, `[4bb]` or `[2]`:"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "97-mode-conformance.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "On the printed card these are icons, so the rule matters only to a reader of the transcription. R284 §3 census: 21 prose brackets, 8 modal and 13 costs; every modal bracket contains \"or\" and no cost bracket does.",
+    "sourceHashes": {
+      "R284": "df3133daddea821f11261091b347598f8bca431d9ca1bbbceede4a387fc15fb7"
+    }
+  },
+  {
+    "key": "card.text-box.brackets.paid-when-free",
+    "parent": "card.text-box.brackets",
+    "order": 4,
+    "text": "A bracketed additional cost is still paid when an effect lets the card be played for free.",
+    "examples": [
+      {
+        "text": "A card played by Tides of the Cosmos still pays its bracketed cost, and a unit played by the same Tides is not yet in play to pay it.",
+        "test": "396-raq-timing.test.ts::RAQ Tides 5: an additional cost is still paid, and a unit from the same Tides is not in play to pay it"
+      }
+    ],
+    "see": [
+      "111"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1396955380000755795#5",
+          "quote": "Any additional [cost] of the card must be paid."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "_passer [Solved] Tides write-up, point 5. R111 says the same of a free prophecy release (\"bracketed X costs are still paid\") per its summary.",
+    "sourceHashes": {
+      "RAQ 1396955380000755795#5": "d799969c1aa3749e76ad3de04cb4af26f46e0c281021e54e70d2b62c5a278f11"
+    }
+  },
+  {
+    "key": "card.text-box.graft-symbol",
+    "parent": "205",
+    "order": 4,
+    "text": "On a graft card the graft symbol divides an ability into a cause, before the symbol, and an effect, after it. When the card is grafted onto another, only the text after its graft symbol is added.",
+    "examples": [
+      {
+        "text": "A grafted Omniwield Evoker adds its counter to the host's trigger and charges nothing for its [three].",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 point 6: a grafted Omniwield Evoker adds its counter to the host trigger and charges nothing"
+      }
+    ],
+    "see": [
+      "722"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.33",
+          "quote": "All graft cards follow the template of cause and effect,"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#5",
+          "quote": "6. When attaching Grafts, you ignore everything that is written before the Graft symbol"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Graft is 722 (U17). The bounded form of the symbol (once per turn) is Manual p.33 and belongs there too.",
+    "sourceHashes": {
+      "RAQ 1355115946032889914#5": "516f6db355f982ca7ece13a11e72bfb071ccd19b2d97cbb015846aa4da2a5157"
+    }
+  },
+  {
+    "key": "card.stats.what",
+    "parent": "206",
+    "order": 1,
+    "text": "A unit's stats are two numbers, printed power/defense. Power is how much damage the unit deals in combat. Defense is how much damage it can take before it dies.",
+    "examples": [
+      {
+        "text": "An unblocked Rune Channeler (4/3) deals 4 damage; a Good Whale (7/5) survives 4 damage and dies to a fifth.",
+        "test": "416-cr-parts-of-a-card.test.ts::cr:card.stats.what — an unblocked 4/3 deals 4 combat damage; a 7/5 survives 4 damage and dies at its fifth"
+      }
+    ],
+    "see": [
+      "112",
+      "608",
+      "713"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "Units have a specified power, which denotes how much"
+        },
+        {
+          "ref": "Manual p.12",
+          "quote": "Denote the power and defense"
+        },
+        {
+          "ref": "Rulebook 2023 p.10",
+          "quote": "The two numbers represent the Power (1) and Health"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "416-cr-parts-of-a-card.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Rulebook 2023 says \"health\" where the Manual says \"defense\": D-U05-1. When damage kills is 112/713.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "card.stats.units",
+    "parent": "206",
+    "order": 2,
+    "text": "Stats mark a card as a unit. Spell units also have stats, and enter play as units with them when they resolve.",
+    "examples": [
+      {
+        "text": "Lonely Forager, a Spell Unit, resolves into play as a 3/1 unit; Resurrect, a plain spell, goes to the bin.",
+        "test": "416-cr-parts-of-a-card.test.ts::cr:card.stats.units — Lonely Forager, a Spell Unit, resolves into play as a 3/1 unit, while a plain spell resolves into the bin"
+      }
+    ],
+    "see": [
+      "301",
+      "303"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "Units are permanents, meaning when summoned, they will stay in play until removed. They can be easily recognized by the existence of stats on the card (5)."
+        },
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "also have stats (5) and enter play rather than the discard as they resolve."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "416-cr-parts-of-a-card.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "The sources do not say whether a spell has a power or defense: D-U05-8. The card data gives 91 spells non-zero power/toughness: F-U05-1.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "card.stats.printed-and-changed",
+    "parent": "206",
+    "order": 3,
+    "text": "A unit's printed stats are the numbers shown on the card. Any difference from the printed stats is a stat change.",
+    "examples": [
+      {
+        "text": "Leave None Pure counts a rewritten base as a stat change.",
+        "test": "59-base-stats.test.ts::Leave None Pure: a rewritten base counts as a stat change"
+      }
+    ],
+    "see": [
+      "709"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.42",
+          "quote": "sequence. 1. Printed stats are what’s shown on the"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 §14",
+          "quote": "> *\"Literally any change to a unit's stats counts. If they're different from the"
+        },
+        {
+          "ref": "R157 §14",
+          "quote": "> printed stats, they are changed.\"*"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "59-base-stats.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The example is a ui test file (client/ui/test/59-base-stats).",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
+    }
+  },
+  {
+    "key": "card.stats.layers",
+    "parent": "206",
+    "order": 4,
+    "text": "A unit's stats are worked out in six layers, applied in this order:\n1. printed stats, as shown on the card;\n2. base stats, which effects can set to something other than the printed stats;\n3. stat changes, such as temporary bonuses and +1/+1 or -1/-1 counters;\n4. attributes, such as Tough;\n5. Inverted;\n6. Unaware.",
+    "examples": [
+      {
+        "text": "A 0/4 Tough unit with a +1/+1 counter is a 1/10: the counter (layer 3) applies before Tough doubles defense (layer 4).",
+        "test": "387-raq-combat.test.ts::RAQ Tough: a 0/4 Tough unit with a +1/+1 counter is a 1/10"
+      }
+    ],
+    "see": [
+      "709",
+      "802"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.42",
+          "quote": "A: Stats have 6 layers to them, which are applied in"
+        },
+        {
+          "ref": "Manual p.42",
+          "quote": "sequence. 1. Printed stats are what’s shown on the"
+        },
+        {
+          "ref": "Manual p.42",
+          "quote": "card, 2. Base stats, which can be changed to be"
+        },
+        {
+          "ref": "Manual p.42",
+          "quote": "different from what’s printed on the card, 3. Stat"
+        },
+        {
+          "ref": "Manual p.42",
+          "quote": "changes, like temporary +2/+2 bonuses and +1/+1"
+        },
+        {
+          "ref": "Manual p.42",
+          "quote": "counters, 4. Attributes like Tough, 5. Inverted, 6.Unaware"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1362832912579559664#0",
+          "quote": "That's 1/5 after including counter and 1/10 after including Tough"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The layer system belongs to 709 (U16); stated here because 206 is where a reader looks up what a unit's power is. Keep the two in step.",
+    "sourceHashes": {
+      "RAQ 1362832912579559664#0": "b4cd853b8983578138527033130379dfe0efa0fb80feb67a36bf79eee311096a"
+    }
+  },
+  {
+    "key": "card.stats.base",
+    "parent": "206",
+    "order": 5,
+    "text": "An effect that makes a unit \"base N/N\" replaces its base stats; it does not add to them. Counters and other stat changes still apply on top. When two such effects apply, the later one wins.",
+    "examples": [
+      {
+        "text": "Aberrant Statweaver makes your units base 3/3, in play and when virus-donated.",
+        "test": "26-metal-a.test.ts::Aberrant Statweaver: \"your units are base 3/3\" — in play and virus-donated"
+      },
+      {
+        "text": "Body Swap on a Statweavered unit trades its 3/3 base for the other unit's 1/1.",
+        "test": "390-raq-stack.test.ts::RAQ timestamps: Body Swap with a Statweavered unit trades the 3/3 base for the 1/1"
+      },
+      {
+        "text": "Unmake reads base power, and counters do not count toward it.",
+        "test": "28-metal-c.test.ts::Unmake: deletes only units with BASE power 2 or less (counters don't count)"
+      }
+    ],
+    "see": [
+      "113",
+      "709"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.42",
+          "quote": "A: This means the units base stats are changed to be"
+        },
+        {
+          "ref": "Manual p.42",
+          "quote": "3/3 or 5/0, before any other modifiers like +1/+1 and"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1357965714807586897#1",
+          "quote": "Your unit becomes base 3/3 until regroup and enemy Wisp is now base 1/1 until regroup."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R66",
+          "quote": "**last-wins by timestamp** — never by summing. Timestamps come off the shared"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "26-metal-a.test.ts",
+        "390-raq-stack.test.ts",
+        "28-metal-c.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "What happens to swapped bases when a Statweaver later dies is unruled in the RAQ thread: D-U05-5.",
+    "sourceHashes": {
+      "R66": "effa2095307431ee86e4abe37d0832f0c6b05332d4f788c4c3024a8468ba8b9c",
+      "RAQ 1357965714807586897#1": "a36aec1009a3f35e9df78ea89edd77e406519c4106b6796f908ef96285d9e7b2"
+    }
+  },
+  {
+    "key": "card.stats.changes",
+    "parent": "206",
+    "order": 6,
+    "text": "A stat change that an effect gives (\"gains +1/+1\") is temporary: it lasts only as long as the effect says, such as until regroup, or as long as a static ability applies. A +1/+1 or -1/-1 counter is a permanent change. A stat change is a counter only if the effect says it places counters.",
+    "examples": [
+      {
+        "text": "A Good Whale with a +1/+1 counter hit by Jelly (\"gains -2/-2 until regroup\") is 6/4 in battle and 8/6 after regroup.",
+        "test": "416-cr-parts-of-a-card.test.ts::cr:card.stats.changes — a -2/-2 that Jelly gives until regroup ends at regroup while a +1/+1 counter stays"
+      }
+    ],
+    "see": [
+      "506"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.40",
+          "quote": "If an effect says that a unit gains +1/+1 or -1/-1, this"
+        },
+        {
+          "ref": "Manual p.40",
+          "quote": "denotes a temporary change to the unit’s stats (power"
+        },
+        {
+          "ref": "Manual p.40",
+          "quote": "A +1/+1 or -1/-1 counter denotes a permanent change to"
+        },
+        {
+          "ref": "Manual p.40",
+          "quote": "If a card doesn’t specifically say “place counters” when mentioning stat"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "416-cr-parts-of-a-card.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.40, STAT CHANGES AND COUNTERS and its NOTE. Regroup removing temporary changes is 506 (Manual p.26).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "card.stats.changes.cancel",
+    "parent": "card.stats.changes",
+    "order": 1,
+    "text": "When a unit has both a +1/+1 counter and a -1/-1 counter, the two cancel and both are removed.",
+    "examples": [
+      {
+        "text": "A -1/-1 counter put on a unit with +1/+1 counters removes one of them, and leaves no -1/-1 counter.",
+        "test": "393-raq-mods.test.ts::RAQ counters: after the cancelling the unit has no -1/-1 counter, so Sporebloom Siren does not delete it"
+      }
+    ],
+    "see": [
+      "706"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.40",
+          "quote": "changes on units. If both a +1/+1 counter and -1/-1 counter are placed on a unit, the two cancel out and will both"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts",
+        "416-cr-parts-of-a-card.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The RAQ counters thread (1364890301147250798) is answered by a player, not the designer: D-U05-6. Whether a cancelled -1/-1 still triggers \"when put\" effects (Pestilent Mycelion) is 706 (U15).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "card.stats.changes.all-counters",
+    "parent": "card.stats.changes",
+    "order": 2,
+    "text": "Every counter is a counter, whatever its sign: a card that speaks of \"a counter\" counts +1/+1 and -1/-1 counters alike, unless it prints a sign.",
+    "examples": [
+      {
+        "text": "Flux Resonator adds one more to -1/-1 counters too.",
+        "test": "120-counter-attribution.test.ts::Resonator: -1/-1 counters get one more of the SAME — all counters count"
+      }
+    ],
+    "see": [
+      "112"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R130 (its all-counters ruling and the actor parameter)",
+          "quote": "**The ruling**, verbatim: *\"All counters count as counters.\"* No sign filter,"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R130",
+          "relation": "its poison-proxy 'sign filters that stayed' paragraph superseded by R237"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "120-counter-attribution.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Owner ruling, quoted verbatim in R130.",
+    "sourceHashes": {
+      "R130": "324ebd377208d7bd85952920b24c35cf86e5158ccd98f95f1e022d212fa14000"
+    }
+  },
+  {
+    "key": "card.stats.negative-power",
+    "parent": "206",
+    "order": 7,
+    "text": "A unit with negative power deals 0 damage.",
+    "examples": [
+      {
+        "text": "A -3/1 unit attacking beside a 1/1 in an unblocked column: the column deals 1 damage.",
+        "test": "416-cr-parts-of-a-card.test.ts::cr:card.stats.negative-power — a negative-power unit deals 0 combat damage and does not subtract from its column"
+      }
+    ],
+    "see": [
+      "112",
+      "608"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.42",
+          "quote": "Q: What happens when a unit has negative power?"
+        },
+        {
+          "ref": "Manual p.42",
+          "quote": "A: It deals 0 damage."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "416-cr-parts-of-a-card.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.42 Q&A. No test in the pack demonstrates it; a verifier probe is needed. A unit with 0 or less defense dying (Manual p.40) is 713.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "card.timing.what",
+    "parent": "207",
+    "order": 1,
+    "text": "A timing icon in the top right corner of a card changes when, and how, the card can be played. The icons printed there are Haste, Battle and Virus (207.3–207.5).",
+    "examples": [
+      {
+        "text": "Surly Stalker, a Battle unit, cannot be played in deployment but can be in battle; Ignis Sprite, with no icon, can be played in deployment.",
+        "test": "416-cr-parts-of-a-card.test.ts::cr:card.timing.what — every card has one timing (none, Haste or Battle) and Virus is its own mark; a Battle unit is refused in deployment and offered in battle"
+      }
+    ],
+    "see": [
+      "500"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.12",
+          "quote": "An icon here modifies when"
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "have special timing capabilities or restrictions, showcased in the top right corner of the card."
+        },
+        {
+          "ref": "Manual p.34",
+          "quote": "as interactive or reactive plays similar to spells. They are marked by the virus symbol in the top right of the card."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "416-cr-parts-of-a-card.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.13 TIMING shows Haste, Battle and Virus side by side. The card data has one timing per card (deploy, haste or battle) and Virus as a separate flag; in the pool no Virus card has Haste or Battle timing.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "card.timing.none",
+    "parent": "207",
+    "order": 2,
+    "text": "A card with no timing icon can be played only during deployment.",
+    "examples": [
+      {
+        "text": "A deployment unit is played in battle only because Tides of the Cosmos lets it ignore timing (207.7).",
+        "test": "396-raq-timing.test.ts::RAQ Tides 2: a free play ignores timing — a deploy unit and a deploy spell unit, in battle"
+      }
+    ],
+    "see": [
+      "507"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "Cards with no icon can only be played during deployment."
+        },
+        {
+          "ref": "Manual p.12",
+          "quote": "Cards with no icon can be"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts",
+        "416-cr-parts-of-a-card.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Rulebook 2023 p.3 says \"main phase\" for deployment: D-U05-1. Exceptions: 207.7 (effects that ignore timing), 207.8 (a timing icon on a line), 203.5. The example shows the exception; a direct test of the refusal is a verifier probe. Round 1: the refusal without Tides (in the haste step and in battle) is shown by the verifier's probe (data/comprehensive-rules/build/probes/U05/u05-verify-probes.test.ts).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "card.timing.haste",
+    "parent": "207",
+    "order": 3,
+    "text": "A card with the Haste icon can be played during the haste step as well as during deployment.",
+    "examples": [
+      {
+        "text": "Haste cards are played between planning and battle, in the haste step.",
+        "test": "08-cards2.test.ts::Molten Upheaval + the haste step: haste cards play between planning and battle (R18)"
+      }
+    ],
+    "see": [
+      "504",
+      "507"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "Haste cards can also"
+        },
+        {
+          "ref": "Manual p.26",
+          "quote": "Any card can be played during this phase, with the"
+        },
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "▪ Cards with the haste icon (10) can be played during the mana step"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R97",
+          "quote": "So **the printed \"mana step\" IS this engine's R18 haste step**, and Dispatch Courier"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "08-cards2.test.ts",
+        "416-cr-parts-of-a-card.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Manual p.13 \"can also be played during the haste step\"; Manual p.26 \"Any card can be played during this phase, with the exception of battle cards\" covers deployment. R97 quotes Caleb that the Rulebook's \"mana step\" is the haste step.",
+    "sourceHashes": {
+      "R97": "85b25c9bc3cbe10d572a877ca22452c29e74fb0333d60ff88d3a690d1c3d98d6"
+    }
+  },
+  {
+    "key": "card.timing.battle",
+    "parent": "207",
+    "order": 4,
+    "text": "A card with the Battle icon can be played only while its player is in battle with another player. It cannot be played during deployment.",
+    "examples": [
+      {
+        "text": "A fulfilled {Battle} prophecy is still refused at deployment.",
+        "test": "36-cache-prophecy.test.ts::R42: normal TIMING still applies — a {Battle} release is refused at deployment"
+      }
+    ],
+    "see": [
+      "505"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "only be played"
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "while in battle with"
+        },
+        {
+          "ref": "Manual p.26",
+          "quote": "exception of battle cards, which can only be played in"
+        },
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "▪ Cards with the battle icon (11) can only be played when in combat"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "36-cache-prophecy.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.13 BATTLE: \"Battle cards can / only be played / while in battle with / another player.\"",
+    "sourceHashes": {}
+  },
+  {
+    "key": "card.timing.battle.gaining-haste",
+    "parent": "card.timing.battle",
+    "order": 1,
+    "text": "Gaining Haste does not let a Battle card be played outside battle. A Battle card that an effect lets be played as if it had Haste can still be played only in battle.",
+    "examples": [
+      {
+        "text": "Dispatch Courier's grant does not let a {Battle} unit be played in the haste step.",
+        "test": "26-metal-a.test.ts::Dispatch Courier: a {Battle} unit stays a battle card even with the grant"
+      },
+      {
+        "text": "Nor a {Battle} spell unit.",
+        "test": "396-raq-timing.test.ts::RAQ Dispatch Courier: a Battle spell unit is not playable in the haste step either"
+      }
+    ],
+    "see": [
+      "504",
+      "803"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1465292396664193171#0",
+          "quote": "No, despite gaining :haste: they can still only be played during :battle:."
+        },
+        {
+          "ref": "RAQ 1464899726796390433#0",
+          "quote": "battle cards are designed to be played in battle only. Not all of them will cause problems but I think some will"
+        },
+        {
+          "ref": "RAQ 1465292396664193171#1",
+          "quote": "Does units / spell-units with :battle: timing … No"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R97",
+          "quote": "> A: **No, despite gaining {Haste} they can still only be played during {Battle}.**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "26-metal-a.test.ts",
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "Caleb reversed his own 2025-03-24 answer on 2026-01-25: D-U05-3. Whether gaining Haste changes a banner play mode is unanswered: D-U05-4. Round 1: the RAQ #1 quote is now the _passer source words, not the register claim.",
+    "sourceHashes": {
+      "R97": "85b25c9bc3cbe10d572a877ca22452c29e74fb0333d60ff88d3a690d1c3d98d6",
+      "RAQ 1464899726796390433#0": "29919fd7167ef4b5d8270f68bc27b34a37b2a2600b7c520143430f818c931ee3",
+      "RAQ 1465292396664193171#0": "b9818845b89b995e2deb3a2c33684e65ecbf762c87aec010da8a4401369be1b9",
+      "RAQ 1465292396664193171#1": "5dc7d77443715228d9d2f69544025a49d12a72cb332616ef18c1b528d96c8d0c"
+    }
+  },
+  {
+    "key": "card.timing.virus",
+    "parent": "207",
+    "order": 5,
+    "text": "A card with the Virus icon can also be applied as an augment from hand during battle, as well as being played and augmented normally during deployment (see 723).",
+    "examples": [
+      {
+        "text": "A virus applied during battle goes on the stack, can be donated to an enemy, and transfers text only.",
+        "test": "04-mods.test.ts::virus augment during battle: on the stack, donated to an enemy, text-only transfer"
+      },
+      {
+        "text": "A non-virus augment from hand during battle is refused without Rook.",
+        "test": "29-hybrids-wm-a.test.ts::Rook: a NON-virus augment from HAND during battle — refused without it, legal with it"
+      }
+    ],
+    "see": [
+      "721",
+      "723"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "also be applied as"
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "augments from your"
+        },
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "▪ The virus icon (4) allows you to augment cards from hand during"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "04-mods.test.ts",
+        "29-hybrids-wm-a.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.13 VIRUS: \"Virus cards can / also be applied as / augments from your / hand during battle.\" Viruses are 723 (U17); a glimpsed Virus in the cache is 403 (U07).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "card.timing.mods",
+    "parent": "207",
+    "order": 6,
+    "text": "A timing icon other than Virus does not change when a card can be applied as a mod. A Battle card cannot be applied as a mod during battle, and a Haste card cannot be applied in the haste step.",
+    "examples": [
+      {
+        "text": "A graft is offered in deployment, never in the haste step or in battle, even for a Haste card.",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 point 1: a graft is offered in deployment and never in the haste step or in battle, even for a Haste card"
+      }
+    ],
+    "see": [
+      "720"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.32",
+          "quote": "Modification is independent of timing modifiers that aren’t virus, so battle cards"
+        },
+        {
+          "ref": "Manual p.32",
+          "quote": "cannot be used as mods during battle, for example."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.32 NOTE. The Haste half is the RAQ Graft 101 point 1 guard; Slurpr and Rook are card exceptions (720s).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "card.timing.ignore",
+    "parent": "207",
+    "order": 7,
+    "text": "An effect may let a card be played ignoring its timing, as Tides of the Cosmos does (\"You may play them now\"). A card played that way may be played whatever its timing icon, or lack of one.",
+    "examples": [
+      {
+        "text": "Tides of the Cosmos plays a deployment unit and a deployment spell unit in battle.",
+        "test": "396-raq-timing.test.ts::RAQ Tides 2: a free play ignores timing — a deploy unit and a deploy spell unit, in battle"
+      }
+    ],
+    "see": [
+      "701"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Tides of the Cosmos",
+          "quote": "You may play them now, for free."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1357483405276614856#0",
+          "quote": "calebgannon: \"yep!\" (to masashi99: \"lets you play every card in the battle step, even if it has not the battle or virus simble\")"
+        },
+        {
+          "ref": "RAQ 1396955380000755795#1",
+          "quote": "2. Tides allows you to ignore timing of played cards."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "calebgannon \"yep!\" (thread 1357483405276614856) and the _passer [Solved] write-up. Round 1: the RAQ #0 quote is now the source words, not the register claim.",
+    "sourceHashes": {
+      "RAQ 1357483405276614856#0": "a3439f8143d0c31b17cc232c65000dd8987e681efe5c39a4a1fec0389b139d0e",
+      "RAQ 1396955380000755795#1": "becd35d97e6be38ebf3c81a4e882413087cc02c661005dfa1e8ae83fecad0380"
+    }
+  },
+  {
+    "key": "card.timing.ignore.only-when-said",
+    "parent": "card.timing.ignore",
+    "order": 1,
+    "text": "An effect that only lets a card be played from somewhere else, such as the bin or the cache, does not waive its timing. Cards that waive timing say so.",
+    "examples": [
+      {
+        "text": "A glimpsed card in the cache still obeys timing.",
+        "test": "36-cache-prophecy.test.ts::R45: glimpse still obeys timing, and a short deck glimpses fewer"
+      },
+      {
+        "text": "A fulfilled prophecy still obeys timing.",
+        "test": "36-cache-prophecy.test.ts::R42: normal TIMING still applies — a {Battle} release is refused at deployment"
+      }
+    ],
+    "see": [
+      "403",
+      "405",
+      "803"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 §12",
+          "quote": "> *\"Cards that let you ignore timing say something like 'You may play them"
+        },
+        {
+          "ref": "R42 (its release half)",
+          "quote": "2024-10-28) — but normal TIMING still applies, since it is played \"as if it"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "36-cache-prophecy.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Owner, R157 §12 (on Abyssal Evocation and Writhing Host), and R42's release sentence. R45 says the same of a glimpse.",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
+      "R42": "0cabff7c580b27609be02ba24c31e41a18554c7829734d450a6abfeecdc1c81c"
+    }
+  },
+  {
+    "key": "card.timing.per-line",
+    "parent": "207",
+    "order": 8,
+    "text": "A timing icon printed on one line of a card, rather than on the card, governs only that line. A \"Discard me\" line with no icon of its own is usable in battle as well as in deployment; one printed with a Battle icon is usable only in battle.",
+    "examples": [
+      {
+        "text": "A \"Discard me\" line works during battle, whatever the card's own timing.",
+        "test": "58-playtest-round9.test.ts::R65: a \"Discard me\" line works during battle, whatever the card's own timing says"
+      },
+      {
+        "text": "Nothyr's battle-marked discard-me line is refused outside battle.",
+        "test": "37-attrs-wight.test.ts::R40: Nothyr's battle-timing discard-me line is refused outside battle"
+      }
+    ],
+    "see": [
+      "203",
+      "801"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R65 (its discard-me half)",
+          "quote": "as during your own deployment. A printed `{Battle}` marker on the discard line"
+        },
+        {
+          "ref": "R65 (its discard-me half)",
+          "quote": "(Nothyr) still restricts it to battle; nothing restricts it to deployment."
+        },
+        {
+          "ref": "R157 §8",
+          "quote": "> *\"It doesn't have a battle icon, but that is just an activated ability that"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "58-playtest-round9.test.ts",
+        "37-attrs-wight.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Owner calls R65 and R157 §8. The same principle for banners is 203.5. Discarding is not playing (R37, R65), which is why the card's own timing does not govern the line.",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
+      "R65": "e9ed084b299e697c3a8550bce01553259bfc5d6601416e6e6fc3adb041378a6d"
+    }
+  },
+  {
+    "key": "card.augment-box.what",
+    "parent": "208",
+    "order": 1,
+    "text": "The augment symbol marks what a card can give to another card when it is applied as an augment. It appears either at the start of a line in the text box, or at the start of the type line, before the card's attributes.",
+    "examples": [],
+    "see": [
+      "721"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.32",
+          "quote": "onto other cards. The Augment symbol can appear either in a"
+        },
+        {
+          "ref": "Manual p.32",
+          "quote": "unit’s ability text box or before attributes in the type line."
+        },
+        {
+          "ref": "Rulebook 2023 p.15",
+          "quote": "Some cards have a little “+” symbol (1) at the beginning of a line in their text box (or"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Augment is 721 (U17). The transcription writes the symbol as [Augment].",
+    "sourceHashes": {},
+    "untestableReason": "where the symbol is printed on the card face; what it gives is demonstrated under 208.2 and 208.3",
+    "untested": true
+  },
+  {
+    "key": "card.augment-box.text-box",
+    "parent": "208",
+    "order": 2,
+    "text": "An augment symbol in the text box gives all the text in the paragraph after it to the card the augment is applied to.",
+    "examples": [
+      {
+        "text": "Vengeance applied as an augment gives its host \"Cards your opponents play during battle gain [Sacrifice a unit]\", with the host's controller as \"you\".",
+        "test": "45-hybrids-ld-b.test.ts::Vengeance: donated as an augment, the HOST's controller is \"you\" — their opponents are taxed"
+      }
+    ],
+    "see": [
+      "721"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.32",
+          "quote": "The Augment mechanic allows players to take all of the text"
+        },
+        {
+          "ref": "Manual p.32",
+          "quote": "in the paragraph following the augment symbol and add it"
+        },
+        {
+          "ref": "card: Vengeance",
+          "quote": "[Augment] Cards your opponents play during battle gain '[Sacrifice a unit]'."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "45-hybrids-ld-b.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Whose \"you\" is the host's controller is 721/723.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "card.augment-box.type-line",
+    "parent": "208",
+    "order": 3,
+    "text": "An augment symbol on the type line gives the type line's attributes to the card the augment is applied to. An augment gives text, never stats.",
+    "examples": [
+      {
+        "text": "Trashling's type-line augment donates {Unaware}, and only that.",
+        "test": "28-metal-c.test.ts::Trashling: 2/2 Unaware body; type-line [Augment] donates Unaware (attrs only)"
+      },
+      {
+        "text": "Bubb's type-line augment donates {Unaware} and no stats.",
+        "test": "16-earth-a.test.ts::Bubb: 5/6 Unaware; type-line [Augment] donates Unaware (attrs only, no stats)"
+      }
+    ],
+    "see": [
+      "721"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.32",
+          "quote": "unit’s ability text box or before attributes in the type line."
+        },
+        {
+          "ref": "card: Trashling",
+          "quote": "[Augment] {Unaware} Scrap Robot {Virus} Unit"
+        },
+        {
+          "ref": "Rulebook 2023 p.15",
+          "quote": "of the text in the paragraph following the augment symbol and add it onto other"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "28-metal-c.test.ts",
+        "16-earth-a.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "\"Never stats\" follows from Manual p.32 (\"take all of the text\") and Rulebook p.15; no source says it in so many words.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "card.augment-box.permission",
+    "parent": "208",
+    "order": 4,
+    "text": "A card that prints the augment symbol can be applied as an augment, from hand, bin or cache (see 721), whether or not its augment text does anything a client can carry out.",
+    "examples": [
+      {
+        "text": "A Pile of Rubbish can be applied as an augment from hand, from the bin, or from the cache while a glimpse lets it be played.",
+        "test": "416-cr-parts-of-a-card.test.ts::cr:card.augment-box.permission — A Pile of Rubbish, which prints the augment symbol, is applied as an augment from hand, from bin and from cache"
+      }
+    ],
+    "see": [
+      "721"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R55",
+          "quote": "If a card prints the `[Augment]` marker in its text box, it **can be applied as"
+        },
+        {
+          "ref": "R55",
+          "quote": "an augment** — from hand, from bin, or from cache — regardless of whether its"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "416-cr-parts-of-a-card.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R55 is the owner's ruling from playtest round 5 (classified printed/other: the printed symbol is the permission). \"From cache\" needs a live permission (403, R303).",
+    "sourceHashes": {
+      "R55": "638e68004e564670113de924f89d7f039f7f4319cd39c7556b90fbb62c69e08c"
+    }
+  },
+  {
+    "key": "card.augment-box.permission.reminder",
+    "parent": "card.augment-box.permission",
+    "order": 1,
+    "text": "An [Augment] mentioned inside reminder text is not an augment symbol, and does not make the card an augment.",
+    "examples": [
+      {
+        "text": "Reconfigure, which mentions [Augment] in reminder text, is not an augment.",
+        "test": "48-playtest-hotfix.test.ts::a spell that merely mentions [Augment] in reminder text is not an augment"
+      }
+    ],
+    "see": [
+      "205"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R55",
+          "quote": "text is **not** a marker — that is what keeps **Reconfigure**, a spell that"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "48-playtest-hotfix.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R55.",
+    "sourceHashes": {
+      "R55": "638e68004e564670113de924f89d7f039f7f4319cd39c7556b90fbb62c69e08c"
+    }
+  },
+  {
+    "key": "card.augment-box.copy",
+    "parent": "208",
+    "order": 5,
+    "text": "A copy does not have the augment symbol printed on the card it copies.",
+    "examples": [
+      {
+        "text": "A Borrower of Forms that copied Bubb cannot be the first target of Reconfigure, though a real [Augment] unit on the battlefield can be (illustrative).",
+        "test": "416-cr-parts-of-a-card.test.ts::cr:card.augment-box.copy — Reconfigure is castable with a real [Augment] unit present and offers it, but never a Borrower that copied Bubb"
+      }
+    ],
+    "see": [
+      "710"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1372468222158180424#6",
+          "quote": "A: No. True BoFy doesn't have :augment: symbol on him"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts",
+        "416-cr-parts-of-a-card.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "medium",
+    "notes": "_passer [Solved & Expanding?] thread. Stated for Borrower of Forms only; generalised to any copy here. R341 makes the [Augment] boxes of copied MODS work, which is a different thing. Round 1: the suite test 393-raq-mods \"a Borrower that copied an [Augment] unit cannot be the first target of Reconfigure\" asserts nothing (Reconfigure is not castable in its setup, so its guarded branch is skipped): F-U05-2. The verifier's probe (data/comprehensive-rules/build/probes/U05/u05-verify-probes.test.ts) shows it with a real [Augment] unit present, so the example is illustrative.",
+    "sourceHashes": {
+      "RAQ 1372468222158180424#6": "d85bf21ea2b82c2373151dc7f1a82b03c80b7d150a101f7fc9c04cf28a251916"
+    }
+  },
+  {
+    "key": "card.complexity.set-symbol",
+    "parent": "209",
+    "order": 1,
+    "text": "The set symbol shows which expansion a card belongs to. Its colour shows the card's complexity: gold means complex.",
+    "examples": [],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.12",
+          "quote": "Indicates the expansion and"
+        },
+        {
+          "ref": "Manual p.12",
+          "quote": "its color denotes the complexity of the card (gold ="
+        },
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "▪ They also have a set symbol (8) which indicates the expansion and its color"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The Light & Dark cards print a Simple/Complex glyph rather than a coloured set symbol (repo knowledge, not a pack source); not stated as a rule.",
+    "sourceHashes": {},
+    "untestableReason": "a print property (set and complexity colour) with no effect in play",
+    "untested": true
+  },
+  {
+    "key": "card.complexity.use",
+    "parent": "209",
+    "order": 2,
+    "text": "Complexity is used to choose which cards are in a game. The Quick Start suggests that inexperienced players remove the gold-symbol cards from their decks.",
+    "examples": [
+      {
+        "text": "A live draft with \"Simple cards only\" leaves out exactly the cards that are not simple.",
+        "test": "297-custom-rules-resolve.test.ts::BL-43 resolve §3 Simple cards only leaves out exactly the cards that are not simple"
+      }
+    ],
+    "see": [
+      "902"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.2",
+          "quote": "we suggest Fire and Wood). If you are not experienced, remove"
+        },
+        {
+          "ref": "Rulebook 2023 p.2",
+          "quote": "all of the rare cards from the decks (gold set symbol). Shuffle the"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "297-custom-rules-resolve.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "The client's \"Simple cards only\" draft option is R292 (digital; Annex D). No source says complexity has any effect during play: D-U05-14. The Rulebook calls these cards \"rare\" on p.2 and says the colour shows \"complexity\" on p.3.",
+    "sourceHashes": {}
+  }
+]

@@ -1,0 +1,260 @@
+[
+  {
+    "id": "D-U04-1",
+    "kind": "c-owner-call-only",
+    "rule": "concepts.costs.unpayable.life",
+    "tier": 3,
+    "summary": "That a player may pay N life only while they have more than N is the engine's own ruling. No designer statement was found either way.",
+    "sides": [
+      {
+        "source": "R49",
+        "quote": "while you have **more** than N — paying your last life is refused too. Life"
+      },
+      {
+        "source": "R49",
+        "quote": "designer statement was found either way — this is the engine's ruling"
+      }
+    ],
+    "resolution": "Stated as the engine's law, basis owner. Question for the owner only if a designer statement turns up, or a card is found whose life cost is meant to be paid down to 0."
+  },
+  {
+    "id": "D-U04-2",
+    "kind": "a-sources-disagree",
+    "rule": "concepts.costs.trigger-sacrifice-me",
+    "tier": 1,
+    "summary": "Eldritch Dreamtender, Cthyrian Rector and Void Mandible print \"sacrifice me. If you do, …\" as effect text, with no bracket. R73 reads the sacrifice as a cost paid as the ability goes on the stack, and says so.",
+    "sides": [
+      {
+        "source": "card: Eldritch Dreamtender",
+        "quote": "sacrifice me. If you do, look at that player's hand and discard a card from it."
+      },
+      {
+        "source": "R73",
+        "quote": "`[cost]`; the ruling reads it as a cost anyway."
+      },
+      {
+        "source": "R73",
+        "quote": "printed prose as a bracketed cost.**"
+      }
+    ],
+    "resolution": "Question for the owner. The printed words \"sacrifice me. If you do,\" support two readings: (a) a step of the effect, carried out when the ability resolves, in the order the sentence gives; (b) a cost, paid as the ability goes on the stack (R73). The rule states R73, the current ruling; Void Mandible's own \"(This is not optional.)\" fits either reading."
+  },
+  {
+    "id": "D-U04-3",
+    "kind": "a-sources-disagree",
+    "rule": "concepts.costs.modifiers.paid-reduction",
+    "tier": 2,
+    "summary": "R119 quotes Deferral Drone as \"The next card you play this turn\" and clears the charge at the start of each turn. The printed card says \"this phase\", and a test in 45-hybrids-ld-b shows the charge ending at a phase boundary within one turn.",
+    "sides": [
+      {
+        "source": "card: Deferral Drone",
+        "quote": "The next card you play this phase costs [3] less."
+      },
+      {
+        "source": "R119",
+        "quote": "turn costs [3] less.\"*"
+      },
+      {
+        "source": "R119",
+        "quote": "| **clear** | `E.startTurn`, beside the `Entity.budgets` wipe |"
+      }
+    ],
+    "resolution": "Printed text wins (authority order): the rule says the charge lasts until the phase ends. R119's quotation of the card and its \"clear\" row should be marked corrected in the register (see F-U04-1)."
+  },
+  {
+    "id": "D-U04-4",
+    "kind": "a-sources-disagree",
+    "rule": "concepts.costs.modifiers.imposed.ambush",
+    "tier": 2,
+    "summary": "R122 says an Ambush sits outside the play-tax layer and that widening it is a future decision. R129 counts an Ambush as a card played, and Arbiter of Armistice and Vengeance tax \"cards\" played during battle.",
+    "sides": [
+      {
+        "source": "R122",
+        "quote": "printed cost line and today sits outside the R59/R60/R122 play-tax layer"
+      },
+      {
+        "source": "R129",
+        "quote": "'cardPlayed': a {Battle} unit and an Ambush are cards being played"
+      },
+      {
+        "source": "card: Arbiter of Armistice",
+        "quote": "Cards played during battle gain [Pay 2 life]."
+      }
+    ],
+    "resolution": "The printed noun \"Cards\" read literally, with R129, puts an Ambush play under the imposed cost, so the rule says so with an engine-differs marker (F-U04-2). Question for the owner only if R122's deferral was meant as a ruling that an Ambush is exempt."
+  },
+  {
+    "id": "D-U04-5",
+    "kind": "a-sources-disagree",
+    "rule": "concepts.rot.timing",
+    "tier": 4,
+    "summary": "R50 treats rot damage as an automatic charge that opens deployment, \"not a trigger\", and orders it before start-of-deployment triggers by its own ruling. The owner, quoted in R102's addendum, calls rot damage \"a trigger to deal you that damage\".",
+    "sides": [
+      {
+        "source": "R50",
+        "quote": "charge, not a trigger — so a start-of-deployment trigger cannot pre-empt it."
+      },
+      {
+        "source": "R50",
+        "quote": "has settled. ⚠ That order is a ruling: nothing in the printed rules sequences"
+      },
+      {
+        "source": "R102",
+        "quote": "> instead, as or if and don't mention targets'. Plus, rot damage is a trigger to"
+      }
+    ],
+    "resolution": "The rule follows R50's order, which R102 itself keeps (\"R50's ordering is preserved\"). The owner's remark was a reason for letting Beyond's replacement use the stack, not a ruling on timing. Question for the owner only if a card can tell the two apart, for example one that taxes, copies or negates a trigger during deployment."
+  },
+  {
+    "id": "D-U04-6",
+    "kind": "g-other",
+    "rule": "concepts.life.multipliers",
+    "tier": 4,
+    "summary": "Sources silent on how an effect that multiplies life gained or lost composes with one that adds a fixed amount to it. R264 says that is still unruled. The designer's damage order (additive first, then Powerful doubles) is the nearest ruling.",
+    "sides": [
+      {
+        "source": "R264",
+        "quote": "**⚠ THE ADDITIVE COMPOSITION IS STILL UNRULED, and Q4 asked about it.** R157 §23"
+      },
+      {
+        "source": "RAQ 1362838395298119912#4",
+        "quote": "Conduit of Pain adds its 1 BEFORE Powerful doubles"
+      }
+    ],
+    "resolution": "The rule states only that multipliers multiply. Question for the owner only if a card adds a fixed amount to life gained or lost and can meet Arbiter of Vitality."
+  },
+  {
+    "id": "D-U04-7",
+    "kind": "g-other",
+    "rule": "concepts.rot",
+    "tier": 4,
+    "summary": "Sources silent: neither the Manual nor the Rulebook 2023 defines rot or debt. Both rules come from R38 and R39, which cite Caleb (and a Rot Counter card in Caleb's card library) by date; no RAQ claim or printed page in the sources holds his words.",
+    "sides": [
+      {
+        "source": "R38",
+        "quote": "itself. (Printed: the Rot Counter card, Caleb's card library 2026-01-15; via"
+      },
+      {
+        "source": "R39",
+        "quote": "casting this turn. (Caleb 2024-09-10, refined 2024-12-02; via Bena 2026-08-19.)"
+      },
+      {
+        "source": "glossary: Rot",
+        "quote": "At the start of deployment, you take damage equal to the number of rot you have. Rot does not go away."
+      }
+    ],
+    "resolution": "The rot and debt rules ship with basis owner. Adding the Rot Counter card text (and Caleb's debt answers) to the printed sources would raise them to a printed or designer basis."
+  },
+  {
+    "id": "D-U04-8",
+    "kind": "f-register-chain-wrong",
+    "rule": "concepts.costs.trigger-sacrifice-me",
+    "tier": 2,
+    "summary": "R73 is presented as current, but its ⚠ paragraph on timing says a Dreamtender's combat-damage trigger resolves immediately inside the damage step. R261 moved combat-damage triggers onto the stack after combat, and R295 made a split step resolve them at the sub-step boundary, with priority.",
+    "sides": [
+      {
+        "source": "R73",
+        "quote": "and R3/R31 resolve it immediately, so a Dreamtender in a Swift column is gone"
+      },
+      {
+        "source": "R261",
+        "quote": "**[R117] / [R157] §5 keep their gate and lose their ordering claim.** R117's finding — that"
+      },
+      {
+        "source": "R295",
+        "quote": "- **R261**: the hold is conditional now. Its unsplit case is untouched."
+      }
+    ],
+    "resolution": "Mark R73's ⚠ \"WHEN inside combat damage\" paragraph as superseded by R261 and R295 in the register. The cost reading R73 rules is not affected. Combat-damage trigger timing is rule 608."
+  },
+  {
+    "id": "D-U04-9",
+    "kind": "a-sources-disagree",
+    "rule": "concepts.costs.modifiers.abilities",
+    "tier": 2,
+    "summary": "R121 calls Augment and Ambush \"alternative ways to PLAY a card\". The designer says mods are not played: they are applied.",
+    "sides": [
+      {
+        "source": "R121",
+        "quote": "- (R37 family) Augment/Ambush are alternative ways to PLAY a card, not"
+      },
+      {
+        "source": "RAQ 1537748882501668934#0",
+        "quote": "Mods are not considered 'played'"
+      }
+    ],
+    "resolution": "The designer wins. R121's conclusion (applying an augment is not taxed as an ability) is unaffected; its wording about Augment should be corrected in the register."
+  },
+  {
+    "id": "D-U04-10",
+    "kind": "c-owner-call-only",
+    "rule": "concepts.costs.modifiers.paid-reduction",
+    "tier": 3,
+    "summary": "That a paid-for cost reduction outlives its source, and is not limited to one region, is the owner's call. No designer source speaks to Deferral Drone.",
+    "sides": [
+      {
+        "source": "R119",
+        "quote": "**Bena, 2026-08-23:** *the charge survives — **\"you paid for it.\"***"
+      },
+      {
+        "source": "R119",
+        "quote": "regions in one turn gets the discount wherever they play.**"
+      }
+    ],
+    "resolution": "Stated as the engine's law, basis owner (with the printed card for its duration)."
+  },
+  {
+    "id": "D-U04-11",
+    "kind": "g-other",
+    "rule": "concepts.life.cant-change",
+    "tier": 4,
+    "summary": "Sources silent on whether damage dealt to a player whose life total \"can't change\" still counts as damage dealt. R238 says the engine treats it as dealt but that this was never asked.",
+    "sides": [
+      {
+        "source": "R238",
+        "quote": "  It now fires `combatFaceDamage` like any other damaged seat, because the"
+      },
+      {
+        "source": "card: Suspend",
+        "quote": "Target player's life total can't change during this battle."
+      }
+    ],
+    "resolution": "The rule states only the card's words. Question for the owner only if a card that triggers on damage dealt to a player meets Suspend."
+  },
+  {
+    "id": "D-U04-12",
+    "kind": "a-sources-disagree",
+    "rule": "concepts.costs.grafted",
+    "tier": 1,
+    "summary": "The designer says an unpayable grafted cost keeps \"the whole Graft Effect\" off the stack. R334 reads that as the whole composite for a triggered or activated item, but keeps a per-part skip for a played spell with a {Modular} graft part.",
+    "sides": [
+      {
+        "source": "RAQ 1355115946032889914#10",
+        "quote": "then the whole Graft Effect won't go on the stack."
+      },
+      {
+        "source": "R334",
+        "quote": "- A played **spell** that carries a `{Modular}` graft part keeps the per-part skip. Withholding a card already paid for would strand it."
+      }
+    ],
+    "resolution": "Question for the owner. The words \"the whole Graft Effect\" support two readings: (a) the whole composite, host and every graft (R334's reading for abilities, which would withhold a {Modular} spell too); (b) only the graft's own effect, which is the per-part skip R334 keeps for spells. The rule states R334 as it stands, carve-out included."
+  },
+  {
+    "id": "D-U04-13",
+    "kind": "b-engine-only",
+    "rule": "concepts.costs.region.other-units",
+    "tier": 3,
+    "summary": "Only the engine says a cost that removes counters from allies, or recalls an ally, uses only units in the region where it is paid. R35's \"region-scoped\" predates those cost kinds and was written about sacrifice.",
+    "sides": [
+      {
+        "source": "R35",
+        "quote": "sacrificed unit's defense as it was then), the cost is region-scoped (the"
+      },
+      {
+        "source": "file: client/engine/src/engine.ts",
+        "quote": "case 'sacrificeUnit': return this.unitsOf(seat, region).length > 0;"
+      }
+    ],
+    "resolution": "Stated as the engine's behaviour, basis engine (verifier r1: E.canPayCastCost draws removeCounters and recall candidates from unitsOf(seat, region)). Question for the owner only if a card's unit cost is meant to reach another region."
+  }
+]

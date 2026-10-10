@@ -1,0 +1,3493 @@
+[
+  {
+    "key": "concepts.costs.activation",
+    "textHash": "7cdc6b30d97422e2",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U04-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:E.collectTargets",
+        "agrees": true,
+        "note": "order: gateCompoundCost, collectX, collectCastCosts(variable), modular, collectPartTargets, ..., payActivationCost (fixed mana/life/debt/sac-self), collectItemCosts, collectCastCosts(fixed); all inside the cast window before commitItem pushes"
+      },
+      {
+        "loc": "engine.ts:E.payActivationCost",
+        "agrees": true,
+        "note": "charges the choice-free fixed half after targets (R57)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/167-variable-ability-costs.test.ts",
+        "pattern": "R196 Infernal Cultivator",
+        "passed": true,
+        "asserts_claim": "yes: both sacrificed units are dead and binned before any response; X fixed on the stack item (does not itself negate)"
+      },
+      {
+        "file": "client/engine/test/167-variable-ability-costs.test.ts",
+        "pattern": "Slag Spewer",
+        "passed": true,
+        "asserts_claim": "yes: a FIXED activation cost is collected after the target is declared"
+      },
+      {
+        "file": "client/engine/test/107-semantics-statics.test.ts",
+        "pattern": "Rotspore Herald: absent",
+        "passed": true,
+        "asserts_claim": "yes: Soul Reaver variable counter cost is picked before the target"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U04/u04-r2-probes.test.ts",
+        "title": "concepts.costs.activation: a negated Infernal Cultivator activation does not give back the sacrificed units",
+        "passed": true,
+        "demonstrates": "yes: Dematerialize negates the activation; no Fireballs, sacrificed units stay dead"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.41",
+        "supports": "partly",
+        "note": "says everything before the colon is a cost that must be paid to activate; says nothing about timing vs targets or responses"
+      },
+      {
+        "ref": "R196",
+        "supports": "yes",
+        "note": "activation costs paid on the way to the stack"
+      },
+      {
+        "ref": "R77",
+        "supports": "yes",
+        "note": "paid inside the cast window after targets; nobody may respond between cost and effect"
+      },
+      {
+        "ref": "R64 (its cost-ordering half)",
+        "supports": "yes",
+        "note": "variable cost with X before targets; fixed after targets"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "colon is a cost that must be paid to activate the ability,"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Ordering follows from that. A variable cost is collected **with the mana X, at"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Negation does not refund a paid cast cost."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "this.collectCastCosts(item, then, moreItems, 'variable');"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "this.payActivationCost(item);                   // R57: choice-free half"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.costs.activation.gate-first",
+    "textHash": "6dd05856f958f09b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:abilityUnusable (usableWhen) called from legalActions and doActivateAbility",
+        "agrees": true,
+        "note": "checked before payment; not re-checked at resolution"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "18-earth-c.test.ts",
+        "pattern": "R77: with NO adjacent ally the ability is not offered, and apply() refuses it",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U04/u04-probes.test.ts",
+        "title": "concepts.costs.activation.gate-first: Throwing Boulder's adjacency is not re-checked at resolution",
+        "passed": true,
+        "demonstrates": "yes — the adjacent ally dies before resolution and the 3 damage still lands"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Throwing Boulder",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R77",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "gate before anything is paid, so a self-sacrificing ability's cost can never"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**And it is not re-checked at resolution.**"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.costs.activation.sacrifice-me",
+    "textHash": "420f53dc6d986fb0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts AbilityCost.sacrificeSelf paid in E.payActivationCost",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "18-earth-c.test.ts",
+        "pattern": "R77: Throwing Boulder with an adjacent ally — offered, and it connects",
+        "passed": true,
+        "asserts_claim": "yes — the Boulder is in the bin while its ability is on the stack"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R77",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "and the unit is in the bin while its ability is still waiting to resolve"
+      },
+      {
+        "file": "client/engine/test/18-earth-c.test.ts",
+        "text": "assert.equal(h.state.stack.length, 1, 'and the ability has not resolved yet');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "The example is unbound (illustrative); 18-earth-c \"R77: Throwing Boulder with an adjacent ally\" demonstrates it and can be bound."
+  },
+  {
+    "key": "concepts.costs.alternative",
+    "textHash": "5c2e6f3b63c1d94a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:canPayAmbush / canPayDiscardMe / prophecy payment (R301)",
+        "agrees": true,
+        "note": "mana spent and pips checked from hand"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "313-prophecy-affinity.test.ts",
+        "pattern": "R301 §2: mana without the affinity does not buy a prophecy",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "37-attrs-wight.test.ts",
+        "pattern": "R40: \"Discard me\" is refused without the mana",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R301",
+        "supports": "yes",
+        "note": "a prophecy banner is a cost like any other"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A prophecy banner is a cost like any other: its mana is **spent** and its affinity is"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Exceptions live elsewhere (a cached/glimpsed card ignores affinity, a fulfilled prophecy is free)."
+  },
+  {
+    "key": "concepts.costs.alternative.discard-me",
+    "textHash": "8da5998b9b7d5140",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doDiscardMe",
+        "agrees": true,
+        "note": "battle: any priority holder; otherwise only in own deployment and refused when (discardMe.timing ?? card timing) is battle"
+      },
+      {
+        "loc": "apply.ts:legalActions (battle window, line ~3592)",
+        "agrees": true,
+        "note": "discardMe offered in battle whenever payable"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "135-exchange-and-zones.test.ts",
+        "pattern": "R157 §8: Dropslime’s discard-me mode is offered IN BATTLE and deals damage there",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R65 (its discard-me half)",
+        "supports": "yes",
+        "note": "states not-playing, battle priority + own deployment, and the {Battle} marker restriction"
+      },
+      {
+        "ref": "R157 (its §8)",
+        "supports": "yes",
+        "note": "designer: the unmarked line is usable in battle"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "(R25). Discarding is not playing (R37)"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A printed `{Battle}` marker on the discard line"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need((c.discardMe!.timing ?? c.timing) !== 'battle', 'that mode is a battle action');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Minor: the engine also lets the CARD's own {Battle} timing restrict the line (timing ?? c.timing), not only a marker on the line itself; no pool card is known to make that differ."
+  },
+  {
+    "key": "concepts.costs.copies",
+    "textHash": "0b111c04c8ce08a6",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts spell copy inherits costPaid receipt and X (R164/R35)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "138-spell-copy.test.ts",
+        "pattern": "R164 Maelstrom Charger: the copy inherits the cast-cost receipt (R35) — Volatile Toxicity is not re-paid",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1379132904931594372#2",
+        "supports": "yes",
+        "note": "verbatim"
+      },
+      {
+        "ref": "R35 (its cast-time payment half)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "receipt and X instead of paying again"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.costs.free",
+    "textHash": "ad412696be94ae8b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "apply.ts SourcePrice (free / ignoreAffinity) and E.collectInlineCastCosts (R338)",
+        "agrees": true,
+        "note": "free plays skip mana and affinity; bracketed costs collected"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "RAQ Tides 1: a free play ignores affinity — a fire unit with only water resources",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "404-raq-fix-tides.test.ts",
+        "pattern": "R338: a Tides play pays its additional cost — the sacrifice happens and Volatile Toxicity resolves",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1396955380000755795#5",
+        "supports": "yes",
+        "note": "verbatim write-up line"
+      },
+      {
+        "ref": "R301",
+        "supports": "yes",
+        "note": "prophecy release free and ignores affinity"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "pays its bracketed additional cost"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.costs.free.x",
+    "textHash": "3ab8bd25ecaa640e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "cards/sets/batch-water-b: tidesCanPlay",
+        "agrees": true,
+        "note": "refuses mana X cards with xMin > 0 (Frosted Denial)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "RAQ Tides 6: Frosted Denial (X cannot be zero) is not a card Tides can play",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1396955380000755795#6",
+        "supports": "yes",
+        "note": "the quoted text is the extract's claim summary, not the designer's verbatim words; the verbatim source line agrees (\"Any spells with X cost can only be played with X=0\")"
+      },
+      {
+        "ref": "R339",
+        "supports": "yes",
+        "note": "states both halves"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A free play casts an X spell for X = 0"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Second sentence generalises a Tides-only ruling to every free play (e.g. a prophecy release); plausible but only Tides is tested."
+  },
+  {
+    "key": "concepts.costs.grafted",
+    "textHash": "8ebeea74e00cc552",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U04-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:E.collectCastCosts",
+        "agrees": true,
+        "note": "no decline offered; wholeComposite = graft part on a triggered/activated item -> withholdComposite; other kinds (a played spell with a {Modular} graft part) spend only that part"
+      },
+      {
+        "loc": "engine.ts:E.gateGraftCosts",
+        "agrees": true,
+        "note": "withholds before targeting"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "pattern": "point 11",
+        "passed": true,
+        "asserts_claim": "yes: whole composite withheld; payable cost cannot be declined"
+      },
+      {
+        "file": "client/engine/test/403-raq-fix-mods.test.ts",
+        "pattern": "R334",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "client/engine/test/32-cast-costs.test.ts",
+        "pattern": "no decline",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355115946032889914#10",
+        "supports": "yes",
+        "note": "_passer"
+      },
+      {
+        "ref": "RAQ 1355115946032889914#11",
+        "supports": "yes",
+        "note": "_passer"
+      },
+      {
+        "ref": "R334",
+        "supports": "yes",
+        "note": "includes the {Modular} spell exception, which is an owner/engine call, not RAQ"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- A played **spell** that carries a `{Modular}` graft part keeps the per-part skip. Withholding a card already paid for would strand it."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const wholeComposite = graftPart && (item.kind === 'triggered' || item.kind === 'activated');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "The {Modular}-spell exception has no direct test."
+  },
+  {
+    "key": "concepts.costs.kinds",
+    "textHash": "41902d3e86b00e35",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.canPayCastCost / E.chargeCastCost (CastCost kinds)",
+        "agrees": true,
+        "note": "payLife, gainDebt, discard, sacrifice, eraseBin, removeCounters, recallUnit, eraseMod all charged in the cast window"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "167-variable-ability-costs.test.ts",
+        "pattern": "R196 Slag Spewer",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Flesh Tithe",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Deferral Drone",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Necromantic Rebuke",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Volatile Toxicity",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Instrument of Reassignment",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R49 (its cast-cost and activation-cost body)",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R196",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/167-variable-ability-costs.test.ts",
+        "text": "assert.equal(ent(h, spewer)!.mods.length, 0, 'the mod is gone before anybody may respond');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.costs.modifiers",
+    "textHash": "d7fb1c26cf2860b1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.costModsFor(region) used by manaToPlay/lifeToPlay/unitsToPlay/abilityTax",
+        "agrees": true,
+        "note": "radiates from units in play and anchored mods, region-scoped, unqualified subject taxes both players"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ Crevice Lurker: it taxes the opponent too, not only its controller",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "18-earth-c.test.ts",
+        "pattern": "Tranquility: the [Augment] tax is DONATED — it radiates from the mod too",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Tranquility",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1355103348378042515#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R59 (its cost-modifier layer)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "subject means it taxes **both** players in its region, attackers included."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.costs.modifiers.abilities",
+    "textHash": "0baac69347813667",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.abilityTax (purpose activate/trigger) + E.gateTaxedTrigger; purpose mod/play untouched; Maelstrom asYouPlay outside",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ Crevice Lurker: a graft trigger is taxed like any other",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ trigger-like attributes: Crevice Lurker taxes Resonant, the designer intent",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "16-earth-a.test.ts",
+        "pattern": "Crevice Lurker: R121 — applying an augment during battle is NOT taxed (R37: a mod is not an activation)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Crevice Lurker",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1355103348378042515#1",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1355103348378042515#3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1366446116274442291#1",
+        "supports": "yes",
+        "note": "calebgannon intent"
+      },
+      {
+        "ref": "RAQ 1379132904931594372#3",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Maelstrom Ability is neither Triggered nor Activated"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.costs.modifiers.floor-zero",
+    "textHash": "e7115eaa5e2104f8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.manaToPlay / lifeToPlay / abilityTax",
+        "agrees": true,
+        "note": "return Math.max(0, total)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "45-hybrids-ld-b.test.ts",
+        "pattern": "Deferral Drone: R119 — the charge SURVIVES the Drone leaving play (\"you paid for it\")",
+        "passed": true,
+        "asserts_claim": "yes — \"it still clamps at zero rather than going negative\""
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R59 (its cost-modifier layer)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "clamped at zero"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "return Math.max(0, total);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.costs.modifiers.imposed",
+    "textHash": "8a5406e9d6606576",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.unitsToPlay / E.lifeToPlay / E.canPayCard; apply.ts playAtTiming",
+        "agrees": true,
+        "note": "imposed life charged with the mana; sacrifice attached as playSacrifice, payer chooses own units, gated"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "45-hybrids-ld-b.test.ts",
+        "pattern": "Vengeance: opponents' battle cards gain '[Sacrifice a unit]' — the payer picks, off a menu of THEIR units only",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "38-light-a.test.ts",
+        "pattern": "Arbiter of Armistice: an unpayable life tax makes the card uncastable",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Arbiter of Armistice",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Vengeance",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R122",
+        "supports": "yes",
+        "note": "payer chooses; atomic before the stack"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**The payer chooses.** The decision lists the paying seat's units in the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Does not cover an Ambush (see concepts.costs.modifiers.imposed.ambush)."
+  },
+  {
+    "key": "concepts.costs.modifiers.imposed.ambush",
+    "textHash": "a836648abffdcd54",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U04-r2",
+    "engine": [
+      {
+        "loc": "cards/sets/batch-light-a.ts:Arbiter of Armistice costMods.life",
+        "agrees": false,
+        "note": "gates on ctx.purpose === 'play'; the Ambush play path never asks the cost-mod layer, so an Ambush pays no life (the flagged divergence is real)"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U04/u04-probes.test.ts",
+        "title": "concepts.costs.modifiers.imposed.ambush: an Ambush under Arbiter of Armistice — does it pay [Pay 2 life]?",
+        "passed": true,
+        "demonstrates": "yes: the divergence. A spell card there owes 2 life; a Lurking Slimebeast Ambush pays none"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Arbiter of Armistice",
+        "supports": "yes",
+        "note": "\"Cards played during battle\" literally covers a card played as an Ambush"
+      },
+      {
+        "ref": "R129",
+        "supports": "yes",
+        "note": "an Ambush is a card being played (cardPlayed event)"
+      },
+      {
+        "ref": "R122",
+        "supports": "no",
+        "note": "documents the opposite engine behaviour: Ambush sits outside the play-tax layer, left as a future decision. Useful only as evidence of the divergence"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "### (b) 'cardPlayed': a {Battle} unit and an Ambush are cards being played"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "printed cost line and today sits outside the R59/R60/R122 play-tax layer"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "you can play cards as an ambush during battle, even if"
+      },
+      {
+        "file": "client/engine/src/cards/dsl.ts",
+        "text": "new Set<StackItem['kind']>(['unit', 'spell', 'spellUnit', 'ambush']);"
+      }
+    ],
+    "basis_ok": false,
+    "problem": "Ruling and divergence both check out. Basis 'printed' overstates: the card prints only the tax; that an Ambush is a card played comes from R129 (owner) and Manual p.40 ('play cards as an ambush'), which is not cited. Basis should be mixed, or cite Manual p.40. R122 is cited as a ruling source but says the reverse."
+  },
+  {
+    "key": "concepts.costs.modifiers.minimum",
+    "textHash": "a02b7e4a1d499f69",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.xFloor / E.manaToPlay",
+        "agrees": true,
+        "note": "CostMod xMin raises the X floor; an X spell is billed its chosen X"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "133-x-cost-semantics.test.ts",
+        "pattern": "R326 (reverses R157 §20) — under a Stasis Sentry the X menu starts at 3, and X = 3 deals 3",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Stasis Sentry",
+        "supports": "yes",
+        "note": "printed"
+      },
+      {
+        "ref": "RAQ 1359629594512068770#0",
+        "supports": "yes",
+        "note": "verbatim _passer"
+      },
+      {
+        "ref": "RAQ 1359629594512068770#1",
+        "supports": "partly",
+        "note": "the quoted text is the extract's claim summary, not the designer's verbatim words; the verbatim source line agrees"
+      },
+      {
+        "ref": "R326",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/133-x-cost-semantics.test.ts",
+        "text": "assert.deepEqual(h.state.decision!.options.map(o => o.value), [3, 4, 5], 'X = 0, 1 and 2 are not offered');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.costs.modifiers.minimum.tokens",
+    "textHash": "d5c06c2da01484a6",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.manaToPlay via Stasis Sentry CostMod (isPlayedSpellKind)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "337-spell-tokens-are-played.test.ts",
+        "pattern": "R305: Stasis Sentry prints Spells, so a token (base cost 0) costs [3] in battle",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R305",
+        "supports": "yes",
+        "note": "owner: \"Yes, tokens cost 3\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "\"Yes, tokens cost 3\""
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.costs.modifiers.noun",
+    "textHash": "399f13a013d0ceda",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U04-r2",
+    "engine": [
+      {
+        "loc": "cards/sets/batch-earth-c.ts:Tranquility costMods.delta",
+        "agrees": true,
+        "note": "isPlayedSpellKind: spell, spellUnit, spellToken; purpose 'play' only"
+      },
+      {
+        "loc": "cards/sets/batch-light-a.ts:Arbiter of Armistice costMods.life",
+        "agrees": true,
+        "note": "CARD_PLAY_KINDS (unit, spell, spellUnit, ambush) excludes spellToken; purpose 'play' excludes mods. The Ambush half is not reached (flagged divergence)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/337-spell-tokens-are-played.test.ts",
+        "pattern": "Tranquility taxes a spell token",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "client/engine/test/337-spell-tokens-are-played.test.ts",
+        "pattern": "Arbiter of Armistice prints Cards",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "client/engine/test/38-light-a.test.ts",
+        "pattern": "Arbiter of Armistice",
+        "passed": true,
+        "asserts_claim": "yes: a Virus augment applied in battle pays no life"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U04/u04-r2-probes.test.ts",
+        "title": "concepts.costs.modifiers.noun: Tranquility (\"Spells cost [one] more\") taxes a SPELL UNIT played in battle",
+        "passed": true,
+        "demonstrates": "yes"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U04/u04-r2-probes.test.ts",
+        "title": "concepts.costs.modifiers.noun: Arbiter of Armistice (\"Cards played\") taxes a UNIT played in battle",
+        "passed": true,
+        "demonstrates": "yes"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U04/u04-probes.test.ts",
+        "title": "concepts.costs.modifiers.imposed.ambush: an Ambush under Arbiter of Armistice — does it pay [Pay 2 life]?",
+        "passed": true,
+        "demonstrates": "yes: the flagged Ambush divergence is real"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R305",
+        "supports": "yes",
+        "note": "spell(s) counts a token; card(s) does not"
+      },
+      {
+        "ref": "R129",
+        "supports": "yes",
+        "note": "units and Ambushes are cards played"
+      },
+      {
+        "ref": "RAQ 1537748882501668934#0",
+        "supports": "partly",
+        "note": "the quoted words are our claim paraphrase in extract.json, not _passer's, who wrote \"Mods are not considered 'played'\". Same substance"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **\"spell(s)\"**: a token counts."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **\"card(s)\"**: a token does not."
+      },
+      {
+        "file": "client/engine/src/cards/dsl.ts",
+        "text": "return kind === 'spell' || kind === 'spellUnit' || kind === 'spellToken';"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "The designer citation quotes our paraphrase as if it were the designer's words."
+  },
+  {
+    "key": "concepts.costs.modifiers.paid-reduction",
+    "textHash": "b0dc58326b47b6a1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.grantNextPlayDiscount / spendNextPlayDiscount / expireNextPlayDiscount / manaToPlay",
+        "agrees": true,
+        "note": "player-side tally, not region-scoped; expires at phase change"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "45-hybrids-ld-b.test.ts",
+        "pattern": "Deferral Drone: R119 — the charge SURVIVES the Drone leaving play (\"you paid for it\")",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "45-hybrids-ld-b.test.ts",
+        "pattern": "Deferral Drone: ERRATA — the charge expires at a MID-TURN phase boundary, not just the turn",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Deferral Drone",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R119 (its charge-outlives-the-source ruling)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "regions in one turn gets the discount wherever they play"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.costs.modifiers.sum",
+    "textHash": "d276e1df9355f816",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.abilityTax / E.manaToPlay",
+        "agrees": true,
+        "note": "deltas summed over costModsFor(region)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "16-earth-a.test.ts",
+        "pattern": "Crevice Lurker: R121 — two Lurkers compound: CostMod deltas SUM, so the tax is +2",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R121 (its ability-tax layer)",
+        "supports": "yes",
+        "note": "Deltas SUM"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Deltas SUM (two Lurkers = +2)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.costs.modifiers.trigger-tax",
+    "textHash": "7c0e1e64a7e3bf40",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.gateTaxedTrigger",
+        "agrees": true,
+        "note": "controller asked payOrDecline; zero open mana prevents outright; decline prevents"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "16-earth-a.test.ts",
+        "pattern": "Crevice Lurker: R121 — a taxed trigger ASKS its controller, and paying [1] puts it on the stack",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ Crevice Lurker: declining the tax on your own Origon lets your own first spell resolve",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Crevice Lurker",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1355103348378042515#4",
+        "supports": "yes",
+        "note": "verbatim"
+      },
+      {
+        "ref": "R121 (its ability-tax layer)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "goes on the stack; decline and it simply does not happen. **The decision is"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.costs.modifiers.trigger-tax.once",
+    "textHash": "b223d398bcc7733a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.refundTriggerBudgets",
+        "agrees": true,
+        "note": "declined or unpayable gate hands the bounded budget back"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "16-earth-a.test.ts",
+        "pattern": "Crevice Lurker: R121 — declining prevents the trigger and does NOT spend its [once] (R108/R113)",
+        "passed": true,
+        "asserts_claim": "yes — via Astral Painseeker's [Switch1] budget, not a literal [once]; the rule's \"or other once-per-turn limit\" covers it, but the example's wording \"[once] trigger\" does not match the card used"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R121 (its ability-tax layer)",
+        "supports": "yes",
+        "note": "declined/prevented trigger keeps its [once]"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "keeps its `[once]`"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Example wording says \"[once]\"; the bound test exercises [Switch1]."
+  },
+  {
+    "key": "concepts.costs.multiplied",
+    "textHash": "a6a5cedc4d962f3f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.gateGraftCosts / E.withholdComposite (R334 over R110)",
+        "agrees": true,
+        "note": "a multiplied fixed cost is checked N times up front; unpayable withholds the whole composite"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "17-earth-b.test.ts",
+        "pattern": "R110: a \"[cost]: effect\" graft under Lost Guardian pays its cost TWICE and resolves twice",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "17-earth-b.test.ts",
+        "pattern": "R110: all or nothing — one card in hand cannot pay a doubled [Discard a card], so nothing is paid and nothing happens",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353859961855148103#4",
+        "supports": "yes",
+        "note": "verbatim _passer"
+      },
+      {
+        "ref": "RAQ 1353859961855148103#5",
+        "supports": "yes",
+        "note": "verbatim _passer"
+      },
+      {
+        "ref": "R110 (its cost-paid-per-copy half)",
+        "supports": "yes",
+        "note": "paid per copy"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/17-earth-b.test.ts",
+        "text": "assert.equal(h.state.players[p]!.hand.length, 0, 'both cards were discarded — the cost is paid twice');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Note: under R334 more than \"that effect\" fails — the whole composite is withheld; the rule is not wrong, only narrower than the current ruling."
+  },
+  {
+    "key": "concepts.costs.reading-cost",
+    "textHash": "89f716d0a1d61a32",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "cards dsl.printedCost / manaOf (R158)",
+        "agrees": true,
+        "note": "readers use printed cost; an X card not being cast reads 0; a cast X spell reads its X"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ printed cost: Arcane Concentrator and Channeled Amalgam read a taxed Squish as a 2",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "133-x-cost-semantics.test.ts",
+        "pattern": "R157 §1 — a card that was never cast has no cost: an X card in hand reads 0",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353980184042143835#0",
+        "supports": "yes",
+        "note": "the quoted text is the extract's claim summary, not the designer's verbatim words; the verbatim source line agrees"
+      },
+      {
+        "ref": "RAQ 1396955380000755795#9",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R157 (its §1)",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R158 (its §1 three contexts)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "text": "assert.deepEqual(effStats(h, xx[0]!.id), [2, 2], 'X = the printed 2, not the 4 paid');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.costs.receipt",
+    "textHash": "2a91e71c3ba92ec5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.chargeCastCost",
+        "agrees": true,
+        "note": "snapshots the sacrificed unit's stats into costPaid"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "32-cast-costs.test.ts",
+        "pattern": "Volatile Toxicity: X reads the defense snapshotted when the cost was paid",
+        "passed": true,
+        "asserts_claim": "yes — X = defense at payment; the test uses a 7/5 Good Whale (X = 5), not the example's 2/3"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R35 (its cast-time payment half)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/32-cast-costs.test.ts",
+        "text": "assert.equal(item.parts[0]!.costPaid!.sacrificed!.defense, 5, 'receipt on the part');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "The bound test does not change the board between payment and resolution, so \"whatever happens to the board\" is not exercised, only the snapshot."
+  },
+  {
+    "key": "concepts.costs.region",
+    "textHash": "9067a6d4bbe5f972",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U04-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:E.canPayCastCost",
+        "agrees": true,
+        "note": "sacrificeUnit(s) read unitsOf(seat, region), which filters controller === seat"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U04/u04-probes.test.ts",
+        "title": "concepts.costs.region: a cost sacrifice menu holds only units in the region where it is paid",
+        "passed": true,
+        "demonstrates": "yes: Volatile Toxicity offers the battle-region unit, not the home one"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.42",
+        "supports": "yes",
+        "note": "Q/A: cannot sacrifice units in another region to pay a cost"
+      },
+      {
+        "ref": "Manual p.41",
+        "supports": "yes",
+        "note": "cannot sacrifice what you don't control"
+      },
+      {
+        "ref": "R35 (its cast-time payment half)",
+        "supports": "yes",
+        "note": "region-scoped cost"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Can I sacrifice units that I have in another region to"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "sacrificed unit's defense as it was then), the cost is region-scoped (the"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "case 'sacrificeUnit': return this.unitsOf(seat, region).length > 0;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "No gate test; the round-1 probe covers it."
+  },
+  {
+    "key": "concepts.costs.region.other-units",
+    "textHash": "75641e8d8977df0f",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U04-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:E.canPayCastCost",
+        "agrees": true,
+        "note": "removeCounters reads counterPool(seat, region); recallUnit reads unitsOf(seat, region) minus the source"
+      },
+      {
+        "loc": "engine.ts:E.counterPool",
+        "agrees": true,
+        "note": "allies pool = unitsOf(seat, region)"
+      },
+      {
+        "loc": "engine.ts:E.castCostOptions",
+        "agrees": true,
+        "note": "recall and counter menus are built from unitsOf(seat, item.region)"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U04/u04-r2-probes.test.ts",
+        "title": "concepts.costs.region.other-units: a [Remove X counters from allies] menu holds only allies in the region where it is paid",
+        "passed": true,
+        "demonstrates": "yes: Discharge offers the battle-region ally, not the ally at home"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U04/u04-r2-probes.test.ts",
+        "title": "concepts.costs.region.other-units: a [Recall another ally] menu holds only allies in the region where it is paid",
+        "passed": true,
+        "demonstrates": "yes: Auric Ascendant offers the ally beside it, not the one at home, never itself"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R35 (its cast-time payment half)",
+        "supports": "partly",
+        "note": "says \"the cost is region-scoped\" in a sacrifice context; nothing about counters or recall. Basis engine is honest."
+      },
+      {
+        "ref": "engine.ts:E.canPayCastCost",
+        "supports": "yes",
+        "note": "region-scoped pools for both kinds"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "case 'removeCounters': return this.counterPool(seat, region, cost.from, sourceId) >= want;"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "return this.unitsOf(seat, region).reduce((n, u) => n + Math.max(0, u.counters), 0);"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "return this.unitsOf(seat, item.region)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "No test in the gate covers it; the two probes do."
+  },
+  {
+    "key": "concepts.costs.resolution-payments",
+    "textHash": "198745afcb218563",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "cards (Xenopod Progenitor) payOrDecline inside run()",
+        "agrees": true,
+        "note": "no cost at stack time; asked at resolution"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ Xenopod: the trigger goes on the stack with no payment asked, and the [1] is asked as it resolves",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1397189214352703590#0",
+        "supports": "yes",
+        "note": "the quoted text is the extract's claim summary, not the designer's verbatim words; the verbatim source line agrees"
+      },
+      {
+        "ref": "R6",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Payment is **part of spell resolution**"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.costs.trigger-sacrifice-me",
+    "textHash": "07db22bbccedd07e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.canPayCastCost (from self) / chargeCastCost",
+        "agrees": true,
+        "note": "choice-free, charged in the cast window; dead source → unpayable → part skipped"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "26-metal-a.test.ts",
+        "pattern": "Eldritch Dreamtender: the sacrifice is paid on the way to the stack, not at resolution",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "26-metal-a.test.ts",
+        "pattern": "Eldritch Dreamtender: the sacrifice is MANDATORY — no decline is ever offered (R73)",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "32-cast-costs.test.ts",
+        "pattern": "R73: a source that is already dead makes the cost UNPAYABLE, so the part is skipped",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R73",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "printed prose as a bracketed cost.**"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.costs.trigger-sacrifice-me.optional",
+    "textHash": "818b703072604d7e",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U04-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:E.collectAsYouPlay",
+        "agrees": true,
+        "note": "Maelstrom Charger's 'you may sacrifice me' is an as-you-play option the player may decline, not a mandatory castCost"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/151-copy-and-moved-mods.test.ts",
+        "pattern": "R178 Maelstrom Charger",
+        "passed": true,
+        "asserts_claim": "yes: the option is offered, and declining copies nothing"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1379132904931594372#0",
+        "supports": "yes",
+        "note": "\"you can decide to Sacrifice Mael\""
+      },
+      {
+        "ref": "R73",
+        "supports": "yes",
+        "note": "Maelstrom Charger deliberately not moved to a cost because it is printed as optional"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "spell\"*) — printed as OPTIONAL. A choice-free cost would make it mandatory,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.costs.unpayable",
+    "textHash": "03cc80b716664521",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:abilityUnusable / doActivateAbility; engine.ts:E.canPayCard",
+        "agrees": true,
+        "note": "unpayable costs gate the offer and apply() refuses; nothing paid"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "167-variable-ability-costs.test.ts",
+        "pattern": "R196 Auric Ascendant with no other ally is NOT OFFERED — an unpayable cost gates, it does not whiff (R49)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353859961855148103#5",
+        "supports": "partly",
+        "note": "about a MULTIPLIED graft cost, on topic but not the general gate"
+      },
+      {
+        "ref": "R196",
+        "supports": "yes",
+        "note": "unpayable cost gates"
+      },
+      {
+        "ref": "R49 (its cast-cost and activation-cost body)",
+        "supports": "yes",
+        "note": "every cost gates the action"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "unpayable cost GATES; it does not whiff"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.costs.unpayable.all-or-nothing",
+    "textHash": "31e9796937e0988d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts compound-cost gate (R196) before the first collector charges",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "167-variable-ability-costs.test.ts",
+        "pattern": "R196 the COMPOUND half-pay hazard: an unpayable half of Instrument of Reassignment's cost pays NOTHING, neither the mana nor the unit",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353859961855148103#5",
+        "supports": "partly",
+        "note": "about a multiplied cost; on topic"
+      },
+      {
+        "ref": "R196",
+        "supports": "yes",
+        "note": "ALL OR NOTHING"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/167-variable-ability-costs.test.ts",
+        "text": "assert.equal(open(h, D), 3, 'the mana is untouched — this is the half-pay that used to be possible');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.costs.unpayable.life",
+    "textHash": "e2fa1a0a13466172",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U04-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:E.canPayLife",
+        "agrees": true,
+        "note": "n <= 0 || life > n; used by activation, cast-cost and imposed (Arbiter) life gates; variable life paid a point at a time re-asks it"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/38-light-a.test.ts",
+        "pattern": "at exactly 9 life",
+        "passed": true,
+        "asserts_claim": "yes: activation throws, not offered, no life paid"
+      },
+      {
+        "file": "client/engine/test/38-light-a.test.ts",
+        "pattern": "Arbiter of Armistice",
+        "passed": true,
+        "asserts_claim": "yes: an imposed 2-life tax is unpayable at exactly 2 life"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R49 (its life-cost ruling)",
+        "supports": "yes",
+        "note": "states it, and says openly it is the engine's own ruling with no designer statement"
+      },
+      {
+        "ref": "R60 (its life half)",
+        "supports": "yes",
+        "note": "applies the same rule to the imposed life tax"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "while you have **more** than N — paying your last life is refused too. Life"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "return n <= 0 || this.player(seat).life > n;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.costs.what-a-cost-is",
+    "textHash": "20a6949e274844bd",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.payCard (purpose mod) / apply.ts augment from hand",
+        "agrees": true,
+        "note": "applying a mod pays mana and needs affinity"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "408-raq-new-threads.test.ts",
+        "pattern": "RAQ Mods are NOT Played: an augment from hand needs its affinity and pays its cost",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.41",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1537748882501668934#1",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/408-raq-new-threads.test.ts",
+        "text": "assert.equal(augmentsFromHand(h, A, 'Stalwart Sentinel').length, 0, 'three mana, no light: not offered');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.costs.what-a-cost-is.affinity-not-a-cost",
+    "textHash": "02668c67060a9860",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.affinity",
+        "agrees": true,
+        "note": "counts every non-dormant resource of the element; \"expended still counts\""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "RAQ Mana question: affinity counts resources already spent — two wood pay for many gg cards",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "partly",
+        "note": "defines affinity as a requirement to be met, separate from the mana cost; it does not itself say expended resources count"
+      },
+      {
+        "ref": "RAQ 1358299200953126963#0",
+        "supports": "yes",
+        "note": "the quoted text is the extract's claim summary, not the designer's verbatim words; the verbatim source line agrees (calebgannon: \"You don't care if it's tapped or not\")"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (r.kind === element) n++;           // expended still counts"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.costs.what-a-cost-is.mana",
+    "textHash": "50b6659970f7418d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.payMana",
+        "agrees": true,
+        "note": "each open resource expended once for 1 mana; refreshed at turn start"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.14",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.4",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (need > 0 && r.state === 'open' && r.kind !== 'prismite') { r.state = 'expended'; need--; }"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.damage.amount-order",
+    "textHash": "7edb68001e8f9ef1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.dealEffectDamageAll",
+        "agrees": true,
+        "note": "amountDelta (Conduit) then Powerful x2, then Vulnerable receive-side mult"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Resonant: Conduit adds its 1 BEFORE Powerful doubles — a Powerful Bellowing Boulder deals (1+1)x2 = 4 to each unit",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U04/u04-probes.test.ts",
+        "title": "concepts.damage.amount-order: Conduit adds, Powerful doubles, then a Vulnerable recipient takes double",
+        "passed": true,
+        "demonstrates": "yes — 4 on a plain unit, 8 on a Vulnerable one"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "RAQ 1362838395298119912#4",
+        "supports": "yes",
+        "note": "the quoted text is the extract's claim summary, not the designer's verbatim words; the verbatim source line agrees"
+      },
+      {
+        "ref": "R316",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R103 (its order-of-operations arithmetic)",
+        "supports": "yes",
+        "note": "Vulnerable is receive-side"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "// once, AFTER the additive modifiers (R316) and before Electric"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "additive modifiers (Conduit of Pain's"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.damage.basics",
+    "textHash": "1d126b5e89695fef",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:checkDeaths predicate",
+        "agrees": true,
+        "note": "return t <= 0 || u.damage >= t"
+      },
+      {
+        "loc": "engine.ts:E.loseLife",
+        "agrees": true,
+        "note": "player damage is committed as a life loss"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U04/u04-probes.test.ts",
+        "title": "concepts.damage.basics: damage equal to defense kills; unblocked damage to a player is life lost",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": "greater than or equal to its defense dies"
+      },
+      {
+        "ref": "Rulebook 2023 p.11",
+        "supports": "yes",
+        "note": "unblocked damage is dealt to the player's life total"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "return t <= 0 || u.damage >= t;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.damage.basics.all-dealt",
+    "textHash": "5472d0d542ecf655",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts damage commit (R114/R317)",
+        "agrees": true,
+        "note": "excess beyond lethal is still dealt and counted"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Vulnerable: Electric damage with nowhere to jump is still dealt — all 6 land on the Vulnerable unit as 12",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1372451771632320512#2",
+        "supports": "yes",
+        "note": "the quoted text is the extract's claim summary, not the designer's verbatim words; the verbatim source line agrees"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/387-raq-combat.test.ts",
+        "text": "assert.deepEqual(dealt, [12],"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.damage.basics.regroup",
+    "textHash": "d7ebd963040231d0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.startRegroup",
+        "agrees": true,
+        "note": "for every unit: e.damage = 0"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U04/u04-probes.test.ts",
+        "title": "concepts.damage.basics.regroup: damage marked on a unit is removed at regroup",
+        "passed": true,
+        "demonstrates": "yes: 2 marked damage during battle, 0 after regroup"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.26",
+        "supports": "yes",
+        "note": "regroup list: \"All damage on units is removed\""
+      },
+      {
+        "ref": "Rulebook 2023 p.11",
+        "supports": "yes",
+        "note": "\"All damage on units goes away during the regroup step.\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "for (const e of Object.values(this.s.entities)) if (e.kind === 'unit') e.damage = 0;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.damage.combat-and-noncombat",
+    "textHash": "7fed37fcece39d20",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts Resonant drain (R315) via the effect-damage path, combat:false",
+        "agrees": true,
+        "note": "Oorblak redirect hears only combat damage"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Resonant: the extra damage is not combat damage — Oorblak does not take it, the player does",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Conduit of Pain",
+        "supports": "partly",
+        "note": "shows the printed game distinguishes noncombat damage; does not define combat damage"
+      },
+      {
+        "ref": "RAQ 1362838395298119912#0",
+        "supports": "yes",
+        "note": "verbatim _passer line"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/387-raq-combat.test.ts",
+        "text": "'\"extra damage from Resonant effect wouldn\\'t be considered as combat damage\" — Oorblak takes only COMBAT damage');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.damage.one-effect",
+    "textHash": "bd2224813d506628",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.dealEffectDamageAll (R80 batch)",
+        "agrees": true,
+        "note": "hits coalesced per recipient; deaths checked once after the batch"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "69-damage-batch.test.ts",
+        "pattern": "R80: Channel Through gives a twice-hit unit ONE damage event (the Restitution report)",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "69-damage-batch.test.ts",
+        "pattern": "R80: \"each unit\" damage kills simultaneously — every unit hears the same total",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R80",
+        "supports": "yes",
+        "note": "coalesced per recipient; deaths checked once"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/69-damage-batch.test.ts",
+        "text": "assert.equal(hits.length, 1, 'the sole enemy unit took both points as ONE hit');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.damage.one-effect.copies",
+    "textHash": "54758ce5250b8a6e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts R80 batch per resolution",
+        "agrees": true,
+        "note": "each rockfall copy is its own batch"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U04/u04-probes.test.ts",
+        "title": "concepts.damage.one-effect.copies: Meteor Shower's three rockfalls are three separate dealings",
+        "passed": true,
+        "demonstrates": "yes — three damage events of 3 on the same unit, each batch total one rockfall (6), never a coalesced 18"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R80",
+        "supports": "yes",
+        "note": "Caleb: each copy of Rockfall is a separate source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Each copy of Rockfall is a separate"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Example is unbound (illustrative); the probe can be bound."
+  },
+  {
+    "key": "concepts.damage.poisonous",
+    "textHash": "1a8cc1fa7db9c0cc",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts damage commit (R237 mark)",
+        "agrees": true,
+        "note": "Poisonous marks counters inside the damage event, which fires"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "206-deadly-everywhere.test.ts",
+        "pattern": "R237: an un-prevented {Poisonous} hit fires \"whenever I am dealt damage\" (the RAQ example)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1354148437355925554#0",
+        "supports": "yes",
+        "note": "the quoted text is the extract's claim summary, not the designer's verbatim words; the verbatim source line agrees"
+      },
+      {
+        "ref": "R237",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "{Poisonous} is a MARK, not a substitution."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.damage.prevented",
+    "textHash": "f02f0ff0545a2ed4",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.dealEffectDamageAll / prevention at commit (R98)",
+        "agrees": true,
+        "note": "a fully prevented hit emits no damage event; Deadly kills only through dealt damage"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "24-wood-b.test.ts",
+        "pattern": "Phytochemical Protection: prevented damage is NOT dealt — no damage event fires",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "24-wood-b.test.ts",
+        "pattern": "Phytochemical Protection: {Deadly} cannot kill through it",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Poisonous: a shielded Jollyglop hit by a Poisonous unit takes no counters, does not trigger, and grows",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1354148437355925554#1",
+        "supports": "yes",
+        "note": "the quoted text is the extract's claim summary, not the designer's verbatim words; the verbatim source line agrees (\"Jollyglop doesn't trigger, won't get -2/-2 from Poisonous\")"
+      },
+      {
+        "ref": "R98 (its prevention-is-not-dealing ruling)",
+        "supports": "yes",
+        "note": "no damage event for a prevented hit"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "So a fully prevented hit produces **no `damage` event**"
+      },
+      {
+        "file": "client/engine/test/24-wood-b.test.ts",
+        "text": "assert.ok(ent(h, mine), 'a Deadly hit that dealt no damage kills nothing');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.damage.replaced",
+    "textHash": "dc6295c2651bb2d7",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts combat damage replacement (R238)",
+        "agrees": true,
+        "note": "a hit replaced as rot still fires the column-dealt event"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "207-replaced-hit-was-dealt.test.ts",
+        "pattern": "R238: \"when my column deals combat damage\" pays out through the replacement",
+        "passed": true,
+        "asserts_claim": "yes, loosely — it asserts the opponent gained some life, not exactly \"that much\""
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R238",
+        "supports": "yes",
+        "note": "Caleb: still damage"
+      },
+      {
+        "ref": "R98 (its prevention-is-not-dealing ruling)",
+        "supports": "yes",
+        "note": "replaced damage counts as dealt"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Yes, blightsea pollup says it deals damage as, so its still damage"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.damage.source",
+    "textHash": "5c1802c0fe5d9cae",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "cards Squish/Fight/Battle + E.dealEffectDamageAll attrsVs",
+        "agrees": true,
+        "note": "the unit's Powerful applies; a virus on the spell does not"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "388-raq-blocks-and-windows.test.ts",
+        "pattern": "RAQ Squish: the unit is the source — a Powerful ally deals double its defense",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "388-raq-blocks-and-windows.test.ts",
+        "pattern": "RAQ Squish: a Powerful Squish does not double — the spell is not the source",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1402292180499955884#0",
+        "supports": "yes",
+        "note": "the quoted text is the extract's claim summary, not the designer's verbatim words; the verbatim source line agrees"
+      },
+      {
+        "ref": "RAQ 1402292180499955884#1",
+        "supports": "yes",
+        "note": "the quoted text is the extract's claim summary, not the designer's verbatim words; the verbatim source line agrees"
+      },
+      {
+        "ref": "R318",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Q: When I play Squish/Fight/Battle, what is source of damage? A: Unit."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.damage.source.unit-not-spell-effect",
+    "textHash": "c79fa80782793aa4",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "cards (Squish/Fight/Battle) + E.dealEffectDamageAll",
+        "agrees": true,
+        "note": "the unit is the damage source, so isSpellEffect-keyed Ember of Life does not hear it"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "388-raq-blocks-and-windows.test.ts",
+        "pattern": "RAQ Squish: Squish damage is the unit dealing it, so Ember of Life does not trigger",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1402292180499955884#2",
+        "supports": "yes",
+        "note": "verbatim _passer line"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/388-raq-blocks-and-windows.test.ts",
+        "text": "Damage resulting from Squish/Fight/Battle won\\'t trigger Ember of Life"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.debt",
+    "textHash": "de85fd1d8eded657",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U04-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:E.payDebt",
+        "agrees": true,
+        "note": "called last in doDonePlanning; pays min(debt, open mana), one mana per debt; remainder carries"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/35-rot-debt-trash.test.ts",
+        "pattern": "debt is paid automatically",
+        "passed": true,
+        "asserts_claim": "yes: 3 debt, 5 mana -> 0 debt, 2 mana after donePlanning"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U04/u04-probes.test.ts",
+        "title": "concepts.debt: debt is still owed while the resource step is open, and is paid only when it ends",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R39",
+        "supports": "yes",
+        "note": "Caleb 2024-09-10/2024-12-02 via the owner; also says partial payment carries over (the rule omits that, but does not contradict it)"
+      },
+      {
+        "ref": "glossary: Debt",
+        "supports": "partly",
+        "note": "ours, not authority; correctly filed under ours"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "must pay 1 mana per debt, each mana removing one debt. Partial payment is"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const paid = Math.min(owed, this.openMana(seat));"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.debt.as-cost",
+    "textHash": "084ded797ce1ad16",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U04-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:E.payActivationCost",
+        "agrees": true,
+        "note": "cost.debt -> gainDebt in the cast window"
+      },
+      {
+        "loc": "engine.ts:E.canPayCastCost",
+        "agrees": true,
+        "note": "gainDebt always payable; charged with the cast-time costs"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/47-costs-events.test.ts",
+        "pattern": "printed.gainDebt is a REAL",
+        "passed": true,
+        "asserts_claim": "partly: debt charged at play; the test does not negate"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U04/u04-probes.test.ts",
+        "title": "concepts.debt.as-cost: a negated debt-cost spell keeps the debt paid",
+        "passed": true,
+        "demonstrates": "yes: Hyper Beam negated by Dematerialize deals 0 and the debt stays"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Deferral Drone",
+        "supports": "yes",
+        "note": "\"Gain 4 debt:\" is an activation cost (oracle prints \"[Augment][once] Gain 4 debt: ...\")"
+      },
+      {
+        "ref": "R49 (its cast-cost and activation-cost body)",
+        "supports": "yes",
+        "note": "a negated Hyper Beam still costs its caster the debt"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "printed `Printed.gainDebt` line, which the engine itself charges — a negated"
+      },
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "Gain 4 debt: The next card you play this phase costs [3] less."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.debt.automatic",
+    "textHash": "fadfc8957531344a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doDonePlanning",
+        "agrees": true,
+        "note": "planningDone set before payDebt, so no resource action is legal afterwards"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "R39: debt-paid mana is genuinely gone — no more resources can be activated, and the card is unplayable",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R39",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "it is deliberately the LAST thing in the resource step so that no further"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.debt.partial",
+    "textHash": "424d31ccd62f09d8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.payDebt",
+        "agrees": true,
+        "note": "pays min(owed, openMana); remainder carries; no other penalty"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "R39: partial payment is fine and the remainder carries to the next turn",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "38-light-a.test.ts",
+        "pattern": "Greed Angel: unpayable debt carries over instead of costing life",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R39",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "allowed and the remainder carries to the next turn; there is no other"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.life.basics",
+    "textHash": "6e27feb06309a7e5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:initial state",
+        "agrees": true,
+        "note": "life: ... ?? 30 (lesson/draft decks may override)"
+      },
+      {
+        "loc": "engine.ts:E.loseLife",
+        "agrees": true,
+        "note": "p.life <= 0 sets the winner and gameover"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U04/u04-probes.test.ts",
+        "title": "concepts.life.basics: players start at 30, and reaching 0 life ends the game for that player",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": "begins with 30 life; eliminate by bringing life to 0"
+      },
+      {
+        "ref": "Rulebook 2023 p.2",
+        "supports": "yes",
+        "note": "set life totals to 30"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (p.life <= 0 && this.s.winner === null) {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.life.basics.gain-and-loss",
+    "textHash": "fec971d3a9c58b70",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.gainLife / E.loseLife; set-life cards (Triskaidekaphage, Haunting Memories) move life by gain/loss",
+        "agrees": true,
+        "note": ""
+      },
+      {
+        "loc": "engine.ts:E.payCard",
+        "agrees": true,
+        "note": "life costs are charged via loseLife"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Arbiter of Vitality",
+        "supports": "yes",
+        "note": "\"(Damage causes loss of life.)\""
+      },
+      {
+        "ref": "card: Soul Siphon",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.11",
+        "supports": "partly",
+        "note": "damage to the life total"
+      },
+      {
+        "ref": "R162 (its multiplicative family)",
+        "supports": "yes",
+        "note": "lists face damage, rot, costs as life changes"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/sets/batch-light-a.ts",
+        "text": "if (life > 13) g.loseLife(ctx.controller, life - 13, 'Triskaidekaphage');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Engine-only exception: the sandbox (test mode) setter writes life directly; not a game rule."
+  },
+  {
+    "key": "concepts.life.basics.region",
+    "textHash": "96153131ed193de0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts opponents/players in ctx.region (R12)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "10-water-metal.test.ts",
+        "pattern": "Bloated Manablub: dying in battle → each opponent loses 3 life (region-scoped)",
+        "passed": true,
+        "asserts_claim": "yes, but in a 1v1 battle where the only opponent is present — it cannot show exclusion"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U04/u04-probes.test.ts",
+        "title": "concepts.life.basics.region: \"each opponent loses 3 life\" during deployment reaches nobody",
+        "passed": true,
+        "demonstrates": "yes — exclusion: in deployment the opponent is in another region and loses nothing"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.42",
+        "supports": "yes",
+        "note": "Q&A, verbatim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/10-water-metal.test.ts",
+        "text": "assert.equal(h.state.players[D]!.life, 27, 'opponent (D) present in the region lost 3');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "The printed Q&A is about \"each opponent\"; the first sentence generalises it to every life effect."
+  },
+  {
+    "key": "concepts.life.cant-change",
+    "textHash": "8e987d9a2a39f2a2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.lifeLocked checked first in gainLife and loseLife",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "40-light-c.test.ts",
+        "pattern": "Suspend: the target's life total can't change in either direction this battle",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Suspend",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (n > 0 && this.lifeLocked(seat)) {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.life.lost-in-battle",
+    "textHash": "3832349b38ef0877",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.loseLife lifeLost battle counter (gains are a separate counter)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "388-raq-blocks-and-windows.test.ts",
+        "pattern": "RAQ Life lost: life lost in a battle adds up the losses and ignores the gains — Soul Siphon makes a 13/13",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1449475896510648320#0",
+        "supports": "yes",
+        "note": "the quoted text is the extract's claim summary, not the designer's verbatim words; the verbatim source line agrees"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (this.s.battle) this.bumpBattleCounter(this.s.battle.region, `lifeLost:${seat}`, n);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.life.multipliers",
+    "textHash": "62307b980bee7dcb",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.lifeAmount (called from loseLife/gainLife before the total moves)",
+        "agrees": true,
+        "note": "factors multiply; committed before the lethal check"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "137-multiplier-and-mode.test.ts",
+        "pattern": "R264: THREE Arbiters multiply — the fold is EXPONENTIAL in n",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "137-multiplier-and-mode.test.ts",
+        "pattern": "Arbiter of Vitality: a LETHAL loss is multiplied BEFORE the lethal check",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Arbiter of Vitality",
+        "supports": "yes",
+        "note": "printed doubling"
+      },
+      {
+        "ref": "R264",
+        "supports": "yes",
+        "note": "n factors give 2^n"
+      },
+      {
+        "ref": "R162 (its multiplicative family)",
+        "supports": "yes",
+        "note": "committed in one go before the lethal check"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**The claiming factors MULTIPLY. n mods each declaring"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "n = this.lifeAmount('lifeLoss', seat, n, why);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.player-counters",
+    "textHash": "5ecab4e7c01ee713",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.loseRot / E.loseDebt",
+        "agrees": true,
+        "note": "removal not scaled by a \"put on\" replacement; clamps at what is there"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "41-dark-a.test.ts",
+        "pattern": "Burn the Blight: removes counters from units AND the rot/debt on players",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "152-hand-entry.test.ts",
+        "pattern": "a counter-amount replacement does NOT scale a REMOVAL (Proliferating Slime says \"put on\")",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Burn the Blight",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Proliferating Slime",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R179",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "isn't 'putting on'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.rot",
+    "textHash": "195f7709497fbe41",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.rotDamage",
+        "agrees": true,
+        "note": "initiative then non-initiative, n = rot, called from startDeployment"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "R38: rot deals damage equal to itself at the start of deployment, in initiative order",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "glossary: Rot",
+        "supports": "partly",
+        "note": "ours — not an authority"
+      },
+      {
+        "ref": "R38",
+        "supports": "yes",
+        "note": "start of deployment, own rot, initiative order"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "damage equal to their own rot total, in initiative order. Rot never"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.rot.never-decays",
+    "textHash": "f13bcb63e373fef7",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.rotDamage",
+        "agrees": true,
+        "note": "reads rot, never decrements it"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "R38: rot never decays — it fires again, at full size, every turn",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Burn the Blight",
+        "supports": "partly",
+        "note": "shows an effect can remove it; on topic only"
+      },
+      {
+        "ref": "R38",
+        "supports": "yes",
+        "note": "never decreases on its own"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "decreases on its own. The damage's source is the damaged player's own rot"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.rot.replacement",
+    "textHash": "5600d20536d5a627",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.rotDamage / E.replaceRotDamage",
+        "agrees": true,
+        "note": "hook returns true before anything is queued; a target-naming replacement fires rotReplaced and queues a trigger"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "42-dark-b.test.ts",
+        "pattern": "…and then eats the rot damage as +1/+1 counters (R38 replacement)",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "43-dark-c.test.ts",
+        "pattern": "Beyond, Codex Incarnate: R102 — the rot replacement asks its controller for a target, and the damage never lands",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Skittering Blight",
+        "supports": "yes",
+        "note": "printed replacement"
+      },
+      {
+        "ref": "R102",
+        "supports": "yes",
+        "note": "target-naming replacement uses the stack; the damage is replaced either way (\"nobody takes the damage either way\")"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "nobody takes the damage either way"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (this.replaceRotDamage(seat, n)) continue;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.rot.source",
+    "textHash": "7ab9270b181e7150",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.rotDamage",
+        "agrees": true,
+        "note": "damage event carries source 'rot', controller = the damaged seat"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "R38: the damage source is the damaged player themselves (\"your rot is a source you control\")",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R38",
+        "supports": "yes",
+        "note": "Caleb quote"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Your rot is a source you control"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.rot.timing",
+    "textHash": "09e5d876ae6b4f3e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts startDeployment: rotDamage() before the startOfDeployment event (R50/R102 deployStarting)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "47-costs-events.test.ts",
+        "pattern": "R50: 'startOfDeployment' fires AFTER R38's rot damage (the documented order)",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "R38: rot damage cannot be responded to — deployment opens no priority window",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R38",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R50",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "deployment it cannot be responded to"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "this.rotDamage();   // R38: start of deployment, before anyone may deploy"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.rot.who-gains",
+    "textHash": "049c8835eac139f0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "card Primordial Coalescence run → gainRot(ctx.controller)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "43-dark-c.test.ts",
+        "pattern": "Primordial Coalescence: three Wraiths (= Wights, R47) and 2 rot (R38)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R157 (its §9)",
+        "supports": "yes",
+        "note": "owner relays: refers to YOU, the controller/caster"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "refers to YOU, the controller/caster of the effect."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.timestamps.base-stats",
+    "textHash": "9ec00eb9170fceb0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts layer 2 (base rewrites sorted by stamp)",
+        "agrees": true,
+        "note": "Body Swap's later setBase beats the Statweaver static"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ timestamps: Body Swap with a Statweavered unit trades the 3/3 base for the 1/1",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1357965714807586897#1",
+        "supports": "yes",
+        "note": "verbatim _passer line"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "text": "assert.deepEqual(effStats(h, wisp), [1, 1], 'the Wisp is base 1/1 although the Statweaver still stands');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.timestamps.order",
+    "textHash": "f19c3c421b16b545",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.ownAttrs / strippersOf (R328)",
+        "agrees": true,
+        "note": "a later mod beats an earlier stripper on the same layer"
+      },
+      {
+        "loc": "engine.ts staticsFor",
+        "agrees": "partly",
+        "note": "R328: static-vs-static still resolves in one pass, not by timestamp"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ timestamps: a virus applied AFTER Monke still gives its attribute",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1357965714807586897#0",
+        "supports": "yes",
+        "note": "the quoted text is the extract's claim summary, not the designer's verbatim words; the verbatim source line agrees"
+      },
+      {
+        "ref": "R328",
+        "supports": "yes",
+        "note": "verbatim _passer"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "the same layer have timestamps and latter ones take precedence over former"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Engine caveat: R328 says static-vs-static is still one pass, not timestamp-ordered; no conflicting static pair is known to make this observable."
+  },
+  {
+    "key": "concepts.timestamps.removal",
+    "textHash": "7ba0037857ce853e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.ownAttrs (R328)",
+        "agrees": true,
+        "note": "keeps each attribute source not older than every stripper"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Suppression Field: a Powerful virus attached after it resolved makes the suppressed Bubb Powerful",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Transmogrifant: an attribute a unit gains AFTER it is in play is not affected — a Powerful virus attached later works",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355845893219287132#1",
+        "supports": "yes",
+        "note": "the quoted text is the extract's claim summary, not the designer's verbatim words; the verbatim source line agrees"
+      },
+      {
+        "ref": "R328",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A card that takes attributes or abilities away takes **what the unit has when the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.timestamps.removal.entering",
+    "textHash": "ba4d3792fd0fffaf",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.strippersOf / E.ownAttrs",
+        "agrees": true,
+        "note": "printed attributes carry E.PRINTED, older than any stripper, so a unit entering under a static stripper loses them; recomputed when the stripper leaves"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Transmogrifant: a unit that enters play under it has no attributes, and gets them back when Transmogrifant leaves",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R328",
+        "supports": "yes",
+        "note": "quotes _passer: statics \"affect new units entering play\" and units regain them when Monke/Transmogrifant leave"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "What a card prints is the oldest thing on it"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Basis is labelled owner but the substance is designer (_passer, quoted inside R328)."
+  },
+  {
+    "key": "concepts.timestamps.removal.stays-taken",
+    "textHash": "e5d65de9823de5f4",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U04-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:E.suppress / Entity.suppressed",
+        "agrees": true,
+        "note": "the strip is per-unit state with its own timestamp (suppressed.attrsAt), not column membership; cleared at regroup; ownAttrs keeps sources newer than the strip"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/402-raq-fix-stripping.test.ts",
+        "pattern": "a temporary attribute granted before a strip",
+        "passed": true,
+        "asserts_claim": "yes: earlier grant taken, later grant kept"
+      },
+      {
+        "file": "client/engine/test/299-formless-column.test.ts",
+        "pattern": "§3 the stamp outlives",
+        "passed": true,
+        "asserts_claim": "partly: the stamp persists after combat and ends at regroup; the unit is not actually moved out of the column"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R293",
+        "supports": "yes",
+        "note": "owner: a stamped unit that leaves the column does not get its attributes back; regroup ends it"
+      },
+      {
+        "ref": "R328",
+        "supports": "yes",
+        "note": "what was taken stays taken until regroup; later gains apply (RAQ-backed)"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- a stamped unit that **leaves** the column does not get its attributes back;"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "still holds: what was taken stays taken until regroup. What is new is that a LATER"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "The leaves-the-column clause is shown by the engine's per-unit data model, not by a test that moves a unit."
+  },
+  {
+    "key": "concepts.timestamps.when",
+    "textHash": "73df46a41f55ae48",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U04-r1",
+    "engine": [
+      {
+        "loc": "engine.ts stamps (R328)",
+        "agrees": true,
+        "note": "entity stamp [id, ∞]; mod = its id; temp grants/strips [nextId, ++layerTick]; printed = E.PRINTED (oldest)"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355845893219287132#1",
+        "supports": "partly",
+        "note": "shows timestamps matter for later gains; does not define what a timestamp is"
+      },
+      {
+        "ref": "R328",
+        "supports": "yes",
+        "note": "each source carries its arrival; printed is oldest"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "What a card prints is the oldest thing on it"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "No test or probe pins the definition directly; supported by the R328 encoding and the removal/order tests."
+  }
+]

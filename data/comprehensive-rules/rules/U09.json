@@ -1,0 +1,2303 @@
+[
+  {
+    "key": "turn.battle.what-it-is",
+    "parent": "505",
+    "order": 1,
+    "text": "The battle phase is the only interactive phase of the game. In it players manage their units across the regions: they attack into other regions or keep units back to defend.",
+    "examples": [
+      {
+        "text": "Player A attacks with a unit; it moves into Player B's region, and Player A enters that region too.",
+        "test": "02-combat.test.ts::combat math: columns, flying, piercing overflow, deaths"
+      }
+    ],
+    "see": [
+      "601",
+      "604"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.7",
+          "quote": "2. Battle Phase: The sole interactive phase of the"
+        },
+        {
+          "ref": "Manual p.7",
+          "quote": "regions of battle. Units may be moved into other"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "02-combat.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.7 phase list. The example test asserts the attacker and the attacking player entered the defending region.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.battle.what-it-is.only-interaction",
+    "parent": "turn.battle.what-it-is",
+    "order": 1,
+    "text": "A player can interact with opponents and their units only during the battle phase.",
+    "examples": [
+      {
+        "text": "In deployment an effect that targets a cached card reaches only its controller's own cache; in battle it reaches the opponent's cache too.",
+        "test": "293-cached-targets-are-regional.test.ts::R291 §1 in deployment a home region reaches only its own seat"
+      }
+    ],
+    "see": [
+      "507",
+      "601"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.19",
+          "quote": "This means interacting with opponents and their units"
+        },
+        {
+          "ref": "Manual p.19",
+          "quote": "can only be done during the battle phase."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "293-cached-targets-are-regional.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.battle.what-it-is.during-battle",
+    "parent": "turn.battle.what-it-is",
+    "order": 2,
+    "text": "An effect that applies \"during battle\" applies only in the battle phase. It does not apply in the haste step or in deployment.",
+    "examples": [
+      {
+        "text": "Crevice Lurker makes abilities cost [one] more \"during battle\". Outside battle the same activation costs its printed [1].",
+        "test": "16-earth-a.test.ts::Crevice Lurker: R121 — outside battle the same activation costs its printed [1]"
+      },
+      {
+        "text": "Counter Thief takes counters placed \"during battle\"; outside battle it does nothing.",
+        "test": "182-correctness-sample.test.ts::Counter Thief: OUTSIDE battle it does nothing"
+      }
+    ],
+    "see": [
+      "504",
+      "507"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Crevice Lurker",
+          "quote": "Abilities cost [one] more to activate or trigger during battle."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1355103348378042515#0",
+          "quote": "during battle (so won't affect anything in Haste phase or Deployment)"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "16-earth-a.test.ts",
+        "182-correctness-sample.test.ts",
+        "45-hybrids-ld-b.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "The designer quote is about Crevice Lurker; the general reading is supported by the same gate on Vengeance and Counter Thief (tests). Basis designer is the strongest source that states it.",
+    "sourceHashes": {
+      "RAQ 1355103348378042515#0": "e206fd22f3ceef668518ec5dbbb058ba1a3e53fa259e773b9a733da76e2c7b5d"
+    }
+  },
+  {
+    "key": "turn.battle.steps",
+    "parent": "505",
+    "order": 2,
+    "text": "Battle is made of four steps: the attack step, the block step, the combat step and the after-combat step. They take place separately inside each region.",
+    "examples": [
+      {
+        "text": "Round 1 of a 1v1 battle runs attack, a priority window, blocks, a priority window, combat damage and the after-combat window in the defender's region.",
+        "test": "02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2"
+      }
+    ],
+    "see": [
+      "604",
+      "606",
+      "608",
+      "609"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "down into the following steps: Attack, Block, Combat,"
+        },
+        {
+          "ref": "Manual p.20",
+          "quote": "and After Combat which will all take place uniquely inside of each region"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "02-combat.test.ts",
+        "420-cr-battle-regroup-deploy.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.battle.steps.unattacked",
+    "parent": "turn.battle.steps",
+    "order": 1,
+    "text": "In a region that is not attacked, the combat step and the after-combat step are skipped.",
+    "examples": [
+      {
+        "text": "When both players decline to attack, neither round has a combat step, and the battle phase ends with no priority window at all.",
+        "test": "165-token-loss-warning.test.ts::[CT-55] a battle both players decline opens no priority window at all"
+      }
+    ],
+    "see": [
+      "609"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "did not get attacked, in which case combat and after"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R194",
+          "quote": "A declined attack fights no combat, so there is no"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "165-token-loss-warning.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R194": "b5a45cc0ecccdb7c3471030b213cc8593ef622de9c332ff7da3863ef327b11c9"
+    }
+  },
+  {
+    "key": "turn.battle.steps.declined-no-window",
+    "parent": "turn.battle.steps",
+    "order": 2,
+    "text": "An attack step in which no attack is declared opens no priority window. If both battle rounds are declined, the battle phase has no priority window at all.",
+    "examples": [
+      {
+        "text": "The initiative player declines, then the non-initiative player declines: the game goes to regroup without either player getting priority, so spell tokens held for the battle are erased unused.",
+        "test": "165-token-loss-warning.test.ts::[CT-55] a battle both players decline opens no priority window at all"
+      }
+    ],
+    "see": [
+      "506",
+      "605"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R194",
+          "quote": "the entire battle phase **zero** priority windows."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "165-token-loss-warning.test.ts",
+        "21-fixes.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Printed text is silent on whether the step-2 priority window opens after an empty declaration (Manual p.20 lists it unconditionally). R194 rules that opening one would be a rules change. D-U09-3.",
+    "sourceHashes": {
+      "R194": "b5a45cc0ecccdb7c3471030b213cc8593ef622de9c332ff7da3863ef327b11c9"
+    }
+  },
+  {
+    "key": "turn.battle.rounds",
+    "parent": "505",
+    "order": 3,
+    "text": "In 1v1 and team games the battle phase has two battle rounds. In round 1 the initiative team attacks into the non-initiative team's regions. In round 2 the non-initiative team's counterattackers attack into the initiative team's regions.",
+    "examples": [
+      {
+        "text": "The initiative player attacks in round 1; the units the non-initiative player sent at blocks attack in round 2.",
+        "test": "02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2"
+      }
+    ],
+    "see": [
+      "500",
+      "610"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "Therefore, the battle phase in team games (and 1v1)"
+        },
+        {
+          "ref": "Manual p.20",
+          "quote": "takes place in two phases:"
+        },
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "Because of this, the initiative combat step happens in two phases:"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "02-combat.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The Manual calls them \"Phase 1\" and \"Phase 2\"; the client calls them battle rounds 1 and 2 (state battle.round, asserted in the example).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.battle.rounds.round-1",
+    "parent": "turn.battle.rounds",
+    "order": 1,
+    "text": "Round 1 runs in this order: (1) the initiative team declares its attacks, sending units into non-initiative regions; (2) a priority window; (3) the non-initiative team declares its blocking formations and may at the same time send units out to counterattack; (4) a priority window; (5) the combat step, in which all units in formation deal combat damage at the same time; (6) the after-combat step, the last priority window in that region.",
+    "examples": [
+      {
+        "text": "The NIT blocks nothing and sends a Rune Channeler to counterattack; the IT's unblocked 2/2 deals 2 to the NIT; after the after-combat window, round 2 begins.",
+        "test": "02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2"
+      }
+    ],
+    "see": [
+      "604",
+      "605",
+      "606",
+      "607",
+      "608",
+      "609",
+      "610"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "1. The IT declare their attacks, sending units into NIT"
+        },
+        {
+          "ref": "Manual p.20",
+          "quote": "2. There is a priority window for interaction."
+        },
+        {
+          "ref": "Manual p.20",
+          "quote": "3. The NIT declare their blocking formations while also"
+        },
+        {
+          "ref": "Manual p.20",
+          "quote": "5. Combat Step happens - All units in formation deal"
+        },
+        {
+          "ref": "Manual p.20",
+          "quote": "6 After Combat Step - This is the last priority window"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "02-combat.test.ts",
+        "420-cr-battle-regroup-deploy.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.battle.rounds.counterattackers-absent",
+    "parent": "turn.battle.rounds",
+    "order": 2,
+    "text": "Units sent out to counterattack leave the region at once, and are treated as if they do not exist until round 1 is finished.",
+    "examples": [
+      {
+        "text": "A unit sent to counterattack is absent during round 1 and arrives in the initiative player's region for round 2.",
+        "test": "02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2"
+      }
+    ],
+    "see": [
+      "610"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "a counter-attack. The counter-attacking units leave"
+        },
+        {
+          "ref": "Manual p.20",
+          "quote": "the region and are treated as if they don’t exist until"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "02-combat.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Detail (what an absent counterattacker can and cannot do) is 610 (U13, R32/R270).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.battle.rounds.round-2",
+    "parent": "turn.battle.rounds",
+    "order": 3,
+    "text": "Round 2 runs in this order: (1) the non-initiative team puts its counterattacking units into formation; (2) a priority window; (3) the initiative team declares its blocking formation; (4) a priority window; (5) the combat step; (6) the after-combat step, the last priority window in that region before regroup.",
+    "examples": [
+      {
+        "text": "The counterattacker arrives in the initiative player's region, attacks, is not blocked and deals 4; after the after-combat window the game goes through regroup to deployment.",
+        "test": "02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2"
+      }
+    ],
+    "see": [
+      "610"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "1. The NIT puts their attacking units into formation."
+        },
+        {
+          "ref": "Manual p.20",
+          "quote": "3. The IT declare their blocking formation."
+        },
+        {
+          "ref": "Manual p.20",
+          "quote": "6. After Combat Step - This is the last priority window."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "02-combat.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.battle.rounds.one-attack-each",
+    "parent": "turn.battle.rounds",
+    "order": 4,
+    "text": "Each team gets only one chance to attack in a battle phase. There is no counterattack in round 2.",
+    "examples": [
+      {
+        "text": "In round 2 the initiative player blocks, but cannot send units back out to attack. (illustrative)",
+        "test": null
+      },
+      {
+        "text": "The NIT sends a Rune Channeler and counterattacks with it in round 2; the initiative player may block it but cannot send a unit of its own out, and the battle phase ends after round 2.",
+        "test": "420-cr-battle-regroup-deploy.test.ts::cr:turn.battle.rounds.one-attack-each — in round 2 the initiative player cannot send units out to counterattack, and the battle phase ends after round 2"
+      }
+    ],
+    "see": [
+      "610"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "Each team only gets one chance to attack,"
+        },
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "so there are no additional counter attacks here."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "420-cr-battle-regroup-deploy.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "No test title names this; the client offers counterattacking only in the round-1 block step (ui tests 77 [67] and 381 §4 are UI-level).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.battle.rounds.nit-attacks-alone",
+    "parent": "turn.battle.rounds",
+    "order": 5,
+    "text": "The non-initiative team may declare attacks in round 2 even if the initiative team declared none in round 1. It may then attack with any of its units, because it never had a block step in which to send counterattackers.",
+    "examples": [
+      {
+        "text": "The initiative player could attack and declines; the non-initiative player then attacks in round 2 with a unit that was never sent.",
+        "test": "396-raq-timing.test.ts::RAQ Temporal Rift thread: the non-initiative player still attacks when the initiative player declines"
+      },
+      {
+        "text": "Only the non-initiative player has a unit; the initiative player's empty declaration leads to round 2, where that unit attacks from home.",
+        "test": "21-fixes.test.ts::REGRESSION: NIT can attack in round 2 when IT had no units in round 1"
+      }
+    ],
+    "see": [
+      "610"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "The NIT can still declare attacks even if the IT decides not to attack."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R15",
+          "quote": "never commits counterattackers — in that case NIT may attack round 2 with **any**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts",
+        "21-fixes.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The \"any of its units\" half is R15 (current; the engine call). R15's heading says it is resolved by the RAQ thread \"Temporal Rift vs NIT sending counter-attack\", which is still open (D-U09-5); the printed NOTE carries the first sentence on its own. RAQ 1353986897902567424#2 (from the extract, not the pack) states the same but sits in an open thread, so it is not cited as authority.",
+    "sourceHashes": {
+      "R15": "e9757a2a1c4b7ad66b358fba9e6d8ca20cacb03fd5c6e1121f4687ec41eeb12c"
+    }
+  },
+  {
+    "key": "turn.battle.rounds.no-round-2",
+    "parent": "turn.battle.rounds",
+    "order": 6,
+    "text": "If round 1 had a battle, only the units sent out at the block step can attack in round 2. If none were sent, there is no round 2.",
+    "examples": [
+      {
+        "text": "The initiative player attacks, the non-initiative player blocks and sends nobody: the battle phase ends after round 1, and the unit that stayed home is untouched.",
+        "test": "21-fixes.test.ts::round 2 after a real round-1 battle still restricts to the sent counterattackers"
+      },
+      {
+        "text": "A unit that stayed home cannot be declared as a round-2 attacker.",
+        "test": "02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2"
+      }
+    ],
+    "see": [
+      "610"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.21",
+          "quote": "was a counter-attack, the players"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R15",
+          "quote": "units sent at block time** (Manual p.20-21), even if that set is empty (= no"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "21-fixes.test.ts",
+        "02-combat.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Manual p.21 conditions the move to round 2 on \"if there was a counter-attack\". R15 states the rule. Temporal Rift ending round 1 before blocks is the open case: D-U09-4.",
+    "sourceHashes": {
+      "R15": "e9757a2a1c4b7ad66b358fba9e6d8ca20cacb03fd5c6e1121f4687ec41eeb12c"
+    }
+  },
+  {
+    "key": "turn.battle.region-order",
+    "parent": "505",
+    "order": 4,
+    "text": "Battle is resolved one region at a time. Once players begin interacting in a region, every step of battle is completed in that region before those players can interact anywhere else.",
+    "examples": [
+      {
+        "text": "In 1v1, every step of round 1 finishes in the non-initiative player's region before round 2 starts in the initiative player's region.",
+        "test": "02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2"
+      }
+    ],
+    "see": [
+      "601"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.21",
+          "quote": "Once players have begun interacting inside of a region, all steps"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "02-combat.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.battle.region-order.clockwise",
+    "parent": "turn.battle.region-order",
+    "order": 1,
+    "text": "The regions resolve in clockwise order, starting with the region to the left of the initiative player, so the initiative player's region resolves last.",
+    "examples": [
+      {
+        "text": "In a four-player game the region to the initiative player's left resolves first and the initiative player's own region last. (illustrative)",
+        "test": null
+      },
+      {
+        "text": "In 1v1, round 1 is fought in the non-initiative home region and the initiative home region comes last, in round 2.",
+        "test": "420-cr-battle-regroup-deploy.test.ts::cr:turn.battle.region-order.clockwise — in 1v1 the initiative player home region is fought last, in round 2"
+      }
+    ],
+    "see": [
+      "904"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.21",
+          "quote": "is clockwise starting to the left"
+        },
+        {
+          "ref": "Manual p.21",
+          "quote": "REGION WITH INITIATIVE RESOLVES LAST"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "420-cr-battle-regroup-deploy.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "Multiplayer only; the client plays 1v1, so nothing executes this. Team-game ordering (Manual p.38) is 904.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.battle.region-order.one-v-one",
+    "parent": "turn.battle.region-order",
+    "order": 2,
+    "text": "In 1v1, round 1 is fought in the non-initiative player's region, and round 2, if there is one, in the initiative player's region.",
+    "examples": [
+      {
+        "text": "The counterattacker ends up in the initiative player's region, where round 2 is fought.",
+        "test": "02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2"
+      }
+    ],
+    "see": [
+      "601",
+      "610"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.21",
+          "quote": "attacks into the NIT’s region, they"
+        },
+        {
+          "ref": "Manual p.21",
+          "quote": "will move to IT’s region and"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R194",
+          "quote": "puts the battle in the defender's region"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "02-combat.test.ts",
+        "420-cr-battle-regroup-deploy.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R194": "b5a45cc0ecccdb7c3471030b213cc8593ef622de9c332ff7da3863ef327b11c9"
+    }
+  },
+  {
+    "key": "turn.battle.region-order.others-absent",
+    "parent": "turn.battle.region-order",
+    "order": 3,
+    "text": "While a region's battle is being resolved, units in any other region, including units that stayed home and counterattackers that were sent away, are treated as if they do not exist.",
+    "examples": [
+      {
+        "text": "An attacked player's spell can target the attacker in the battle region but not the attacker's unit that stayed home.",
+        "test": "05-rulings.test.ts::R12: regions are exclusive"
+      }
+    ],
+    "see": [
+      "601",
+      "610"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.21",
+          "quote": "will be treated as if they don’t"
+        },
+        {
+          "ref": "Manual p.21",
+          "quote": "stayed back in their own region"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "05-rulings.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "General region isolation is 601 (U10, R12).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.battle.ffa",
+    "parent": "505",
+    "order": 5,
+    "text": "In free-for-all games there are no battle rounds: all players declare their attacks at the same time, using intent cards.",
+    "examples": [
+      {
+        "text": "Each player places face-down intent cards in front of their units; all are flipped at once and the attacks happen. (illustrative)",
+        "test": null
+      }
+    ],
+    "see": [
+      "903",
+      "905"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.7",
+          "quote": "whereas FFA games feature simultaneous attack declarations using the intent cards."
+        },
+        {
+          "ref": "Rulebook 2023 p.9",
+          "quote": "In a free for all game, all players declare their attacks simultaneously using the “Intent” cards."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "The client has no free-for-all mode; nothing executes this. Detail is 903/905 (U22).",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "The client plays two-player games only and has no free-for-all mode or intent cards, so nothing executes it."
+  },
+  {
+    "key": "turn.battle.this-battle",
+    "parent": "505",
+    "order": 6,
+    "text": "Anything counted \"in this battle\" is counted separately for each region, and the count starts again at the start of each battle phase. Things that happen outside the battle phase are not counted.",
+    "examples": [
+      {
+        "text": "Trashes are counted per battle and the count is reset between battles.",
+        "test": "35-rot-debt-trash.test.ts::R40: battleCounters count trashes per battle and reset between battles"
+      },
+      {
+        "text": "A card trashed outside battle counts for nothing.",
+        "test": "35-rot-debt-trash.test.ts::R40: a trash outside battle counts for nothing"
+      }
+    ],
+    "see": [
+      "601"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Burning Vengeance",
+          "quote": "equal to the number of units that died in this battle."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R14",
+          "quote": "region** and reset at battle-phase start; since a region hosts at most one battle"
+        },
+        {
+          "ref": "R14",
+          "quote": "per phase, \"this battle\" = this region's battle. Deaths outside the battle phase"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "35-rot-debt-trash.test.ts",
+        "11-fire-wood.test.ts",
+        "47-costs-events.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "The card only shows the phrase; the per-region scope and the reset are R14, an engine call (⚠) with no designer source: D-U09-6.",
+    "sourceHashes": {
+      "R14": "a7f5b815ddb8bf5a4de9bae6da415d8343d168a6db6395ed95204d37044cfa73"
+    }
+  },
+  {
+    "key": "turn.battle.this-battle.life-lost",
+    "parent": "turn.battle.this-battle",
+    "order": 1,
+    "text": "The life a player has lost in a battle is the total of every loss in that battle. Life gained in the battle does not reduce it.",
+    "examples": [
+      {
+        "text": "A player loses 10, gains 8, then loses 3: they have lost 13 life in this battle, and Soul Siphon makes a 13/13.",
+        "test": "388-raq-blocks-and-windows.test.ts::RAQ Life lost: life lost in a battle adds up the losses and ignores the gains"
+      }
+    ],
+    "see": [
+      "112"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1449475896510648320#0",
+          "quote": "They add up all the loses and ignore life gains"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "388-raq-blocks-and-windows.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1449475896510648320#0": "4cfa27ce5eb3d293aade45365f6ba4b353025694b443c99921b950d23cf9be55"
+    }
+  },
+  {
+    "key": "turn.regroup.what-it-is",
+    "parent": "506",
+    "order": 1,
+    "text": "Regroup is a global step that takes place once battle has ended in every region. It resets the game between battles.",
+    "examples": [
+      {
+        "text": "Every way a battle round can end leads into the same regroup.",
+        "test": "183-end-battle-round-paths.test.ts::R213 §2: every path funnels through startRegroup"
+      }
+    ],
+    "see": [
+      "505"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.26",
+          "quote": "Regroup is a global step that takes place when battle has"
+        },
+        {
+          "ref": "Manual p.26",
+          "quote": "The regroup step simply functions as a way to reset the game between battles."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "183-end-battle-round-paths.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.regroup.what-it-is.no-actions",
+    "parent": "turn.regroup.what-it-is",
+    "order": 1,
+    "text": "No player gets priority or takes any game action during regroup.",
+    "examples": [
+      {
+        "text": "After the last after-combat window passes, the game is next in the deployment phase; nobody was asked anything in between. (illustrative)",
+        "test": null
+      },
+      {
+        "text": "The last pass of the after-combat window regroups and lands the game in deployment within that one action; nobody holds priority afterwards.",
+        "test": "420-cr-battle-regroup-deploy.test.ts::cr:turn.regroup.what-it-is.no-actions — the last after-combat pass lands straight in deployment, with nobody holding priority"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.26",
+          "quote": "ended in every region. Players do not gain priority or take"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "420-cr-battle-regroup-deploy.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "No test title states it. R38 says rot damage \"lands in the same window as regroup triggers\", which suggests something can trigger around regroup; no card in the pack does. Left to the verifier.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.regroup.what-it-is.before-deployment",
+    "parent": "turn.regroup.what-it-is",
+    "order": 2,
+    "text": "Regroup comes before the deployment phase, not at the end of the turn. So a spell token made, or a temporary change applied, during deployment lasts until the regroup after the next battle.",
+    "examples": [
+      {
+        "text": "Overbloom played in deployment gives +7/+7 \"until regroup\"; the bonus lasts through the next battle and is gone after its regroup.",
+        "test": "24-wood-b.test.ts::Overbloom: target unit gains +7/+7 until regroup (deploy timing)"
+      }
+    ],
+    "see": [
+      "507"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.26",
+          "quote": "Importantly, regroup takes place before the deployment"
+        },
+        {
+          "ref": "Manual p.26",
+          "quote": "phase and not at the end of the turn. This means that"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "24-wood-b.test.ts",
+        "420-cr-battle-regroup-deploy.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.regroup.sequence",
+    "parent": "506",
+    "order": 2,
+    "text": "Regroup does these things, in this order: (1) all players and units return to their own regions; (2) all damage on units is removed; (3) all temporary stat changes are removed; (4) all units leave formation. All spell tokens are also erased.",
+    "examples": [
+      {
+        "text": "After a battle the attacker is back home, both players are back in their own regions, its marked damage and its -2/-2 are gone, there is no formation, and the spell token is erased.",
+        "test": "05-rulings.test.ts::R11: regroup runs its exact sequence"
+      }
+    ],
+    "see": [
+      "602"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.26",
+          "quote": "All units and players return to their regions"
+        },
+        {
+          "ref": "Manual p.26",
+          "quote": "All damage on units is removed"
+        },
+        {
+          "ref": "Manual p.26",
+          "quote": "All temporary stat changes are removed"
+        },
+        {
+          "ref": "Manual p.26",
+          "quote": "All Spell Tokens are erased"
+        },
+        {
+          "ref": "Manual p.26",
+          "quote": "All units leave formation"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R11",
+          "quote": "There is a set order; per the Manual's own listing (p.7): **(1) players and units return to"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "05-rulings.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "The ORDER is R11, taken from Manual p.7. Manual p.26 lists the same five things with \"All Spell Tokens are erased\" fourth and does not say the list is an order. The example test checks only the end state, not the order (F-U09-2). D-U09-7.",
+    "sourceHashes": {
+      "R11": "fe721d7ac8e53908c77f8b16bf5da41dd53fa292e40977125cd0e0b25b979f09"
+    }
+  },
+  {
+    "key": "turn.regroup.sequence.return",
+    "parent": "turn.regroup.sequence",
+    "order": 1,
+    "text": "Each unit that is not in its controller's home region returns there. This includes a unit that was created in another region.",
+    "examples": [
+      {
+        "text": "Life Plant's 1/1s, created in the enemy region during an attack, walk home at regroup.",
+        "test": "98-spawn-region.test.ts::R115: the stranded 1/1s walk home at regroup"
+      },
+      {
+        "text": "The attacker and the counterattacker are both back in their home regions after regroup.",
+        "test": "02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2"
+      }
+    ],
+    "see": [
+      "601",
+      "108"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.26",
+          "quote": "All units and players return to their regions"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R115",
+          "quote": "- **Regroup** already returns every out-of-position unit to its controller's home region"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "98-spawn-region.test.ts",
+        "02-combat.test.ts",
+        "420-cr-battle-regroup-deploy.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R115": "6487690c1da97d2ab55b0ba89ca85829c60c72f3409070630666aabf42947483"
+    }
+  },
+  {
+    "key": "turn.regroup.sequence.players",
+    "parent": "turn.regroup.sequence",
+    "order": 2,
+    "text": "Each player who entered another region during battle stops being present there, and is present only in their own region again.",
+    "examples": [
+      {
+        "text": "After regroup, each region holds only its own player.",
+        "test": "05-rulings.test.ts::R11: regroup runs its exact sequence"
+      }
+    ],
+    "see": [
+      "601"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.19",
+          "quote": "them, and will remain present in those regions until the"
+        },
+        {
+          "ref": "Manual p.19",
+          "quote": "regroup phase in addition to their own region. Once a"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "05-rulings.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.regroup.sequence.damage",
+    "parent": "turn.regroup.sequence",
+    "order": 3,
+    "text": "All damage on units is removed.",
+    "examples": [
+      {
+        "text": "A Good Whale carrying 1 marked damage has none after regroup.",
+        "test": "05-rulings.test.ts::R11: regroup runs its exact sequence"
+      }
+    ],
+    "see": [
+      "112"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.26",
+          "quote": "All damage on units is removed"
+        },
+        {
+          "ref": "Rulebook 2023 p.11",
+          "quote": "All damage on units goes away during the regroup step."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "05-rulings.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.regroup.sequence.temporary",
+    "parent": "turn.regroup.sequence",
+    "order": 4,
+    "text": "All temporary stat changes are removed. An effect that lasts \"until regroup\" ends here.",
+    "examples": [
+      {
+        "text": "Overbloom's +7/+7 \"until regroup\" is gone after the next regroup.",
+        "test": "24-wood-b.test.ts::Overbloom: target unit gains +7/+7 until regroup (deploy timing)"
+      },
+      {
+        "text": "Jelly's -2/-2 on an attacker is gone after regroup.",
+        "test": "05-rulings.test.ts::R11: regroup runs its exact sequence"
+      }
+    ],
+    "see": [
+      "709"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.26",
+          "quote": "All temporary stat changes are removed"
+        },
+        {
+          "ref": "card: Overbloom",
+          "quote": "Target unit gains +7/+7 until regroup."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "24-wood-b.test.ts",
+        "05-rulings.test.ts",
+        "03-stack.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.regroup.sequence.formation",
+    "parent": "turn.regroup.sequence",
+    "order": 5,
+    "text": "All units leave formation.",
+    "examples": [
+      {
+        "text": "After regroup there is no battle formation left on either side.",
+        "test": "05-rulings.test.ts::R11: regroup runs its exact sequence"
+      }
+    ],
+    "see": [
+      "602"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.26",
+          "quote": "All units leave formation"
+        },
+        {
+          "ref": "Manual p.7",
+          "quote": "temporary stat changes are removed, and units"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "05-rulings.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.regroup.sequence.spell-tokens",
+    "parent": "turn.regroup.sequence",
+    "order": 6,
+    "text": "All spell tokens in play are erased, including unused spell tokens in a player's own region.",
+    "examples": [
+      {
+        "text": "With no Harbinger of Immolation anywhere, every spell token is erased at regroup.",
+        "test": "12-fire-a.test.ts::regroup default is unchanged: with no Harbinger anywhere, spell tokens are erased"
+      }
+    ],
+    "see": [
+      "304",
+      "407"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.26",
+          "quote": "All Spell Tokens are erased"
+        },
+        {
+          "ref": "Manual p.15",
+          "quote": "Spell tokens have a limited lifetime. This means that"
+        },
+        {
+          "ref": "Manual p.15",
+          "quote": "spell tokens in a player’s own region as well."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "12-fire-a.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.regroup.sequence.spell-tokens.harbinger",
+    "parent": "turn.regroup.sequence",
+    "order": 6.1,
+    "text": "A card can keep spell tokens through regroup. While Harbinger of Immolation's [Augment] text applies, its controller's spell tokens are not erased; they keep their X, and they still lose their temporary changes. Other players' spell tokens are still erased.",
+    "examples": [
+      {
+        "text": "With Harbinger of Immolation in play as a unit, your spell tokens stay through regroup.",
+        "test": "12-fire-a.test.ts::Harbinger of Immolation: in play as a UNIT, your spell tokens stay through regroup"
+      },
+      {
+        "text": "A surviving token keeps its X but loses its temporary changes.",
+        "test": "12-fire-a.test.ts::Harbinger of Immolation: a surviving token keeps its X"
+      },
+      {
+        "text": "Only the Harbinger controller's tokens stay; the opponent's are erased.",
+        "test": "12-fire-a.test.ts::Harbinger of Immolation: only YOUR tokens stay"
+      }
+    ],
+    "see": [
+      "721",
+      "101"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Harbinger of Immolation",
+          "quote": "[Augment] Your spell tokens stay through regroup."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R89",
+          "quote": "is spared the ERASE and nothing else"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "12-fire-a.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R89": "784373f2e8f5ed90bf2121ff1bb5e8a44b216abda1116a8cc197df53973fcf90"
+    }
+  },
+  {
+    "key": "turn.regroup.sequence.spell-tokens.mods",
+    "parent": "turn.regroup.sequence",
+    "order": 6.2,
+    "text": "A spell token erased at regroup takes its mods with it.",
+    "examples": [
+      {
+        "text": "A Fireball token augmented during deployment and not cast is erased at regroup, and its augment is erased with it.",
+        "test": "78-round17-core.test.ts::R89: an augmented token erased at regroup takes its mod with it"
+      }
+    ],
+    "see": [
+      "720",
+      "304"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.35",
+          "quote": "meaning when it dies or is erased, it and all of its"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R89",
+          "quote": "its mods **with** it (Manual p.35, *\"when it dies or is erased, it and all of"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "78-round17-core.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Manual p.35 is not in the U09 pack; read from the extract's printed pages.",
+    "sourceHashes": {
+      "R89": "784373f2e8f5ed90bf2121ff1bb5e8a44b216abda1116a8cc197df53973fcf90"
+    }
+  },
+  {
+    "key": "turn.regroup.unit-tokens-stay",
+    "parent": "506",
+    "order": 3,
+    "text": "Unit tokens are not erased at regroup. They stay in play like other units.",
+    "examples": [
+      {
+        "text": "The 1/1 unit tokens Life Plant made in the enemy region are still in play after regroup, back in their home region.",
+        "test": "98-spawn-region.test.ts::R115: the stranded 1/1s walk home at regroup"
+      }
+    ],
+    "see": [
+      "304"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.15",
+          "quote": "Unlike spell tokens, unit tokens persist through regroup."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "98-spawn-region.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.deploy.what-it-is",
+    "parent": "507",
+    "order": 1,
+    "text": "The deployment phase is the last phase of each turn. In it players build up their forces for the next battle by playing cards, activating abilities, and modifying cards with graft and augment.",
+    "examples": [
+      {
+        "text": "In deployment a player plays Ignis Sprite (its spawn trigger makes a Fireball) and then Flame Juggle.",
+        "test": "01-planning.test.ts::deployment: casting, spawn triggers, spell tokens"
+      }
+    ],
+    "see": [
+      "720"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.26",
+          "quote": "The deployment phase is the final phase of each turn"
+        },
+        {
+          "ref": "Manual p.26",
+          "quote": "playing cards, activating abilities and modifying cards"
+        },
+        {
+          "ref": "Manual p.26",
+          "quote": "with graft and augment."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "01-planning.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.deploy.what-it-is.no-battle-cards",
+    "parent": "turn.deploy.what-it-is",
+    "order": 1,
+    "text": "Any card can be played during deployment except a battle card, which can be played only in the battle phase.",
+    "examples": [
+      {
+        "text": "Jelly, a battle card, cannot be played in deployment, and a Fireball token cannot be cast there.",
+        "test": "01-planning.test.ts::battle-timed Fireball is NOT castable during deployment"
+      }
+    ],
+    "see": [
+      "207",
+      "803"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.26",
+          "quote": "Any card can be played during this phase, with the"
+        },
+        {
+          "ref": "Manual p.26",
+          "quote": "exception of battle cards, which can only be played in"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "01-planning.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.deploy.what-it-is.alone",
+    "parent": "turn.deploy.what-it-is",
+    "order": 2,
+    "text": "During deployment each player is alone in their own region. A player cannot interact with other players or their units, and treats every other player as if they did not exist.",
+    "examples": [
+      {
+        "text": "Beyond's rot replacement says \"target unit\", and in deployment only its controller's own units are offered.",
+        "test": "43-dark-c.test.ts::R102 — the target list is your own units, even with an enemy standing in the region"
+      }
+    ],
+    "see": [
+      "601",
+      "505"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.26",
+          "quote": "Each player is in their own region during the deployment phase, meaning it is not possible to interact with"
+        },
+        {
+          "ref": "Manual p.42",
+          "quote": "treat all other players as if they don’t exist."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R102",
+          "quote": "In Deployment, you're in your own region, alone."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "43-dark-c.test.ts",
+        "293-cached-targets-are-regional.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R102": "5e24f1f507495aef77c4b72cb612a83e002cfc7af4c24d1fcd7b44364df62381"
+    }
+  },
+  {
+    "key": "turn.deploy.what-it-is.no-opponents",
+    "parent": "turn.deploy.what-it-is",
+    "order": 3,
+    "text": "An effect in deployment that refers to opponents finds none. \"Each opponent loses 1 life\" does not affect any other player.",
+    "examples": [
+      {
+        "text": "Thoughtripper trashed outside battle makes no opponent discard, because no opponent is present.",
+        "test": "43-dark-c.test.ts::Thoughtripper: R25 — trashed outside battle, no opponent is present to discard"
+      }
+    ],
+    "see": [
+      "601"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.42",
+          "quote": "Meaning if you have this effect during deployment,"
+        },
+        {
+          "ref": "Manual p.42",
+          "quote": "it would not hit any other players."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "43-dark-c.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.deploy.mods",
+    "parent": "507",
+    "order": 2,
+    "text": "Modifications are applied during deployment. A mod may be applied from the hand or the bin, and a glimpsed mod also from the cache.",
+    "examples": [
+      {
+        "text": "A graft is offered from the bin as well as from the hand, when its cost and affinity are met.",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 point 3"
+      }
+    ],
+    "see": [
+      "720",
+      "403"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.27",
+          "quote": "1. Play cards, apply mods from hand and/or bin"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1537748882501668934#4",
+          "quote": "OR 'play' regular mods like Augment / Graft during Deployment phase."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "RAQ 1537748882501668934#4 is from the extract, not the pack. Virus timing (mods in battle) is 723.",
+    "sourceHashes": {
+      "RAQ 1537748882501668934#4": "df4d0cd9f8f8f6ffe2cb2d5cb96411c53fe72b7bdf7ebd4d83a69d41061fd0ec"
+    }
+  },
+  {
+    "key": "turn.deploy.mods.graft-only",
+    "parent": "turn.deploy.mods",
+    "order": 1,
+    "text": "Grafting is done during deployment, whatever the card's speed, even for a card with Haste, and never in battle. A graft can be applied in the haste step only where an effect lets mods be applied then as if it were deployment, such as Slurpr's.",
+    "examples": [
+      {
+        "text": "A graft is offered in deployment and never in the haste step or in battle, even for a Haste card.",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 point 1: a graft is offered in deployment"
+      },
+      {
+        "text": "With a Slurpr in its controller's region, a graft lands during the haste step.",
+        "test": "40-light-c.test.ts::Slurpr: a GRAFT lands during [Haste] too"
+      }
+    ],
+    "see": [
+      "722",
+      "504"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Slurpr",
+          "quote": "[Augment] You can apply other mods during [Haste] as if it was deployment."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#0",
+          "quote": "1. Grafting can only be done during Deployment Phase"
+        },
+        {
+          "ref": "RAQ 1355115946032889914#0",
+          "quote": "Yes. Always in deployment. No matter what cards speed is"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R95 (its haste sibling, Slurpr)",
+          "quote": "**\"Other mods\" is augments AND grafts** — R37's word for both — which is why `ctx.kind` is"
+        }
+      ],
+      "history": [],
+      "engine": [
+        "apply.ts:doGraft",
+        "apply.ts:hasteModAllowed"
+      ],
+      "tests": [
+        "393-raq-mods.test.ts",
+        "40-light-c.test.ts",
+        "420-cr-battle-regroup-deploy.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The designer rule (RAQ 1355115946032889914#0) is the default; Slurpr is a printed card exception, and R95 reads its \"other mods\" as grafts too (R37). Slurpr is from the U17 pack and R95 from digital-rules.md, neither in the U09 pack. The engine entries are the verifier r2 measurement (doGraft gate: deploying || hasteModAllowed); not read by the drafter. D-U09-11.",
+    "sourceHashes": {
+      "R95": "f6a27c0893397fad2912dfff4be2be9bf0c4a8aceb667dc2d5dee7b44247c7eb",
+      "RAQ 1355115946032889914#0": "570bdde45f267e2fa36e032e03d4220f54649c976e64bfc3afdf08fb321d1661"
+    }
+  },
+  {
+    "key": "turn.deploy.mods.spell-token",
+    "parent": "turn.deploy.mods",
+    "order": 2,
+    "text": "During deployment a player may augment a spell token they have in play. Only the augment's attributes pass to the token.",
+    "examples": [
+      {
+        "text": "A spell token is offered as an augment host during deployment.",
+        "test": "78-round17-core.test.ts::R89: a spell token is a legal augment host during deployment"
+      },
+      {
+        "text": "A Fireball token augmented with a {Powerful} mod deals double damage when cast.",
+        "test": "78-round17-core.test.ts::R89: only ATTRIBUTES transfer"
+      }
+    ],
+    "see": [
+      "721",
+      "304"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R89",
+          "quote": "> deployment but currently that would only be possible with spell tokens. Also"
+        },
+        {
+          "ref": "R89",
+          "quote": "> you can only do this with attributes.**\""
+        }
+      ],
+      "history": [],
+      "engine": [
+        "apply.ts:doAugment",
+        "engine.ts:stackAugmentAttrs"
+      ],
+      "tests": [
+        "78-round17-core.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "Both operative sentences are calebgannon's (2025-03-06), quoted inside R89, a designer-backed ruling; there is no RAQ thread to cite directly, so basis is mixed (designer words via R89). That any augment (not only a Virus) may do it is R89's reading from _passer, recorded as D-U06-7. Fuller rule: 721 (U06 types.mods.spell-token-host). The engine entries are the verifier r1 measurement (deploy branch of doAugment accepts a spell-token host; only augment attributes are read onto the cast item); not read by the drafter.",
+    "sourceHashes": {
+      "R89": "784373f2e8f5ed90bf2121ff1bb5e8a44b216abda1116a8cc197df53973fcf90"
+    }
+  },
+  {
+    "key": "turn.deploy.order",
+    "parent": "507",
+    "order": 3,
+    "text": "In 1v1 and team games the printed rules have the initiative team deploy first. Its players deploy in any order they wish, and then the non-initiative team does the same.",
+    "examples": [
+      {
+        "text": "In a 2v2 game both initiative players finish deploying before either non-initiative player begins. (illustrative)",
+        "test": null
+      }
+    ],
+    "see": [
+      "500",
+      "904"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.38",
+          "quote": "will deploy units in any order they wish before passing"
+        },
+        {
+          "ref": "Manual p.38",
+          "quote": "to the non-initiative team that will all do the same."
+        },
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "plays first while the non-intiative gets to wait"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "This client does not follow this order: see turn.deploy.order.simultaneous and D-U09-1. Rulebook 2023 says the NIT may \"wait and see\" what the IT does; Manual p.19 and p.42 say there is no information between regions, and in deployment each player is in a separate region. The Rulebook 2023 p.5 quote speaks of \"the mana and main phases\"; Rulebook 2023 calls deployment the main phase (\"After the main phase, the turn is over\"). engine differs: F-U09-3 (measured: the non-initiative player is offered and may make a play before the initiative player is done).",
+    "sourceHashes": {},
+    "untested": true,
+    "engineDiffers": [
+      "F-U09-3"
+    ]
+  },
+  {
+    "key": "turn.deploy.order.simultaneous",
+    "parent": "turn.deploy.order",
+    "order": 1,
+    "text": "In this client both players deploy at the same time. Neither sees what the other does in deployment until both are done, and either may finish first.",
+    "examples": [
+      {
+        "text": "The non-initiative player is offered plays at once, and can finish deploying while the initiative player is still acting.",
+        "test": "21-fixes.test.ts::both seats deploy at once: NIT may act and finish before IT"
+      },
+      {
+        "text": "legalActions offers deployment plays to both players at the same time.",
+        "test": "21-fixes.test.ts::legalActions OFFERS deploy plays to both seats at once"
+      },
+      {
+        "text": "A deployment play produces events for the player who made it, and not one of them reaches the opponent or moves the opponent's log.",
+        "test": "203-reveal-waits-for-the-barrier.test.ts::R310 §4: a hidden step with no reveal in it leaks nothing either (the negative control)"
+      }
+    ],
+    "see": [
+      "D6"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R144 (its \"hidden simultaneous segment\" words; its no-priority clause amended by R286)",
+          "quote": "> Deployment is a hidden simultaneous segment with no priority windows at all"
+        },
+        {
+          "ref": "R286",
+          "quote": "playing different games during deployment"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "21-fixes.test.ts",
+        "203-reveal-waits-for-the-barrier.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "A house rule (21-fixes header: \"simultaneous deployment (house rule)\"; client/docs/06-roadmap.md \"simultaneous hidden deployment (house rule\"). R144 names deployment a hidden simultaneous segment (its \"no priority windows\" half is amended by R286, which is not what this rule cites). The hiding is done by the server view (server/view.ts), so the hiding example is a server test; the 21-fixes examples assert only the simultaneity. Digital detail is Annex D (U23). D-U09-1.",
+    "sourceHashes": {
+      "R144": "d38299227d982a9c48914d31fdd2feb7a885638dcd002cfafeadc2572bdf3061",
+      "R286": "ccded1b908b0ddb26c645c806165abd912a5b55685059eeb46802063912b1c03"
+    }
+  },
+  {
+    "key": "turn.deploy.start",
+    "parent": "507",
+    "order": 4,
+    "text": "The deployment phase begins in this order: (1) each player is dealt damage equal to their rot, in initiative order; (2) then abilities that trigger \"at the start of deployment\" trigger.",
+    "examples": [
+      {
+        "text": "Rot deals its damage at the start of deployment, initiative player first.",
+        "test": "35-rot-debt-trash.test.ts::R38: rot deals damage equal to itself at the start of deployment, in initiative order"
+      },
+      {
+        "text": "The start-of-deployment event still fires after Beyond's rot replacement has stopped to ask for a target.",
+        "test": "43-dark-c.test.ts::R102 — the start-of-deployment event still fires after the rot replacement stopped to ask"
+      }
+    ],
+    "see": [
+      "112"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R38",
+          "quote": "damage equal to their own rot total, in initiative order. Rot never"
+        },
+        {
+          "ref": "R50",
+          "quote": "**`startOfDeployment`** fires in `startDeployment()` **after** R38's rot damage"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "35-rot-debt-trash.test.ts",
+        "43-dark-c.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R50: nothing printed orders rot before start-of-deployment triggers; an owner call (D-U04-5 covers rot-as-trigger). Rot itself is 112 (U04).",
+    "sourceHashes": {
+      "R38": "cb8fd0dabbc8ed3f5aa30a2dd5d4e7f6fc823da7b896a98e6574c3b04e79ffb5",
+      "R50": "fd11d0aa87980d21d5d6ceec5fd6a6799f46773021b756073facbec0a6a3346f"
+    }
+  },
+  {
+    "key": "turn.deploy.start.triggers",
+    "parent": "turn.deploy.start",
+    "order": 1,
+    "text": "All abilities that trigger at the start of deployment are put on the stack before any of them resolves.",
+    "examples": [
+      {
+        "text": "Three start-of-deployment watchers see the stack at sizes 2, 1, 0 as they resolve: all three were on it first.",
+        "test": "37-attrs-wight.test.ts::R144(a): every start-of-deployment trigger is on the stack before any of them resolves"
+      }
+    ],
+    "see": [
+      "703",
+      "706"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R144 (its half (a), as amended by R286)",
+          "quote": "- **(a)** deployment-phase triggers go through the **stack**, like everything"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R144",
+          "relation": "its half (a), one shared deployment stack, amended by R286 to one isolated stack per player"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "37-attrs-wight.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R144": "d38299227d982a9c48914d31fdd2feb7a885638dcd002cfafeadc2572bdf3061"
+    }
+  },
+  {
+    "key": "turn.deploy.stack",
+    "parent": "507",
+    "order": 5,
+    "text": "Deployment uses the stack. Each player's plays and triggered abilities in deployment go on that player's own deployment stack, and that stack normally resolves without anyone having to act.",
+    "examples": [
+      {
+        "text": "A card played in deployment really goes on a stack before it resolves.",
+        "test": "276-deployment-stack.test.ts::R286 §1: the play really went ON a stack"
+      }
+    ],
+    "see": [
+      "703"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R286",
+          "quote": "1. **A deployment play goes on a stack**, like any other play — not committed"
+        },
+        {
+          "ref": "R286",
+          "quote": "4. **The default is still auto-resolve, and that is why nobody noticed.** Battle"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R144",
+          "relation": "its half (a) put only deployment triggers on one shared stack; amended by R286"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "276-deployment-stack.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "The full stack rule is 703 (U14 effects.priority.deployment). The client never gives a deployment priority stop (R287 deployment clause, CT-185): D-U09-2.",
+    "sourceHashes": {
+      "R286": "ccded1b908b0ddb26c645c806165abd912a5b55685059eeb46802063912b1c03"
+    }
+  },
+  {
+    "key": "turn.deploy.stack.no-waiting",
+    "parent": "turn.deploy.stack",
+    "order": 1,
+    "text": "A decision one player must answer during deployment does not make the other player wait: the other player may keep playing, and their own deployment stack keeps resolving.",
+    "examples": [
+      {
+        "text": "Seat 1 is answering a question; seat 0 plays a card in deployment and it resolves.",
+        "test": "276-deployment-stack.test.ts::R286 §1: seat 1 is mid-question and seat 0"
+      },
+      {
+        "text": "A start-of-deployment Wraith pile suspends only its own seat.",
+        "test": "130-seat-aware-gate.test.ts::R154 §1: a Wraith pile suspends its own seat, not the other one"
+      }
+    ],
+    "see": [
+      "D6"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R286",
+          "quote": "3. **The R154 hold becomes seat-aware in deployment.** An open decision belonging"
+        },
+        {
+          "ref": "R154 (its seat-aware decision gate)",
+          "quote": "> **A decision belonging to another seat stops you only where the engine cannot"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "276-deployment-stack.test.ts",
+        "130-seat-aware-gate.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R154 case 3 (a mid-resolution suspension still blocks the other seat, to protect a rewind) is a digital implementation guard: Annex D (U23).",
+    "sourceHashes": {
+      "R154": "9cf0cf4c3a9ba5eb8dbfa24a2312b1ee1c22d43f506f875e68f88eaea62f47b1",
+      "R286": "ccded1b908b0ddb26c645c806165abd912a5b55685059eeb46802063912b1c03"
+    }
+  },
+  {
+    "key": "turn.initiative.end-of-turn",
+    "parent": "508",
+    "order": 1,
+    "text": "The end of turn is a special step after deployment finishes. In it, abilities that trigger \"at the end of turn\" resolve.",
+    "examples": [
+      {
+        "text": "Harbinger of Immolation creates a Fireball X at the end of turn.",
+        "test": "12-fire-a.test.ts::Harbinger of Immolation: end of turn → Fireball X"
+      },
+      {
+        "text": "A choice raised by an end-of-turn trigger is asked and answered, and then the turn ends.",
+        "test": "99-endofturn.test.ts::a choice raised inside a real endTurn() is asked, answered, and the turn still flips"
+      }
+    ],
+    "see": [
+      "706"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.26",
+          "quote": "The end of turn is a special step after deployment"
+        },
+        {
+          "ref": "Manual p.27",
+          "quote": "2. End of turn"
+        },
+        {
+          "ref": "card: Harbinger of Immolation",
+          "quote": "At the end of turn, create a Fireball X"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "12-fire-a.test.ts",
+        "99-endofturn.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.initiative.end-of-turn.no-responses",
+    "parent": "turn.initiative.end-of-turn",
+    "order": 1,
+    "text": "No player can play cards during the end-of-turn step, either after the end-of-turn triggers or in response to them.",
+    "examples": [
+      {
+        "text": "With an end-of-turn trigger resolving, neither player can cast anything in response. (illustrative)",
+        "test": null
+      },
+      {
+        "text": "While a General Smof end-of-turn trigger is asking its question, neither player is offered a card, spell token, ability, graft or augment, and an Ignis Sprite play is refused.",
+        "test": "420-cr-battle-regroup-deploy.test.ts::cr:turn.initiative.end-of-turn.no-responses — while an end-of-turn trigger is asking, no seat is offered a play and a play is refused"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.26",
+          "quote": "This step is exclusively for resolving card abilities as"
+        },
+        {
+          "ref": "Manual p.26",
+          "quote": "a special action, players cannot play cards after or in"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "420-cr-battle-regroup-deploy.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "No test title states it directly. A decision a trigger raises is still asked (99-endofturn).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.initiative.turn-over",
+    "parent": "508",
+    "order": 2,
+    "text": "After deployment and the end of turn, the turn is over. The next turn begins with the planning phase.",
+    "examples": [
+      {
+        "text": "Once both players are done deploying and the end-of-turn trigger is answered, the turn number goes up by one and the phase is planning.",
+        "test": "99-endofturn.test.ts::a choice raised inside a real endTurn() is asked, answered, and the turn still flips"
+      }
+    ],
+    "see": [
+      "501"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.26",
+          "quote": "After the deployment and end of turn, the turn is over."
+        },
+        {
+          "ref": "Manual p.26",
+          "quote": "turn structure is repeated again, starting in the planning phase."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "99-endofturn.test.ts",
+        "420-cr-battle-regroup-deploy.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.initiative.pass",
+    "parent": "508",
+    "order": 3,
+    "text": "When the turn is over, the initiative token is passed to the next player clockwise. In 1v1 and team games this means the initiative alternates between the teams every turn.",
+    "examples": [
+      {
+        "text": "In 1v1, the player who did not have the initiative this turn has it next turn, and attacks first in its battle phase. (illustrative)",
+        "test": null
+      },
+      {
+        "text": "The player without the initiative this turn has it once the turn ends, declares the first attack of the next battle, and the turn after that it passes back.",
+        "test": "420-cr-battle-regroup-deploy.test.ts::cr:turn.initiative.pass — when the turn ends the initiative goes to the other player, who attacks first in the next battle, and it alternates back"
+      }
+    ],
+    "see": [
+      "500",
+      "904"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.26",
+          "quote": "The initiative token and any draft packs are passed to"
+        },
+        {
+          "ref": "Manual p.26",
+          "quote": "the next player in a clockwise direction and the entire"
+        },
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "teams trade off having the initative every turn"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "420-cr-battle-regroup-deploy.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "No test title asserts the initiative changing hands between turns; the test helper toNextBattle comments \"initiative flips here\" on the second doneDeploying but pins the value. Needs a CR example test.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.initiative.pass.packs",
+    "parent": "turn.initiative.pass",
+    "order": 1,
+    "text": "Draft packs are passed in the draft step: each player passes their pack clockwise to the next player when they finish drafting, and the draft step is complete once all players have passed their pack. The end-of-turn passing of \"any draft packs\" with the initiative names this same pass; a pack is not passed a second time when the turn ends.",
+    "examples": [
+      {
+        "text": "After both players commit their draft, each holds the pack the other drafted from.",
+        "test": "20-draft.test.ts::no-op commit preserves hand and pack exactly; both commits pass the packs"
+      }
+    ],
+    "see": [
+      "503",
+      "902"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.16",
+          "quote": "sure the pack contains 10 cards and pass it clockwise"
+        },
+        {
+          "ref": "Manual p.16",
+          "quote": "Once all players have passed their pack, the draft step"
+        },
+        {
+          "ref": "Rulebook 2023 p.6",
+          "quote": "Once you have finished a draft portion, you will pass your pack clockwise to the next player as an indicator that you are finished."
+        },
+        {
+          "ref": "Manual p.26",
+          "quote": "The initiative token and any draft packs are passed to"
+        },
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "After the main phase, the turn is over. The initiative and any draft packs are passed to the next player in a clockwise direction"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [
+        "apply.ts:doDraftCommit",
+        "engine.ts:passPacks"
+      ],
+      "tests": [
+        "20-draft.test.ts",
+        "420-cr-battle-regroup-deploy.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "The printed sources disagree on WHEN the pack passes: Manual p.16 and Rulebook 2023 p.6 (pages not in the U09 pack; added from the U08 pack/extract) put it in the draft step; Manual p.26 and Rulebook 2023 p.5 list \"any draft packs\" with the initiative at turn end. The rule follows the detailed draft section, reading the turn-end listing as the same pass (the p.16 N+1 refresh cycle only works with one pass per turn): that reconciliation is ours, hence basis mixed. D-U09-10. The engine passes when every seat has committed its draft (verifier probes r1/r2; engine entries are the verifier's measurement, not read by the drafter). Draft detail is 503 (U08).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "turn.initiative.not-a-token",
+    "parent": "508",
+    "order": 4,
+    "text": "The initiative token is not a token. An effect that refers to tokens never affects it.",
+    "examples": [
+      {
+        "text": "Download, which takes a token, cannot take the initiative. (illustrative)",
+        "test": null
+      }
+    ],
+    "see": [
+      "304"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353864175910387742#7",
+          "quote": "8. Initiative ❌"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "The RAQ note marks this untestable: the initiative is not an object an effect could be offered.",
+    "sourceHashes": {
+      "RAQ 1353864175910387742#7": "188674b77531951ffc18c386967d26357e32678d959b9d09708e3802f6e593ce"
+    },
+    "untested": true,
+    "untestableReason": "the initiative is a seat index in the game state, not an object any effect could reach, so no state could show it being treated as a token"
+  }
+]

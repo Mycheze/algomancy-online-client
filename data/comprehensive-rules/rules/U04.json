@@ -1,0 +1,3246 @@
+[
+  {
+    "key": "concepts.costs.what-a-cost-is",
+    "parent": "111",
+    "order": 1,
+    "text": "A cost is something a player must pay to do something: to play a card, to apply a mod, or to activate an ability. A card's mana cost, the additional costs in its brackets, and everything before the colon of an activated ability are costs.",
+    "examples": [
+      {
+        "text": "Example: an augment applied from hand still pays its mana cost and needs its affinity, although applying it is not playing it.",
+        "test": "408-raq-new-threads.test.ts::RAQ Mods are NOT Played: an augment from hand needs its affinity and pays its cost"
+      }
+    ],
+    "see": [
+      "702",
+      "705",
+      "720"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "Mana cost: To play a card, a player must expend a"
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "additional actions that are paid as a cost or modes"
+        },
+        {
+          "ref": "Manual p.41",
+          "quote": "colon is a cost that must be paid to activate the ability,"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1537748882501668934#1",
+          "quote": "When you use them you still need to pay the cost & meet affinity requirements."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "408-raq-new-threads.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Manual p.13 (mana and bracket costs) and p.41 (colon costs); the RAQ \"Mods are NOT Played\" thread for mods.",
+    "sourceHashes": {
+      "RAQ 1537748882501668934#1": "ca5bd5cf15d3b63877cfd8b3a05bced3bbce7b96c6f2c7b9245b9f46dc540ca3"
+    }
+  },
+  {
+    "key": "concepts.costs.what-a-cost-is.mana",
+    "parent": "concepts.costs.what-a-cost-is",
+    "order": 1,
+    "text": "A mana cost is paid by expending resources: each resource can be expended once per turn for 1 mana, to pay the mana cost of a card or of an ability.",
+    "examples": [
+      {
+        "text": "Example: with two open resources, paying [one] for Auric Ascendant's ability and then playing Shard Sprite expends both; a second 1-cost card is not playable that turn, and both resources are open again next turn.",
+        "test": "415-cr-costs-life-timestamps.test.ts::cr:concepts.costs.what-a-cost-is.mana — each resource is expended once for 1 mana, for a card or an ability, and is open again next turn"
+      }
+    ],
+    "see": [
+      "106"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.14",
+          "quote": "mana once per turn in order to pay for the mana cost"
+        },
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "per turn. This is how you pay for the mana cost of cards and abilities."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "415-cr-costs-life-timestamps.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.costs.what-a-cost-is.affinity-not-a-cost",
+    "parent": "concepts.costs.what-a-cost-is",
+    "order": 2,
+    "text": "Meeting a card's affinity requirement is not paying a cost. Nothing is spent to meet it, and resources that are already expended still count toward it.",
+    "examples": [
+      {
+        "text": "Example: a player with two Wood resources, both already expended, still meets a requirement of two Wood pips.",
+        "test": "396-raq-timing.test.ts::RAQ Mana question: affinity counts resources already spent — two wood pay for many gg cards"
+      }
+    ],
+    "see": [
+      "105"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "Affinity: To have the ability to play a card, a player"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1358299200953126963#0",
+          "quote": "affinity counts resources of that element you have, spent or not"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "RAQ 1358299200953126963#0 is not in the U04 pack; read from the extract. Affinity itself is rule 105.",
+    "sourceHashes": {
+      "RAQ 1358299200953126963#0": "a8f1d0df77e16b5c51a375da78459cfc29f5a6ac8c8fb39360681c1875061d10"
+    }
+  },
+  {
+    "key": "concepts.costs.kinds",
+    "parent": "111",
+    "order": 2,
+    "text": "Besides mana, a cost may require a player to pay life, gain debt, discard cards, sacrifice units, erase cards from their bin, remove counters, recall an ally or erase a mod. A cost of any kind is paid in full before the thing it pays for is put on the stack.",
+    "examples": [
+      {
+        "text": "Example: Slag Spewer's \"[one], Erase one of my mods:\" erases the mod as the ability is activated, before anyone can respond.",
+        "test": "167-variable-ability-costs.test.ts::R196 Slag Spewer"
+      }
+    ],
+    "see": [
+      "effects.casting.costs"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Flesh Tithe",
+          "quote": "[Pay X life], create an X/X unit."
+        },
+        {
+          "ref": "card: Deferral Drone",
+          "quote": "Gain 4 debt: The next card you play this phase costs [3] less."
+        },
+        {
+          "ref": "card: Necromantic Rebuke",
+          "quote": "[Erase X cards from your bin]"
+        },
+        {
+          "ref": "card: Volatile Toxicity",
+          "quote": "/[Sacrifice a unit]: Create a Poison X and a Fireball X"
+        },
+        {
+          "ref": "card: Instrument of Reassignment",
+          "quote": "[x], Sacrifice another nontoken unit: Create a Robot X."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R49 (its cast-cost and activation-cost body)",
+          "quote": "carry `[Pay N life]`, `[Discard N cards]` or `[Gain N debt]` (including the"
+        },
+        {
+          "ref": "R196",
+          "quote": "activation cost that `AbilityCost` had no atom for — an X-mana `[x]`, \"Sacrifice"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "47-costs-events.test.ts",
+        "167-variable-ability-costs.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The list is the printed cost kinds the rulings enumerate (R49, R64, R196). \"Paid before the stack\" is restated from U14 (702) and R49/R196.",
+    "sourceHashes": {
+      "R196": "750c321c1cca87cb667e1ee80af1a620f0d453d891173e372b07e1317ac59331",
+      "R49": "5d3c2bff8c7d58ca657dffa7259041cc8de3a1b62ca85d59e81fcdb127319364"
+    }
+  },
+  {
+    "key": "concepts.costs.region",
+    "parent": "111",
+    "order": 3,
+    "text": "A cost that sacrifices units can be paid only with units the player controls in the region where the cost is paid. They cannot sacrifice a unit they do not control, or a unit of theirs that is in another region.",
+    "examples": [
+      {
+        "text": "Example: when Volatile Toxicity is played in battle, its sacrifice menu offers the unit in the battle region and not the unit the player left at home.",
+        "test": "415-cr-costs-life-timestamps.test.ts::cr:concepts.costs.region — a sacrifice cost menu holds only units in the region where it is paid"
+      }
+    ],
+    "see": [
+      "601"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.42",
+          "quote": "Q: Can I sacrifice units that I have in another region to"
+        },
+        {
+          "ref": "Manual p.41",
+          "quote": "You cannot sacrifice something you don’t control. You can"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R35 (its cast-time payment half)",
+          "quote": "sacrificed unit's defense as it was then), the cost is region-scoped (the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "415-cr-costs-life-timestamps.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Manual p.42 Q&A answers \"No.\" on the next line. Round 1: narrowed to sacrifice. Costs paid from the hand, the bin, life, debt or resources are not region things; removing counters from allies is rule concepts.costs.region.other-units.",
+    "sourceHashes": {
+      "R35": "40f8296cef3d2d2b3c5f150d75c557b79b8a2bdc9584690fe1752de259650f84"
+    }
+  },
+  {
+    "key": "concepts.costs.receipt",
+    "parent": "111",
+    "order": 4,
+    "text": "What was paid is fixed at the moment it is paid. An effect that reads a paid cost (such as \"the defense of the sacrificed unit\") reads it as it was when it was paid.",
+    "examples": [
+      {
+        "text": "Example: Volatile Toxicity sacrifices a 2/3 to pay its cost. Its X is 3, whatever happens to the board before it resolves.",
+        "test": "32-cast-costs.test.ts::Volatile Toxicity: X reads the defense snapshotted when the cost was paid"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R35 (its cast-time payment half)",
+          "quote": "snapshotted at payment (Volatile Toxicity / Structural Collapse read the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "32-cast-costs.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R35": "40f8296cef3d2d2b3c5f150d75c557b79b8a2bdc9584690fe1752de259650f84"
+    }
+  },
+  {
+    "key": "concepts.costs.copies",
+    "parent": "111",
+    "order": 5,
+    "text": "A copy of a spell does not pay the original's additional cost again. It uses what the original paid, including the original's X.",
+    "examples": [
+      {
+        "text": "Example: Maelstrom Charger copies a Volatile Toxicity; the copy makes its Poison and Fireball from the one sacrifice the original paid for.",
+        "test": "138-spell-copy.test.ts::R164 Maelstrom Charger: the copy inherits the cast-cost receipt (R35) — Volatile Toxicity is not re-paid"
+      }
+    ],
+    "see": [
+      "710"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1379132904931594372#2",
+          "quote": "you DON'T pay additional cost again and the X value is the one from original spell."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R35 (its cast-time payment half)",
+          "quote": "receipt and X instead of paying again. GRAFTED riders pay the same cost when"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "138-spell-copy.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R35": "40f8296cef3d2d2b3c5f150d75c557b79b8a2bdc9584690fe1752de259650f84",
+      "RAQ 1379132904931594372#2": "737643b32b015038bf15b0e5c585fead3244d1fd322f2fb0319ee0e167d0a7e7"
+    }
+  },
+  {
+    "key": "concepts.costs.unpayable",
+    "parent": "111",
+    "order": 6,
+    "text": "A cost that cannot be paid in full cannot be paid at all. A card whose cost cannot be paid cannot be played, and an ability whose cost cannot be paid cannot be activated; nothing is paid, and the play or activation is not offered.",
+    "examples": [
+      {
+        "text": "Example: Auric Ascendant (\"[one], Recall another ally:\") is not offered while it has no other ally, so its [one] is never paid.",
+        "test": "167-variable-ability-costs.test.ts::R196 Auric Ascendant with no other ally is NOT OFFERED — an unpayable cost gates, it does not whiff (R49)"
+      }
+    ],
+    "see": [
+      "effects.casting.costs.unpayable"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353859961855148103#5",
+          "quote": "No Sacrifice at all and you don't get the effect."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R196",
+          "quote": "**An unpayable cost GATES; it does not whiff.** Auric Ascendant's \"no other ally"
+        },
+        {
+          "ref": "R49 (its cast-cost and activation-cost body)",
+          "quote": "card **or** sacrifice a nontoken unit\". Every one of them **gates the action**:"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "167-variable-ability-costs.test.ts",
+        "47-costs-events.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R196": "750c321c1cca87cb667e1ee80af1a620f0d453d891173e372b07e1317ac59331",
+      "R49": "5d3c2bff8c7d58ca657dffa7259041cc8de3a1b62ca85d59e81fcdb127319364",
+      "RAQ 1353859961855148103#5": "e76eb85747e60fd292c770c1843f8184363e120947d683bf484fd432d9730029"
+    }
+  },
+  {
+    "key": "concepts.costs.unpayable.all-or-nothing",
+    "parent": "concepts.costs.unpayable",
+    "order": 1,
+    "text": "A cost made of several parts is paid all or nothing. If any part cannot be paid, no part is paid, including the mana.",
+    "examples": [
+      {
+        "text": "Example: Instrument of Reassignment (\"[x], Sacrifice another nontoken unit:\") with no other nontoken unit pays neither the mana nor anything else.",
+        "test": "167-variable-ability-costs.test.ts::R196 the COMPOUND half-pay hazard: an unpayable half of Instrument of Reassignment's cost pays NOTHING, neither the mana nor the unit"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353859961855148103#5",
+          "quote": "If the multiplied cost cannot be paid in full, nothing is paid and that effect does not happen."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R196",
+          "quote": "ruling is owed. **It is neither refund nor reorder: it is ALL OR NOTHING, asked"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "167-variable-ability-costs.test.ts",
+        "17-earth-b.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R196": "750c321c1cca87cb667e1ee80af1a620f0d453d891173e372b07e1317ac59331",
+      "RAQ 1353859961855148103#5": "e76eb85747e60fd292c770c1843f8184363e120947d683bf484fd432d9730029"
+    }
+  },
+  {
+    "key": "concepts.costs.unpayable.life",
+    "parent": "concepts.costs.unpayable",
+    "order": 2,
+    "text": "A player may pay N life only while they have more than N life. A life cost that would bring them to 0 cannot be paid.",
+    "examples": [
+      {
+        "text": "Example: at exactly 9 life, Glararr's \"Pay 9 life:\" cannot be activated.",
+        "test": "38-light-a.test.ts::Glararr: R49 — at exactly 9 life the cost cannot be paid and the activation is ILLEGAL"
+      }
+    ],
+    "see": [
+      "concepts.life.basics"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R49 (its life-cost ruling)",
+          "quote": "while you have **more** than N — paying your last life is refused too. Life"
+        },
+        {
+          "ref": "R60 (its life half)",
+          "quote": "does, under R49's rule: you may pay N life only while you have **more** than N,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "38-light-a.test.ts",
+        "47-costs-events.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R49 says no designer statement was found either way: an owner/engine call (D-U04-1).",
+    "sourceHashes": {
+      "R49": "5d3c2bff8c7d58ca657dffa7259041cc8de3a1b62ca85d59e81fcdb127319364",
+      "R60": "13e67e160262f26c2fd6c9f2e6fa780621f9730be8f2f0bffee89c960ef6918e"
+    }
+  },
+  {
+    "key": "concepts.costs.activation",
+    "parent": "111",
+    "order": 7,
+    "text": "An activated ability's whole cost is paid when the ability is activated, before it is put on the stack. A fixed cost is paid after the ability's targets are chosen. A variable cost (one whose amount is X) is paid first, and what is paid sets X, before any target is chosen. No player may respond between the payment and the ability going on the stack, and negating the ability does not refund it.",
+    "examples": [
+      {
+        "text": "Example: Infernal Cultivator's \"Sacrifice X units:\" kills the units as the ability is activated, so a negation cannot give them back.",
+        "test": "167-variable-ability-costs.test.ts::R196 Infernal Cultivator"
+      }
+    ],
+    "see": [
+      "705"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.41",
+          "quote": "colon is a cost that must be paid to activate the ability,"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R196",
+          "quote": "`[bracketed]` clause is a COST or a MODE, fixed when the item goes on the stack."
+        },
+        {
+          "ref": "R77",
+          "quote": "item reaches the stack**. Nobody may respond between the cost and the effect,"
+        },
+        {
+          "ref": "R64 (its cost-ordering half)",
+          "quote": "Ordering follows from that. A variable cost is collected **with the mana X, at"
+        },
+        {
+          "ref": "R64 (its cost-ordering half)",
+          "quote": "effects\"*). Fixed costs stay where R57 put them, **after** targets — R57 is"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R35",
+          "relation": "its \"activated-ability rider costs still resolve-time\" half was superseded by R196"
+        },
+        {
+          "ruling": "R57",
+          "relation": "narrowed by R64: a variable cost is collected with X, before targets; fixed costs stay after targets"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "167-variable-ability-costs.test.ts",
+        "47-costs-events.test.ts",
+        "415-cr-costs-life-timestamps.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Round 1: the variable-before-targets half added from R64 (verifier: E.collectCastCosts runs the variable pass before payActivationCost).",
+    "sourceHashes": {
+      "R196": "750c321c1cca87cb667e1ee80af1a620f0d453d891173e372b07e1317ac59331",
+      "R64": "1f75a48297b01fef7baed699c56aa4421738f1e70ca0aa68072458dbaf91b09b",
+      "R77": "5eb13b284b5106b9ded954435685fd78ac7860c6156a9a74fedf793ed7f2105e"
+    }
+  },
+  {
+    "key": "concepts.costs.activation.sacrifice-me",
+    "parent": "concepts.costs.activation",
+    "order": 1,
+    "text": "When an activated ability's cost sacrifices its own source, the source is in the bin while the ability waits on the stack.",
+    "examples": [
+      {
+        "text": "Example: Throwing Boulder (\"Sacrifice me: I deal 3 damage to any target.\") is in the bin as soon as the ability is on the stack. (illustrative)",
+        "test": null
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R77",
+          "quote": "and the unit is in the bin while its ability is still waiting to resolve —"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R77": "5eb13b284b5106b9ded954435685fd78ac7860c6156a9a74fedf793ed7f2105e"
+    }
+  },
+  {
+    "key": "concepts.costs.activation.gate-first",
+    "parent": "concepts.costs.activation",
+    "order": 2,
+    "text": "A printed condition on activating an ability (\"Activate this ability only if …\") is checked before any cost is paid. If it is not met, the ability cannot be activated. It is not checked again when the ability resolves.",
+    "examples": [
+      {
+        "text": "Example: Throwing Boulder with no adjacent ally is not offered its ability.",
+        "test": "18-earth-c.test.ts::R77: with NO adjacent ally the ability is not offered, and apply() refuses it"
+      }
+    ],
+    "see": [
+      "705"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Throwing Boulder",
+          "quote": "Activate this ability only if I have an adjacent ally."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R77",
+          "quote": "gate before anything is paid, so a self-sacrificing ability's cost can never"
+        },
+        {
+          "ref": "R77",
+          "quote": "**And it is not re-checked at resolution.** R1: conditions are checked once, at"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "18-earth-c.test.ts",
+        "415-cr-costs-life-timestamps.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R77": "5eb13b284b5106b9ded954435685fd78ac7860c6156a9a74fedf793ed7f2105e"
+    }
+  },
+  {
+    "key": "concepts.costs.trigger-sacrifice-me",
+    "parent": "111",
+    "order": 8,
+    "text": "When a triggered ability tells its controller to \"sacrifice me. If you do, …\", the sacrifice is a cost. It is paid as the ability is put on the stack, it cannot be declined, and no player can respond between it and the ability going on the stack. If the source is already gone, the ability does nothing.",
+    "examples": [
+      {
+        "text": "Example: Eldritch Dreamtender's column deals combat damage to an opponent; it is sacrificed as its ability goes on the stack, not when the ability resolves.",
+        "test": "26-metal-a.test.ts::Eldritch Dreamtender: the sacrifice is paid on the way to the stack, not at resolution"
+      },
+      {
+        "text": "Example: no decline is offered for that sacrifice.",
+        "test": "26-metal-a.test.ts::Eldritch Dreamtender: the sacrifice is MANDATORY — no decline is ever offered (R73)"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R73",
+          "quote": "printed prose as a bracketed cost.**"
+        },
+        {
+          "ref": "R73",
+          "quote": "- **a total skip when the source is already dead** — no hand is looked at and"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "26-metal-a.test.ts",
+        "32-cast-costs.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "The printed words are effect prose (\"sacrifice me. If you do,\"), not a bracket; R73 reads them as a cost (question D-U04-2).",
+    "sourceHashes": {
+      "R73": "27f9b2f47259a99db39c7686c8318a2ee13fff5bccf45b755848de6a75c412c5"
+    }
+  },
+  {
+    "key": "concepts.costs.trigger-sacrifice-me.optional",
+    "parent": "concepts.costs.trigger-sacrifice-me",
+    "order": 1,
+    "text": "A sacrifice the text makes optional (\"you may sacrifice me. If you do, …\") is not made a cost this way. The player chooses whether to make it.",
+    "examples": [],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1379132904931594372#0",
+          "quote": "As you play spell you can decide to Sacrifice Mael to put copy of spell effect on stack"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R73",
+          "quote": "spell\"*) — printed as OPTIONAL. A choice-free cost would make it mandatory,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "Maelstrom Charger is R73's named example of the optional shape.",
+    "sourceHashes": {
+      "R73": "27f9b2f47259a99db39c7686c8318a2ee13fff5bccf45b755848de6a75c412c5",
+      "RAQ 1379132904931594372#0": "2489487aa78cede9d246f72cbe06a1c3b09758133ee0236ea6286d0992027c07"
+    }
+  },
+  {
+    "key": "concepts.costs.resolution-payments",
+    "parent": "111",
+    "order": 9,
+    "text": "A payment that an effect's text asks for while it resolves (\"you may pay [one] to …\", \"unless its controller pays [x]\") is not a cost of putting it on the stack. The ability goes on the stack without it, and the player decides whether to pay when it resolves.",
+    "examples": [
+      {
+        "text": "Example: Xenopod Progenitor's trigger goes on the stack with no payment asked; its [1] is asked as it resolves.",
+        "test": "390-raq-stack.test.ts::RAQ Xenopod: the trigger goes on the stack with no payment asked, and the [1] is asked as it resolves"
+      }
+    ],
+    "see": [
+      "effects.casting.brackets.unbracketed-payment",
+      "704"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1397189214352703590#0",
+          "quote": "Xenopod goes on the stack without a payment decision; the [1] is asked as it resolves."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R6",
+          "quote": "Payment is **part of spell resolution**: the paying player gets a dialogue to pay X or"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R6": "5fd48d6da6d8214d005aacf6d7daa0ff574edb010a514dd4b63899feb1f4a62e",
+      "RAQ 1397189214352703590#0": "322053f615f494f295f4e62e5f3a5afbf5e1d293dde906ba99911c8d479439df"
+    }
+  },
+  {
+    "key": "concepts.costs.modifiers",
+    "parent": "111",
+    "order": 10,
+    "text": "Some cards in play change what it costs to play cards or to activate or trigger abilities. Such a cost modifier works only while its source is in play, only in its source's region, and, unless it says otherwise, for every player in that region, its controller included.",
+    "examples": [
+      {
+        "text": "Example: an opponent's Crevice Lurker in the battle region taxes your abilities, not only its controller's.",
+        "test": "390-raq-stack.test.ts::RAQ Crevice Lurker: it taxes the opponent too, not only its controller"
+      },
+      {
+        "text": "Example: Tranquility applied as an augment still taxes spells from its host.",
+        "test": "18-earth-c.test.ts::Tranquility: the [Augment] tax is DONATED — it radiates from the mod too"
+      }
+    ],
+    "see": [
+      "601",
+      "effects.playing.applying.cost"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Tranquility",
+          "quote": "Spells cost [one] more to play during battle."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1355103348378042515#0",
+          "quote": "It affects all players in his region (both ally & opponent) during battle"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R59 (its cost-modifier layer)",
+          "quote": "A card in play may continuously change what it costs to **play** other cards."
+        },
+        {
+          "ref": "R59 (its cost-modifier layer)",
+          "quote": "subject means it taxes **both** players in its region, attackers included."
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R59",
+          "relation": "its carve-out that a spell token is cast from play rather than played was amended by R305"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts",
+        "18-earth-c.test.ts",
+        "49-playtest-round6.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R59": "7f89b32a05732b517862f5baf2c840d3e9a45e15d93db23a0c5cacca8fdd08f9",
+      "RAQ 1355103348378042515#0": "e206fd22f3ceef668518ec5dbbb058ba1a3e53fa259e773b9a733da76e2c7b5d"
+    }
+  },
+  {
+    "key": "concepts.costs.modifiers.sum",
+    "parent": "concepts.costs.modifiers",
+    "order": 1,
+    "text": "Cost modifiers add up. Two modifiers that each add [one] add [two].",
+    "examples": [
+      {
+        "text": "Example: two Crevice Lurkers make an activated [1] cost [3] in battle.",
+        "test": "16-earth-a.test.ts::Crevice Lurker: R121 — two Lurkers compound: CostMod deltas SUM, so the tax is +2"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R121 (its ability-tax layer)",
+          "quote": "else moves. Deltas SUM (two Lurkers = +2), exactly as card-play CostMods do."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "16-earth-a.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R121": "70cfe1343c4a705ff17c19cfa079161a0b8c2c6a592ff57e394cf3dc007cfa83"
+    }
+  },
+  {
+    "key": "concepts.costs.modifiers.floor-zero",
+    "parent": "concepts.costs.modifiers",
+    "order": 2,
+    "text": "A cost reduced below zero is zero.",
+    "examples": [],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R59 (its cost-modifier layer)",
+          "quote": "clamped at zero."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Only R59 states it; no test in the pack demonstrates the clamp.",
+    "sourceHashes": {
+      "R59": "7f89b32a05732b517862f5baf2c840d3e9a45e15d93db23a0c5cacca8fdd08f9"
+    }
+  },
+  {
+    "key": "concepts.costs.modifiers.noun",
+    "parent": "concepts.costs.modifiers",
+    "order": 3,
+    "text": "A cost modifier applies to what its text names. One that names \"spells\" applies to every spell played, spell units and spell tokens included. One that names \"cards\" applies to every card played, units included, and not to spell tokens, which are not cards. Neither applies to applying a mod, which is not playing a card.",
+    "examples": [
+      {
+        "text": "Example: Tranquility (\"Spells cost [one] more\") taxes a Fireball token cast in battle.",
+        "test": "337-spell-tokens-are-played.test.ts::R305: Tranquility taxes a spell token [1] in battle"
+      },
+      {
+        "text": "Example: Arbiter of Armistice (\"Cards played during battle gain [Pay 2 life]\") takes no life for a spell token.",
+        "test": "337-spell-tokens-are-played.test.ts::R305: Arbiter of Armistice prints Cards, so a token cast pays no life"
+      }
+    ],
+    "see": [
+      "effects.playing.what-is-played.token-not-card",
+      "effects.playing.applying.cost",
+      "concepts.costs.modifiers.imposed.ambush"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1537748882501668934#0",
+          "quote": "Applying a mod is not playing a card"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R305",
+          "quote": "- **\"spell(s)\"**: a token counts."
+        },
+        {
+          "ref": "R305",
+          "quote": "- **\"card(s)\"**: a token does not."
+        },
+        {
+          "ref": "R129",
+          "quote": "'cardPlayed': a {Battle} unit and an Ambush are cards being played"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "337-spell-tokens-are-played.test.ts",
+        "38-light-a.test.ts",
+        "415-cr-costs-life-timestamps.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R129 is not in the U04 pack (read from digital-rules.md): it puts units and Ambush plays inside the noun \"card\". The engine keeps a card played as an Ambush outside the card-play cost layer (measured r1, F-U04-2).",
+    "sourceHashes": {
+      "R129": "630060703c282d6843d3b9b11d74e161010ed2a31ab72a6810a6cb921e78a8e9",
+      "R305": "88a482701a5f378703d6d18e30d8a3b943798c47e43ee19572963aef6c8e2da6",
+      "RAQ 1537748882501668934#0": "a4e3cf36e2dcb6ca0c4c40c54631a21f25f4a2e6a393898ca0e58814e6a0516d"
+    },
+    "engineDiffers": [
+      "F-U04-2"
+    ],
+    "rebuttal": "Text kept: \"cards\" names every card played, and R129 rules an Ambush is a card being played. The engine's Ambush gap is a divergence from that, not a narrower law: R122 calls it an undecided future decision. Flagged engineDiffers F-U04-2 (D-U04-4)."
+  },
+  {
+    "key": "concepts.costs.modifiers.imposed",
+    "parent": "concepts.costs.modifiers",
+    "order": 4,
+    "text": "A cost modifier may give cards an additional cost (\"Cards played during battle gain [Pay 2 life]\"). The player who plays the card pays it, with the card's other costs, before the card is put on the stack. If it requires a sacrifice, that player chooses the unit from their own units. A card whose imposed cost cannot be paid cannot be played.",
+    "examples": [
+      {
+        "text": "Example: under an opponent's Vengeance, the player choosing the sacrifice is offered only their own units.",
+        "test": "45-hybrids-ld-b.test.ts::Vengeance: opponents' battle cards gain '[Sacrifice a unit]' — the payer picks, off a menu of THEIR units only"
+      },
+      {
+        "text": "Example: under Arbiter of Armistice, a player who cannot pay the 2 life cannot play the card.",
+        "test": "38-light-a.test.ts::Arbiter of Armistice: an unpayable life tax makes the card uncastable"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Arbiter of Armistice",
+          "quote": "Cards played during battle gain [Pay 2 life]."
+        },
+        {
+          "ref": "card: Vengeance",
+          "quote": "Cards your opponents play during battle gain '[Sacrifice a unit]'."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R122",
+          "quote": "- **The payer chooses.** The decision lists the paying seat's units in the"
+        },
+        {
+          "ref": "R122",
+          "quote": "- **Mandatory once declared, atomic before the stack.** There is no decline"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "45-hybrids-ld-b.test.ts",
+        "38-light-a.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R122": "05cf294147a9202cf907720b8754243af5aeb9397c36cec9654e785a9bf5a26f"
+    }
+  },
+  {
+    "key": "concepts.costs.modifiers.imposed.ambush",
+    "parent": "concepts.costs.modifiers",
+    "order": 4.5,
+    "text": "A card played as an Ambush is a card played. During battle, an imposed cost on \"cards played\" applies to it.",
+    "examples": [],
+    "see": [
+      "803"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Arbiter of Armistice",
+          "quote": "Cards played during battle gain [Pay 2 life]."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R129",
+          "quote": "'cardPlayed': a {Battle} unit and an Ambush are cards being played"
+        },
+        {
+          "ref": "R122",
+          "quote": "printed cost line and today sits outside the R59/R60/R122 play-tax layer"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "low",
+    "notes": "The printed noun \"Cards\" (Arbiter of Armistice, Vengeance) with R129 (an Ambush is a card being played) states this. R122 is cited because it records that the engine keeps an Ambush outside the play-tax layer and calls widening it a future decision: it rules nothing either way. Measured r1: an Ambush under Arbiter of Armistice pays no life (F-U04-2, D-U04-4).",
+    "sourceHashes": {
+      "R122": "05cf294147a9202cf907720b8754243af5aeb9397c36cec9654e785a9bf5a26f",
+      "R129": "630060703c282d6843d3b9b11d74e161010ed2a31ab72a6810a6cb921e78a8e9"
+    },
+    "engineDiffers": [
+      "F-U04-2"
+    ],
+    "rebuttal": "Text kept. The verifier's first option is taken: basis is now printed (the card's noun \"Cards\", with R129), and engineDiffers F-U04-2 records the measured divergence. R122 is not a ruling that an Ambush is exempt; it says widening the layer onto Ambush is an undecided \"future decision\", so the printed literal stands until the owner rules otherwise (D-U04-4)."
+  },
+  {
+    "key": "concepts.costs.modifiers.abilities",
+    "parent": "concepts.costs.modifiers",
+    "order": 5,
+    "text": "A modifier that makes abilities cost more \"to activate or trigger\" applies to activated abilities and to triggered abilities, graft triggers and the triggers of attributes such as Alluring and Resonant included. It does not apply to static abilities, to playing or applying cards, or to an option that is neither activated nor triggered.",
+    "examples": [
+      {
+        "text": "Example: Crevice Lurker taxes a graft trigger.",
+        "test": "390-raq-stack.test.ts::RAQ Crevice Lurker: a graft trigger is taxed like any other"
+      },
+      {
+        "text": "Example: Crevice Lurker taxes Resonant's extra damage, by the designer's stated intent.",
+        "test": "390-raq-stack.test.ts::RAQ trigger-like attributes: Crevice Lurker taxes Resonant, the designer intent"
+      },
+      {
+        "text": "Example: applying an augment during battle is not taxed.",
+        "test": "16-earth-a.test.ts::Crevice Lurker: R121 — applying an augment during battle is NOT taxed (R37: a mod is not an activation)"
+      }
+    ],
+    "see": [
+      "705",
+      "706",
+      "707"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Crevice Lurker",
+          "quote": "Abilities cost [one] more to activate or trigger during battle."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1355103348378042515#1",
+          "quote": "It does affect Activated Ability (like Soul Reaver or Graxxlid), Triggered abilities"
+        },
+        {
+          "ref": "RAQ 1355103348378042515#3",
+          "quote": "It doesn't affect Static Abilities"
+        },
+        {
+          "ref": "RAQ 1366446116274442291#1",
+          "quote": "my intent is for it to stop those from triggering"
+        },
+        {
+          "ref": "RAQ 1379132904931594372#3",
+          "quote": "Maelstrom Ability is neither Triggered nor Activated, so Crevice Lurker doesn't affect it."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts",
+        "16-earth-a.test.ts",
+        "151-copy-and-moved-mods.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Caleb's intent (Resonant/Alluring) is wider than the printed word \"Abilities\"; the authority order follows Caleb.",
+    "sourceHashes": {
+      "RAQ 1355103348378042515#1": "e2335d4ac86097650aed08da338a5aa1b5f492a7b6d40187666ccbf908d9b16e",
+      "RAQ 1355103348378042515#3": "5d04262e5542382abe3a5347592d54af46ce4dcea94eb75c1094a496a3d483c6",
+      "RAQ 1366446116274442291#1": "039f665cd92e9cd0724ac39fa41c823da1d0e33e0db6533eaa91ea679d61c759",
+      "RAQ 1379132904931594372#3": "1e4ddfbce45282189c15b1833fa89aecfa9a38ed84c5162f938096d8b6d9e7c5"
+    }
+  },
+  {
+    "key": "concepts.costs.modifiers.trigger-tax",
+    "parent": "concepts.costs.modifiers",
+    "order": 6,
+    "text": "When a triggered ability would be put on the stack while such a tax applies, the player who would control it chooses whether to pay the tax. If they pay, the ability is put on the stack. If they decline, or cannot pay, it does not trigger.",
+    "examples": [
+      {
+        "text": "Example: paying [1] puts the taxed trigger on the stack.",
+        "test": "16-earth-a.test.ts::Crevice Lurker: R121 — a taxed trigger ASKS its controller, and paying [1] puts it on the stack"
+      },
+      {
+        "text": "Example: declining the tax on your own Origon lets your own first spell of the battle resolve.",
+        "test": "390-raq-stack.test.ts::RAQ Crevice Lurker: declining the tax on your own Origon lets your own first spell resolve"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Crevice Lurker",
+          "quote": "this prevents the abilities from triggering.)"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1355103348378042515#4",
+          "quote": "The cost is paid by player who would become controller of the effect and if it's not paid, then effect is negated."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R121 (its ability-tax layer)",
+          "quote": "goes on the stack; decline and it simply does not happen. **The decision is"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "16-earth-a.test.ts",
+        "390-raq-stack.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R121": "70cfe1343c4a705ff17c19cfa079161a0b8c2c6a592ff57e394cf3dc007cfa83",
+      "RAQ 1355103348378042515#4": "1d48aca1018dfe91929ae9f831790f0f1bf9c203421111d35c666850893011e7"
+    }
+  },
+  {
+    "key": "concepts.costs.modifiers.trigger-tax.once",
+    "parent": "concepts.costs.modifiers",
+    "order": 6.5,
+    "text": "A triggered ability that does not trigger because its tax was declined or could not be paid does not use up a \"[once]\" or other once-per-turn limit.",
+    "examples": [
+      {
+        "text": "Example: after declining, the same [once] trigger is asked again later that turn.",
+        "test": "16-earth-a.test.ts::Crevice Lurker: R121 — declining prevents the trigger and does NOT spend its [once] (R108/R113)"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R121 (its ability-tax layer)",
+          "quote": "no mana — keeps its `[once]`: the bounded reservation `composeParts` wrote at"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "16-earth-a.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R121": "70cfe1343c4a705ff17c19cfa079161a0b8c2c6a592ff57e394cf3dc007cfa83"
+    }
+  },
+  {
+    "key": "concepts.costs.modifiers.minimum",
+    "parent": "concepts.costs.modifiers",
+    "order": 7,
+    "text": "A modifier that gives spells a minimum base cost (\"Spells with base cost [three] or less have a base cost of [three]\") raises the cost of a spell whose printed cost is a number. For a spell whose cost is X, it instead makes the smallest X that may be chosen equal to that minimum, and the spell costs exactly the X chosen.",
+    "examples": [
+      {
+        "text": "Example: under Stasis Sentry in battle, Wildfire's X menu starts at 3, and X = 3 deals 3.",
+        "test": "133-x-cost-semantics.test.ts::R326 (reverses R157 §20) — under a Stasis Sentry the X menu starts at 3, and X = 3 deals 3"
+      }
+    ],
+    "see": [
+      "107",
+      "effects.casting.x"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Stasis Sentry",
+          "quote": "Spells with base cost [three] or less have a base cost of [three] to play during battle."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1359629594512068770#0",
+          "quote": "The X value must be at least 3 (which would deal 3 damage), but it can be higher"
+        },
+        {
+          "ref": "RAQ 1359629594512068770#1",
+          "quote": "X above 3 is allowed and costs exactly X."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R326",
+          "quote": "three**, and it costs exactly X. It is not cast at a smaller X for a price of"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R157",
+          "relation": "its §20 (Stasis Sentry taxes an X spell up to a price of 3) was reversed by R326"
+        },
+        {
+          "ruling": "R158",
+          "relation": "its §3 implementation of R157 §20 was reversed by R326"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "133-x-cost-semantics.test.ts",
+        "19-hybrids.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R326": "b6fb20355c2bb9e8ad2fedaaa4da911d67653d45668cc0b805c813956f91db8c",
+      "RAQ 1359629594512068770#0": "2931e75db11a44a64aff5a8458d34b418321d25f6b79937e8d4bc50919b0bd63",
+      "RAQ 1359629594512068770#1": "ac56a4ed9d3d59979d3cc64adb2784eded371132ac83b6b0e78e753052637621"
+    }
+  },
+  {
+    "key": "concepts.costs.modifiers.minimum.tokens",
+    "parent": "concepts.costs.modifiers",
+    "order": 7.5,
+    "text": "A spell token's printed cost is 0, so such a modifier makes a spell token cost its minimum.",
+    "examples": [
+      {
+        "text": "Example: under Stasis Sentry, casting a Fireball token in battle costs [3].",
+        "test": "337-spell-tokens-are-played.test.ts::R305: Stasis Sentry prints Spells, so a token (base cost 0) costs [3] in battle"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R305",
+          "quote": "> *\"Yes, tokens cost 3\"*"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "337-spell-tokens-are-played.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R305": "88a482701a5f378703d6d18e30d8a3b943798c47e43ee19572963aef6c8e2da6"
+    }
+  },
+  {
+    "key": "concepts.costs.modifiers.paid-reduction",
+    "parent": "concepts.costs.modifiers",
+    "order": 8,
+    "text": "A cost reduction a player has already paid for belongs to that player. It stays when its source leaves play, it applies in whatever region the player plays their next card, and it ends when its text says it ends: \"the next card you play this phase\" lasts until that card is played or the phase ends.",
+    "examples": [
+      {
+        "text": "Example: sacrificing Deferral Drone in response does not take away the discount already paid for.",
+        "test": "45-hybrids-ld-b.test.ts::Deferral Drone: R119 — the charge SURVIVES the Drone leaving play (\"you paid for it\")"
+      },
+      {
+        "text": "Example: the discount ends when the phase ends, even within the same turn.",
+        "test": "45-hybrids-ld-b.test.ts::Deferral Drone: ERRATA — the charge expires at a MID-TURN phase boundary, not just the turn"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Deferral Drone",
+          "quote": "Gain 4 debt: The next card you play this phase costs [3] less."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R119 (its charge-outlives-the-source ruling)",
+          "quote": "**Bena, 2026-08-23:** *the charge survives — **\"you paid for it.\"***"
+        },
+        {
+          "ref": "R119 (its charge-outlives-the-source ruling)",
+          "quote": "regions in one turn gets the discount wherever they play.**"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R119",
+          "relation": "its stated reason that a spell token does not spend the charge was corrected by R305 (a token is not a card)"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "45-hybrids-ld-b.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "R119 quotes the card as \"this turn\" and clears the charge at the start of a turn; the printed card says \"this phase\" (D-U04-3, F-U04-1).",
+    "sourceHashes": {
+      "R119": "e1d1ca4b5413a5b8d6fb2298ac0df760173571d556cd33460f185bb7dc6db7f2"
+    }
+  },
+  {
+    "key": "concepts.costs.reading-cost",
+    "parent": "111",
+    "order": 11,
+    "text": "When an effect refers to a card's cost, it means the card's printed cost. Cost modifiers do not change it. The cost of an X spell that is being or has just been cast is the X paid; an X card that is not being cast has a cost of 0.",
+    "examples": [
+      {
+        "text": "Example: Squish, paid at [4] under Stasis Sentry and Tranquility, is read as a 2-cost spell by Arcane Concentrator.",
+        "test": "390-raq-stack.test.ts::RAQ printed cost: Arcane Concentrator and Channeled Amalgam read a taxed Squish as a 2"
+      },
+      {
+        "text": "Example: an X card in hand reads as cost 0.",
+        "test": "133-x-cost-semantics.test.ts::R157 §1 — a card that was never cast has no cost: an X card in hand reads 0"
+      }
+    ],
+    "see": [
+      "107",
+      "202"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353980184042143835#0",
+          "quote": "Watchers that read \"the spell's cost\" read the PRINTED cost, not the taxed cost paid"
+        },
+        {
+          "ref": "RAQ 1396955380000755795#9",
+          "quote": "you only look at printed cost of spells."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 (its §1)",
+          "quote": "> And paying X replaces the letter X on the printed card temporarily.\"*"
+        },
+        {
+          "ref": "R158 (its §1 three contexts)",
+          "quote": "| a card known only by name — bin, hand, cache, deck, or a unit standing in play | **0** | `manaOf(name)`, `dsl.printedCost` |"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts",
+        "133-x-cost-semantics.test.ts",
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
+      "R158": "fe9ff19c6119330409f62bf10183f580ae08a886557ffdeac9f762cf6a40f3b3",
+      "RAQ 1353980184042143835#0": "571d78408552d997fc6dccfe62ce8ed362c2e803ed38050b6f78aaf40a9cf157",
+      "RAQ 1396955380000755795#9": "de10d99276d0257274713007cb2c31386ce950e93d282737522fb0f38c8dfa06"
+    }
+  },
+  {
+    "key": "concepts.costs.alternative",
+    "parent": "111",
+    "order": 12,
+    "text": "Some cards print another way to play or use them, with its own cost: a Prophecy or Ambush banner, or a \"Discard me\" line. Such a cost is paid like any other cost: its mana is spent and its affinity requirement must be met.",
+    "examples": [
+      {
+        "text": "Example: mana without the banner's affinity does not buy a prophecy.",
+        "test": "313-prophecy-affinity.test.ts::R301 §2: mana without the affinity does not buy a prophecy"
+      },
+      {
+        "text": "Example: a \"Discard me\" line is refused without its mana.",
+        "test": "37-attrs-wight.test.ts::R40: \"Discard me\" is refused without the mana"
+      }
+    ],
+    "see": [
+      "203",
+      "803"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R301",
+          "quote": "A prophecy banner is a cost like any other: its mana is **spent** and its affinity is"
+        },
+        {
+          "ref": "R301",
+          "quote": "same banner on the same cards — has always worked this way."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "313-prophecy-affinity.test.ts",
+        "37-attrs-wight.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R301 is basis printed/other in the register (the scans print the pips); R40 test titles are outside the pack.",
+    "sourceHashes": {
+      "R301": "f0096724daf9e43ba46ad14d47b9a962c1d6031bccf6e0ec7f7ac42b780154ba"
+    }
+  },
+  {
+    "key": "concepts.costs.alternative.discard-me",
+    "parent": "concepts.costs.alternative",
+    "order": 1,
+    "text": "Discarding a card through its \"Discard me\" line is not playing it. A player may do it whenever they hold priority in battle, and during their own deployment, unless the line itself is marked with a timing.",
+    "examples": [
+      {
+        "text": "Example: Dropslime's discard-me line is offered in battle.",
+        "test": "135-exchange-and-zones.test.ts::R157 §8: Dropslime’s discard-me mode is offered IN BATTLE and deals damage there"
+      }
+    ],
+    "see": [
+      "701"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R65 (its discard-me half)",
+          "quote": "(R25). Discarding is not playing (R37) — nothing reaches the stack, nothing"
+        },
+        {
+          "ref": "R65 (its discard-me half)",
+          "quote": "as well as during your own deployment. A printed `{Battle}` marker on the discard line"
+        },
+        {
+          "ref": "R157 (its §8)",
+          "quote": "> *\"It doesn't have a battle icon, but that is just an activated ability that"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "135-exchange-and-zones.test.ts",
+        "37-attrs-wight.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
+      "R65": "e9ed084b299e697c3a8550bce01553259bfc5d6601416e6e6fc3adb041378a6d"
+    }
+  },
+  {
+    "key": "concepts.costs.free",
+    "parent": "111",
+    "order": 13,
+    "text": "A card played for free (released by a fulfilled prophecy, or played by an effect such as Tides of the Cosmos) pays no mana cost and ignores its affinity requirement. Its additional bracketed costs are still paid.",
+    "examples": [
+      {
+        "text": "Example: Tides of the Cosmos plays a fire unit for a player with only water resources.",
+        "test": "396-raq-timing.test.ts::RAQ Tides 1: a free play ignores affinity — a fire unit with only water resources"
+      },
+      {
+        "text": "Example: Volatile Toxicity played by Tides still sacrifices a unit.",
+        "test": "404-raq-fix-tides.test.ts::R338: a Tides play pays its additional cost — the sacrifice happens and Volatile Toxicity resolves"
+      }
+    ],
+    "see": [
+      "effects.casting.x.free",
+      "effects.casting.costs.mid-resolution"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1396955380000755795#5",
+          "quote": "Any additional [cost] of the card must be paid."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R301",
+          "quote": "still releases the card for free and still ignores affinity on the way out (Caleb"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts",
+        "404-raq-fix-tides.test.ts",
+        "313-prophecy-affinity.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The Tides affinity claim (RAQ Tides 1) is cited only through its test; the claim itself is not in the U04 pack.",
+    "sourceHashes": {
+      "R301": "f0096724daf9e43ba46ad14d47b9a962c1d6031bccf6e0ec7f7ac42b780154ba",
+      "RAQ 1396955380000755795#5": "d799969c1aa3749e76ad3de04cb4af26f46e0c281021e54e70d2b62c5a278f11"
+    }
+  },
+  {
+    "key": "concepts.costs.free.x",
+    "parent": "concepts.costs.free",
+    "order": 1,
+    "text": "An X spell played for free is played with X = 0. A card that says \"X can't be zero\" therefore cannot be played for free.",
+    "examples": [
+      {
+        "text": "Example: Tides of the Cosmos cannot play Frosted Denial.",
+        "test": "396-raq-timing.test.ts::RAQ Tides 6: Frosted Denial (X cannot be zero) is not a card Tides can play"
+      }
+    ],
+    "see": [
+      "107"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1396955380000755795#6",
+          "quote": "An X spell played by Tides costs 0 against the budget and is played at X = 0."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R339",
+          "quote": "can't be zero\" therefore has no legal free play, and Tides of the Cosmos does"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts",
+        "404-raq-fix-tides.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R339": "0869d183af4b6d5c0b7583720e6974682e5394c6533a1e379c6a72e3c0aef50c",
+      "RAQ 1396955380000755795#6": "157742c7f3c00e6be2652e8065fd782217905a77d6f55e3a25cb893c4bc09bd8"
+    }
+  },
+  {
+    "key": "concepts.costs.multiplied",
+    "parent": "111",
+    "order": 14,
+    "text": "When an effect is repeated by a multiplier (\"trigger two copies of this graft ability\"), a cost the repeated effect carries is paid once for each copy. The whole multiplied cost is paid all or nothing: if it cannot all be paid, none of it is paid and that effect does not happen.",
+    "examples": [
+      {
+        "text": "Example: under Lost Guardian, a \"[Discard a card]:\" graft pays twice and resolves twice.",
+        "test": "17-earth-b.test.ts::R110: a \"[cost]: effect\" graft under Lost Guardian pays its cost TWICE and resolves twice"
+      },
+      {
+        "text": "Example: with one card in hand, the doubled [Discard a card] is not paid at all.",
+        "test": "17-earth-b.test.ts::R110: all or nothing — one card in hand cannot pay a doubled [Discard a card], so nothing is paid and nothing happens"
+      }
+    ],
+    "see": [
+      "722"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353859961855148103#4",
+          "quote": "Cost must be paid twice (Lost Guardian) or trice (Amphivore)."
+        },
+        {
+          "ref": "RAQ 1353859961855148103#5",
+          "quote": "No Sacrifice at all and you don't get the effect."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R110 (its cost-paid-per-copy half)",
+          "quote": "- *\"Cost must be paid twice (Lost Guardian) or thrice (Amphivore).\"* Each"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "17-earth-b.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R110": "8776d97c50c209e6c9ee10cb7fa563ce5c67dd9b40041ab43e45de0c35fddb30",
+      "RAQ 1353859961855148103#4": "71d29601ef74cb10c94e3e126818f3f837800cf444b4ebef77603263c6f734a0",
+      "RAQ 1353859961855148103#5": "e76eb85747e60fd292c770c1843f8184363e120947d683bf484fd432d9730029"
+    }
+  },
+  {
+    "key": "concepts.costs.grafted",
+    "parent": "111",
+    "order": 15,
+    "text": "A cost a graft adds (\"{graft} [cost]: effect\") must be paid; it cannot be declined. If it cannot be paid, none of the composite ability goes on the stack: not the graft's effect, the host's own effect, or any other graft with it. The exception is a played spell that carries a {Modular} graft part: there an unpayable grafted cost skips only that part, and the spell is not withheld.",
+    "examples": [
+      {
+        "text": "Example: an unpayable grafted cost keeps the host's own ability and the other grafts off the stack too.",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 point 11: an unpayable [cost] graft keeps the whole composite off the stack — the host and the other grafts too"
+      }
+    ],
+    "see": [
+      "722"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#10",
+          "quote": "then the whole Graft Effect won't go on the stack."
+        },
+        {
+          "ref": "RAQ 1355115946032889914#11",
+          "quote": "non-optional (you MUST pay it, you can't opt out)"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R334",
+          "quote": "- A grafted `[cost]` cannot be declined."
+        },
+        {
+          "ref": "R334",
+          "quote": "- A played **spell** that carries a `{Modular}` graft part keeps the per-part skip. Withholding a card already paid for would strand it."
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R35",
+          "relation": "its declinable / skippable grafted riders were reversed by R334"
+        },
+        {
+          "ruling": "R110",
+          "relation": "narrowed by R334: an unpayable multiplied graft cost withholds the whole composite, not only that graft"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts",
+        "403-raq-fix-mods.test.ts",
+        "32-cast-costs.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "Round 1: R334's {Modular} spell carve-out stated here. The designer's \"the whole Graft Effect\" has two readings (D-U04-12).",
+    "sourceHashes": {
+      "R334": "6c082324d0276473fe72532b3e3ba0c47e93f6f7d836b7e69cebe89191a37604",
+      "RAQ 1355115946032889914#10": "c58ce2f15368b2ff1de72b60b7a77e93dab77f75a7f1d12d9c1530a82bff1ed7",
+      "RAQ 1355115946032889914#11": "1a03577e8ae2aecb76a6b2b7fe9d3c4d7a66dd9bc8bf481524856a9808e43420"
+    }
+  },
+  {
+    "key": "concepts.life.basics",
+    "parent": "112",
+    "order": 1,
+    "text": "Each player begins the game with 30 life. A player whose life is reduced to 0 is eliminated.",
+    "examples": [
+      {
+        "text": "Example: both players begin at 30, and a player whose life is reduced to exactly 0 has lost the game.",
+        "test": "415-cr-costs-life-timestamps.test.ts::cr:concepts.life.basics — players start at 30, and a player reduced to exactly 0 life loses the game"
+      }
+    ],
+    "see": [
+      "103",
+      "104"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.6",
+          "quote": "Each player begins with 30 life. Eliminate all of your"
+        },
+        {
+          "ref": "Manual p.6",
+          "quote": "opponents by bringing their life to 0."
+        },
+        {
+          "ref": "Rulebook 2023 p.2",
+          "quote": "•Set life totals to 30."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "415-cr-costs-life-timestamps.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.life.basics.gain-and-loss",
+    "parent": "concepts.life.basics",
+    "order": 1,
+    "text": "A life total changes only by being gained or lost. Damage dealt to a player makes that player lose that much life, and paying life is losing it.",
+    "examples": [
+      {
+        "text": "Example: Throwing Boulder's 3 damage to a player is a loss of 3 life, and the [Pay 2 life] that Arbiter of Armistice adds to a card played during battle is a loss of 2 life.",
+        "test": "415-cr-costs-life-timestamps.test.ts::cr:concepts.life.basics.gain-and-loss — damage to a player and a paid life cost both reach the life total as life lost"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Arbiter of Vitality",
+          "quote": "(Damage causes loss of life.)"
+        },
+        {
+          "ref": "card: Soul Siphon",
+          "quote": "(Damage causes life loss.)"
+        },
+        {
+          "ref": "Rulebook 2023 p.11",
+          "quote": "Unblocked attacking damage is dealt to the defending player’s life"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R162 (its multiplicative family)",
+          "quote": "combat face damage, effect damage to a player, rot, {Lethal}, printed costs and"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "415-cr-costs-life-timestamps.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R162": "cce03aedbad6ba5b735880d7acb96b463e250174b38e8f23e2f7f449b087412b"
+    }
+  },
+  {
+    "key": "concepts.life.basics.region",
+    "parent": "concepts.life.basics",
+    "order": 2,
+    "text": "An effect that makes players gain or lose life reaches only the players in its region. \"Each opponent loses 1 life\" means each opponent in the current region.",
+    "examples": [
+      {
+        "text": "Example: Bloated Manablub dying in battle makes each opponent in that region lose 3 life.",
+        "test": "10-water-metal.test.ts::Bloated Manablub: dying in battle → each opponent loses 3 life (region-scoped)"
+      }
+    ],
+    "see": [
+      "601"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.42",
+          "quote": "A: That refers to each opponent in your current region."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "10-water-metal.test.ts",
+        "415-cr-costs-life-timestamps.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.life.lost-in-battle",
+    "parent": "112",
+    "order": 2,
+    "text": "The life a player has lost in a battle is the sum of all their life losses in that battle. Life gained in the battle does not reduce it.",
+    "examples": [
+      {
+        "text": "Example: a player loses 10, gains 8 and loses 3 in one battle; Soul Siphon makes a 13/13.",
+        "test": "388-raq-blocks-and-windows.test.ts::RAQ Life lost: life lost in a battle adds up the losses and ignores the gains — Soul Siphon makes a 13/13"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1449475896510648320#0",
+          "quote": "Life lost in a battle (Null Drone, Echo of Despair, Soul Siphon) adds up the losses and ignores gains: -10, +8, -3 is 13 lost."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "388-raq-blocks-and-windows.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1449475896510648320#0": "4cfa27ce5eb3d293aade45365f6ba4b353025694b443c99921b950d23cf9be55"
+    }
+  },
+  {
+    "key": "concepts.life.multipliers",
+    "parent": "112",
+    "order": 3,
+    "text": "Effects that multiply life gained or lost multiply together: with n effects that each double it, the amount is multiplied by 2 to the power n. The multiplied amount is gained or lost at once, before it is checked whether the player has reached 0 life.",
+    "examples": [
+      {
+        "text": "Example: three Arbiters of Vitality multiply a life loss by 8.",
+        "test": "137-multiplier-and-mode.test.ts::R264: THREE Arbiters multiply — the fold is EXPONENTIAL in n"
+      },
+      {
+        "text": "Example: a lethal loss is doubled before the game checks for 0 life.",
+        "test": "137-multiplier-and-mode.test.ts::Arbiter of Vitality: a LETHAL loss is multiplied BEFORE the lethal check"
+      }
+    ],
+    "see": [
+      "708"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Arbiter of Vitality",
+          "quote": "Double all life gain and life loss."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R264",
+          "quote": "**The claiming factors MULTIPLY. n mods each declaring ×2 give 2^n.** Three"
+        },
+        {
+          "ref": "R162 (its multiplicative family)",
+          "quote": "  now committed in one go, BEFORE the lethal check."
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R157",
+          "relation": "its §23 linear formula (n*2*v) was amended by R264 to 2^n"
+        },
+        {
+          "ruling": "R162",
+          "relation": "its summed fold was superseded by R264"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "137-multiplier-and-mode.test.ts",
+        "45-hybrids-ld-b.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "How a life multiplier composes with an additive life modifier is unruled (R264): D-U04-6.",
+    "sourceHashes": {
+      "R162": "cce03aedbad6ba5b735880d7acb96b463e250174b38e8f23e2f7f449b087412b",
+      "R264": "95b7d61f66f2efa6b8ad89acef4b28f40cfa6eb372d3468b7470806548b75018"
+    }
+  },
+  {
+    "key": "concepts.life.cant-change",
+    "parent": "112",
+    "order": 4,
+    "text": "If a player's life total \"can't change\", that player neither gains nor loses life while the effect lasts.",
+    "examples": [
+      {
+        "text": "Example: Suspend stops the target's life total moving in either direction for the battle.",
+        "test": "40-light-c.test.ts::Suspend: the target's life total can't change in either direction this battle"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Suspend",
+          "quote": "Target player's life total can't change during this battle."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "40-light-c.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.damage.basics",
+    "parent": "112",
+    "order": 5,
+    "text": "Damage is dealt by a source to a unit or a player. Damage dealt to a unit is marked on it, and a unit whose total marked damage is greater than or equal to its defense dies. Damage dealt to a player makes them lose that much life.",
+    "examples": [
+      {
+        "text": "Example: an attacker with 2 power blocked by a 0/2 kills it, and an unblocked 1-power attacker makes the defending player lose 1 life.",
+        "test": "415-cr-costs-life-timestamps.test.ts::cr:concepts.damage.basics — damage equal to defense kills, and unblocked damage to a player is that much life lost"
+      }
+    ],
+    "see": [
+      "608",
+      "713"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "battle before dying. A unit dealt a total amount of damage that is greater than or equal to its defense during"
+        },
+        {
+          "ref": "Rulebook 2023 p.11",
+          "quote": "Unblocked attacking damage is dealt to the defending player’s life"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "415-cr-costs-life-timestamps.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.damage.basics.regroup",
+    "parent": "concepts.damage.basics",
+    "order": 1,
+    "text": "Damage marked on units is removed during the regroup phase.",
+    "examples": [
+      {
+        "text": "Example: a blocker that took 2 damage in the battle has no damage marked on it after regroup.",
+        "test": "415-cr-costs-life-timestamps.test.ts::cr:concepts.damage.basics.regroup — damage marked on a unit is removed at regroup"
+      }
+    ],
+    "see": [
+      "506"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.26",
+          "quote": "All damage on units is removed"
+        },
+        {
+          "ref": "Rulebook 2023 p.11",
+          "quote": "All damage on units goes away during the regroup step."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "415-cr-costs-life-timestamps.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.damage.basics.all-dealt",
+    "parent": "concepts.damage.basics",
+    "order": 2,
+    "text": "All the damage dealt to a unit is dealt, including any beyond what destroys it, and counts as damage dealt.",
+    "examples": [
+      {
+        "text": "Example: Arc Lightning keeps all 6 damage on a Vulnerable 3/8 instead of jumping; all 12 land on it.",
+        "test": "387-raq-combat.test.ts::RAQ Vulnerable: Electric damage with nowhere to jump is still dealt — all 6 land on the Vulnerable unit as 12"
+      }
+    ],
+    "see": [
+      "combat.damage.assignment.dealt-in-full"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1372451771632320512#2",
+          "quote": "Damage kept on the unit is all dealt — 12 lands, which is what Ember of Life would count."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1372451771632320512#2": "35c0da814c914558c5f5c60ee610436617efabaae0e1b7cc814d46f6d71d9cd2"
+    }
+  },
+  {
+    "key": "concepts.damage.source",
+    "parent": "112",
+    "order": 6,
+    "text": "The source of damage is the thing that deals it. When a spell makes a unit deal damage (Squish, Fight, Battle), the unit is the source: its own attributes apply, and the spell's attributes do not.",
+    "examples": [
+      {
+        "text": "Example: a Powerful ally squishing deals double its defense.",
+        "test": "388-raq-blocks-and-windows.test.ts::RAQ Squish: the unit is the source — a Powerful ally deals double its defense"
+      },
+      {
+        "text": "Example: a Powerful Squish does not double.",
+        "test": "388-raq-blocks-and-windows.test.ts::RAQ Squish: a Powerful Squish does not double — the spell is not the source"
+      }
+    ],
+    "see": [
+      "802"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1402292180499955884#0",
+          "quote": "For Squish/Fight/Battle the unit is the source: a Powerful ally deals double."
+        },
+        {
+          "ref": "RAQ 1402292180499955884#1",
+          "quote": "A Powerful Squish does not double — the spell is not the source."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R318",
+          "quote": "> \"Q: When I play Squish/Fight/Battle, what is source of damage? A: Unit.\""
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "388-raq-blocks-and-windows.test.ts",
+        "399-raq-fix-combat.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R318": "b13b3ca34a471fdb76cb9272f2929ad8b0eec17d7ea5cff2cba441ffdae5947a",
+      "RAQ 1402292180499955884#0": "8ca0618915f46ba0c16263c38e217d8b045a1e4767421a8e648967c065ada9d9",
+      "RAQ 1402292180499955884#1": "349d662f096c2d881835be8a87a653bd4c6b51a650ab71bfbaf64c6a6d9841a7"
+    }
+  },
+  {
+    "key": "concepts.damage.source.unit-not-spell-effect",
+    "parent": "concepts.damage.source",
+    "order": 1,
+    "text": "Damage a unit deals because a spell told it to is that unit's damage, not damage from a spell effect.",
+    "examples": [
+      {
+        "text": "Example: Squish damage does not trigger Ember of Life (\"When one of your spell effects deals damage\").",
+        "test": "388-raq-blocks-and-windows.test.ts::RAQ Squish: Squish damage is the unit dealing it, so Ember of Life does not trigger"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1402292180499955884#2",
+          "quote": "Damage resulting from Squish/Fight/Battle won't trigger Ember of Life"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "388-raq-blocks-and-windows.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1402292180499955884#2": "30c449bb3e1370052f39b492d631e7ffe5517ca96c81a635fb06bb19d54478ec"
+    }
+  },
+  {
+    "key": "concepts.damage.combat-and-noncombat",
+    "parent": "112",
+    "order": 7,
+    "text": "Combat damage is the damage columns deal to each other and to players in the combat damage step. All other damage is noncombat damage, including damage dealt by an ability that combat damage causes, such as Resonant's extra damage.",
+    "examples": [
+      {
+        "text": "Example: Resonant's extra damage is not combat damage, so Oorblak does not take it in place of the player.",
+        "test": "387-raq-combat.test.ts::RAQ Resonant: the extra damage is not combat damage — Oorblak does not take it, the player does"
+      }
+    ],
+    "see": [
+      "608"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Conduit of Pain",
+          "quote": "If an allied source would deal noncombat damage, it deals that much damage plus 1 instead."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1362838395298119912#0",
+          "quote": "extra damage from Resonant effect wouldn't be considered as 'combat damage'"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1362838395298119912#0": "f2bca29b34ca4054e89f4b875b3d7a76dfcd1624d98fd3d374c67f03e27eaf00"
+    }
+  },
+  {
+    "key": "concepts.damage.one-effect",
+    "parent": "112",
+    "order": 8,
+    "text": "All the damage one resolution of one effect deals is dealt at once. A recipient that the effect damages more than once is dealt the total once, and units destroyed by that damage are destroyed together, after all of it is dealt.",
+    "examples": [
+      {
+        "text": "Example: Channel Through deals damage to a unit twice; Restitution triggers once, for the total.",
+        "test": "69-damage-batch.test.ts::R80: Channel Through gives a twice-hit unit ONE damage event (the Restitution report)"
+      },
+      {
+        "text": "Example: \"each unit\" damage kills simultaneously.",
+        "test": "69-damage-batch.test.ts::R80: \"each unit\" damage kills simultaneously — every unit hears the same total"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R80",
+          "quote": "- hits are **coalesced per recipient** — a recipient named twice is dealt one"
+        },
+        {
+          "ref": "R80",
+          "quote": "- **deaths are checked once**, after all of it is marked, which is what"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "69-damage-batch.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R80 is designer-backed (Caleb on Meteor Shower) but its own text only quotes Caleb for the per-copy split; 69-damage-batch is outside the pack.",
+    "sourceHashes": {
+      "R80": "c5434669a23a89ae01595c26a66f57923d91ebfd7c0a53b47033f70e1d79d860"
+    }
+  },
+  {
+    "key": "concepts.damage.one-effect.copies",
+    "parent": "concepts.damage.one-effect",
+    "order": 1,
+    "text": "Each copy of an effect is a separate source and deals its damage separately.",
+    "examples": [
+      {
+        "text": "Example: Meteor Shower's three Rockfalls are three separate dealings of damage. (illustrative)",
+        "test": "415-cr-costs-life-timestamps.test.ts::cr:concepts.damage.one-effect.copies — the three Meteor Shower rockfalls are three separate dealings of damage"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R80",
+          "quote": "Meteor Shower making several Rockfalls: *\"Each copy of Rockfall is a separate"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "415-cr-costs-life-timestamps.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "The ruling quotes Caleb 2025-03-20 inside R80; there is no RAQ claim for it in the pack.",
+    "sourceHashes": {
+      "R80": "c5434669a23a89ae01595c26a66f57923d91ebfd7c0a53b47033f70e1d79d860"
+    }
+  },
+  {
+    "key": "concepts.damage.amount-order",
+    "parent": "112",
+    "order": 9,
+    "text": "When a source would deal noncombat damage, its amount is worked out in this order: first, modifiers that add to it (such as Conduit of Pain's \"plus 1\") apply; then Powerful doubles the result; then a Vulnerable recipient is dealt double what reaches it.",
+    "examples": [
+      {
+        "text": "Example: a Powerful Bellowing Boulder beside Conduit of Pain deals (1+1)x2 = 4 to each unit.",
+        "test": "387-raq-combat.test.ts::RAQ Resonant: Conduit adds its 1 BEFORE Powerful doubles — a Powerful Bellowing Boulder deals (1+1)x2 = 4 to each unit"
+      }
+    ],
+    "see": [
+      "802",
+      "708"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1362838395298119912#4",
+          "quote": "Conduit of Pain adds its 1 BEFORE Powerful doubles: a Powerful Bellowing Boulder's 1 deals (1+1)x2 = 4."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R316",
+          "quote": "When a source would deal noncombat damage, additive modifiers (Conduit of Pain's"
+        },
+        {
+          "ref": "R103 (its order-of-operations arithmetic)",
+          "quote": "2. The victim is priced in what it RECEIVES, so {Vulnerable}'s receive-side"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R104",
+          "relation": "its order putting the additive modifier after Powerful's doubling was reversed by R316"
+        },
+        {
+          "ruling": "R162",
+          "relation": "its stated reason for the additive-then-multiplier interim order was corrected by R316"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts",
+        "415-cr-costs-life-timestamps.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R103": "6b17215709fe377c2ddb2f947b1704122dc895c01b6c26357d55d4b3323ed247",
+      "R316": "0a120883d7cfa92ba527097fad739d9bf9c28e09964452ec7c89cef9578bb128",
+      "RAQ 1362838395298119912#4": "17213edf2cc843dab7504dfd0d633bd4f4c5fc3d7997ea9ffc883f4aed2df901"
+    }
+  },
+  {
+    "key": "concepts.damage.poisonous",
+    "parent": "112",
+    "order": 10,
+    "text": "Damage dealt in the form of -1/-1 counters (by a Poisonous source) is still damage dealt: it triggers abilities that trigger on a unit being dealt damage.",
+    "examples": [
+      {
+        "text": "Example: Awoken Tomb hit by a Poisonous source makes its X/X.",
+        "test": "206-deadly-everywhere.test.ts::R237: an un-prevented {Poisonous} hit fires \"whenever I am dealt damage\" (the RAQ example)"
+      }
+    ],
+    "see": [
+      "802"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1354148437355925554#0",
+          "quote": "Poisonous damage is damage dealt: it fires \"when I am dealt damage\" (Awoken Tomb makes its X/X)."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R237",
+          "quote": "**{Poisonous} is a MARK, not a substitution.** Everything above the mark —"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "206-deadly-everywhere.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R237": "ec152f51160f9f8410800e8323fd9f676fdf45864242ec64e8d1e35ce6ae3cc7",
+      "RAQ 1354148437355925554#0": "2c5e71d0b404519886a6dc5e831e2c8be50d5833f89d3e45576fd42fac56a76d"
+    }
+  },
+  {
+    "key": "concepts.damage.prevented",
+    "parent": "112",
+    "order": 11,
+    "text": "Damage that is prevented is not dealt. It triggers nothing that triggers on damage being dealt, places no -1/-1 counters, and does not destroy a unit, even from a Deadly source.",
+    "examples": [
+      {
+        "text": "Example: prevented damage fires no \"dealt damage\" trigger.",
+        "test": "24-wood-b.test.ts::Phytochemical Protection: prevented damage is NOT dealt — no damage event fires"
+      },
+      {
+        "text": "Example: a Deadly source cannot kill through Phytochemical Protection.",
+        "test": "24-wood-b.test.ts::Phytochemical Protection: {Deadly} cannot kill through it"
+      }
+    ],
+    "see": [
+      "708",
+      "combat.damage.assignment.shields-ignored"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1354148437355925554#1",
+          "quote": "Poisonous does not get through Phytochemical Protection: no -1/-1 counters, no damage trigger, and the +1/+1 counters are paid."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R98 (its prevention-is-not-dealing ruling)",
+          "quote": "So a fully prevented hit produces **no `damage` event** (\"whenever I am dealt damage\" stays"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R98",
+          "relation": "its open item 1 (prevention counters capped at lethal) was superseded by R114"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "24-wood-b.test.ts",
+        "387-raq-combat.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R98": "3b5eca7b78135e3b83d9772ba1d9b4a61e98a52ee192747ede43080eb4f13a41",
+      "RAQ 1354148437355925554#1": "0cee7d451013b6afaa95e382f1b150732182e144830830fbfe16e51ceaef2394"
+    }
+  },
+  {
+    "key": "concepts.damage.replaced",
+    "parent": "112",
+    "order": 12,
+    "text": "Damage that an effect replaces with something else (for example, damage dealt \"as\" rot) was still dealt. Abilities that care whether damage was dealt see it, even though the recipient took something else instead.",
+    "examples": [
+      {
+        "text": "Example: a column whose face damage Blightsea Polyp turns into rot still pays out Vroot's \"that much\".",
+        "test": "207-replaced-hit-was-dealt.test.ts::R238: \"when my column deals combat damage\" pays out through the replacement"
+      }
+    ],
+    "see": [
+      "708",
+      "combat.damage.player.replaced-still-dealt"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R238",
+          "quote": "> **\"Yes, blightsea pollup says it deals damage as, so its still damage. Just"
+        },
+        {
+          "ref": "R98 (its prevention-is-not-dealing ruling)",
+          "quote": "unmake it: Caleb ruled (2024-10-24) the damage still counts as having been DEALT, so"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R195",
+          "relation": "its replaced-hit reading was amended by R238: a fully replaced hit still counts as dealt"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "207-replaced-hit-was-dealt.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R238 records that Caleb (2024-10-24) answered \"Yes\" for Rot Jelly (now Blightsea Polyp) and Lethal only; the general form is the owner's.",
+    "sourceHashes": {
+      "R238": "0e100f9b3442e2b363e7a1ca1abf5dfaa1189d9688d1ed9c1bdc237b3d6faccb",
+      "R98": "3b5eca7b78135e3b83d9772ba1d9b4a61e98a52ee192747ede43080eb4f13a41"
+    }
+  },
+  {
+    "key": "concepts.rot",
+    "parent": "112",
+    "order": 13,
+    "text": "Rot is a counter a player has. At the start of each deployment phase, each player is dealt damage equal to their rot, in initiative order.",
+    "examples": [
+      {
+        "text": "Example: a player with 3 rot is dealt 3 damage as deployment begins.",
+        "test": "35-rot-debt-trash.test.ts::R38: rot deals damage equal to itself at the start of deployment, in initiative order"
+      }
+    ],
+    "see": [
+      "507"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [
+        {
+          "ref": "glossary: Rot",
+          "quote": "At the start of deployment, you take damage equal to the number of rot you have. Rot does not go away."
+        }
+      ],
+      "rulings": [
+        {
+          "ref": "R38",
+          "quote": "`PlayerState.rot`. At the start of the deployment phase each player takes"
+        },
+        {
+          "ref": "R38",
+          "quote": "damage equal to their own rot total, in initiative order. Rot never"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "35-rot-debt-trash.test.ts",
+        "42-dark-b.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R38 is designer-backed (Caleb 2024-08-20, the Rot Counter card in Caleb's library) but those quotes are not in any printed page the extract holds (D-U04-7). 35-rot-debt-trash is outside the pack.",
+    "sourceHashes": {
+      "R38": "cb8fd0dabbc8ed3f5aa30a2dd5d4e7f6fc823da7b896a98e6574c3b04e79ffb5"
+    }
+  },
+  {
+    "key": "concepts.rot.never-decays",
+    "parent": "concepts.rot",
+    "order": 1,
+    "text": "Rot never decreases on its own. It deals its damage again every deployment until an effect removes it.",
+    "examples": [
+      {
+        "text": "Example: rot deals its full damage again the next turn.",
+        "test": "35-rot-debt-trash.test.ts::R38: rot never decays — it fires again, at full size, every turn"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Burn the Blight",
+          "quote": "Remove all counters from units and players."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R38",
+          "quote": "decreases on its own. The damage's source is the damaged player's own rot"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "35-rot-debt-trash.test.ts",
+        "41-dark-a.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R38": "cb8fd0dabbc8ed3f5aa30a2dd5d4e7f6fc823da7b896a98e6574c3b04e79ffb5"
+    }
+  },
+  {
+    "key": "concepts.rot.source",
+    "parent": "concepts.rot",
+    "order": 2,
+    "text": "The source of rot damage is the damaged player's own rot, which is a source that player controls.",
+    "examples": [
+      {
+        "text": "Example: the damage is recorded as coming from the damaged player.",
+        "test": "35-rot-debt-trash.test.ts::R38: the damage source is the damaged player themselves (\"your rot is a source you control\")"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R38",
+          "quote": "(Caleb 2024-08-20: \"Your rot is a source you control\"), it lands in the same"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "35-rot-debt-trash.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "A Caleb quote carried inside R38; no RAQ claim or printed page in the pack.",
+    "sourceHashes": {
+      "R38": "cb8fd0dabbc8ed3f5aa30a2dd5d4e7f6fc823da7b896a98e6574c3b04e79ffb5"
+    }
+  },
+  {
+    "key": "concepts.rot.timing",
+    "parent": "concepts.rot",
+    "order": 3,
+    "text": "Rot damage is dealt as the deployment phase begins, before abilities that trigger \"at the start of deployment\". No player can respond to it.",
+    "examples": [
+      {
+        "text": "Example: the start-of-deployment event fires after rot damage.",
+        "test": "47-costs-events.test.ts::R50: 'startOfDeployment' fires AFTER R38's rot damage (the documented order)"
+      },
+      {
+        "text": "Example: rot damage cannot be responded to.",
+        "test": "35-rot-debt-trash.test.ts::R38: rot damage cannot be responded to — deployment opens no priority window"
+      }
+    ],
+    "see": [
+      "507"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R38",
+          "quote": "deployment it cannot be responded to. Rot damage must run through a"
+        },
+        {
+          "ref": "R50",
+          "quote": "charge, not a trigger — so a start-of-deployment trigger cannot pre-empt it."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "47-costs-events.test.ts",
+        "35-rot-debt-trash.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R50 says nothing printed sequences rot before start-of-deployment triggers (an owner call, D-U04-5); R102's addendum quotes the owner calling rot damage \"a trigger\".",
+    "sourceHashes": {
+      "R38": "cb8fd0dabbc8ed3f5aa30a2dd5d4e7f6fc823da7b896a98e6574c3b04e79ffb5",
+      "R50": "fd11d0aa87980d21d5d6ceec5fd6a6799f46773021b756073facbec0a6a3346f"
+    }
+  },
+  {
+    "key": "concepts.rot.replacement",
+    "parent": "concepts.rot",
+    "order": 4,
+    "text": "Rot damage can be replaced. A replacement that names no target replaces it on the spot. One that names a target (\"put that many -1/-1 counters on target unit instead\") puts a triggered ability on the stack to choose the target, and the damage is replaced whether or not that ability finds a target.",
+    "examples": [
+      {
+        "text": "Example: Skittering Blight takes your rot damage as +1/+1 counters.",
+        "test": "42-dark-b.test.ts::…and then eats the rot damage as +1/+1 counters (R38 replacement)"
+      },
+      {
+        "text": "Example: Beyond, Codex Incarnate asks its controller for a target, and the rot damage never lands.",
+        "test": "43-dark-c.test.ts::Beyond, Codex Incarnate: R102 — the rot replacement asks its controller for a target, and the damage never lands"
+      }
+    ],
+    "see": [
+      "708"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Skittering Blight",
+          "quote": "If rot would deal damage to you, instead put that many +1/+1 counters on me."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R102",
+          "quote": "2. **A replacement that names a TARGET still uses the stack.** A target has to"
+        },
+        {
+          "ref": "R102",
+          "quote": "* **THE HOOK RETURNS TRUE FIRST**, before anything is queued, let alone"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "42-dark-b.test.ts",
+        "43-dark-c.test.ts",
+        "35-rot-debt-trash.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R102": "5e24f1f507495aef77c4b72cb612a83e002cfc7af4c24d1fcd7b44364df62381"
+    }
+  },
+  {
+    "key": "concepts.rot.who-gains",
+    "parent": "concepts.rot",
+    "order": 5,
+    "text": "An effect that says \"gain rot\" without naming a player gives the rot to the effect's controller.",
+    "examples": [
+      {
+        "text": "Example: Primordial Coalescence gives its caster 2 rot.",
+        "test": "43-dark-c.test.ts::Primordial Coalescence: three Wraiths (= Wights, R47) and 2 rot (R38)"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 (its §9)",
+          "quote": "> refers to YOU, the controller/caster of the effect.\"*"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "43-dark-c.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
+    }
+  },
+  {
+    "key": "concepts.debt",
+    "parent": "112",
+    "order": 14,
+    "text": "Debt is a counter a player has. At the end of each of their resource steps, a player pays 1 mana for each debt they have, and each mana paid removes one debt.",
+    "examples": [
+      {
+        "text": "Example: debt is paid automatically as the resource step ends.",
+        "test": "35-rot-debt-trash.test.ts::R39: debt is paid automatically when the resource step ends — 1 mana per debt"
+      }
+    ],
+    "see": [
+      "502"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [
+        {
+          "ref": "glossary: Debt",
+          "quote": "At the end of each of your resource steps, pay 1 mana per debt. Unpaid debt carries over."
+        }
+      ],
+      "rulings": [
+        {
+          "ref": "R39",
+          "quote": "`PlayerState.debt`. When a player finishes their planning resource step they"
+        },
+        {
+          "ref": "R39",
+          "quote": "must pay 1 mana per debt, each mana removing one debt. Partial payment is"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "35-rot-debt-trash.test.ts",
+        "415-cr-costs-life-timestamps.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R39 is designer-backed (Caleb 2024-09-10, refined 2024-12-02) but the quotes are not in the pack (D-U04-7). 35-rot-debt-trash is outside the pack.",
+    "sourceHashes": {
+      "R39": "debc7c151864dc3d009a2a7bf83abe345cd8dd0ede423ace88265d353766d801"
+    }
+  },
+  {
+    "key": "concepts.debt.automatic",
+    "parent": "concepts.debt",
+    "order": 1,
+    "text": "Paying debt is not a choice and takes no action. It is the last thing in the resource step, so no resource can be expended after it in that step, and the mana spent on debt cannot be used for anything else that turn.",
+    "examples": [
+      {
+        "text": "Example: the mana paid for debt is gone, and the card it would have paid for cannot be played.",
+        "test": "35-rot-debt-trash.test.ts::R39: debt-paid mana is genuinely gone — no more resources can be activated, and the card is unplayable"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R39",
+          "quote": "penalty for being unable to pay. It is not a choice and needs no action —"
+        },
+        {
+          "ref": "R39",
+          "quote": "it is deliberately the LAST thing in the resource step so that no further"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "35-rot-debt-trash.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R39": "debc7c151864dc3d009a2a7bf83abe345cd8dd0ede423ace88265d353766d801"
+    }
+  },
+  {
+    "key": "concepts.debt.partial",
+    "parent": "concepts.debt",
+    "order": 2,
+    "text": "If a player cannot pay all their debt, they pay what they can. The rest stays and is charged again at their next resource step. There is no other penalty.",
+    "examples": [
+      {
+        "text": "Example: partial payment is fine and the remainder carries to the next turn.",
+        "test": "35-rot-debt-trash.test.ts::R39: partial payment is fine and the remainder carries to the next turn"
+      },
+      {
+        "text": "Example: debt that cannot be paid does not cost life.",
+        "test": "38-light-a.test.ts::Greed Angel: unpayable debt carries over instead of costing life"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R39",
+          "quote": "allowed and the remainder carries to the next turn; there is no other"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "35-rot-debt-trash.test.ts",
+        "38-light-a.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R39": "debc7c151864dc3d009a2a7bf83abe345cd8dd0ede423ace88265d353766d801"
+    }
+  },
+  {
+    "key": "concepts.debt.as-cost",
+    "parent": "concepts.debt",
+    "order": 3,
+    "text": "Gaining debt can be a cost. Debt gained to pay a cost is gained when the cost is paid, and is kept even if the spell or ability is negated.",
+    "examples": [
+      {
+        "text": "Example: a spell with a printed [Gain 2 debt] cost gives its caster the 2 debt as it is played.",
+        "test": "47-costs-events.test.ts::R49: printed.gainDebt is a REAL cast cost — a negated spell still cost the debt"
+      },
+      {
+        "text": "Example (illustrative): Hyper Beam negated by Dematerialize deals no damage, and the debt its caster gained to play it stays.",
+        "test": "415-cr-costs-life-timestamps.test.ts::cr:concepts.debt.as-cost — Hyper Beam negated by Dematerialize deals no damage, and the debt gained to play it stays"
+      }
+    ],
+    "see": [
+      "concepts.costs.kinds"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Deferral Drone",
+          "quote": "Gain 4 debt: The next card you play this phase costs [3] less."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R49 (its cast-cost and activation-cost body)",
+          "quote": "printed `Printed.gainDebt` line, which the engine itself charges — a negated"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "47-costs-events.test.ts",
+        "44-hybrids-ld-a.test.ts",
+        "415-cr-costs-life-timestamps.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Round 1: the 47-costs-events test shows only the charge at play; the negation half was measured by the verifier's probe (u04-probes \"concepts.debt.as-cost\"), not yet promoted to a test.",
+    "sourceHashes": {
+      "R49": "5d3c2bff8c7d58ca657dffa7259041cc8de3a1b62ca85d59e81fcdb127319364"
+    }
+  },
+  {
+    "key": "concepts.player-counters",
+    "parent": "112",
+    "order": 15,
+    "text": "Rot and debt are counters on players. An effect that removes counters from players removes them. An effect that changes the number of counters \"put on\" a player does not change how many are removed.",
+    "examples": [
+      {
+        "text": "Example: Burn the Blight removes rot and debt from players.",
+        "test": "41-dark-a.test.ts::Burn the Blight: removes counters from units AND the rot/debt on players"
+      },
+      {
+        "text": "Example: Proliferating Slime does not deepen a removal.",
+        "test": "152-hand-entry.test.ts::a counter-amount replacement does NOT scale a REMOVAL (Proliferating Slime says \"put on\")"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Burn the Blight",
+          "quote": "Remove all counters from units and players."
+        },
+        {
+          "ref": "card: Proliferating Slime",
+          "quote": "If one or more counters would be put on an enemy unit or player, put that many counters plus one instead."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R179",
+          "quote": "> isn't 'putting on'.\"*"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "41-dark-a.test.ts",
+        "152-hand-entry.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R179": "3182e34830acb735bedd78d8bfa82b37c3583f82f7d92ceee5fe8ba8f20522ac"
+    }
+  },
+  {
+    "key": "concepts.timestamps.order",
+    "parent": "113",
+    "order": 1,
+    "text": "Effects that apply to the same layer apply in timestamp order. Where they conflict, the later effect takes precedence over the earlier one.",
+    "examples": [
+      {
+        "text": "Example: a virus applied after Monke still gives its attribute.",
+        "test": "390-raq-stack.test.ts::RAQ timestamps: a virus applied AFTER Monke still gives its attribute"
+      }
+    ],
+    "see": [
+      "709"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1357965714807586897#0",
+          "quote": "Effects on the same layer apply by timestamp: a mod applied AFTER Monke still grants its attribute and ability."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R328",
+          "quote": "  the same layer have timestamps and latter ones take precedence over former.\"*"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R328": "46a4e158b313c9ef7bfc7197239b3d8da47c74f0c4a5cfd55d19d4cbb2cbddde",
+      "RAQ 1357965714807586897#0": "f1aec3fc6a5038698b3357bca87ce84977d7c321ef7ffe93d71dfe8dc9d1d092"
+    }
+  },
+  {
+    "key": "concepts.timestamps.when",
+    "parent": "113",
+    "order": 2,
+    "text": "An effect's timestamp is when it began to apply. A static ability's effect has the timestamp of the card that carries it, a mod's has the time it was applied, and an effect from a resolved spell or ability has the time it resolved. What a card prints is older than any effect.",
+    "examples": [
+      {
+        "text": "Example: an attribute granted to a unit while Suppression Field is still on the stack is lost when the spell resolves; one granted after it resolves is kept.",
+        "test": "415-cr-costs-life-timestamps.test.ts::cr:concepts.timestamps.when — a static dates from its card, a mod from when it was applied, a resolved spell from its resolution, and printed text is older than all"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355845893219287132#1",
+          "quote": "An attribute or ability a unit gains AFTER the static is in play is not affected by it (timestamps)"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R328",
+          "quote": "- **Each source carries its arrival**: an augment mod its id; a static the id of the"
+        },
+        {
+          "ref": "R328",
+          "quote": "- **What a card prints is the oldest thing on it** (`E.PRINTED`), so every stripper"
+        },
+        {
+          "ref": "R328",
+          "quote": "  Attributes/Abilities\"): *\"Suppression field just removes attributes from the time"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "415-cr-costs-life-timestamps.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "The arrival list is R328's encoding section, read as the rule it encodes; the designer threads state the principle, not the list.",
+    "sourceHashes": {
+      "R328": "46a4e158b313c9ef7bfc7197239b3d8da47c74f0c4a5cfd55d19d4cbb2cbddde",
+      "RAQ 1355845893219287132#1": "7528702d7112fbf2f7cc098512249783dc7f48aa85eb4e7499c2d3e8205a32e7"
+    }
+  },
+  {
+    "key": "concepts.timestamps.removal",
+    "parent": "113",
+    "order": 3,
+    "text": "An effect that removes attributes or abilities removes those the object has when the effect applies. An attribute or ability the object gains afterwards is not removed.",
+    "examples": [
+      {
+        "text": "Example: a Powerful virus attached after Suppression Field resolved makes the suppressed unit Powerful.",
+        "test": "393-raq-mods.test.ts::RAQ Suppression Field: a Powerful virus attached after it resolved makes the suppressed Bubb Powerful"
+      },
+      {
+        "text": "Example: a Powerful virus attached after Transmogrifant is in play works.",
+        "test": "393-raq-mods.test.ts::RAQ Transmogrifant: an attribute a unit gains AFTER it is in play is not affected — a Powerful virus attached later works"
+      }
+    ],
+    "see": [
+      "712"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355845893219287132#1",
+          "quote": "An attribute or ability a unit gains AFTER the static is in play is not affected by it (timestamps): a Powerful virus attached later works, a Graxxlid attached later can be used."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R328",
+          "quote": "A card that takes attributes or abilities away takes **what the unit has when the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts",
+        "402-raq-fix-stripping.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R328": "46a4e158b313c9ef7bfc7197239b3d8da47c74f0c4a5cfd55d19d4cbb2cbddde",
+      "RAQ 1355845893219287132#1": "7528702d7112fbf2f7cc098512249783dc7f48aa85eb4e7499c2d3e8205a32e7"
+    }
+  },
+  {
+    "key": "concepts.timestamps.removal.entering",
+    "parent": "concepts.timestamps.removal",
+    "order": 1,
+    "text": "A continuous effect that removes attributes or abilities removes the printed ones of a unit that enters play after it began, because what a card prints is older than the effect. When that effect ends, the units get them back.",
+    "examples": [
+      {
+        "text": "Example: a unit entering play under Transmogrifant has no attributes, and gets them back when Transmogrifant leaves.",
+        "test": "393-raq-mods.test.ts::RAQ Transmogrifant: a unit that enters play under it has no attributes, and gets them back when Transmogrifant leaves"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R328",
+          "quote": "  affect new units entering play (eg. Chitin Shredder entering through Insidious"
+        },
+        {
+          "ref": "R328",
+          "quote": "  affected by Monke or Transmogrifant … Once Monke / Transmogrifant are removed from"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "The words are _passer's, quoted inside R328; the matching RAQ claim is not in the U04 pack.",
+    "sourceHashes": {
+      "R328": "46a4e158b313c9ef7bfc7197239b3d8da47c74f0c4a5cfd55d19d4cbb2cbddde"
+    }
+  },
+  {
+    "key": "concepts.timestamps.removal.stays-taken",
+    "parent": "concepts.timestamps.removal",
+    "order": 2,
+    "text": "What a removal effect took stays taken until that effect ends (for a removal that lasts until regroup, at regroup). The unit does not get it back by leaving the column the effect applies to. This does not stop the unit gaining an attribute or ability from a later source (rule concepts.timestamps.removal).",
+    "examples": [
+      {
+        "text": "Example: a temporary attribute granted before a strip is taken, and one granted after it is kept.",
+        "test": "402-raq-fix-stripping.test.ts::§3 a temporary attribute granted before a strip is taken, and one granted after is kept"
+      }
+    ],
+    "see": [
+      "concepts.timestamps.removal"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R328",
+          "quote": "still holds: what was taken stays taken until regroup. What is new is that a LATER"
+        },
+        {
+          "ref": "R293",
+          "quote": "- a stamped unit that **leaves** the column does not get its attributes back;"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "402-raq-fix-stripping.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R328 restates R293's owner quote; R293 is not in the pack (read from digital-rules.md). Round 1: the ambiguous \"even if the unit would otherwise get it again\" replaced.",
+    "sourceHashes": {
+      "R293": "7f3b78f803b3a5031887ab3c5c5ffd2fba7b91dd23ff94fd0bb8d5ecedc9c6c5",
+      "R328": "46a4e158b313c9ef7bfc7197239b3d8da47c74f0c4a5cfd55d19d4cbb2cbddde"
+    }
+  },
+  {
+    "key": "concepts.timestamps.base-stats",
+    "parent": "113",
+    "order": 4,
+    "text": "When two effects set a unit's base stats, the later one applies.",
+    "examples": [
+      {
+        "text": "Example: Body Swap with a unit Statweaver made base 3/3 trades the 3/3 base for the 1/1.",
+        "test": "390-raq-stack.test.ts::RAQ timestamps: Body Swap with a Statweavered unit trades the 3/3 base for the 1/1"
+      }
+    ],
+    "see": [
+      "206"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1357965714807586897#1",
+          "quote": "Your unit becomes base 3/3 until regroup and enemy Wisp is now base 1/1 until regroup."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1357965714807586897#1": "a36aec1009a3f35e9df78ea89edd77e406519c4106b6796f908ef96285d9e7b2"
+    }
+  },
+  {
+    "key": "concepts.costs.region.other-units",
+    "parent": "concepts.costs.region",
+    "order": 1,
+    "text": "A cost that removes counters from the player's allies, or recalls an ally, likewise uses only the player's own units in the region where the cost is paid.",
+    "examples": [
+      {
+        "text": "Example: Auric Ascendant’s \"Recall another ally\" cost offers the ally fighting beside it, never the ally at home and never itself.",
+        "test": "415-cr-costs-life-timestamps.test.ts::cr:concepts.costs.region.other-units — a [Recall another ally] menu holds only allies in the region where it is paid"
+      }
+    ],
+    "see": [
+      "concepts.costs.region"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R35 (its cast-time payment half)",
+          "quote": "sacrificed unit's defense as it was then), the cost is region-scoped (the"
+        }
+      ],
+      "history": [],
+      "engine": [
+        "engine.ts:E.canPayCastCost"
+      ],
+      "tests": [
+        "415-cr-costs-life-timestamps.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "medium",
+    "notes": "R35 predates the removeCounters cost kind (added by R64), so its \"region-scoped\" was written about sacrifice; the extension to other unit costs is the engine's (D-U04-13). Added round 1. Verifier r1: E.canPayCastCost draws sacrifice, removeCounters and recall candidates from unitsOf(seat, region).",
+    "sourceHashes": {
+      "R35": "40f8296cef3d2d2b3c5f150d75c557b79b8a2bdc9584690fe1752de259650f84"
+    }
+  }
+]

@@ -1,0 +1,2995 @@
+[
+  {
+    "key": "concepts.elements.affinity",
+    "textHash": "411d3d4d11947916",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.canPayCard",
+        "agrees": true,
+        "note": "affinityPips(cost) gate"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": "must meet the affinity requirement"
+      },
+      {
+        "ref": "Manual p.12",
+        "supports": "yes",
+        "note": "Resource types needed"
+      },
+      {
+        "ref": "RAQ 1358299200953126963#0",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "must meet the affinity requirement of the card they"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "for (const [el, n] of Object.entries(affinityPips(c.cost))) {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.elements.affinity-as-number",
+    "textHash": "e3eeaec394748ebe",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U02-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/registry.ts:All-Consuming Blaze",
+        "agrees": true,
+        "note": "dealToAnyTarget(g.affinity(controller, fire))"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-water-a.ts:Premonition",
+        "agrees": true,
+        "note": "x = g.affinity(controller, water)"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-metal-c.ts:Self-Assembly",
+        "agrees": true,
+        "note": "x = g.affinity(controller, metal) inside the effect"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/07-cards.test.ts",
+        "pattern": "All-Consuming Blaze: damage equals",
+        "passed": true,
+        "asserts_claim": "yes: 2 open + 1 expended fire = 3, dormant excluded"
+      },
+      {
+        "file": "client/engine/test/14-water-a.test.ts",
+        "pattern": "Premonition: Glimpse X",
+        "passed": true,
+        "asserts_claim": "yes: 3 water -> three glimpse options"
+      },
+      {
+        "file": "client/engine/test/28-metal-c.test.ts",
+        "pattern": "Self-Assembly: creates a Robot X",
+        "passed": true,
+        "asserts_claim": "partly: X = 3 asserted, but affinity never changes between cast and resolution, so \"counted as it resolves\" is not shown"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U02/u02-r2-verify-probes.test.ts",
+        "title": "concepts.numbers.amounts-at-resolution / concepts.elements.affinity-as-number: All-Consuming Blaze reads your [r] when it resolves, not when cast",
+        "passed": true,
+        "demonstrates": "yes: cast at 2 fire, a third added with the spell on the stack, damage 3"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: All-Consuming Blaze",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Premonition",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1358299200953126963#0",
+        "supports": "partly",
+        "note": "about pip thresholds, not \"your [r]\" as a number; on-topic only"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/registry.ts",
+        "text": "(g, ctx) => g.affinity(ctx.controller, 'fire'),"
+      },
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "I deal damage to any target equal to your [r]."
+      },
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "Glimpse X, where X is your [b]."
+      }
+    ],
+    "basis_ok": true,
+    "problem": "The RAQ citation is merely on-topic. Self-Assembly example test does not show resolution timing (probe does)."
+  },
+  {
+    "key": "concepts.elements.affinity-count",
+    "textHash": "651218a83f377965",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U02-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.affinity",
+        "agrees": true,
+        "note": "counts resources of the element, skips dormant, counts expended"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:E.canPayCard",
+        "agrees": true,
+        "note": "each pip element needs affinity >= n"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "pattern": "RAQ Mana question",
+        "passed": true,
+        "asserts_claim": "yes: two wood + shards play three gg cards in a row"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U02/u02-r2-verify-probes.test.ts",
+        "title": "concepts.elements.affinity-count: a dormant element resource does not count toward a pip requirement",
+        "passed": true,
+        "demonstrates": "yes: 1 open + 1 dormant wood fails gg; 2 expended wood meets it"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.14",
+        "supports": "partly",
+        "note": "on-topic: says resources have an affinity, not how it is counted"
+      },
+      {
+        "ref": "RAQ 1358299200953126963#0",
+        "supports": "yes",
+        "note": "states the count and the at-least-N threshold, spent or not; silent on dormant"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (r.state === 'dormant') continue;"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (r.kind === element) n++;"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "The affinity dots just require you have at least that many resources of that type somewhere in your manabase"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None material. The dormant exclusion is delegated to the dormant rule; no source cited in THIS record states it (designer says \"somewhere in your manabase\"); it rests on the engine and that rule."
+  },
+  {
+    "key": "concepts.elements.affinity-count.dormant",
+    "textHash": "9c670516fa0ab160",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.affinity",
+        "agrees": true,
+        "note": "skips state dormant"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "07-cards.test.ts",
+        "pattern": "All-Consuming Blaze: damage equals your fire affinity (expended counts, dormant does not)",
+        "passed": true,
+        "asserts_claim": "yes: the dormant fire adds nothing (3, not 4)"
+      },
+      {
+        "file": "client/ui/test/127-token-x-and-dormant.test.ts",
+        "pattern": "R151/CT-31: the spendable/dormant split is the ENGINE's answer, not the UI's",
+        "passed": true,
+        "asserts_claim": "yes: two dormant fires grant no affinity"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R151",
+        "supports": "yes",
+        "note": "\"dormant gives no affinity\" (presentation ruling restating the engine; basis engine is honest)"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (r.state === 'dormant') continue;   // dormant gives no affinity"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "counts what is **awake** (\"dormant gives no affinity\"; \"expended still counts\")."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.elements.affinity-count.expended",
+    "textHash": "f9380e79a85eb75a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.affinity",
+        "agrees": true,
+        "note": "counts resources of that kind whose state is not dormant; expended counts; prismite/shard never match an element"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "07-cards.test.ts",
+        "pattern": "All-Consuming Blaze: damage equals your fire affinity (expended counts, dormant does not)",
+        "passed": true,
+        "asserts_claim": "yes: 2 open + 1 expended fire = 3 damage"
+      },
+      {
+        "file": "25-wood-c.test.ts",
+        "pattern": "Sylvan Sprouting: one 1/1 per wood affinity — expended wood still counts",
+        "passed": true,
+        "asserts_claim": "yes: 4 wood, 3 expended to pay, 4 tokens"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1358299200953126963#0",
+        "supports": "yes",
+        "note": "calebgannon: \"You don't care if it's tapped or not\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "text": "// calebgannon: \"You don't care if it's tapped or not. All resources tap for"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (r.kind === element) n++;           // expended still counts"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.elements.affinity-count.not-spent",
+    "textHash": "deaafaedc8e53ce6",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.canPayCard",
+        "agrees": true,
+        "note": "affinity read from affinity(), which ignores expended; only mana is paid"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "RAQ Mana question: affinity counts resources already spent — two wood pay for many gg cards",
+        "passed": true,
+        "asserts_claim": "yes: three gg cards played off two wood"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1358299200953126963#0",
+        "supports": "yes",
+        "note": "\"play 100 accelerated germination if you had 2 wood and 198 shards\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "text": "// generic mana. The affinity dots just require you have at least that many"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.elements.affinity.threshold",
+    "textHash": "871a12358f3a4e28",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.3",
+        "supports": "yes",
+        "note": "\"Threshold (3) denotes how much affinity is required to play a card.\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "▪ Threshold (3) denotes how much affinity is required to play a card."
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Terminology only; nothing to check in the engine."
+  },
+  {
+    "key": "concepts.elements.game-elements",
+    "textHash": "ced2b8214505a018",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U02-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": true,
+        "note": "elements: mode === 'draft' ? trio : ALL_ELEMENTS (constructed and shared both get seven)"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:doRecycle",
+        "agrees": true,
+        "note": "element must be in s.elements (prismite/shard exempt)"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:doExchangePrismite",
+        "agrees": true,
+        "note": "element must be in s.elements"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/21-fixes.test.ts",
+        "pattern": "a fwe draft game refuses",
+        "passed": true,
+        "asserts_claim": "yes: wood refused, wood/metal not offered (recycle only)"
+      },
+      {
+        "file": "client/engine/test/31-trios.test.ts",
+        "pattern": "createGame honors the chosen trio",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U02/u02-r2-verify-probes.test.ts",
+        "title": "concepts.elements.game-elements: a fire-water-earth draft refuses a Prismite exchanged into wood, accepts fire",
+        "passed": true,
+        "demonstrates": "yes: covers the exchange half the bound tests do not"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R299",
+        "supports": "yes",
+        "note": "exchange for any element of the game"
+      },
+      {
+        "ref": "R99",
+        "supports": "yes",
+        "note": "shared seven, draft trio; R99 also says constructed accepts all seven"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "early on a prismite), and once active may be exchanged for any element of the game."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "mode only. Shared plays all seven; draft has already narrowed `elements` to its trio."
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "elements: mode === 'draft' ? trio : [...ALL_ELEMENTS],"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Omits the shared (non-draft, non-constructed) mode, which also has all seven; not wrong."
+  },
+  {
+    "key": "concepts.elements.game-elements.off-deck",
+    "textHash": "a898168aa38211f5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:legalActions planning / doRecycle",
+        "agrees": true,
+        "note": "constructed elements = all seven; deckElements is only a menu hint"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "34-constructed.test.ts",
+        "pattern": "deckElements: it is a PRESENTATION default — all seven stay legal",
+        "passed": true,
+        "asserts_claim": "yes: a mono-light deck recycles for dark"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R99",
+        "supports": "yes",
+        "note": "owner BL-44"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "That restraint is not caution, it is the rule: **making an off-element resource is a legal"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.elements.hybrid",
+    "textHash": "f43fcf8712ef27d7",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "engine/cards trio deck builder",
+        "agrees": true,
+        "note": "54 per element + 5 per hybrid pair"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "31-trios.test.ts",
+        "pattern": "ALL 10 base trios are Manual-exact: 54 per element + 5 per hybrid pair = 177",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.11",
+        "supports": "yes",
+        "note": "including the hybrid cards for the selected combinations; 54/54/54/15 graphic"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "to form the deck, including the hybrid cards for the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.elements.ignoring-affinity",
+    "textHash": "cfcede2c3e4add6b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:sourceAffordable",
+        "agrees": true,
+        "note": "ignoreAffinity -> canPayManaOnly (mana still required) unless free"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "315-cache-mod-permission.test.ts",
+        "pattern": "R303: the glimpse waives the pips, NOT the mana — broke means refused",
+        "passed": true,
+        "asserts_claim": "yes (shown on the mod verb from the cache)"
+      },
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "RAQ Tides 1: a free play ignores affinity — a fire unit with only water resources",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Big Glimpse Card",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Tides of the Cosmos",
+        "supports": "partly",
+        "note": "\"for free\" — affinity waiver is the designer's gloss"
+      },
+      {
+        "ref": "RAQ 1396955380000755795#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R303",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "? e.canPayManaOnly(seat, name, opts)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.elements.list",
+    "textHash": "bafe063ee1173ddf",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "apply.ts ALL_ELEMENTS",
+        "agrees": true,
+        "note": "seven"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "31-trios.test.ts",
+        "pattern": "seven elements, 35 trios: Light & Dark joined the canonical element list",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.8",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R54",
+        "supports": "partly",
+        "note": "merely on-topic (names light and dark)"
+      },
+      {
+        "ref": "R99",
+        "supports": "partly",
+        "note": "\"Shared plays all seven\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Algomancy consists of 5 Elements, which all offer different ways to play and interact"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.elements.mods-need-affinity",
+    "textHash": "5cc49130c8da0357",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doGraft / modAffordable -> sourceAffordable -> E.canPayCard",
+        "agrees": true,
+        "note": "mods from hand or bin check affinity pips and mana at purpose mod, then payCard"
+      },
+      {
+        "loc": "engine.ts:E.canPayCard",
+        "agrees": true,
+        "note": "affinityPips loop"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "408-raq-new-threads.test.ts",
+        "pattern": "RAQ Mods are NOT Played: an augment from hand needs its affinity and pays its cost",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "408-raq-new-threads.test.ts",
+        "pattern": "RAQ Mods are NOT Played: a Virus in battle needs its affinity and pays its cost",
+        "passed": true,
+        "asserts_claim": "yes (not bound as an example, run for the Virus clause)"
+      },
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 point 3: a graft comes from the bin as well as the hand, and only when its cost and affinity are met",
+        "passed": true,
+        "asserts_claim": "partly: affinity gate shown; mana is never the limiting factor and payment is not asserted"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.32",
+        "supports": "yes",
+        "note": "\"To apply an augment, the player must first meet its affinity requirement, followed by paying its mana cost\""
+      },
+      {
+        "ref": "RAQ 1537748882501668934#1",
+        "supports": "yes",
+        "note": "still pay the cost & meet affinity"
+      },
+      {
+        "ref": "RAQ 1355115946032889914#2",
+        "supports": "yes",
+        "note": "graft: pay cost and meet Affinity"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "To apply an augment, the player must first meet its affinity"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(modAffordable(e, seat, name, price!), 'cannot pay for that');  // R37/R59"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Note: a cache permission (glimpse/prophecy) waives the affinity for a mod as it does for a play (R303); the rule is the default."
+  },
+  {
+    "key": "concepts.elements.no-affinity-resources",
+    "textHash": "c6dc900001bf79cb",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U02-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.affinity",
+        "agrees": true,
+        "note": "only r.kind === element counts; prismite/shard are never an element"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/01-planning.test.ts",
+        "pattern": "affinity gating: prismites are NOT wild",
+        "passed": true,
+        "asserts_claim": "yes: 6 fire + 2 active prismites fail bb; 2 water meet it"
+      },
+      {
+        "file": "client/engine/test/21-fixes.test.ts",
+        "pattern": "below 3 affinity no shard",
+        "passed": true,
+        "asserts_claim": "yes: shards add mana, fire affinity unchanged"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U02/u02-r2-verify-probes.test.ts",
+        "title": "concepts.elements.no-affinity-resources: active Prismites and Shards give no affinity to any of the seven elements",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.7",
+        "supports": "yes",
+        "note": "Shard half"
+      },
+      {
+        "ref": "R17",
+        "supports": "yes",
+        "note": "Prismite half (owner, Manual p.18 cited)"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "Shards are a resource that adds no affinity, but can still be expended for mana."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "like any resource, but grant **no affinity** — they are not wild. Their value is the"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (r.kind === element) n++;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.numbers.amounts-at-resolution",
+    "textHash": "6eefdc36c1288954",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U02-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/registry.ts:All-Consuming Blaze",
+        "agrees": true,
+        "note": "amount computed inside the resolving effect"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-metal-c.ts:Self-Assembly",
+        "agrees": true,
+        "note": "X read in the effect body"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/28-metal-c.test.ts",
+        "pattern": "Self-Assembly: creates a Robot X",
+        "passed": true,
+        "asserts_claim": "partly: X = 3 but nothing changes between cast and resolution"
+      },
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "pattern": "Flamebreath Initiate removed before",
+        "passed": true,
+        "asserts_claim": "yes: X = 0 once the unit is gone, Fireball 1"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U02/u02-r2-verify-probes.test.ts",
+        "title": "concepts.numbers.amounts-at-resolution / concepts.elements.affinity-as-number: All-Consuming Blaze reads your [r] when it resolves, not when cast",
+        "passed": true,
+        "demonstrates": "yes: affinity raised with the spell on the stack changes the damage"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Flamebreath Initiate",
+        "supports": "partly",
+        "note": "states the X clause, not its timing"
+      },
+      {
+        "ref": "RAQ 1353895783266516992#3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R1",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**Conditions are checked once, at event time; amounts are computed at resolution.**"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "If Flamebreath Initiate is removed with his trigger on the stack, the X=0 so he will still make Fireball 1."
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Edge note only: a \"where X is\" that reads a cast-cost receipt (Volatile Toxicity, the sacrificed unit's defense) is snapshotted at payment (R35); since the sacrificed unit cannot change afterwards this matches last-known information at resolution, but the rule could say so."
+  },
+  {
+    "key": "concepts.numbers.amounts-at-resolution.cost-snapshot",
+    "textHash": "01b49ab85fdb124c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "engine.ts cast-cost receipt (costPaid.sacrificed.defense)",
+        "agrees": true,
+        "note": "defense recorded on the part when the sacrifice is paid at cast"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "32-cast-costs.test.ts",
+        "pattern": "Volatile Toxicity: X reads the defense snapshotted when the cost was paid",
+        "passed": true,
+        "asserts_claim": "partly: receipt defense 5 recorded at payment and Poison 5/Fireball 5 made; does not change the defense between payment and resolution"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Volatile Toxicity",
+        "supports": "yes",
+        "note": "X is the defense of the sacrificed unit"
+      },
+      {
+        "ref": "R35",
+        "supports": "yes",
+        "note": "receipt snapshotted at payment"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "where X is the defense of the sacrificed unit"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "receipt and X instead of paying again. GRAFTED riders pay the same cost when"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.numbers.chosen-number",
+    "textHash": "c974c20697ab6ff0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "engine DecisionKind number (R197)",
+        "agrees": true,
+        "note": "numeric decision with max null; apply accepts any value in range"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "168-three-card-divergences.test.ts",
+        "pattern": "R197 §1b Prediction Prophet: a prediction ABOVE `life + 5` is accepted and pays out the 5/5 — the old cap would not have offered it",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Prediction Prophet",
+        "supports": "yes",
+        "note": "\"predict your life total\" — no cap printed"
+      },
+      {
+        "ref": "R197 §1",
+        "supports": "yes",
+        "note": "owner steer"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "predict your life total"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.numbers.copy-x",
+    "textHash": "770eba5c0832eae5",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U02-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.pushSpellCopy",
+        "agrees": true,
+        "note": "structuredClone of the original stack item, x and receipt included"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/138-spell-copy.test.ts",
+        "pattern": "R164 Maelstrom Charger: the copy inherits",
+        "passed": true,
+        "asserts_claim": "yes for the example (receipt, no re-payment); Volatile Toxicity is a \"where X is\" spell, not an X-cost one"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U02/u02-r2-verify-probes.test.ts",
+        "title": "concepts.numbers.copy-x: a Maelstrom Charger copy of Wildfire uses the original X = 2; no X is asked or paid again",
+        "passed": true,
+        "demonstrates": "yes: X-cost spell copied at X = 2, one X menu, 2 mana paid, 4 damage"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "RAQ 1379132904931594372#2",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R35 (its spell X half)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "you DON'T pay additional cost again and the X value is the one from original spell."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "receipt and X instead of paying again. GRAFTED riders pay the same cost when"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const copy = structuredClone(orig) as StackItem;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.numbers.cost-reference",
+    "textHash": "8d07b8896f7047a8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "engine.ts commitItem spellPlayed x / manaOf",
+        "agrees": true,
+        "note": "watchers read printed cost (X spells: the paid X), not the taxed bill"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ printed cost: Arcane Concentrator and Channeled Amalgam read a taxed Squish as a 2",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "133-x-cost-semantics.test.ts",
+        "pattern": "R157 §1 — Channeled Amalgam reads the PAID X of an X spell (was dead against all eleven)",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353980184042143835#0",
+        "supports": "yes",
+        "note": "points to printed value"
+      },
+      {
+        "ref": "R157 §1",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "text": "assert.deepEqual(effStats(h, xx[0]!.id), [2, 2], 'X = the printed 2, not the 4 paid');"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "So \"that spell's cost\" = **the X actually paid**. `manaOf`/`eventSpellCost`"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.numbers.cost-reference.not-cast",
+    "textHash": "d6a32f90f8714f11",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "cards/dsl.ts manaOf",
+        "agrees": true,
+        "note": "returns 0 for mana X"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "133-x-cost-semantics.test.ts",
+        "pattern": "R157 §1 — a card that was never cast has no cost: an X card in hand reads 0",
+        "passed": true,
+        "asserts_claim": "yes: Prophecy Bug halves 0"
+      },
+      {
+        "file": "39-light-b.test.ts",
+        "pattern": "Living Vault: an X-cost card in hand is offered at pay [0] (R157 §1)",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R158 §1",
+        "supports": "yes",
+        "note": "table row: bin, hand, cache, deck, unit in play -> 0"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "| a card known only by name — bin, hand, cache, deck, or a unit standing in play | **0** | `manaOf(name)`, `dsl.printedCost` |"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.numbers.free-play",
+    "textHash": "71f6139f23ccd8ea",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:playAtTiming/baseItem fixedX",
+        "agrees": true,
+        "note": "a free release fixes item.x = 0 so collectX asks nothing; bracketed castCost / pendingCosts are collected independently of x"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "36-cache-prophecy.test.ts",
+        "pattern": "R111: a fulfilled prophecy releases an X spell for X = 0 — no X asked, no mana paid",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "RAQ Tides 6a: an X spell counts as cost 0 against the budget and is played at X = 0",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1396955380000755795#6",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R111",
+        "supports": "yes",
+        "note": "bracketed X still collected"
+      },
+      {
+        "ref": "R339",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "an X spell works like magic, forced to cast it for 0 (unless its X is an"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "different X — a COST, not the mana — and is still collected as before. Test:"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "The bracketed-X half has no bound test; it rests on R111 and the code path (fixedX touches only item.x)."
+  },
+  {
+    "key": "concepts.numbers.free-play.cant-be-zero",
+    "textHash": "1e5df91dd5d029e5",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U02-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-water-b.ts:tidesCanPlay",
+        "agrees": true,
+        "note": "refuses mana 'X' with xMin > 0"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/404-raq-fix-tides.test.ts",
+        "pattern": "an X card that may not be zero",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "pattern": "RAQ Tides 6: Frosted Denial",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Frosted Denial",
+        "supports": "partly",
+        "note": "states X cannot be zero; the free-play consequence is R111/R339"
+      },
+      {
+        "ref": "RAQ 1396955380000755795#7",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R339",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "it also means that you CANNOT play Frosted Denial from Tides of Cosmos."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "can't be zero\" therefore has no legal free play, and Tides of the Cosmos does"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-water-b.ts",
+        "text": "if (c.mana === 'X' && (c.xMin ?? 0) > 0) return false;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "The general \"an effect that plays cards for free\" is only exercised by Tides; the other free plays in the pool (Wake the Dead: units only; a fulfilled prophecy: Frosted Denial has none) cannot reach Frosted Denial, so the generalisation holds."
+  },
+  {
+    "key": "concepts.numbers.symbols",
+    "textHash": "2e041902dd6c43ef",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U02-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/dsl.ts:ELEMENT_OF_PIP",
+        "agrees": true,
+        "note": "r fire, b water, e earth, g wood, m metal, l light, d dark"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/07-cards.test.ts",
+        "pattern": "All-Consuming Blaze: damage equals",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "client/engine/test/25-wood-c.test.ts",
+        "pattern": "Sylvan Sprouting: one 1/1",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "client/engine/test/28-metal-c.test.ts",
+        "pattern": "Self-Assembly: creates a Robot X",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U02/u02-r2-verify-probes.test.ts",
+        "title": "concepts.numbers.symbols: the pip letters map to the seven elements",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Fire/Water/Earth Resource",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Exhume",
+        "supports": "yes",
+        "note": "[d]"
+      },
+      {
+        "ref": "card: Reap the Due",
+        "supports": "yes",
+        "note": "[l]"
+      },
+      {
+        "ref": "R300",
+        "supports": "yes",
+        "note": "Reap the Due is [l]"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/dsl.ts",
+        "text": "r: 'fire', b: 'water', e: 'earth', g: 'wood', m: 'metal', l: 'light', d: 'dark',"
+      },
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "Create a 1/1 unit for each of your [g]."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "be [l] for LIGHT affinity.\"*"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.numbers.symbols.mana",
+    "textHash": "b37ec03d15e746bb",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "engine/cards ambush cost parser (R22)",
+        "agrees": true,
+        "note": "[3b] -> 3 mana + one water pip"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "14-water-a.test.ts",
+        "pattern": "Lurking Slimebeast: [Battle] Ambush [3b] = 3 mana at one water pip (R22)",
+        "passed": true,
+        "asserts_claim": "partly: asserts 3 mana paid; the water-pip gate is not exercised (D holds 4 water)"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Frosted Denial",
+        "supports": "yes",
+        "note": "[x]"
+      },
+      {
+        "ref": "card: Stasis Sentry",
+        "supports": "yes",
+        "note": "[three]"
+      },
+      {
+        "ref": "R22",
+        "supports": "yes",
+        "note": "[4bb] = 4 mana, bb affinity"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "stack**: pay the bracketed cost (e.g. [4bb] = 4 mana, bb affinity — not the card's"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Spells with base cost"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.numbers.token-x",
+    "textHash": "55b585ace8af5136",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.createSpellToken",
+        "agrees": true,
+        "note": "stamps x on the token instance"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/127-token-x-and-dormant.test.ts",
+        "pattern": "R151/CT-33: a Poison created with X=5 says \"Put 5 -1/-1 counters\", from the engine",
+        "passed": true,
+        "asserts_claim": "partly: tok.x = 5 and the text box reads 5; the Poison is never cast to show 5 counters land"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.4",
+        "supports": "yes",
+        "note": "\"Create a Crystal 3\" would set the X value as 3"
+      },
+      {
+        "ref": "Manual p.15",
+        "supports": "yes",
+        "note": "\"X is determined by the card that created them\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "would set the X value of the created token as 3."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.numbers.token-x.robot",
+    "textHash": "5bb15384c4b88b98",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.spawnUnit (Robot counters)",
+        "agrees": true,
+        "note": "Robot X lives in its counters"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/127-token-x-and-dormant.test.ts",
+        "pattern": "R151/CT-33: a Robot reads its X off its COUNTERS, so it stays true as they change",
+        "passed": true,
+        "asserts_claim": "yes: liveX 3 -> 5 after two counters"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Robot",
+        "supports": "yes",
+        "note": "printed text"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "I spawn with X +1/+1 counters on me"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.numbers.x",
+    "textHash": "829e1a21d0a7f9dc",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.collectX / createSpellToken",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Wildfire",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.15",
+        "supports": "yes",
+        "note": "token X"
+      },
+      {
+        "ref": "card: Self-Assembly",
+        "supports": "yes",
+        "note": "where-X clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "I deal X damage to any target"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Create a Robot X, where X is your"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Incomplete rather than wrong: X also appears in bracketed additional costs ([Erase X cards from your bin]) chosen by the payer, and a free play forces X = 0."
+  },
+  {
+    "key": "concepts.numbers.x-cost",
+    "textHash": "338d453dc5afa078",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.manaToPlay",
+        "agrees": true,
+        "note": "base = chosen X for a mana-X card; pips are not added"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "133-x-cost-semantics.test.ts",
+        "pattern": "R157 §20 — with no Stasis Sentry an X spell costs exactly X",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R157 §1",
+        "supports": "yes",
+        "note": "\"Pips aren't a relevant part of looking at the cost\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> *\"Pips aren't a relevant part of looking at the cost of a card in Algomancy."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const base = c.mana === 'X' ? (opts.x ?? this.xFloor(seat, name, opts)) : c.mana;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.numbers.x-cost.cant-be-zero",
+    "textHash": "dd4af9955f646af7",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U02-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.xFloor",
+        "agrees": true,
+        "note": "floor = printed xMin"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:E.canPayCard",
+        "agrees": true,
+        "note": "needs open mana >= manaToPlay at the floor"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/32-cast-costs.test.ts",
+        "pattern": "Frosted Denial: xMin 1",
+        "passed": true,
+        "asserts_claim": "yes: not offered and refused with zero open mana"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Frosted Denial",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R35 (its spell X half)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "Otherwise, negate that effect. X can't be zero."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "than the smallest legal X (\"X can't be zero\" → 1) — the cast is ILLEGAL."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "let floor = c.xMin ?? 0;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.numbers.x-cost.chosen-at-cast",
+    "textHash": "287077232b6c40ca",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.collectX",
+        "agrees": true,
+        "note": "X decision raised before the stack push; options only where manaToPlay(x) <= openMana; the answer pays the bill; item.x stored"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "32-cast-costs.test.ts",
+        "pattern": "Wildfire: X is chosen at cast from affordable values, paid, and stored on the item",
+        "passed": true,
+        "asserts_claim": "yes: stack empty while X unchosen, options [0..3], X paid, X=3 on label before responses"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R35",
+        "supports": "yes",
+        "note": "\"X are cast-time payments ... BEFORE the spell reaches the stack ... responses see the fixed X\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "X are cast-time payments: the caster picks the sacrifice / the X value (only"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const min = this.xFloor(item.controller, item.card, { region: item.region });   // R326"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.numbers.x-cost.zero",
+    "textHash": "1fc48b79573a7330",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.collectX",
+        "agrees": true,
+        "note": "menu starts at xFloor (0 unless printed or Stasis Sentry)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "32-cast-costs.test.ts",
+        "pattern": "X spells resolve from the stored X — a 0-mana caster may still cast for X = 0",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "46-hybrids-ld-c.test.ts",
+        "pattern": "R157 §22: an empty hand still activates No Hand Killer — X = 0, and the [once] is spent",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "182-correctness-sample.test.ts",
+        "pattern": "Torrential Reclamation: with X = 0 the sacrifice STILL happens, and costs no life (R221)",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R157 §22",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R74",
+        "supports": "yes",
+        "note": "warning, not a prohibition"
+      },
+      {
+        "ref": "R221",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> *\"You can legally activate it and discard no cards.\"*"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**unconditional with the scaling on top**: `max(1, recalled.length)` rounds. The"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.numbers.x-minimum",
+    "textHash": "40826ded613e8986",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.xFloor / manaToPlay",
+        "agrees": true,
+        "note": "Stasis Sentry xMin 3 in battle; base = chosen X, delta not applied to X spells"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "133-x-cost-semantics.test.ts",
+        "pattern": "R326 (reverses R157 §20) — under a Stasis Sentry the X menu starts at 3, and X = 3 deals 3",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "133-x-cost-semantics.test.ts",
+        "pattern": "R157 §20 — the real cast pays it: X=3 costs [3] and X=5 costs [5] under a Stasis Sentry",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Stasis Sentry",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1359629594512068770#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1359629594512068770#1",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R326",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "history: None",
+        "supports": "no",
+        "note": "two empty history citations"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "three**, and it costs exactly X. It is not cast at a smaller X for a price of"
+      },
+      {
+        "file": "client/engine/test/133-x-cost-semantics.test.ts",
+        "text": "// RAQ: \"The X value must be at least 3 (which would deal 3 damage)\""
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.resources.activation",
+    "textHash": "ff2eda1a89aace7d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doActivateResource",
+        "agrees": true,
+        "note": "activationsLeft > 0 required and decremented for any kind, Shards included"
+      },
+      {
+        "loc": "engine.ts ACTIVATIONS_PER_TURN",
+        "agrees": true,
+        "note": "2"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U02/u02-r1-verify-probes.test.ts",
+        "title": "concepts.resources.activation: a third activation in a turn is refused, and activating a Shard counts toward the two",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.18",
+        "supports": "yes",
+        "note": "maximum of two; \"Activating a shard counts towards a player's limit of 2 activations per turn.\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": " Activating a shard counts towards a player’s"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "export const ACTIVATIONS_PER_TURN = 2;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.resources.activation.when",
+    "textHash": "a7a5e39618645b9c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doRecycle / doActivateResource",
+        "agrees": true,
+        "note": "both require phase planning && !planningDone[seat] — the resource step"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.18",
+        "supports": "yes",
+        "note": "\"The resource step of the planning phase is when players have the ability to create and activate resources.\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "ate and activate resources. During this step, any resource can be created from"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(e.s.phase === 'planning' && !e.s.planningDone[seat], 'not your planning');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Note: card effects (Swirling Shardform, Hooba-Lan) create Shards outside the resource step; the rule describes the player action only."
+  },
+  {
+    "key": "concepts.resources.affinity-bonus",
+    "textHash": "9e6633cb95f629d2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doActivateResource -> maybeGrantShard",
+        "agrees": true,
+        "note": "after setting open, affinity >= 3 pushes a dormant shard"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "12-fire-a.test.ts",
+        "pattern": "Fire Resource: activating your 3rd fire pays the p.18 affinity Shard — dormant, and every time",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "12-fire-a.test.ts",
+        "pattern": "Fire Resource: below three affinity the clause does nothing",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Fire Resource",
+        "supports": "yes",
+        "note": "\"When I activate, if you have at least [r][r][r], create a Shard.\""
+      },
+      {
+        "ref": "Manual p.18",
+        "supports": "yes",
+        "note": "three affinity"
+      },
+      {
+        "ref": "R54",
+        "supports": "yes",
+        "note": "general rule, all seven elements"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "When I activate, if you have at least [r][r][r], create a Shard."
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (e.affinity(seat, kind) < 3) return;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.resources.affinity-bonus.all-elements",
+    "textHash": "c9602d72f65fe4b1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:maybeGrantShard",
+        "agrees": true,
+        "note": "element-generic"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "12-fire-a.test.ts",
+        "pattern": "CONFORMANCE: every element pays the p.18 affinity bonus at 3 — all seven, not just the three with printed faces",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.18",
+        "supports": "yes",
+        "note": "\"The elemental resources can provide free Shards\""
+      },
+      {
+        "ref": "R54",
+        "supports": "yes",
+        "note": "for all seven elements"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "provide free Shards when they are"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "silently drop the bonus for wood, metal, light and dark, and keeping both would"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.resources.affinity-bonus.every-time",
+    "textHash": "cfe7aff8111d7faf",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:maybeGrantShard",
+        "agrees": true,
+        "note": "no once-per-game/turn latch"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "12-fire-a.test.ts",
+        "pattern": "Fire Resource: activating your 3rd fire pays the p.18 affinity Shard — dormant, and every time",
+        "passed": true,
+        "asserts_claim": "yes: the 4th activation makes a second Shard"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.7",
+        "supports": "yes",
+        "note": "\"Any future waters that are played will also provide this benefit.\""
+      },
+      {
+        "ref": "history: None",
+        "supports": "no",
+        "note": "empty history citation (ref None) — should be removed"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "for free (and played immediately). Any future waters that are played will also provide this benefit."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.resources.affinity-bonus.not-prismite-shard",
+    "textHash": "91fbf218c7ea1bf2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:maybeGrantShard",
+        "agrees": true,
+        "note": "returns early for kind prismite or shard"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "12-fire-a.test.ts",
+        "pattern": "CONFORMANCE: a Prismite and a Shard never pay the bonus, however many you have",
+        "passed": true,
+        "asserts_claim": "yes: 3 open + activating a 4th of each kind creates nothing"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.18",
+        "supports": "partly",
+        "note": "only \"the elemental resources\" provide Shards; implies non-elemental do not"
+      },
+      {
+        "ref": "R299",
+        "supports": "yes",
+        "note": "a made Prismite/Shard grants no Shard"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "The elemental resources can"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (kind === 'prismite' || kind === 'shard') return;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.resources.affinity-bonus.self-counts",
+    "textHash": "ac4248935ed1814a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doActivateResource",
+        "agrees": true,
+        "note": "r.state = 'open' before maybeGrantShard"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "12-fire-a.test.ts",
+        "pattern": "the resource being activated COUNTS TOWARD ITS OWN THREE — the boundary",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.7",
+        "supports": "yes",
+        "note": "\"when the third water is played, a shard can be put into hand\" (2023 wording: played/enter play)"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "color by giving you additional mana! As an example above, when the third water is played, a shard can be put into hand"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.resources.dormant-active",
+    "textHash": "b88993c5784131b4",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doRecycle, engine.ts:E.createShard, apply.ts createGame",
+        "agrees": true,
+        "note": "every created resource is pushed dormant"
+      },
+      {
+        "loc": "apply.ts:doActivateResource",
+        "agrees": true,
+        "note": "dormant -> 'open'"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "18-earth-c.test.ts",
+        "pattern": "Swirling Shardform: spawning creates two dormant Shards",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.18",
+        "supports": "yes",
+        "note": "\"All resources spawn dormant (come into play face down)\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "maximum of two resources per turn by turning them face up. There is no limit to"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "for (let i = 0; i < n; i++) this.player(seat).resources.push({ kind: 'shard', state: 'dormant' });"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.resources.dormant-active.no-mana",
+    "textHash": "d125810a2fde6bc3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.openMana",
+        "agrees": true,
+        "note": "counts only state 'open'; payMana never expends a dormant one"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/127-token-x-and-dormant.test.ts",
+        "pattern": "R151/CT-31: the spendable/dormant split is the ENGINE's answer, not the UI's",
+        "passed": true,
+        "asserts_claim": "yes: two dormant + one expended are not mana (row.mana 3 = openMana)"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U02/u02-r1-verify-probes.test.ts",
+        "title": "concepts.resources.dormant-active.no-mana: a dormant resource is not mana and cannot pay a cost",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R54",
+        "supports": "partly",
+        "note": "\"gives one generic mana once activated\" (about Shards)"
+      },
+      {
+        "ref": "R299",
+        "supports": "partly",
+        "note": "\"takes an activation to wake\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "return this.player(seat).resources.filter(r => r.state === 'open').length;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.resources.dormant-active.starting",
+    "textHash": "a80952cae8b0f41f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:createGame",
+        "agrees": true,
+        "note": "two {kind:'prismite', state:'dormant'} per player (lesson mode aside)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "01-planning.test.ts",
+        "pattern": "R17/prismites: dormant start, no affinity, planning exchange into any element",
+        "passed": true,
+        "asserts_claim": "partly: indexes 0 and 1 activate (so both were dormant); the count of exactly two is not asserted"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U02/u02-r1-verify-probes.test.ts",
+        "title": "concepts.resources.dormant-active.starting: each player starts with exactly two dormant Prismites",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.11",
+        "supports": "yes",
+        "note": "\"Deal 2 prismites to each player face down (dormant).\""
+      },
+      {
+        "ref": "R17",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Deal 2 prismites to each player face down (dormant)."
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "resources: Array.from({ length: lesson?.prismites[seat] ?? 2 }, () => ({ kind: 'prismite' as const, state: 'dormant' as const })),"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.resources.expend",
+    "textHash": "572c9344d82ec99b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.payMana",
+        "agrees": true,
+        "note": "expends only state 'open' resources"
+      },
+      {
+        "loc": "engine.ts:E.startTurn",
+        "agrees": true,
+        "note": "every 'expended' resource returns to 'open'"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U02/u02-r1-verify-probes.test.ts",
+        "title": "concepts.resources.expend: expended resources refresh at the beginning of the next turn",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.14",
+        "supports": "yes",
+        "note": "expended for 1 mana once per turn; refresh at the beginning of a turn"
+      },
+      {
+        "ref": "Rulebook 2023 p.4",
+        "supports": "yes",
+        "note": "turned sideways"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Expended resources refresh at the beginning of a turn."
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "All resources have the ability to be expended (turned sideways) for 1 mana once"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "for (const r of p.resources) if (r.state === 'expended') r.state = 'open';"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.resources.expend.generic",
+    "textHash": "728e0004d41375f1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.openMana / payMana",
+        "agrees": true,
+        "note": "every open resource of any kind is one mana; payMana expends any open resource"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "RAQ Mana question: affinity counts resources already spent — two wood pay for many gg cards",
+        "passed": true,
+        "asserts_claim": "yes: 2 wood + 4 shards pay 6 mana for three gg cards (wood are spent too; the shards carry the remaining bills)"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1358299200953126963#0",
+        "supports": "yes",
+        "note": "\"All resources tap for generic mana\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "text": "// calebgannon: \"You don't care if it's tapped or not. All resources tap for"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "return this.player(seat).resources.filter(r => r.state === 'open').length;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.resources.expend.paying",
+    "textHash": "0c0f9a0a324cffab",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.payMana",
+        "agrees": true,
+        "note": "expends exactly `mana` open resources; throws if short"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "number of un-expended resources equal to the card’s"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (need > 0 && r.state === 'open') { r.state = 'expended'; need--; }"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.resources.kinds",
+    "textHash": "7af60d5110ed719f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "types/apply.ts ResourceKind (element | prismite | shard)",
+        "agrees": true,
+        "note": "resources carry kind = one of seven elements, prismite or shard"
+      },
+      {
+        "loc": "engine.ts:E.affinity",
+        "agrees": true,
+        "note": "counts resources of that kind whose state is not dormant; expended counts; prismite/shard never match an element"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "48-playtest-hotfix.test.ts",
+        "pattern": "a Shard gives mana but no affinity and no element exchange",
+        "passed": true,
+        "asserts_claim": "partly: shows Shard is a distinct kind"
+      },
+      {
+        "file": "308-recycle-for-prismite.test.ts",
+        "pattern": "R299 every hand card offers a Prismite, then a Shard, after the elements",
+        "passed": true,
+        "asserts_claim": "yes: the recycle menu lists exactly elements + prismite + shard"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.14",
+        "supports": "yes",
+        "note": "\"Most resources also have an affinity towards a unique element\""
+      },
+      {
+        "ref": "Manual p.18",
+        "supports": "partly",
+        "note": "names Prismites as resources"
+      },
+      {
+        "ref": "Rulebook 2023 p.7",
+        "supports": "yes",
+        "note": "Shards are a resource"
+      },
+      {
+        "ref": "R54",
+        "supports": "yes",
+        "note": "shard is its own kind"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "resources also have an affinity towards a unique element."
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "Shards are a resource that adds no affinity, but can still be expended for mana."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "\"Create a Shard\" creates a resource of kind **`shard`**: it arrives dormant,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.resources.kinds.element",
+    "textHash": "08d640b9cbb5a08d",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U02-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.affinity",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/12-fire-a.test.ts",
+        "pattern": "Fire Resource: activating your 3rd fire",
+        "passed": true,
+        "asserts_claim": "yes: affinity 3 after activating the third (2 before is asserted in the sibling boundary test)"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U02/u02-r2-verify-probes.test.ts",
+        "title": "concepts.elements.affinity-count: a dormant element resource does not count toward a pip requirement",
+        "passed": true,
+        "demonstrates": "yes: the dormant exception"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Fire Resource",
+        "supports": "partly",
+        "note": "type line shows the [r] pip; on-topic"
+      },
+      {
+        "ref": "Rulebook 2023 p.4",
+        "supports": "yes",
+        "note": "\"They have an affinity (1)\""
+      },
+      {
+        "ref": "RAQ 1358299200953126963#0",
+        "supports": "yes",
+        "note": "counting resources of that type"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "They have an affinity (1), which allows you to meet the threshold require-"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (r.state === 'dormant') continue;"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (r.kind === element) n++;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Dormant exception rests on the engine and the cross-referenced dormant rule, not on a source cited here."
+  },
+  {
+    "key": "concepts.resources.prismite",
+    "textHash": "e7fd3324f885582c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.affinity",
+        "agrees": true,
+        "note": "counts resources of that kind whose state is not dormant; expended counts; prismite/shard never match an element"
+      },
+      {
+        "loc": "engine.ts:E.openMana",
+        "agrees": true,
+        "note": "an open prismite is mana"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "01-planning.test.ts",
+        "pattern": "R17/prismites: dormant start, no affinity, planning exchange into any element",
+        "passed": true,
+        "asserts_claim": "yes: two active prismites = 2 open mana, 0 fire affinity, exchange works"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.18",
+        "supports": "yes",
+        "note": "\"Since Prismites are resources, they can be expended for mana.\""
+      },
+      {
+        "ref": "R17",
+        "supports": "yes",
+        "note": "grant no affinity"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "they can be expended for mana."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "resource of any element, keeping its current state (\"players essentially get to pick"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.resources.prismite.exchange",
+    "textHash": "0d9917474d593dc0",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U02-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doExchangePrismite",
+        "agrees": true,
+        "note": "planning && !planningDone (resource step only), dormant refused, r.kind replaced in place so state is kept"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/01-planning.test.ts",
+        "pattern": "R17/prismites: dormant start",
+        "passed": true,
+        "asserts_claim": "yes: active Prismite -> fire, state open kept, dormant refused"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U02/u02-r2-verify-probes.test.ts",
+        "title": "concepts.resources.prismite.exchange: only active, only in the resource step, and the state is kept",
+        "passed": true,
+        "demonstrates": "yes: expended state kept; refused after Done planning (haste step)"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.18",
+        "supports": "yes",
+        "note": "resource step and active Prismites exchange"
+      },
+      {
+        "ref": "R17",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R132",
+        "supports": "partly",
+        "note": "the printed card reads \"Create ... then activate it\", which does not itself say the state carries over; \"keeps its current state\" is R17 (owner) + engine"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "resource of any element, keeping its current state (\"players essentially get to pick"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(r.state !== 'dormant', 'a dormant prismite cannot be exchanged');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Minor: the printed card (\"Create a non-prismite resource, then activate it\") would on a literal reading give a fresh unexpended resource; the \"keeps its state\" clause rests on R17. Moot in practice (resources refresh before the resource step)."
+  },
+  {
+    "key": "concepts.resources.prismite.exchange.activation",
+    "textHash": "0d22209ae7792bbc",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U02-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doExchangePrismite",
+        "agrees": true,
+        "note": "calls maybeGrantShard; never touches activationsLeft"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/21-fixes.test.ts",
+        "pattern": "spending a Prismite into your 3rd",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "client/engine/test/21-fixes.test.ts",
+        "pattern": "a Prismite spent into your SECOND",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U02/u02-r2-verify-probes.test.ts",
+        "title": "concepts.resources.prismite.exchange.activation: no activation used; a third copy pays a Shard, a second does not",
+        "passed": true,
+        "demonstrates": "yes: exchange legal with 0 activations left and leaves the count at 0"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R132",
+        "supports": "yes",
+        "note": "both quotes; R132 quotes the printed Prismite card"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> during the mana step. {i}(This does not use one of your activations for turn.)\""
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "maybeGrantShard(e, seat, element);"
+      },
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "(This does not use one of your activations for turn.)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "basis \"owner\" undersells it: the operative text is the printed Prismite card."
+  },
+  {
+    "key": "concepts.resources.prismite.exchange.dormant",
+    "textHash": "6600d05a3ef0d42a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doExchangePrismite",
+        "agrees": true,
+        "note": "need(r.state !== 'dormant')"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "01-planning.test.ts",
+        "pattern": "R17/prismites: dormant start, no affinity, planning exchange into any element",
+        "passed": true,
+        "asserts_claim": "yes: exchanging a dormant prismite throws IllegalAction and is not offered"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.18",
+        "supports": "yes",
+        "note": "\"Active Prismites may be exchanged\""
+      },
+      {
+        "ref": "R17",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "hidden information). A dormant Prismite cannot be exchanged. The engine and prototype"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(r.state !== 'dormant', 'a dormant prismite cannot be exchanged');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.resources.prismite.exchange.element-only",
+    "textHash": "1fa44bc228e3a082",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U02-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doExchangePrismite",
+        "agrees": false,
+        "note": "requires element in s.elements, so 'prismite' AND 'shard' are refused; the Shard refusal is the flagged divergence F-U02-3 (real)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/308-recycle-for-prismite.test.ts",
+        "pattern": "what stays illegal",
+        "passed": true,
+        "asserts_claim": "yes for the Prismite-into-Prismite claim; it also asserts the Shard refusal, which is the divergence"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U02/u02-r2-verify-probes.test.ts",
+        "title": "concepts.resources.prismite.exchange.element-only: the engine refuses a Prismite into a Prismite AND into a Shard (the Shard half is the divergence)",
+        "passed": true,
+        "demonstrates": "yes: divergence measured; Shard exchange refused and not offered"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.18",
+        "supports": "partly",
+        "note": "\"exchanged for other resources\" -- literal reading includes a Shard; does not name it"
+      },
+      {
+        "ref": "R132",
+        "supports": "yes",
+        "note": "quotes the Prismite card: \"Create a non-prismite resource\" -- a Shard is a non-prismite resource (literal printed reading)"
+      },
+      {
+        "ref": "R299 (its Prismite-into-Prismite half)",
+        "supports": "partly",
+        "note": "supports the Prismite refusal; the same sentence (\"an exchange names an element\") contradicts the Shard half, and R17 says \"a resource of any element\" -- the rule overrides these on printed-literal authority"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "Erase me: Create a non-prismite resource, then activate it."
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "exchanged for other resources, meaning players essentially get to pick their two"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Exchanging a Prismite *into* a Prismite stays illegal — an exchange names an element."
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need((e.s.elements as string[]).includes(element), 'not an element of this game');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Ruling holds on the printed Prismite text (printed > R-rulings) and the divergence is real. But note: current R299/R17 say element-only, so this rule overrules a current ruling without a designer source; and the KEY \"element-only\" now misdescribes the text."
+  },
+  {
+    "key": "concepts.resources.recycle",
+    "textHash": "82c62e9a648f57f6",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doRecycle",
+        "agrees": true,
+        "note": "resource step only, no count limit, resource pushed dormant, card to the bottom of the deck"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "308-recycle-for-prismite.test.ts",
+        "pattern": "R299 a recycled Prismite behaves like a starting one",
+        "passed": true,
+        "asserts_claim": "partly: one recycle, dormant"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U02/u02-r1-verify-probes.test.ts",
+        "title": "concepts.resources.recycle: several recycles in one resource step, each resource dormant",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.18",
+        "supports": "yes",
+        "note": "recycling from hand; spawn dormant; no limit"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "how many resources can be created, though there is little advantage to creating"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.resources.recycle.made-prismite",
+    "textHash": "2c94d9849d7caace",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doRecycle",
+        "agrees": true,
+        "note": "pushes {kind:'prismite', state:'dormant'}"
+      },
+      {
+        "loc": "apply.ts:maybeGrantShard",
+        "agrees": true,
+        "note": "no Shard for prismite"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "308-recycle-for-prismite.test.ts",
+        "pattern": "R299 a recycled Prismite behaves like a starting one",
+        "passed": true,
+        "asserts_claim": "yes: dormant, takes an activation, no Shard, no affinity, exchanged once active"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R299",
+        "supports": "yes",
+        "note": "\"A made Prismite is exactly a starting one\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.player(seat).resources.push({ kind: element, state: 'dormant' });"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.resources.recycle.prismite-shard",
+    "textHash": "958db1dd5d8834f3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doRecycle",
+        "agrees": true,
+        "note": "accepts 'prismite' and 'shard' in any game"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "308-recycle-for-prismite.test.ts",
+        "pattern": "R299 every hand card offers a Prismite, then a Shard, after the elements",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.18",
+        "supports": "yes",
+        "note": "\"any resource can be created\""
+      },
+      {
+        "ref": "R299",
+        "supports": "yes",
+        "note": "designer: \"Yep you can grab prismites ... shards technically yes\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(element === 'prismite' || element === 'shard' || (e.s.elements as string[]).includes(element),"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.resources.shard",
+    "textHash": "e301ad99e23f074d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.createShard",
+        "agrees": true,
+        "note": "dormant shard"
+      },
+      {
+        "loc": "engine.ts:E.affinity",
+        "agrees": true,
+        "note": "counts resources of that kind whose state is not dormant; expended counts; prismite/shard never match an element"
+      },
+      {
+        "loc": "apply.ts:doExchangePrismite",
+        "agrees": true,
+        "note": "need(kind === 'prismite')"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "48-playtest-hotfix.test.ts",
+        "pattern": "a Shard gives mana but no affinity and no element exchange",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "308-recycle-for-prismite.test.ts",
+        "pattern": "R299 a recycled Shard is mana only: no affinity, no Shard of its own, no exchange",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.7",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R54",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "be exchanged** for an element during planning."
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(r && r.kind === 'prismite', 'not a prismite');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.resources.shard.not-prismite",
+    "textHash": "73117eeaec6e9d89",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.createShard",
+        "agrees": true,
+        "note": "kind 'shard'"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "48-playtest-hotfix.test.ts",
+        "pattern": "Swirling Shardform creates two dormant SHARDS, not prismites",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "16-earth-a.test.ts",
+        "pattern": "Hooba-Lan: attacking creates a real dormant Shard for its controller",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Swirling Shardform",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R54",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "When I spawn, create two Shards"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.resources.what",
+    "textHash": "cc6935d15a67ebbf",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U02-r1",
+    "engine": [],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.14",
+        "supports": "yes",
+        "note": "both sentences verbatim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Resources are also permanents and remain in play."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  }
+]

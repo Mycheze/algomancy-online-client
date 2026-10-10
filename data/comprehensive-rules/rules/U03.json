@@ -1,0 +1,3689 @@
+[
+  {
+    "key": "concepts.cards.card",
+    "parent": "108",
+    "order": 1,
+    "text": "A card is a physical Algomancy card: one with an Algomancy card back.",
+    "examples": [],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R306",
+          "quote": "A card is an actual physical card that has an algomancy card"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Owner definition (R306, 2026-09-28). Print calls tokens \"temporary cards\" (Manual p.15): D-U03-1.",
+    "sourceHashes": {
+      "R306": "63ddd3a55f5ae1c3565593e3bc4c1c6ad19bb0124baf0ac5f651e7ad794e765f"
+    },
+    "untested": true,
+    "untestableReason": "a definition of the physical card; its consequences (units are cards, tokens are not) are demonstrated under concepts.cards.card.units and concepts.cards.token.not-card"
+  },
+  {
+    "key": "concepts.cards.card.units",
+    "parent": "concepts.cards.card",
+    "order": 1,
+    "text": "Units, spells and spell units are cards. Card text that refers to a \"card\" being played includes a unit being played.",
+    "examples": [
+      {
+        "text": "Void Mandible (\"When a nontoken card is played during battle, sacrifice me. If you do, negate that effect.\") answers a {Battle} unit being played.",
+        "test": "119-play-and-token-events.test.ts::Void Mandible: a {Battle} UNIT is a card played — sacrifice, then negate"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R129",
+          "quote": "Everything is a card, including units. Tokens are NOT cards, however."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "119-play-and-token-events.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R129": "630060703c282d6843d3b9b11d74e161010ed2a31ab72a6810a6cb921e78a8e9"
+    }
+  },
+  {
+    "key": "concepts.cards.card.characteristics",
+    "parent": "concepts.cards.card",
+    "order": 2,
+    "text": "Every card has a name, and most cards have abilities. The other parts a card can have are described in section 200.",
+    "examples": [
+      {
+        "text": "Every one of the 492 cards in the pool has a name; most, but not all, have ability text.",
+        "test": "414-cr-cards-abilities-targets.test.ts::cr:concepts.cards.card.characteristics — every card in the pool has a name, and most have ability text"
+      }
+    ],
+    "see": [
+      "200"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.12",
+          "quote": "All cards have a card name."
+        },
+        {
+          "ref": "Manual p.12",
+          "quote": "Most cards have abilities,"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "414-cr-cards-abilities-targets.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.cards.token",
+    "parent": "108",
+    "order": 2,
+    "text": "A token is a unit or a spell that an effect creates directly into play. A unit token functions as a unit, and a spell token is a spell.",
+    "examples": [
+      {
+        "text": "Creating a Poison (a spell token) is creating a token, just as creating a 1/1 unit is.",
+        "test": "119-play-and-token-events.test.ts::Mycelial Mentor: creating a POISON fires \"when you create a token\""
+      }
+    ],
+    "see": [
+      "304"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.15",
+          "quote": "Just like spell tokens, unit tokens spawn directly into"
+        },
+        {
+          "ref": "Manual p.15",
+          "quote": "Unit tokens function identically to regular units with the"
+        },
+        {
+          "ref": "Manual p.15",
+          "quote": "A spell token is a temporary spell that may be played"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "119-play-and-token-events.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.cards.token.not-card",
+    "parent": "concepts.cards.token",
+    "order": 1,
+    "text": "For card text, a token is not a card: text that refers to a \"card\" does not include a token, even though a unit token is a unit and a spell token is a spell. The Manual's description of tokens as \"temporary cards\" is the open question D-U03-1.",
+    "examples": [
+      {
+        "text": "A spell token being cast is a spell being played, but not a card being played.",
+        "test": "119-play-and-token-events.test.ts::a spell TOKEN is a played spell but not a card"
+      }
+    ],
+    "see": [
+      "702"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R129",
+          "quote": "Everything is a card, including units. Tokens are NOT cards, however."
+        },
+        {
+          "ref": "R306",
+          "quote": "Tokens are specifically not considered cards in terms of specific semantics"
+        },
+        {
+          "ref": "R305",
+          "quote": "- **\"card(s)\"**: a token does not."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "119-play-and-token-events.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Owner rulings only. The Manual (p.15) says \"Tokens are temporary cards that are created directly\", and Void Mandible prints \"nontoken card\": D-U03-1 (the same question as D-U14-7). R305 was not in the U03 pack; read from the register.",
+    "sourceHashes": {
+      "R129": "630060703c282d6843d3b9b11d74e161010ed2a31ab72a6810a6cb921e78a8e9",
+      "R305": "88a482701a5f378703d6d18e30d8a3b943798c47e43ee19572963aef6c8e2da6",
+      "R306": "63ddd3a55f5ae1c3565593e3bc4c1c6ad19bb0124baf0ac5f651e7ad794e765f"
+    }
+  },
+  {
+    "key": "concepts.cards.token.spell-token",
+    "parent": "concepts.cards.token",
+    "order": 2,
+    "text": "A spell token is a token wherever it is: in play, and also on the stack after it has been cast.",
+    "examples": [
+      {
+        "text": "Download (\"Gain control of target token\") can take a Fireball token that has already been cast and is on the stack.",
+        "test": "393-raq-mods.test.ts::RAQ Download: a Fireball already cast and on the stack is a token it can take"
+      }
+    ],
+    "see": [
+      "304",
+      "406"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353864175910387742#0",
+          "quote": "1. Fireball 'in play' / 'in Region' ✅"
+        },
+        {
+          "ref": "RAQ 1353864175910387742#1",
+          "quote": "2. Fireball effect 'on the stack' ✅"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R333",
+          "quote": "A spell token already cast is still a token"
+        },
+        {
+          "ref": "R129",
+          "quote": "Spell tokens are still tokens."
+        },
+        {
+          "ref": "R157 (§13)",
+          "quote": "Yes. Tokens are spells."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts",
+        "403-raq-fix-mods.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R129": "630060703c282d6843d3b9b11d74e161010ed2a31ab72a6810a6cb921e78a8e9",
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
+      "R333": "0b3c670d84fac9eb0a52eafdd3ae5e6af61958470b5461a9236399566d2ef758",
+      "RAQ 1353864175910387742#0": "604fb33ee49f6228dffc6a2fc79151d9723afbd8579e5c30223edb2ec2a5bafc",
+      "RAQ 1353864175910387742#1": "10774ef8ff034c6b985c2dbe4f791fd4196ce73820247adcf3f440aa3f3afcf8"
+    }
+  },
+  {
+    "key": "concepts.cards.token.x-units",
+    "parent": "concepts.cards.token",
+    "order": 3,
+    "text": "A unit that an effect creates is a unit token, including an X/X unit whose X the creating card sets.",
+    "examples": [
+      {
+        "text": "An X/X unit made by Spawntender is a token that Download can take.",
+        "test": "393-raq-mods.test.ts::RAQ Download: a Fireball in the region and an X/X unit token are both tokens it can take"
+      }
+    ],
+    "see": [
+      "304"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353864175910387742#2",
+          "quote": "3. 8/8 unit from Spawntender (or any X/X unit created by Awoken Tomb or similiar) ✅"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1353864175910387742#2": "e451a1e673b7d7dd1ea39f617df7c999ba851ad186aaa4d812bd8ee9e67f0d34"
+    }
+  },
+  {
+    "key": "concepts.cards.token.where",
+    "parent": "concepts.cards.token",
+    "order": 4,
+    "text": "A token is created in the region its source is in when the effect that creates it resolves, not in its controller's home region.",
+    "examples": [
+      {
+        "text": "Life Plant attacking in the enemy region creates its 1/1 units in that region.",
+        "test": "98-spawn-region.test.ts::R115: report #83 — Life Plant attacking in the enemy region creates its 1/1s THERE, not at home"
+      }
+    ],
+    "see": [
+      "304",
+      "601"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.15",
+          "quote": "play in the region they were created."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R115",
+          "quote": "**Anything made by anything needs to spawn in that region**"
+        },
+        {
+          "ref": "R115",
+          "quote": "*That region* = the region the SOURCE is in **right now**, at the moment the effect"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R52",
+          "relation": "withdrawn by R115: it had sent created units to their controller's home region"
+        },
+        {
+          "ruling": "R33",
+          "relation": "absorbed into R115"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "98-spawn-region.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R115 is the designer's sentence quoted in an R-ruling; the Manual says only \"the region they were created\".",
+    "sourceHashes": {
+      "R115": "6487690c1da97d2ab55b0ba89ca85829c60c72f3409070630666aabf42947483"
+    }
+  },
+  {
+    "key": "concepts.cards.token.not-trashed",
+    "parent": "concepts.cards.token",
+    "order": 5,
+    "text": "A token is never trashed, because only a card can be trashed. A unit token can still die.",
+    "examples": [
+      {
+        "text": "A unit token dying in battle does not add to the number of cards trashed in that battle.",
+        "test": "338-tokens-are-not-trashed.test.ts::R306: a token unit dying in battle does not bump the trashed ledger that Dropslime reads"
+      }
+    ],
+    "see": [
+      "801",
+      "410"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R306",
+          "quote": "So **trashing is something that happens to a CARD.**"
+        },
+        {
+          "ref": "R306",
+          "quote": "Its **death** is untouched. A token is still a unit, and \"whenever a unit dies\""
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R133",
+          "relation": "its second half (\"Tokens are trashed, yes\") withdrawn by R306"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "338-tokens-are-not-trashed.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R306": "63ddd3a55f5ae1c3565593e3bc4c1c6ad19bb0124baf0ac5f651e7ad794e765f"
+    }
+  },
+  {
+    "key": "concepts.cards.faces",
+    "parent": "108",
+    "order": 3,
+    "text": "A card in play that transforms is the same unit with its other face up. It does not leave play or enter play, and it keeps its counters and damage.",
+    "examples": [
+      {
+        "text": "Scholar of the Void transforms into Beyond, Codex Incarnate: same unit, and its counters and damage survive.",
+        "test": "43-dark-c.test.ts::R101 — the transform is the SAME unit: same id, and its counters and damage survive"
+      }
+    ],
+    "see": [
+      "710"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R101 (its same-unit half)",
+          "quote": "**A transform is the SAME unit with a different face up.**"
+        },
+        {
+          "ref": "R101 (its same-unit half)",
+          "quote": "the unit was never absent from the board,"
+        },
+        {
+          "ref": "R101 (its same-unit half)",
+          "quote": "**counters and marked damage survive** — they are facts about the unit, not the face."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "43-dark-c.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R101": "b937ce970d76adefa8a8d4e7d281565beddb39e455ba1f6f91fddcbe49c6d2ee"
+    }
+  },
+  {
+    "key": "concepts.cards.faces.back-not-token",
+    "parent": "concepts.cards.faces",
+    "order": 1,
+    "text": "A back face is not a token, and a transformed card is still a card.",
+    "examples": [
+      {
+        "text": "A transformed Scholar of the Void that died can be returned from the bin as a Scholar.",
+        "test": "135-exchange-and-zones.test.ts::a transformed Scholar that died is RECURRABLE from the bin"
+      }
+    ],
+    "see": [
+      "410"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 (§10)",
+          "quote": "side. And the back is NOT a token."
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R101",
+          "relation": "its clause making a transformed card a token was reversed by R157 §10"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "135-exchange-and-zones.test.ts",
+        "43-dark-c.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R101 transcribes Beyond's type line as \"Book Token Unit\": D-U03-2. Where the card exists outside play (its front face) is 410 (U07).",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
+    }
+  },
+  {
+    "key": "concepts.cards.faces.own-back",
+    "parent": "concepts.cards.faces",
+    "order": 2,
+    "text": "A card can only transform into a back face it has. A unit that gains a transform ability from a mod transforms only if that unit's own card has that back face.",
+    "examples": [
+      {
+        "text": "Scholar of the Void augmented onto another unit cannot transform its host.",
+        "test": "43-dark-c.test.ts::R101 — donated to a HOST the transform is refused"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R101 (its same-unit half)",
+          "quote": "So the transform is offered only when the ANCHOR prints this back face, which the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "43-dark-c.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R101's refusal of the [Augment] transform is not among the parts R102/R157 superseded.",
+    "sourceHashes": {
+      "R101": "b937ce970d76adefa8a8d4e7d281565beddb39e455ba1f6f91fddcbe49c6d2ee"
+    }
+  },
+  {
+    "key": "concepts.cards.copies",
+    "parent": "108",
+    "order": 4,
+    "text": "A copy of a spell is a new effect on the stack. It was not played.",
+    "examples": [
+      {
+        "text": "A copy made by Earthbound Replicator fires no play event and makes no second copy.",
+        "test": "138-spell-copy.test.ts::R164 Earthbound Replicator: a copy is not PLAYED"
+      }
+    ],
+    "see": [
+      "701",
+      "710"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355613076506017894#4",
+          "quote": "5. Copy is new spell effect on stack"
+        },
+        {
+          "ref": "RAQ 1355613076506017894#1",
+          "quote": "since 1st copy wasn't 'played'."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "138-spell-copy.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1355613076506017894#1": "81d6330d66159898ded34693d319f9af3371ea4d987d2450e794e97795d9c7fe",
+      "RAQ 1355613076506017894#4": "6428d54bd4282edd2d7997af4b4ea2bb97c2ddd6559a4e9188e19f4a721fdfd4"
+    }
+  },
+  {
+    "key": "concepts.cards.copies.not-token",
+    "parent": "concepts.cards.copies",
+    "order": 1,
+    "text": "A copy of a spell is not a token.",
+    "examples": [
+      {
+        "text": "Download cannot take a spell copy made by Earthbound Replicator.",
+        "test": "393-raq-mods.test.ts::RAQ Download: a spell copy made by Earthbound Replicator is not a token"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355613076506017894#5",
+          "quote": "5. Copy spell is not a token."
+        },
+        {
+          "ref": "RAQ 1353864175910387742#5",
+          "quote": "6. Copy of a spell resulting from Earthbound Replicator ❌"
+        },
+        {
+          "ref": "RAQ 1353864175910387742#6",
+          "quote": "7. Copy of a spell resulting from Maelstrom Charger ❌"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "The same thread's line on copies of Meteor Shower is marked outdated in the RAQ register and is not used.",
+    "sourceHashes": {
+      "RAQ 1353864175910387742#5": "6611609333a47e5387947853661472348a4d4f287554fcd67d23427ede33b119",
+      "RAQ 1353864175910387742#6": "11aef4c4ea3911830b44a1b0102fbc1a6b6edfd11e7f354ca09f30e23e644b8f",
+      "RAQ 1355613076506017894#5": "f95b7ece21aa9ddc253f3d32a90eb86fc603388c336ffaffb685279d02f0927f"
+    }
+  },
+  {
+    "key": "concepts.cards.copies.token-copy",
+    "parent": "concepts.cards.copies",
+    "order": 2,
+    "text": "A token that an effect creates as a copy of a card is a token.",
+    "examples": [
+      {
+        "text": "The copy Echo of Despair makes of itself is a token.",
+        "test": "393-raq-mods.test.ts::RAQ Download: a copy Echo of Despair makes of itself is a token"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353864175910387742#3",
+          "quote": "4. Copy of Echo of Despair ✅"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1353864175910387742#3": "1df590deb52f750db15cbd1ae36380f43b93c3d85ddf7de7398839c45e108846"
+    }
+  },
+  {
+    "key": "concepts.cards.copies.mimic-not-token",
+    "parent": "concepts.cards.copies",
+    "order": 3,
+    "text": "A nontoken unit that becomes a copy of a token is still a nontoken unit.",
+    "examples": [
+      {
+        "text": "Borrower of Forms copying a Robot token is a nontoken unit, which Download cannot take.",
+        "test": "393-raq-mods.test.ts::RAQ Borrower of Forms: copying a Robot token makes a nontoken unit"
+      }
+    ],
+    "see": [
+      "710"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1372468222158180424#9",
+          "quote": "No, true BoFy is non-token Unit … He cannot be targeted by Arcane Echo or Download."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1372468222158180424#9": "c36ad5193f1cf044c9cbbdbd96fbc249d56fe04c8ad1f9fcfc5629b57f72c443"
+    }
+  },
+  {
+    "key": "concepts.cards.identity",
+    "parent": "108",
+    "order": 5,
+    "text": "Two copies of the same card are two different objects. Card text that says \"another\" or \"other\" compares objects, never card names.",
+    "examples": [
+      {
+        "text": "A host wearing two Rotbeast augments: each Rotbeast's \"my other Augments\" includes the other Rotbeast.",
+        "test": "121-another-identity.test.ts::R131 Rotbeast: a SECOND Rotbeast augment is \"another\""
+      }
+    ],
+    "see": [
+      "405",
+      "110"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R131",
+          "quote": "So an \"other\"/\"another\" clause **never** filters by CARD NAME. Two copies of a"
+        },
+        {
+          "ref": "R131",
+          "quote": "card are two things, and each is \"another\" to the other."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "121-another-identity.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "In a bin, where copies cannot be told apart, \"another\" excludes one copy: 405 (U07).",
+    "sourceHashes": {
+      "R131": "43728cea609c04e1a04453063a2d517487923b3450504286c64547f2bde9262b"
+    }
+  },
+  {
+    "key": "concepts.cards.identity.new-object",
+    "parent": "concepts.cards.identity",
+    "order": 1,
+    "text": "An object stays the same object while it stays where it is. A unit that leaves play and comes back is a new object.",
+    "examples": [
+      {
+        "text": "Engorged Caudex recalled and played again draws again from its once-per-turn graft in the same turn.",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 calebgannon"
+      }
+    ],
+    "see": [
+      "410"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1454169054402314362#2",
+          "quote": "another effect targeting them would still resolve (they're still the same units)"
+        },
+        {
+          "ref": "RAQ 1355115946032889914#16",
+          "quote": "recall Caudex, play him again, play unit, get 2nd card"
+        },
+        {
+          "ref": "RAQ 1355115946032889914#16",
+          "quote": "Yes that works"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts",
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1355115946032889914#16": "abae6cef85e10fe99218407de9525b8c3ed984778e54d0fc43a32c796d206b02",
+      "RAQ 1454169054402314362#2": "b3c1d6d85b56be21075308f74a85f88594cd2eeffac19ed21962bdeecd7a25d3"
+    }
+  },
+  {
+    "key": "concepts.abilities.what",
+    "parent": "109",
+    "order": 1,
+    "text": "An ability is text on a card that describes the card's effects. Most cards have abilities.",
+    "examples": [],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.12",
+          "quote": "Most cards have abilities,"
+        },
+        {
+          "ref": "Manual p.12",
+          "quote": "which describe the card’s"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "a definition of the word ability; its \"most cards have abilities\" half is demonstrated under concepts.cards.card.characteristics"
+  },
+  {
+    "key": "concepts.abilities.activated",
+    "parent": "109",
+    "order": 2,
+    "text": "An activated ability is written with a colon. Everything before the colon is a cost that must be paid to activate the ability; what follows the colon is its effect.",
+    "examples": [
+      {
+        "text": "Living Forge reads \"[three]: Create a Robot 2.\" With two resources its ability cannot be activated; paying three makes a Robot.",
+        "test": "414-cr-cards-abilities-targets.test.ts::cr:concepts.abilities.activated — Living Forge cannot activate its ability without the cost before the colon, and paying it gives the effect after"
+      }
+    ],
+    "see": [
+      "705",
+      "111"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.41",
+          "quote": "an activated ability by a colon “:”. Everything before the"
+        },
+        {
+          "ref": "Manual p.41",
+          "quote": "colon is a cost that must be paid to activate the ability,"
+        },
+        {
+          "ref": "Manual p.41",
+          "quote": "which will grant you the effect stated after the colon."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "414-cr-cards-abilities-targets.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.abilities.activated.when",
+    "parent": "concepts.abilities.activated",
+    "order": 1,
+    "text": "A player may activate an activated ability any time they have priority, in battle or in deployment, as many times as they can pay its cost, unless the ability limits itself (see [once]).",
+    "examples": [
+      {
+        "text": "With six resources, Living Forge makes two Robots in one deployment, and makes another in battle when its controller holds priority and pays again.",
+        "test": "414-cr-cards-abilities-targets.test.ts::cr:concepts.abilities.activated.when — Living Forge activates twice in one deployment and again with priority in battle, as long as its cost is paid"
+      }
+    ],
+    "see": [
+      "703",
+      "concepts.abilities.once"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.41",
+          "quote": "Activated abilities can be used any time a player has"
+        },
+        {
+          "ref": "Manual p.41",
+          "quote": "priority during battle and deployment, as many times as"
+        },
+        {
+          "ref": "Manual p.41",
+          "quote": "they wish, as long as they are able to pay the cost."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "414-cr-cards-abilities-targets.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.abilities.activated.from-hand",
+    "parent": "concepts.abilities.activated",
+    "order": 2,
+    "text": "An activated ability that is used from the hand can be used during battle even if its card has no {Battle} icon.",
+    "examples": [
+      {
+        "text": "Dropslime's discard-me ability can be used in battle.",
+        "test": "135-exchange-and-zones.test.ts::discard-me mode is offered IN BATTLE and deals damage there"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 (§8)",
+          "quote": "It doesn't have a battle icon, but that is just an activated ability that"
+        },
+        {
+          "ref": "R157 (§8)",
+          "quote": "you do from hand, so it can be done during battle just fine."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "135-exchange-and-zones.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
+    }
+  },
+  {
+    "key": "concepts.abilities.triggered",
+    "parent": "109",
+    "order": 3,
+    "text": "A triggered ability happens when something else takes place. \"When\" and \"Whenever\" mark a triggered ability; one can also happen at a stated time, such as \"After combat\" or \"At the end of turn\".",
+    "examples": [
+      {
+        "text": "Skittering Blight gains its controller a rot when it spawns; Harbinger of Immolation makes a Fireball at the end of the turn; an attacking Wisp sacrifices itself after combat.",
+        "test": "414-cr-cards-abilities-targets.test.ts::cr:concepts.abilities.triggered — a When ability fires on its event, an After combat ability after combat, and an At the end of turn ability at the end of the turn"
+      }
+    ],
+    "see": [
+      "706"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.41",
+          "quote": "“When” and “Whenever” denote triggered abilities, which"
+        },
+        {
+          "ref": "Manual p.41",
+          "quote": "are effects that happen when something else takes place."
+        },
+        {
+          "ref": "Manual p.41",
+          "quote": "like “After combat” or “At the end of turn”."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "414-cr-cards-abilities-targets.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.abilities.triggered.condition",
+    "parent": "concepts.abilities.triggered",
+    "order": 1,
+    "text": "A trigger condition is checked once, when the event happens. If it was false then, nothing that happens later makes the ability trigger; once the ability has triggered, it resolves even if the condition stops being true.",
+    "examples": [
+      {
+        "text": "A spell played at another unit and then retargeted onto Earthbound Replicator makes no copy: \"a spell targeting me\" is judged as the spell is played.",
+        "test": "151-copy-and-moved-mods.test.ts::R178 Earthbound Replicator: a spell played at something ELSE and retargeted onto me makes NO copy"
+      },
+      {
+        "text": "A condition false when the event happened stays unmet; an amount is read at resolution.",
+        "test": "05-rulings.test.ts::R1: trigger conditions check at event time; amounts compute at resolution"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355613076506017894#3",
+          "quote": "4. He must be targeted while playing the spell."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R1",
+          "quote": "**Conditions are checked once, at event time; amounts are computed at resolution.**"
+        },
+        {
+          "ref": "R1",
+          "quote": "Once the trigger is on the stack it resolves regardless of later stat"
+        },
+        {
+          "ref": "R178 (§1)",
+          "quote": "> *\"He must be targeted while playing the spell. If the spell is played and"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "05-rulings.test.ts",
+        "151-copy-and-moved-mods.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R1": "30128c5c491bd944cd289699e56309513bf26ce92037b2388fa6cc2a53f76493",
+      "R178": "92613172ef363565035f3346c813b8e4fdf7cbf5ff2a45ae1543bf273254e204",
+      "RAQ 1355613076506017894#3": "0db171ac91f02b31b348258a244f14a3637f58f92cfc89de216bef9832be5df6"
+    }
+  },
+  {
+    "key": "concepts.abilities.triggered.amount",
+    "parent": "concepts.abilities.triggered",
+    "order": 2,
+    "text": "An amount a triggered ability uses is measured when the ability resolves, so responses can change it.",
+    "examples": [
+      {
+        "text": "Astral Tidewraith's damage equal to the cards in a hand counts the hand as the trigger resolves (illustrative).",
+        "test": null
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R1",
+          "quote": "hand count is measured **when the trigger resolves**, so responses can change it."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "05-rulings.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R1": "30128c5c491bd944cd289699e56309513bf26ce92037b2388fa6cc2a53f76493"
+    }
+  },
+  {
+    "key": "concepts.abilities.triggered.recheck",
+    "parent": "concepts.abilities.triggered",
+    "order": 3,
+    "text": "A triggered ability checks its condition again when it resolves only if its text says so, as \"if I am still in formation\" does.",
+    "examples": [
+      {
+        "text": "Hooba-Nan gone from play with its trigger on the stack makes nothing.",
+        "test": "390-raq-stack.test.ts::RAQ dead unit: Hooba-Nan gone with its trigger on the stack makes nothing"
+      }
+    ],
+    "see": [
+      "concepts.targets.recheck"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R1",
+          "quote": "cards that DO re-check at resolution say so on the card"
+        },
+        {
+          "ref": "R1",
+          "quote": "\"**if I am still in formation**\" (Hooba-Nan, Rousing Spirit). That clause is a"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R1": "30128c5c491bd944cd289699e56309513bf26ce92037b2388fa6cc2a53f76493"
+    }
+  },
+  {
+    "key": "concepts.abilities.triggered.per-target",
+    "parent": "concepts.abilities.triggered",
+    "order": 4,
+    "text": "An ability that triggers when an ally becomes the target of a spell triggers once for each targeted ally.",
+    "examples": [
+      {
+        "text": "An enemy spell targeting two allies puts Earnest Defender's ability on the stack twice.",
+        "test": "136-triggers-and-modes.test.ts::R157 §16: two targeted allies are TWO TRIGGERS on the stack"
+      }
+    ],
+    "see": [
+      "706"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 (§16)",
+          "quote": "Once per targeted ally — two targets, two triggers, two 1/1s."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "136-triggers-and-modes.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R161 §16 still describes an approximation (one trigger making two tokens) that test 136 says is gone: D-U03-4.",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
+    }
+  },
+  {
+    "key": "concepts.abilities.static",
+    "parent": "109",
+    "order": 4,
+    "text": "A static ability makes a continuous change to the game for as long as its card is in play.",
+    "examples": [
+      {
+        "text": "While Glowhaven Elder is in play, your other units are +1/+1; when it leaves play, they lose the bonus.",
+        "test": "414-cr-cards-abilities-targets.test.ts::cr:concepts.abilities.static — Glowhaven Elder buffs the other units for exactly as long as it is in play"
+      }
+    ],
+    "see": [
+      "707"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.41",
+          "quote": "Static abilities declare a change that a card is continuously making to the game as long as it is in play, like"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "414-cr-cards-abilities-targets.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.abilities.replacement",
+    "parent": "109",
+    "order": 5,
+    "text": "A replacement effect, written \"If … instead\", changes an event as it happens. The replacement itself does not use the stack.",
+    "examples": [
+      {
+        "text": "With Flux Resonator in play, Living Forge's Robot 2 arrives with three counters, and no extra item goes on the stack for the replacement.",
+        "test": "414-cr-cards-abilities-targets.test.ts::cr:concepts.abilities.replacement — Flux Resonator changes the Robot counters as the Forge ability resolves, without a stack item or a priority pass of its own"
+      }
+    ],
+    "see": [
+      "708",
+      "concepts.abilities.replacement.targeted"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.41",
+          "quote": "Abilities like Flux Resonator’s using the templating “If..."
+        },
+        {
+          "ref": "Manual p.41",
+          "quote": "Instead” are called replacement effects. Unlike triggered abilities, replacement effects don’t use the stack"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "414-cr-cards-abilities-targets.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "One exception for a substitute that names a target: concepts.abilities.replacement.targeted, D-U03-12.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.abilities.as-you-play",
+    "parent": "109",
+    "order": 6,
+    "text": "An option a card offers as a spell is played, such as Maelstrom Charger's, is neither a triggered nor an activated ability. It does not go on the stack, it cannot be responded to, and effects on triggered or activated abilities do not apply to it.",
+    "examples": [
+      {
+        "text": "Crevice Lurker's tax on triggered abilities does not reach Maelstrom Charger's option.",
+        "test": "151-copy-and-moved-mods.test.ts::R178 Maelstrom Charger: Crevice Lurker cannot tax it"
+      },
+      {
+        "text": "The option is asked while the spell is being played and never reaches the stack.",
+        "test": "151-copy-and-moved-mods.test.ts::R178 Maelstrom Charger: the option is asked in the cast window and never reaches the stack"
+      }
+    ],
+    "see": [
+      "702"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1379132904931594372#3",
+          "quote": "Maelstrom Ability is neither Triggered nor Activated, so Crevice Lurker doesn't affect it."
+        },
+        {
+          "ref": "RAQ 1379132904931594372#0",
+          "quote": "Meal copying is not an effect on the stack so enemy cannot interact with it."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "151-copy-and-moved-mods.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1379132904931594372#0": "2489487aa78cede9d246f72cbe06a1c3b09758133ee0236ea6286d0992027c07",
+      "RAQ 1379132904931594372#3": "1e4ddfbce45282189c15b1833fa89aecfa9a38ed84c5162f938096d8b6d9e7c5"
+    }
+  },
+  {
+    "key": "concepts.abilities.mod-text",
+    "parent": "109",
+    "order": 7,
+    "text": "Text after a card's [Augment] or graft symbol is active when the card is played normally, not only when the card is a mod.",
+    "examples": [
+      {
+        "text": "A Wraith token standing in play uses its own [Augment] line at the start of deployment.",
+        "test": "37-attrs-wight.test.ts::R71: at the start of deployment a Wraith body shrinks a chosen ally"
+      }
+    ],
+    "see": [
+      "720"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.43",
+          "quote": "A: Yes, the text is active on cards played normally."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "37-attrs-wight.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.abilities.granted",
+    "parent": "109",
+    "order": 8,
+    "text": "An effect can give units an ability. The ability goes to the units the effect names as it resolves; a unit that arrives afterwards does not gain it.",
+    "examples": [
+      {
+        "text": "Reforge the Dead's grant lasts until regroup and reaches only the units already there.",
+        "test": "27-metal-b.test.ts::Reforge the Dead: the grant is until regroup, and only for units already there"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Reforge the Dead",
+          "quote": "Your units gain \"When I die, create a Robot 3.\" until regroup."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R63",
+          "quote": "- The grant is a **snapshot of \"your units\"** at resolution. A unit that arrives afterwards"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "27-metal-b.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R63": "0504864f11d488f8d219083d744a96414bb6fb3e525ff53eb237aba7e34e4bb1"
+    }
+  },
+  {
+    "key": "concepts.abilities.granted.is-ability",
+    "parent": "concepts.abilities.granted",
+    "order": 1,
+    "text": "A granted ability is an ability the unit has. An effect that removes a unit's abilities removes the granted abilities the unit has when the removal applies; an ability granted to the unit afterwards is not removed.",
+    "examples": [
+      {
+        "text": "A unit that loses all abilities also loses an ability Reforge the Dead gave it earlier; if Reforge the Dead resolves after the removal, the unit has the new ability (illustrative).",
+        "test": "414-cr-cards-abilities-targets.test.ts::cr:concepts.abilities.granted.is-ability — a Reforge the Dead grant made BEFORE an ability strip is removed; one made AFTER it still fires"
+      },
+      {
+        "text": "The same holds for text a mod gives its host: an [Augment] trigger on a mod attached after the strip still fires, and one attached before it does not.",
+        "test": "402-raq-fix-stripping.test.ts::§8 a trigger on a mod attached after the strip still fires; one attached before it does not"
+      }
+    ],
+    "see": [
+      "712"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355685844467581081#0",
+          "quote": "Suppression field just removes attributes from the time it was played, so anything after that will still apply"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R63 (its granted-text-is-an-ability half)",
+          "quote": "Granted text is silenced by R62 exactly like printed text — it is an ability the"
+        },
+        {
+          "ref": "R328",
+          "quote": "A card that takes attributes or abilities away takes **what the unit has when the"
+        },
+        {
+          "ref": "R328",
+          "quote": "stripping applies**. Anything the unit gains **afterwards** — a mod attached, an"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R62",
+          "relation": "reversed by R328: suppression is no longer a veto, so an ability gained after the strip is not removed"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "402-raq-fix-stripping.test.ts",
+        "414-cr-cards-abilities-targets.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "The designer's words are about attributes; R328 (owner) applies the same timestamp order to abilities. R63's silencing sentence predates R328: D-U03-11. R328 and RAQ 1355685844467581081 were not in the U03 pack; read from the register and the U16 pack.",
+    "sourceHashes": {
+      "R328": "46a4e158b313c9ef7bfc7197239b3d8da47c74f0c4a5cfd55d19d4cbb2cbddde",
+      "R63": "0504864f11d488f8d219083d744a96414bb6fb3e525ff53eb237aba7e34e4bb1",
+      "RAQ 1355685844467581081#0": "7603189480ff65543c413d7b2e1b1190d8e9bba83e57a4cf8ad8f66e963c8d98"
+    }
+  },
+  {
+    "key": "concepts.abilities.once",
+    "parent": "109",
+    "order": 9,
+    "text": "An ability marked [once], and a bounded graft ([Switch1]), can be activated or triggered only once per turn.",
+    "examples": [
+      {
+        "text": "A [once] ability that has fired stays silent for the rest of the turn and fires again the next turn.",
+        "test": "33-trigger-fixes.test.ts::Unstable Apparition: [once] resets each turn"
+      }
+    ],
+    "see": [
+      "722"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.33",
+          "quote": "is limited to only"
+        },
+        {
+          "ref": "Manual p.33",
+          "quote": "trigger once per turn."
+        },
+        {
+          "ref": "Rulebook 2023 p.16",
+          "quote": "called a limited graft, which means that ability only triggers once per turn."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R113",
+          "quote": "> A bounded ability **\"can only be activated or triggered once per turn. Regardless of if"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "33-trigger-fixes.test.ts",
+        "94-bounded-uses.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Print states the limit for bounded grafts; R113 quotes the designer for the whole [once] family.",
+    "sourceHashes": {
+      "R113": "5e60b78d62e0fcbcbf037cb9014632e2b5df2a9d0759f4a3ce713d7af2443f69"
+    }
+  },
+  {
+    "key": "concepts.abilities.once.spent-on-use",
+    "parent": "concepts.abilities.once",
+    "order": 1,
+    "text": "The use is spent when the ability is activated or put on the stack, whether or not it then resolves. A fizzle, a negation, or a run that finds nothing to do does not give it back. Only a declined or impossible optional choice leaves the use unspent (concepts.abilities.once.decline), even when that choice comes as the ability resolves.",
+    "examples": [
+      {
+        "text": "A bounded trigger negated on the stack has still spent its use.",
+        "test": "94-bounded-uses.test.ts::a bounded trigger that is NEGATED on the stack has still spent its use"
+      },
+      {
+        "text": "A bounded ability that fizzles has spent its use.",
+        "test": "93-engine-defects.test.ts::a bounded ability that FIZZLES for want of a target has SPENT its [once]"
+      }
+    ],
+    "see": [
+      "concepts.abilities.once.decline"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R113",
+          "quote": "the ability is activated, or when it is put on the stack.** Before that moment the player"
+        },
+        {
+          "ref": "R113",
+          "quote": "the use back — not a fizzle, not a negation, not a run that finds there is nothing to do."
+        },
+        {
+          "ref": "R113",
+          "quote": "**What survives, therefore, is exactly one shape:** the player was offered the ability and"
+        },
+        {
+          "ref": "R113",
+          "quote": "Hexbane Shiitake declined, or never asked in the end-of-turn window; Murkdrop Distiller with nothing in the bin to cache"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R108",
+          "relation": "narrowed by R113: a use is kept only on a decline or an impossible offer, and doing nothing no longer refunds it"
+        }
+      ],
+      "engine": [
+        "engine.ts:E.refundPart"
+      ],
+      "tests": [
+        "94-bounded-uses.test.ts",
+        "93-engine-defects.test.ts",
+        "37-attrs-wight.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R113 quotes the designer (\"Regardless of if that ability resolves or doesn't\") but the quote reaches us only through the R-ruling. R113's \"nothing hands the use back\" sits beside its own keep-list, whose declines can come at resolution: D-U03-9. Engine (verifier, round 1): a bounded item already on the stack is refunded at resolution when its \"you may\" is declined or cannot be offered.",
+    "sourceHashes": {
+      "R113": "5e60b78d62e0fcbcbf037cb9014632e2b5df2a9d0759f4a3ce713d7af2443f69"
+    }
+  },
+  {
+    "key": "concepts.abilities.once.decline",
+    "parent": "concepts.abilities.once",
+    "order": 2,
+    "text": "A player who declines an optional (\"you may\") bounded ability, or who could not be offered it at all, has not spent the use. The ability can trigger again later in the turn.",
+    "examples": [
+      {
+        "text": "Hexbane Shiitake declined on one spell is offered again on the next spell that turn.",
+        "test": "94-bounded-uses.test.ts::Hexbane Shiitake declined on one spell is still offered on the NEXT spell that turn"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R113",
+          "quote": "> \"Its ability can only be triggered once per turn, but you can choose for each spell if"
+        },
+        {
+          "ref": "R113",
+          "quote": "may decline for free, as often as the trigger condition recurs. After it, nothing hands"
+        },
+        {
+          "ref": "R108 (its decline half)",
+          "quote": "> and the budget is intact, so the same trigger can ask again later the same turn."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "94-bounded-uses.test.ts",
+        "93-engine-defects.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R108": "0a3a6ec1ebda0b1b9efe6535f25cdc4213fd0e2d890886b08795352cb17354b1",
+      "R113": "5e60b78d62e0fcbcbf037cb9014632e2b5df2a9d0759f4a3ce713d7af2443f69"
+    }
+  },
+  {
+    "key": "concepts.abilities.once.x-zero",
+    "parent": "concepts.abilities.once",
+    "order": 3,
+    "text": "Activating a [once] ability with X = 0 is legal, and it spends the use.",
+    "examples": [
+      {
+        "text": "No Hand Killer can be activated with an empty hand, and the activation spends its [once].",
+        "test": "136-triggers-and-modes.test.ts::R157 §22: No Hand Killer is activatable with an EMPTY hand"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 (§22)",
+          "quote": "You can legally activate it and discard no cards."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "136-triggers-and-modes.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
+    }
+  },
+  {
+    "key": "concepts.abilities.once.per-card",
+    "parent": "concepts.abilities.once",
+    "order": 4,
+    "text": "A change of controller does not give back a spent use: the limit stays with the unit.",
+    "examples": [
+      {
+        "text": "A [once] use spent before a change of controller stays spent.",
+        "test": "05-rulings.test.ts::R9: once-per-turn budgets are per card and survive control change"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R9",
+          "quote": "Once-per-turn ([once], bounded grafts) is **tracked per card**; changing controller does"
+        },
+        {
+          "ref": "R9",
+          "quote": "**not** reset a spent budget. (Bena 2026-07-16.)"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "05-rulings.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R9": "9ee28249dcd6e1da3156a6da78550ad6567248a0cab63ea50abf4afd6afb9cb7"
+    }
+  },
+  {
+    "key": "concepts.abilities.once.moved-mod",
+    "parent": "concepts.abilities.once",
+    "order": 5,
+    "text": "Moving a mod onto another unit (Reconfigure) does not give back its spent use.",
+    "examples": [
+      {
+        "text": "A Graxxlid augment already activated this turn and moved by Reconfigure cannot be activated again that turn.",
+        "test": "393-raq-mods.test.ts::RAQ Reconfigure vs Once per Turn: a spent Graxxlid moved by Reconfigure onto a new host is still spent"
+      }
+    ],
+    "see": [
+      "720"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353848722974445658#0",
+          "quote": "Since Graxxlid was already Activated this turn, you CANNOT use his Ability again."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R331",
+          "quote": "Reconfigure moves a mod. It does not refresh it."
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R178",
+          "relation": "its §4 claim that every bounded budget rides with the moved mod was corrected by R331"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts",
+        "403-raq-fix-mods.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R331": "223245cca189e0e0c7d67f18a07e3cfafd19f417166b9da103ed8d95d8de206b",
+      "RAQ 1353848722974445658#0": "c1e3d4b977462f57865aca1c6de0458031bbd80fb4632d8d8df6811b0e080a3e"
+    }
+  },
+  {
+    "key": "concepts.abilities.once.new-object",
+    "parent": "concepts.abilities.once",
+    "order": 6,
+    "text": "A unit that leaves play and is played again is a new object, and its abilities have their uses again, even in the same turn.",
+    "examples": [
+      {
+        "text": "Engorged Caudex recalled and played again draws from its [Switch1] graft a second time that turn.",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 calebgannon"
+      }
+    ],
+    "see": [
+      "410"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#16",
+          "quote": "recall Caudex, play him again, play unit, get 2nd card"
+        },
+        {
+          "ref": "RAQ 1355115946032889914#16",
+          "quote": "Yes that works"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1355115946032889914#16": "abae6cef85e10fe99218407de9525b8c3ed984778e54d0fc43a32c796d206b02"
+    }
+  },
+  {
+    "key": "concepts.abilities.once.transform",
+    "parent": "concepts.abilities.once",
+    "order": 7,
+    "text": "Turning a card over does not give back a spent use: a transformed card is the same unit.",
+    "examples": [],
+    "see": [
+      "108"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R101 (its same-unit half)",
+          "quote": "ledger) cannot be laundered by flipping the card over;"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R101 states it; no card in the pool has both a [once] ability and a transform (Scholar of the Void's only ability is unbounded), so there is no example.",
+    "sourceHashes": {
+      "R101": "b937ce970d76adefa8a8d4e7d281565beddb39e455ba1f6f91fddcbe49c6d2ee"
+    },
+    "untestableReason": "no card in the pool can spend a [once] use and then transform",
+    "untested": true
+  },
+  {
+    "key": "concepts.abilities.once.bounded-cause",
+    "parent": "concepts.abilities.once",
+    "order": 8,
+    "text": "If the cause of a graft composite is bounded, the whole composite can trigger only once per turn, unbounded grafts included.",
+    "examples": [
+      {
+        "text": "A bounded host triggers once per turn, so an unbounded graft under it happens once.",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 point 12: a bounded host triggers once per turn"
+      }
+    ],
+    "see": [
+      "722"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.33",
+          "quote": "If you have a bounded graft cause, the entire effect will"
+        },
+        {
+          "ref": "Rulebook 2023 p.16",
+          "quote": "If you have a bounded graft cause, the entire effect will only trigger a limited number of times."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#14",
+          "quote": "it can only trigger once per turn, meaning any Unbounded Graft … will only happen once."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts",
+        "94-bounded-uses.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1355115946032889914#14": "9c9eef42aa233f5ed58f911d7ba93f8a33a9ff9d365455e127d814f61f75bb49"
+    }
+  },
+  {
+    "key": "concepts.abilities.once.unbounded-cause",
+    "parent": "concepts.abilities.once",
+    "order": 9,
+    "text": "If the cause is unbounded, the composite can trigger any number of times, but each bounded graft in it is included only the first time in a turn.",
+    "examples": [
+      {
+        "text": "Omniwield Evoker activated twice in a turn creates the Robot from its bounded graft only the first time.",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 point 12: an unbounded host activated twice"
+      }
+    ],
+    "see": [
+      "722"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.33",
+          "quote": "bounded and unbounded effects, the graft cause will trigger an unlimited number of times, but each of the bounded effects will only trigger a limited number of times."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#13",
+          "quote": "Any Unbounded Grafts underneath will be included on every resolution, but Bounded Grafts underneath will be included only on 1st resolution."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts",
+        "94-bounded-uses.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1355115946032889914#13": "9c6de10396bd5ba4d54b8b2fc6e245fa17c45e9f051aa9181e4cdbd3fc8e8d7d"
+    }
+  },
+  {
+    "key": "concepts.abilities.once.multiplier",
+    "parent": "concepts.abilities.once",
+    "order": 10,
+    "text": "An effect that repeats a graft composite (Amphivore, Lost Guardian) repeats its bounded grafts too.",
+    "examples": [
+      {
+        "text": "Amphivore triples a bounded \"Create three\" graft.",
+        "test": "14-water-a.test.ts::R110: Amphivore triples a BOUNDED [Switch1] graft"
+      }
+    ],
+    "see": [
+      "722"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353859961855148103#2",
+          "quote": "Any Bounded Grafts will be repeated."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R110 (its bounded-repeat half)",
+          "quote": "- *\"Any Bounded Grafts will be repeated.\"* A [Switch1] graft's budget is spent"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "14-water-a.test.ts",
+        "17-earth-b.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R110": "8776d97c50c209e6c9ee10cb7fa563ce5c67dd9b40041ab43e45de0c35fddb30",
+      "RAQ 1353859961855148103#2": "5229887a1d8fcbb61f0fb1ee1295178c21b927850d32c4cf6c7fd6c2eb9b1652"
+    }
+  },
+  {
+    "key": "concepts.abilities.once.per-mod",
+    "parent": "concepts.abilities.once",
+    "order": 11,
+    "text": "Each mod has its own use. Two copies of the same bounded graft on one host each have one use.",
+    "examples": [
+      {
+        "text": "Two copies of one bounded graft card on one host each fire once in a turn.",
+        "test": "94-bounded-uses.test.ts::the bounded budget of a graft rider is per MOD"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R113",
+          "quote": "The budget is per *card* (R9), which for the rider means per **mod entity** — two copies of"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "94-bounded-uses.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R113": "5e60b78d62e0fcbcbf037cb9014632e2b5df2a9d0759f4a3ce713d7af2443f69"
+    }
+  },
+  {
+    "key": "concepts.abilities.once.bin",
+    "parent": "concepts.abilities.once",
+    "order": 12,
+    "text": "A bounded ability that works while its card is in a bin, such as Rotling's \"When I leave your bin\", is limited once per turn for each player and card name: copies of one card in one player's bin share one use.",
+    "examples": [
+      {
+        "text": "Rotling's [Switch1] works once per turn from the bin and is available again the next turn.",
+        "test": "43-dark-c.test.ts::Rotling: the [Switch1] bounds it once per turn when it does something"
+      },
+      {
+        "text": "Two Rotling leaving one bin in the same turn share one [Switch1] use: the second copy is not offered it.",
+        "test": "414-cr-cards-abilities-targets.test.ts::cr:concepts.abilities.once.bin — two copies of Rotling leaving ONE bin in the same turn share one [Switch1] use"
+      }
+    ],
+    "see": [
+      "405",
+      "concepts.abilities.once.trashed"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R124",
+          "quote": "**The budget (CARD-TODO #21, closed).** A zone firing is anchored on a"
+        },
+        {
+          "ref": "R124",
+          "quote": "card\" (R9) mean for a card that is not in play?* — is answered **per seat per"
+        },
+        {
+          "ref": "R124",
+          "quote": "card name**: a bin holds bare names, not instances, so the name in that seat's"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "43-dark-c.test.ts",
+        "414-cr-cards-abilities-targets.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "The owner's reading of \"per card\" for a card that is not in play; no designer source: D-U03-6. It covers abilities that listen from the bin; a \"When I am trashed\" ability is concepts.abilities.once.trashed.",
+    "sourceHashes": {
+      "R124": "1812aae3970d1e7833a708eedf7bd45318790898b7f2b354aac9c28661640b22"
+    }
+  },
+  {
+    "key": "concepts.targets.what",
+    "parent": "110",
+    "order": 1,
+    "text": "A target is something a card or ability chooses, with the word \"target\", to receive its actions. The targets are selected as the card is played.",
+    "examples": [
+      {
+        "text": "Fight (\"Target ally and another target unit fight\") takes both units as targets as it is played.",
+        "test": "16-earth-a.test.ts::Fight: BOTH units are cast-time targets, ally first"
+      }
+    ],
+    "see": [
+      "702"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "Targets: If the card mentions targets, these are"
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "recipients for certain actions of the card. The targets"
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "must be selected as the card is being played."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "16-earth-a.test.ts",
+        "49-playtest-round6.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.targets.what.on-stack",
+    "parent": "concepts.targets.what",
+    "order": 1,
+    "text": "Targets are chosen as the effect is put on the stack: when a card is played, when an ability is activated, and when a triggered ability is put on the stack. Every target of the effect is chosen then.",
+    "examples": [
+      {
+        "text": "A graft composite declares the targets of all its parts as it goes on the stack.",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 Plodding Pebble example"
+      }
+    ],
+    "see": [
+      "702",
+      "703"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#15",
+          "quote": "player must at that time delcare targets for all things"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R67",
+          "quote": "> effect that says 'target' has to be chosen initially when put onto the stack."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts",
+        "68-target-conformance.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R67": "4668406f8842ecc2cba8813e5abfecd927864ad9a6bde08c8a56525f270a4880",
+      "RAQ 1355115946032889914#15": "e0be6ade854b768d70790c837d9194c9624e35d2aeeab38d789e2fc926535cd6"
+    }
+  },
+  {
+    "key": "concepts.targets.what.count",
+    "parent": "concepts.targets.what",
+    "order": 2,
+    "text": "Each \"target\" in an effect's text is a separate target. An effect that says \"target\" twice chooses two targets.",
+    "examples": [
+      {
+        "text": "Squish chooses two targets as it is played: an ally and another unit.",
+        "test": "68-target-conformance.test.ts::R67: a card printing N targets declares N cast-time target slots"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R82",
+          "quote": "> \"Squish, on cast, only has you select 1 target unit, but it needs 2 targets"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "68-target-conformance.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R82": "5633111bab321275d372d1c940800096317d0c729d1481642f18704c9acb80d2"
+    }
+  },
+  {
+    "key": "concepts.targets.what.up-to",
+    "parent": "concepts.targets.what",
+    "order": 3,
+    "text": "\"Up to N target\" lets the player choose any number of targets from none to N.",
+    "examples": [
+      {
+        "text": "Twin Flame (\"up to two target units\") can be played with no targets.",
+        "test": "21-fixes.test.ts::R126: an \"up to\" spell may decline every target"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R126",
+          "quote": "\"up to N\" means you may declare NONE"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "21-fixes.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R126": "9363b2920b5bb132de692044d2b33d59b7c0d1373f47b764de6bd0a9deb6627e"
+    }
+  },
+  {
+    "key": "concepts.targets.what.declared-count",
+    "parent": "concepts.targets.what",
+    "order": 4,
+    "text": "The number of targets an effect has is the number chosen as it was put on the stack. A target that is later lost still counts.",
+    "examples": [
+      {
+        "text": "Twin Flame declared with two targets, one of them later removed, is still not \"a single target\" for Envoy of Lightning.",
+        "test": "12-fire-a.test.ts::Envoy of Lightning: two DECLARED targets is not \"a single target\""
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1397256636921417748#1",
+          "quote": "No, it still has 2 targets, but one of them is invalid"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "12-fire-a.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "RAQ 1397256636921417748#0 (a single-target Twin Flame is Electric) is context for the thread, not the declared-count claim, and is not cited.",
+    "sourceHashes": {
+      "RAQ 1397256636921417748#1": "7ea9c270c116479b5fb4c23e3bfc75ed2df10b8bfa9a5712ca2eeaf02e9e41eb"
+    }
+  },
+  {
+    "key": "concepts.targets.not-target",
+    "parent": "110",
+    "order": 2,
+    "text": "A choice that an effect's text does not make with the word \"target\" is not a target. Nothing is declared for it as the effect goes on the stack, and an effect that answers targeting cannot answer it.",
+    "examples": [
+      {
+        "text": "Meteor Shower's rockfall chooses rather than targets, so Boon of Protection has nothing to negate.",
+        "test": "396-raq-timing.test.ts::RAQ Meteor Shower: rockfall chooses rather than targets"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353899470156206152#3",
+          "quote": "Rockfall is 'choosing' effect rather than 'targeting', so it cannot be negated by things like Boon of Protection."
+        },
+        {
+          "ref": "RAQ 1353899470156206152#3",
+          "quote": "It also means that no targets have to be declared when effects goes on stack"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R67",
+          "quote": "Choices that are *not* targets stay where they are"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R67": "4668406f8842ecc2cba8813e5abfecd927864ad9a6bde08c8a56525f270a4880",
+      "RAQ 1353899470156206152#3": "4a1f989e8e8a52924853a3febd106acf1e6f7d84db65a7c3cb8f31d76e3683c6"
+    }
+  },
+  {
+    "key": "concepts.targets.not-target.traits",
+    "parent": "concepts.targets.not-target",
+    "order": 1,
+    "text": "Such a choice cannot be redirected by an effect that changes targets, and it does not trigger \"when I become targeted\".",
+    "examples": [
+      {
+        "text": "The Wraith's \"an ally\" never fires a \"becomes targeted\" ability.",
+        "test": "37-attrs-wight.test.ts::R144(b): a subject is not a target"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R71 (its not-a-target half)",
+          "quote": "**\"an ally\" / \"on an ally\" is NOT a target.**"
+        },
+        {
+          "ref": "R71 (its not-a-target half)",
+          "quote": "Consequences, all deliberate: it cannot be redirected"
+        },
+        {
+          "ref": "R144 (its half (b))",
+          "quote": "R144 grants **1 and 2** — which is exactly and only what the owner asked for —"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R71",
+          "relation": "narrowed by R144: the Wraith's ally is now chosen up front and losing it fizzles the trigger"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "37-attrs-wight.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R144": "d38299227d982a9c48914d31fdd2feb7a885638dcd002cfafeadc2572bdf3061",
+      "R71": "15acdeeb2b9f7df625a7d48451ae0c04bcd9f5c4c3f493fa3f1e7b26fbb6f31b"
+    }
+  },
+  {
+    "key": "concepts.targets.not-target.distribution",
+    "parent": "concepts.targets.not-target",
+    "order": 2,
+    "text": "Dividing or distributing an amount among a targeted player's units is not targeting those units. The division is made as the effect resolves.",
+    "examples": [
+      {
+        "text": "Channel Through targets X allies and an opponent as it is played, and divides its damage among that opponent's units only as it resolves.",
+        "test": "69-damage-batch.test.ts::R83: Channel Through declares X allies AND the opponent at cast"
+      }
+    ],
+    "see": [
+      "704"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Channel Through",
+          "quote": "distribute 2 damage among target opponent's units."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R83",
+          "quote": "> target X of YOUR units and an opponent. Then, when it resolves, you just"
+        },
+        {
+          "ref": "R83",
+          "quote": "> 'distribute' the damage without targeting or going onto the stack or"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "69-damage-batch.test.ts",
+        "414-cr-cards-abilities-targets.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R83": "ac86e0f825a18e99918d4a72c18c1094c842902329c483bb0acaeca3cfd1c029"
+    }
+  },
+  {
+    "key": "concepts.targets.not-target.wraith",
+    "parent": "concepts.targets.not-target",
+    "order": 3,
+    "text": "The Wraith's \"an ally\" is not a target, but the ally is chosen as the trigger is put on the stack. If that ally has left play when the trigger resolves, the trigger fizzles.",
+    "examples": [
+      {
+        "text": "Three Wraith triggers may all choose the same 1/1; one -1/-1 counter lands and the other two fizzle.",
+        "test": "37-attrs-wight.test.ts::R144(b): three Wraith triggers may all aim at one 1/1"
+      }
+    ],
+    "see": [
+      "704"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R144 (its half (b))",
+          "quote": "> stack simultaneously and be allowed to target the same unit, even exceeding"
+        },
+        {
+          "ref": "R144 (its half (b))",
+          "quote": "item that has lost every target *and* subject it declared **fizzles**, with a"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R71",
+          "relation": "its \"chosen on resolution, cannot fizzle\" half narrowed by R144"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "37-attrs-wight.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "A one-card rule; it is here because it is the only place a non-target choice is made up front.",
+    "sourceHashes": {
+      "R144": "d38299227d982a9c48914d31fdd2feb7a885638dcd002cfafeadc2572bdf3061"
+    }
+  },
+  {
+    "key": "concepts.targets.legal",
+    "parent": "110",
+    "order": 3,
+    "text": "Only a legal target can be chosen. Whether a target is legal depends on the kind of thing the text names (a unit, an ally, a player, an effect, a card in a bin) and on any restriction written on the target itself.",
+    "examples": [
+      {
+        "text": "Minor Kraken (\"target unit with 5 or less defense\") cannot target a unit with 6 defense.",
+        "test": "390-raq-stack.test.ts::RAQ valid targets: Minor Kraken cannot aim at a unit with more than 5 defense"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355466429788328066#0",
+          "quote": "You can't target Bubb (5/6) with Minor Kraken (5 or less defense)"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R256 (its cast-time half)",
+          "quote": "> the printed restriction is part of what makes a target **LEGAL**, not a"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts",
+        "68-target-conformance.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R256": "a01570553e328d0d36ab04b5f4907fa757e7e96141f378d3f0055a5f715e48f2",
+      "RAQ 1355466429788328066#0": "21aeae4b0ea877276ee3ee046818a9810a6319eb26ee20d9ffd6a3a2dfaa7ffc"
+    }
+  },
+  {
+    "key": "concepts.targets.legal.clause",
+    "parent": "concepts.targets.legal",
+    "order": 1,
+    "text": "A clause that describes the target (\"with 5 or less defense\", \"that targets an allied effect\", \"in your bin\") limits which targets are legal. An \"if\" clause attached to the action (\"delete target unit if it has a -1/-1 counter on it\") does not limit the choice; it is checked as the effect resolves.",
+    "examples": [
+      {
+        "text": "Boon of Protection is not offered against an effect that targets nothing allied.",
+        "test": "23-wood-a.test.ts::Boon of Protection: negates an effect aimed at something allied"
+      },
+      {
+        "text": "Every card whose target noun carries a restrictive clause checks it when targets are chosen.",
+        "test": "68-target-conformance.test.ts::R256: a restrictive clause on a target noun is enforced at CAST"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R256 (its cast-time half)",
+          "quote": "- A **restrictive relative clause modifying the target noun** — *\"with 5 or"
+        },
+        {
+          "ref": "R256 (its cast-time half)",
+          "quote": "-1/-1 counter on it\"* — is a conditional effect, not a narrower target."
+        },
+        {
+          "ref": "R88",
+          "quote": "\"Target effect targeting me\" is a TARGETING restriction"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "68-target-conformance.test.ts",
+        "23-wood-a.test.ts",
+        "16-earth-a.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R256": "a01570553e328d0d36ab04b5f4907fa757e7e96141f378d3f0055a5f715e48f2",
+      "R88": "7b7716c44586ac56b8b7dd3462406bac05b08622d6293893fda6dd740a5edb5a"
+    }
+  },
+  {
+    "key": "concepts.targets.legal.effect",
+    "parent": "concepts.targets.legal",
+    "order": 2,
+    "text": "An effect on the stack can be a target. A unit in play is not an effect, so it cannot fill a target that asks for an effect.",
+    "examples": [
+      {
+        "text": "Enigmatic Warder cannot become the target of a negate that wants a spell effect.",
+        "test": "390-raq-stack.test.ts::RAQ valid targets: Enigmatic Warder cannot become the target of a negate that wants a spell effect"
+      }
+    ],
+    "see": [
+      "700"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355466429788328066#5",
+          "quote": "as Enigmatic Warder is not 'spell effect'."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R128",
+          "quote": "an effect, including units and spell units. Units aren't spells, so if they say"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts",
+        "118-stack-effect.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "What \"target effect\", \"target spell effect\" and \"target nonspell effect\" reach is 700 (U14).",
+    "sourceHashes": {
+      "R128": "3eb5fb10d68f22510867c410a45e9bd1c43bd44b62800921895a6b3b38ef8f46",
+      "RAQ 1355466429788328066#5": "3b5e2f0bf0b459332e99e6fc0d0d7d5dcf7f2ec0a2cc9f3bf04c4c172bff1cc8"
+    }
+  },
+  {
+    "key": "concepts.targets.legal.player",
+    "parent": "concepts.targets.legal",
+    "order": 3,
+    "text": "\"Target player\" can be any player present in the region where the effect resolves, the effect's controller included. \"Target opponent\" is any such player other than the effect's controller. In battle both players are present.",
+    "examples": [
+      {
+        "text": "Soul Siphon played in battle offers its own controller as well as the opponent as \"target player\".",
+        "test": "60-cast-time-targets.test.ts::R67: plain \"target player\" ('player') may legally be YOURSELF"
+      },
+      {
+        "text": "In deployment, \"target player\" offers only the effect controller and \"target opponent\" offers nobody; in battle both players are offered.",
+        "test": "414-cr-cards-abilities-targets.test.ts::cr:concepts.targets.legal.player — in deployment \"target player\" offers only the controller and \"target opponent\" offers nobody; in battle both seats"
+      }
+    ],
+    "see": [
+      "concepts.targets.region.cache"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R67",
+          "quote": "plain \"target player\" with no ownership clause, so you"
+        },
+        {
+          "ref": "R67",
+          "quote": "are a legal target for your own (Soul Siphon)."
+        },
+        {
+          "ref": "R67",
+          "quote": "and measures from the effect's controller (R58), not the chooser's."
+        },
+        {
+          "ref": "R291",
+          "quote": "**present in the region the effect resolves in** — the same `presentSeats`"
+        },
+        {
+          "ref": "R291",
+          "quote": "test that decides who is a legal \"target player\""
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "60-cast-time-targets.test.ts",
+        "414-cr-cards-abilities-targets.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Soul Siphon prints \"target player\" but says nothing about who is legal; R67 and R291 carry the rule.",
+    "sourceHashes": {
+      "R291": "dd422fb3df1ded08a2bcb94fa3267d5004856953838adf81a7a68e78b96f0ef2",
+      "R67": "4668406f8842ecc2cba8813e5abfecd927864ad9a6bde08c8a56525f270a4880"
+    }
+  },
+  {
+    "key": "concepts.targets.legal.formation",
+    "parent": "concepts.targets.legal",
+    "order": 4,
+    "text": "\"Target formation\" targets one player's whole side of a battle in that region: every unit arrayed there, not a column.",
+    "examples": [
+      {
+        "text": "Galactic Germination counts three units across two columns of the targeted formation.",
+        "test": "156-reaping-and-formation.test.ts::Galactic Germination: \"target formation\" is THE WHOLE SIDE"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Galactic Germination",
+          "quote": "Create a 1/1 unit for each unit in target formation."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R184 (its target-formation half)",
+          "quote": "**RULED 2026-08-25 (owner): \"target formation\" is THE WHOLE SIDE** — a player's"
+        },
+        {
+          "ref": "R184 (its target-formation half)",
+          "quote": "entire formation in that region, every unit arrayed there. Not a column."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "156-reaping-and-formation.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R184": "64d36787c1084d75da052f3a80b7d2186fdf5734d785bcc0186720a149489635"
+    }
+  },
+  {
+    "key": "concepts.targets.legal.formation-empty",
+    "parent": "concepts.targets.legal",
+    "order": 5,
+    "text": "A formation stays a legal target while its battle lasts, even if every unit leaves it.",
+    "examples": [
+      {
+        "text": "Galactic Germination aimed at a formation that has emptied creates nothing, and does not fizzle.",
+        "test": "156-reaping-and-formation.test.ts::Galactic Germination: an EMPTY formation is still a formation"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R184 (its target-formation half)",
+          "quote": "**emptying it does not remove it**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "156-reaping-and-formation.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R184": "64d36787c1084d75da052f3a80b7d2186fdf5734d785bcc0186720a149489635"
+    }
+  },
+  {
+    "key": "concepts.targets.ally",
+    "parent": "110",
+    "order": 4,
+    "text": "An ally is a unit under your control in the region the effect is happening in. An enemy is a unit not under your control in that region.",
+    "examples": [
+      {
+        "text": "An enemy target offers enemy units only: not the source, not an ally.",
+        "test": "243-ally-and-enemy-scope.test.ts::R265 §1d the enemy target is the mirror"
+      }
+    ],
+    "see": [
+      "102",
+      "601"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R265",
+          "quote": "Ally = all units under your control in the current region."
+        },
+        {
+          "ref": "R265",
+          "quote": "Enemy = all units not under your control in the current region."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "243-ally-and-enemy-scope.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R265": "9f0ae66af8e06b3d710b1ba66aa3f83b7c78f95f228f39fa471b39260be1fd5e"
+    }
+  },
+  {
+    "key": "concepts.targets.ally.self",
+    "parent": "concepts.targets.ally",
+    "order": 1,
+    "text": "A unit is its own ally. An effect that targets \"an ally\" or \"target ally\" can choose its own source unless the text says \"another\".",
+    "examples": [
+      {
+        "text": "Shoreline Specter's \"recall target ally\" may target the Specter itself.",
+        "test": "243-ally-and-enemy-scope.test.ts::R265 §1c an ally target offers the source"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Shoreline Specter",
+          "quote": "After combat, you may recall target ally."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R265",
+          "quote": "Yes, an ally includes itself. Otherwise it'd say \"Another target ally\"."
+        },
+        {
+          "ref": "R71 (its ally-may-be-itself ruling)",
+          "quote": "**\"An ally\" MAY be the Wraith (or its host) ITSELF — a unit is its own"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "243-ally-and-enemy-scope.test.ts",
+        "37-attrs-wight.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "Owner reading of print; no designer source: D-U03-7. Test 37's title still calls the self-pick \"unconfirmed\": F-U03-1.",
+    "sourceHashes": {
+      "R265": "9f0ae66af8e06b3d710b1ba66aa3f83b7c78f95f228f39fa471b39260be1fd5e",
+      "R71": "15acdeeb2b9f7df625a7d48451ae0c04bcd9f5c4c3f493fa3f1e7b26fbb6f31b"
+    }
+  },
+  {
+    "key": "concepts.targets.ally.control",
+    "parent": "concepts.targets.ally",
+    "order": 2,
+    "text": "Ally and enemy follow control, not ownership. A unit you have taken control of is your ally and its owner's enemy, in that region, for as long as you control it.",
+    "examples": [
+      {
+        "text": "An Ambush (\"recall target ally\") whose ally was stolen before it resolves recalls nothing.",
+        "test": "390-raq-stack.test.ts::RAQ valid targets: an Ambush whose ally changed sides before it resolves recalls nothing"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355466429788328066#2",
+          "quote": "Ambush won't resolve as it's effect 'Recall target ALLY' and that unit is no longer ally of your opponent"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R265",
+          "quote": "\"Your control\", not your ownership: a unit you have taken control of is your ally and its owner's enemy"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R265": "9f0ae66af8e06b3d710b1ba66aa3f83b7c78f95f228f39fa471b39260be1fd5e",
+      "RAQ 1355466429788328066#2": "b9dc6c179ca7f7dde9e8d6da8311051efd7aefbceb51e702076e7dd0f181715f"
+    }
+  },
+  {
+    "key": "concepts.targets.ally.effect-controller",
+    "parent": "concepts.targets.ally",
+    "order": 3,
+    "text": "Ally is measured from the effect's controller, never from the player making the choice.",
+    "examples": [
+      {
+        "text": "With the opponent's Fight on the stack, an enemy unit cannot fill its ally target, while another of the Fight controller's units can.",
+        "test": "49-playtest-round6.test.ts::R58: canFillSlot enforces the slot restriction directly"
+      },
+      {
+        "text": "The same ally target offers only the effect controller's units, whichever player is the controller.",
+        "test": "243-ally-and-enemy-scope.test.ts::R265 §4c ally is measured from the EFFECT controller"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355466429788328066#4",
+          "quote": "You can't redirect Ambush to your Enigmatic Warder, becuase he is not 'allied unit' for your opponents Ambush."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R58",
+          "quote": "\"Ally\" means ally **of the effect's controller**, and that is where the second"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "49-playtest-round6.test.ts",
+        "243-ally-and-enemy-scope.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "The Warder test in 49-playtest-round6 asserts nothing on its main path: F-U03-3. The 243 test varies the controller passed to the candidate list; it does not separately vary the seat making the choice.",
+    "sourceHashes": {
+      "R58": "149e6e080cc7ef7e25f084333f45c60368c369e5378ba5e4841dc2d63cf9df2c",
+      "RAQ 1355466429788328066#4": "9a3ebeaf9c1b3350081df3b9b956c26557d6e0be063dd0e741c16fed66ea609c"
+    }
+  },
+  {
+    "key": "concepts.targets.ally.another",
+    "parent": "concepts.targets.ally",
+    "order": 4,
+    "text": "\"Another\" excludes whatever the sentence's other noun is. It excludes the source only when that other noun is the source (\"I fight another target unit\"); in \"from target unit onto another target unit\" it excludes only the first target.",
+    "examples": [
+      {
+        "text": "Across every card printing \"another target\", the word excludes the source only where the other noun is the source.",
+        "test": "243-ally-and-enemy-scope.test.ts::R265 §2c across the whole another-target family"
+      }
+    ],
+    "see": [
+      "108"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R265",
+          "quote": "**\"another\" excludes whatever the sentence's other noun is**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "243-ally-and-enemy-scope.test.ts",
+        "121-another-identity.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R265": "9f0ae66af8e06b3d710b1ba66aa3f83b7c78f95f228f39fa471b39260be1fd5e"
+    }
+  },
+  {
+    "key": "concepts.targets.region",
+    "parent": "110",
+    "order": 5,
+    "text": "An effect can target a unit only in the region where the effect is happening.",
+    "examples": [
+      {
+        "text": "No unit target in the card pool offers a unit standing in another region.",
+        "test": "243-ally-and-enemy-scope.test.ts::R265 §3b nor can any other unit-shaped target"
+      }
+    ],
+    "see": [
+      "601"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R265",
+          "quote": "Claim 3 — ally and enemy are region-scoped"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "243-ally-and-enemy-scope.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R265 states it for allies and enemies and measures it for every unit target; no sentence in print or RAQ says it of plain \"target unit\": D-U03-5.",
+    "sourceHashes": {
+      "R265": "9f0ae66af8e06b3d710b1ba66aa3f83b7c78f95f228f39fa471b39260be1fd5e"
+    }
+  },
+  {
+    "key": "concepts.targets.region.global",
+    "parent": "concepts.targets.region",
+    "order": 1,
+    "text": "Effects on the stack and cards in bins are in no region. A target there can be chosen from any region.",
+    "examples": [
+      {
+        "text": "During a battle, an effect on the stack and the cards in both bins can be chosen as targets from the battle region and from the other region alike; a unit can only be chosen from its own region.",
+        "test": "414-cr-cards-abilities-targets.test.ts::cr:concepts.targets.region.global — a stack item and the cards in either bin are offered from every region, while a unit is offered only in its own"
+      }
+    ],
+    "see": [
+      "405",
+      "406"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R265",
+          "quote": "Three zones have no region and are deliberately global"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "243-ally-and-enemy-scope.test.ts",
+        "414-cr-cards-abilities-targets.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R265 names the cache as the third global zone, but R291 limits cache targets: concepts.targets.region.cache.",
+    "sourceHashes": {
+      "R265": "9f0ae66af8e06b3d710b1ba66aa3f83b7c78f95f228f39fa471b39260be1fd5e"
+    }
+  },
+  {
+    "key": "concepts.targets.region.cache",
+    "parent": "concepts.targets.region",
+    "order": 2,
+    "text": "A player's cache, and a player as a target, can be targeted only by an effect that resolves in a region where that player is present.",
+    "examples": [
+      {
+        "text": "In deployment Prismatic Observer reaches only its controller's cache; in battle it reaches both.",
+        "test": "293-cached-targets-are-regional.test.ts::R291 §1 in deployment a home region reaches only its own seat's cache; in battle both"
+      }
+    ],
+    "see": [
+      "403"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R291",
+          "quote": "A player's cache can be targeted exactly when that player is"
+        },
+        {
+          "ref": "R291",
+          "quote": "**present in the region the effect resolves in** — the same `presentSeats`"
+        },
+        {
+          "ref": "R291",
+          "quote": "test that decides who is a legal \"target player\""
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "293-cached-targets-are-regional.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R291": "dd422fb3df1ded08a2bcb94fa3267d5004856953838adf81a7a68e78b96f0ef2"
+    }
+  },
+  {
+    "key": "concepts.targets.distinct",
+    "parent": "110",
+    "order": 6,
+    "text": "Where an effect asks for two or more targets together, one object cannot be two of them, as with Twin Flame's \"up to two target units\". This holds when targets are changed as well as when they are chosen.",
+    "examples": [
+      {
+        "text": "Divine Intervention cannot make Twin Flame target one unit twice.",
+        "test": "349-retarget-distinct-slots.test.ts::CT-189 owner board: Divine Intervention cannot aim Twin Flame at one Good Whale twice"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355466429788328066#6",
+          "quote": "But you couldn't make Enigmatic Warder being targeted twice."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R307",
+          "quote": "One object cannot be two targets of one effect. Twin Flame prints *\"I deal 2"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "349-retarget-distinct-slots.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "R307 rules it per part of an effect and leaves open whether two different grafts of one composite may share a target: D-U03-8.",
+    "sourceHashes": {
+      "R307": "c4122f158214f2233ab12b5c5882192a557e55043af5e42a86233f7dbed1f15d",
+      "RAQ 1355466429788328066#6": "86796adf4482534b1161915c5d8c3136684bd48c7177be4b376d5ad3660b95ae"
+    }
+  },
+  {
+    "key": "concepts.targets.distinct.separate-effects",
+    "parent": "concepts.targets.distinct",
+    "order": 1,
+    "text": "Different effects may target the same object.",
+    "examples": [
+      {
+        "text": "A spell aimed at one of the two units Organic Exchange targets still resolves.",
+        "test": "396-raq-timing.test.ts::RAQ Another set: Organic Exchange may target two of your own units"
+      }
+    ],
+    "see": [
+      "704"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1454169054402314362#2",
+          "quote": "another effect targeting them would still resolve (they're still the same units)"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1454169054402314362#2": "b3c1d6d85b56be21075308f74a85f88594cd2eeffac19ed21962bdeecd7a25d3"
+    }
+  },
+  {
+    "key": "concepts.targets.required",
+    "parent": "110",
+    "order": 7,
+    "text": "A card or ability that needs targets can be played only if every target it requires can be chosen at the same time, each one legal and different from the others. A card that targets nothing has no such requirement.",
+    "examples": [
+      {
+        "text": "Fight cannot be played unless its region holds an ally and another unit.",
+        "test": "390-raq-stack.test.ts::RAQ target requirements: Fight cannot be played"
+      },
+      {
+        "text": "Rebalance, which targets nothing, can be played with no unit of its controller's.",
+        "test": "396-raq-timing.test.ts::Rebalance is playable with no unit"
+      }
+    ],
+    "see": [
+      "702"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1410252965276684418#1",
+          "quote": "You cannot play Fight if there isn't 2 units in the region (one of which must be an allied unit)."
+        },
+        {
+          "ref": "RAQ 1454169054402314362#1",
+          "quote": "it doesn't target anything so there are no requirements for you having a unit"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R323",
+          "quote": "A spell or ability that needs targets can be played only when **every required"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts",
+        "396-raq-timing.test.ts",
+        "401-raq-fix-stack.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R323": "eebc0fd562917e4f3459b8765407b3e60a1e40e93507075b6f34c154697e926b",
+      "RAQ 1410252965276684418#1": "e360e6a86909cef31daa2244e8da43a0e668b372e706c45aba749e3728522bea",
+      "RAQ 1454169054402314362#1": "e3eaa692bd1e8228402516f598571780911a7bff2101b2445bcf4ac14055a0a1"
+    }
+  },
+  {
+    "key": "concepts.targets.recheck",
+    "parent": "110",
+    "order": 8,
+    "text": "A target that was legal when it was chosen but is not legal when the effect begins to resolve is lost, as if it had left play.",
+    "examples": [
+      {
+        "text": "A unit that grows past 5 defense before Minor Kraken resolves is not recalled.",
+        "test": "390-raq-stack.test.ts::RAQ valid targets: a target that grows past 5 defense before Minor Kraken resolves is not recalled"
+      }
+    ],
+    "see": [
+      "704"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355466429788328066#1",
+          "quote": "If you did target something which was valid, but became invalid target then effect will fizzle on resolution."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R324",
+          "quote": "When an item begins to resolve, every target it declared is judged again by the"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R64",
+          "relation": "its statement that a printed restriction is not re-asked at resolution was amended by R324"
+        },
+        {
+          "ruling": "R256",
+          "relation": "its remark that a restriction is never re-asked was amended by R324"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "R88 and R144 still say a restriction is never re-asked: D-U03-3.",
+    "sourceHashes": {
+      "R324": "44be5fd7d7c93923d37764c5ab876f263fdb2cab0e12fc7278a80b694c4dd4fa",
+      "RAQ 1355466429788328066#1": "f53ca9b5d71cf73d523e142fa4e28c792a1389664583fec5c7076d2cc4039b9d"
+    }
+  },
+  {
+    "key": "concepts.targets.change",
+    "parent": "110",
+    "order": 9,
+    "text": "An effect that changes another effect's targets must choose each new target as that target was first chosen: legal for that target's own kind and restriction, and not an object already chosen for another target of the same part of the effect.",
+    "examples": [
+      {
+        "text": "Enigmatic Warder cannot take Throw off a Cliff, which needs a unit with 4 or more defense.",
+        "test": "390-raq-stack.test.ts::RAQ valid targets: Enigmatic Warder cannot take Throw off a Cliff"
+      },
+      {
+        "text": "Enigmatic Warder cannot move itself into a target already held by the same effect's other target.",
+        "test": "349-retarget-distinct-slots.test.ts::CT-189 canFillSlot, the Enigmatic Warder gate, refuses a sibling ref on every multi-target part"
+      }
+    ],
+    "see": [
+      "concepts.targets.distinct"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355466429788328066#3",
+          "quote": "Enigmatic Warder (1/2) can't redirect Throw off a Cliff ('4 or more defense') to himself as he is not valid target for it."
+        },
+        {
+          "ref": "RAQ 1355466429788328066#6",
+          "quote": "But you couldn't make Enigmatic Warder being targeted twice."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R307",
+          "quote": "- from **that slot's own spec** (R58): Fight's \"target ally\" slot takes only an"
+        },
+        {
+          "ref": "R307",
+          "quote": "- and **never a ref already in a sibling slot of the same part**. That"
+        },
+        {
+          "ref": "R58",
+          "quote": "Changing a target may never create an illegal one, so the Warder now offers"
+        },
+        {
+          "ref": "R307",
+          "quote": "share a target. The rule above is per part."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts",
+        "349-retarget-distinct-slots.test.ts",
+        "49-playtest-round6.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "R307 rules distinctness per part only; whether two parts of one graft composite may share a target is undecided: D-U03-8.",
+    "sourceHashes": {
+      "R307": "c4122f158214f2233ab12b5c5882192a557e55043af5e42a86233f7dbed1f15d",
+      "R58": "149e6e080cc7ef7e25f084333f45c60368c369e5378ba5e4841dc2d63cf9df2c",
+      "RAQ 1355466429788328066#3": "af505b5d2f160d80fc2690ed8d9245032334d52b897e37febf17596283b46c19",
+      "RAQ 1355466429788328066#6": "86796adf4482534b1161915c5d8c3136684bd48c7177be4b376d5ad3660b95ae"
+    }
+  },
+  {
+    "key": "concepts.targets.change.kept",
+    "parent": "concepts.targets.change",
+    "order": 1,
+    "text": "A target that is kept when targets are changed is not a change, and it is not judged again then.",
+    "examples": [
+      {
+        "text": "Divine Intervention can keep one target of an effect while changing another.",
+        "test": "140-layers-and-riders.test.ts::Divine Intervention can keep one target while changing another"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R307",
+          "quote": "A target that is kept is not a change and is not re-judged. R56 and R58's"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "140-layers-and-riders.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R307": "c4122f158214f2233ab12b5c5882192a557e55043af5e42a86233f7dbed1f15d"
+    }
+  },
+  {
+    "key": "concepts.targets.change.rescue",
+    "parent": "concepts.targets.change",
+    "order": 2,
+    "text": "Changing an effect's targets before it resolves can save it from fizzling.",
+    "examples": [
+      {
+        "text": "A spell whose target is about to become illegal can be given a legal new target by Enigmatic Warder or Gravitational Correction before it resolves, and then it does not fizzle (illustrative).",
+        "test": "414-cr-cards-abilities-targets.test.ts::cr:concepts.targets.change.rescue — the same spell given a new legal target by Enigmatic Warder resolves instead of fizzling"
+      }
+    ],
+    "see": [
+      "704"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1354013430805434389#2",
+          "quote": "It is possible to fix targeting before the effect would resolve to prevent fizzle"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "414-cr-cards-abilities-targets.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "The register's guard for RAQ 1354013430805434389#2 (12-fire-a, Gravitational Correction) shows a retarget of a live target, not a rescue from fizzling, so it is not cited: F-U03-4. The round-2 verifier's probe (data/comprehensive-rules/build/probes/U03/u03-r2-verify-probes.test.ts) shows Enigmatic Warder giving a spell whose only target is gone a new target, and the spell resolving; no suite test does.",
+    "sourceHashes": {
+      "RAQ 1354013430805434389#2": "1a5aeab2eaa6794d57c3da50c1178ed79cc7287057e0fde38366204dc60d5af8"
+    }
+  },
+  {
+    "key": "concepts.targets.applying-mods",
+    "parent": "110",
+    "order": 10,
+    "text": "Applying an augment, a graft or a Virus to a unit targets that unit.",
+    "examples": [
+      {
+        "text": "Grafting onto Mohruung targets it, so its \"when I become targeted\" ability makes a Crystal.",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 point 5"
+      }
+    ],
+    "see": [
+      "720"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#4",
+          "quote": "Applying Graft is 'targeting' effect, so if you try to Graft something underneath the Mohruung, he will trigger first"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R53",
+          "quote": "from**: a spell or ability resolving off the stack, a virus, an augment, or a"
+        },
+        {
+          "ref": "R53",
+          "quote": "graft. All four are targeting."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts",
+        "17-earth-b.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The designer states it for grafts; R53 (owner) adds augments and Viruses, and R88 quotes Caleb for the Virus.",
+    "sourceHashes": {
+      "R53": "ac71cc78da3271b40af86b4b02ff9861dd8646ae2c63bafa07076c7755ce8531",
+      "RAQ 1355115946032889914#4": "2a28941d645c95cca0c5eaacec4f843c7b6adad38ca159527170c52dce59e0cc"
+    }
+  },
+  {
+    "key": "concepts.targets.applying-mods.virus",
+    "parent": "concepts.targets.applying-mods",
+    "order": 1,
+    "text": "A Virus being applied is an effect on the stack that targets its host. It can be redirected, and an effect that answers \"target effect targeting me\" or an effect targeting an ally can answer it.",
+    "examples": [
+      {
+        "text": "Graxxlid (\"Negate target effect targeting me\") can negate a Virus being applied to it.",
+        "test": "16-earth-a.test.ts::Graxxlid: a Virus being applied to me IS an effect targeting me"
+      },
+      {
+        "text": "Boon of Protection can negate a Virus being applied to an allied unit.",
+        "test": "23-wood-a.test.ts::Boon of Protection: a Virus being applied to an allied unit IS an allied target"
+      }
+    ],
+    "see": [
+      "723"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R88",
+          "quote": "> **calebgannon:** \"You can redirect a virus, it is a targeted effect\""
+        },
+        {
+          "ref": "R88",
+          "quote": "> **calebgannon:** \"Yep! They're fully interactible.\""
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "16-earth-a.test.ts",
+        "23-wood-a.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "The words are calebgannon's, reached through R88 (no RAQ claim in the pack carries them), so the basis is typed owner.",
+    "sourceHashes": {
+      "R88": "7b7716c44586ac56b8b7dd3462406bac05b08622d6293893fda6dd740a5edb5a"
+    }
+  },
+  {
+    "key": "concepts.targets.becomes-targeted",
+    "parent": "110",
+    "order": 11,
+    "text": "An ability that triggers \"when I become targeted\" triggers whenever its unit is targeted, by a spell, an ability, an augment, a graft or a Virus. When the effect that targeted is put on the stack, the trigger goes on the stack above it and so resolves first. When a graft targets the unit, the unit triggers first, before the graft is applied.",
+    "examples": [
+      {
+        "text": "A spell aimed at Mohruung makes a Crystal 2.",
+        "test": "48-playtest-hotfix.test.ts::a spell aimed at Mohruung actually creates the Crystal 2"
+      },
+      {
+        "text": "Mohruung targeted by an augment makes a Crystal 2.",
+        "test": "17-earth-b.test.ts::Mohruung: augment-targeting triggers a Crystal 2"
+      },
+      {
+        "text": "Grafting onto Mohruung makes a Crystal 2.",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 point 5"
+      },
+      {
+        "text": "A spell aimed at Mohruung waits on the stack under Mohruung's trigger, so the Crystal 2 is made before the spell resolves (illustrative).",
+        "test": "414-cr-cards-abilities-targets.test.ts::cr:concepts.targets.becomes-targeted — the trigger of Mohruung goes on the stack ABOVE the spell that targeted it, and the Crystal is made while the spell still waits"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Mohruung",
+          "quote": "When I become targeted, [Switch1] Create a Crystal 2."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#4",
+          "quote": "Applying Graft is 'targeting' effect, so if you try to Graft something underneath the Mohruung, he will trigger first"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R53",
+          "quote": "Targeting a unit fires a `targeted` event **wherever the targeting comes"
+        },
+        {
+          "ref": "R53",
+          "quote": "the stack **above** the spell that targeted — the trigger resolves first."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "48-playtest-hotfix.test.ts",
+        "17-earth-b.test.ts",
+        "393-raq-mods.test.ts",
+        "414-cr-cards-abilities-targets.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "The stack sentence is R53's, which speaks of the spell that targeted. The graft sentence is the designer's \"he will trigger first\", read as the trigger coming before the graft is applied; the round-2 verifier measured the engine attaching a deployment graft BEFORE the trigger resolves: F-U03-5, D-U03-13. Sources are silent on the order for an augment applied in deployment: D-U03-14. No suite test asserts the order; the bound examples assert only that the Crystal is made.",
+    "sourceHashes": {
+      "R53": "ac71cc78da3271b40af86b4b02ff9861dd8646ae2c63bafa07076c7755ce8531",
+      "RAQ 1355115946032889914#4": "2a28941d645c95cca0c5eaacec4f843c7b6adad38ca159527170c52dce59e0cc"
+    },
+    "engineDiffers": [
+      "F-U03-5"
+    ]
+  },
+  {
+    "key": "concepts.targets.must-be-targeted",
+    "parent": "110",
+    "order": 12,
+    "text": "A unit that \"must be targeted if able\" (Gatekeeper of Souls) must be one of the targets of an effect whose targets are selected during battle, when it can legally be one. Once it is among the targets, the effect's other targets may be anything legal.",
+    "examples": [
+      {
+        "text": "Twin Flame aims at Gatekeeper of Souls first, then at any other unit.",
+        "test": "382-gatekeeper-multi-target.test.ts::R314: a two-target spell aims at the Gatekeeper first"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Gatekeeper of Souls",
+          "quote": "When a player selects targets for an effect during battle, I must be targeted if able."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R314",
+          "quote": "Gatekeeper of Souls compels an effect to aim at it, not every target slot of"
+        },
+        {
+          "ref": "R314",
+          "quote": "that effect. A multi-target effect that has the Gatekeeper among its targets"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "382-gatekeeper-multi-target.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The engine also compels targets chosen in deployment: F-U03-2.",
+    "sourceHashes": {
+      "R314": "a16e31ffa62256c9d5a9adea2939484f903a64aa692d3cdaefa74b43d75fe142"
+    },
+    "engineDiffers": [
+      "F-U03-2"
+    ]
+  },
+  {
+    "key": "concepts.targets.must-be-targeted.several",
+    "parent": "concepts.targets.must-be-targeted",
+    "order": 1,
+    "text": "With two such units in the region, each must be targeted if able: a two-target effect must target both.",
+    "examples": [
+      {
+        "text": "With two Gatekeepers in the region, a two-target spell targets both.",
+        "test": "382-gatekeeper-multi-target.test.ts::R314: two Gatekeepers"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R314",
+          "quote": "With two Gatekeepers in the region, each one must be targeted if able: a"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "382-gatekeeper-multi-target.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R314": "a16e31ffa62256c9d5a9adea2939484f903a64aa692d3cdaefa74b43d75fe142"
+    }
+  },
+  {
+    "key": "concepts.targets.must-be-targeted.able",
+    "parent": "concepts.targets.must-be-targeted",
+    "order": 2,
+    "text": "\"If able\" means \"if it is a legal target for this effect\". An effect whose targets cannot be units, such as one that targets a formation, is not compelled.",
+    "examples": [
+      {
+        "text": "Gatekeeper of Souls does not compel Galactic Germination, which targets a formation.",
+        "test": "156-reaping-and-formation.test.ts::Gatekeeper of Souls cannot compel a formation target"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R184 (its target-formation half)",
+          "quote": "gap: \"if able\" means \"if it is a legal target for this effect\", and a"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "156-reaping-and-formation.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R184": "64d36787c1084d75da052f3a80b7d2186fdf5734d785bcc0186720a149489635"
+    }
+  },
+  {
+    "key": "concepts.targets.must-be-targeted.choice-only",
+    "parent": "concepts.targets.must-be-targeted",
+    "order": 3,
+    "text": "The compulsion applies only to choosing targets. It never makes a target already chosen illegal.",
+    "examples": [
+      {
+        "text": "A Gatekeeper that arrives after an effect's targets were chosen does not make those targets illegal (illustrative).",
+        "test": "414-cr-cards-abilities-targets.test.ts::cr:concepts.targets.must-be-targeted.choice-only — a Gatekeeper of Souls arriving after targets were chosen does not make them illegal"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R324",
+          "quote": "- Gatekeeper of Souls' compulsion is not applied. It narrows the *choice*; it"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "414-cr-cards-abilities-targets.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "",
+    "sourceHashes": {
+      "R324": "44be5fd7d7c93923d37764c5ab876f263fdb2cab0e12fc7278a80b694c4dd4fa"
+    }
+  },
+  {
+    "key": "concepts.abilities.once.trashed",
+    "parent": "concepts.abilities.once",
+    "order": 13,
+    "text": "A bounded \"When I am trashed\" ability is limited for each trashed card, not for each player and card name: two copies of one card trashed in the same turn each trigger.",
+    "examples": [
+      {
+        "text": "Two Maw of Despair discarded in the same turn each trigger their [Switch1] Glimpse 2 (illustrative).",
+        "test": "414-cr-cards-abilities-targets.test.ts::cr:concepts.abilities.once.trashed — two copies of Maw of Despair discarded in one turn each trigger their bounded trash ability"
+      }
+    ],
+    "see": [
+      "concepts.abilities.once.bin"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R70 (its trash-trigger anchor half)",
+          "quote": "the trash happened *because a unit left play*, `destroy()` hands over the detached"
+        },
+        {
+          "ref": "R70 (its trash-trigger anchor half)",
+          "quote": "none), so composing the trigger cannot write a bounded budget onto a corpse."
+        }
+      ],
+      "history": [],
+      "engine": [
+        "engine.ts:E.fireOwnTrashTrigger"
+      ],
+      "tests": [
+        "414-cr-cards-abilities-targets.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "low",
+    "notes": "Engine only: no printed, designer or owner sentence says how [Switch1] bounds a trash trigger. R70 says only that the trigger is composed on a copy, so its bounded budget lands on nothing that lasts; the per-trashed-card consequence is the engine's. Maw of Despair prints \"When I am trashed, [Switch1] Glimpse 2.\" Measured by the verifiers' probes (data/comprehensive-rules/build/probes/U03/u03-verify-probes.test.ts, whose title names concepts.abilities.once.bin, and u03-r2-verify-probes.test.ts), not a suite test. D-U03-10. R70 was not in the U03 pack; read from the register.",
+    "sourceHashes": {
+      "R70": "312b8e32266c89e279f69cda34416803de7c707afb44468168fb6b8bc9678f2b"
+    }
+  },
+  {
+    "key": "concepts.abilities.replacement.targeted",
+    "parent": "concepts.abilities.replacement",
+    "order": 1,
+    "text": "If the substitute a replacement effect names includes a target, the event is still replaced at once, and the substitute is put on the stack as a triggered ability so that its target can be chosen.",
+    "examples": [
+      {
+        "text": "Beyond, Codex Incarnate's rot replacement removes the rot damage at once, then asks its controller for the target unit that gets the -1/-1 counters.",
+        "test": "43-dark-c.test.ts::Beyond, Codex Incarnate: R102 — the rot replacement asks its controller for a target, and the damage never lands"
+      }
+    ],
+    "see": [
+      "concepts.abilities.replacement"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R102",
+          "quote": "2. **A replacement that names a TARGET still uses the stack.** A target has to be"
+        },
+        {
+          "ref": "R102",
+          "quote": "1. **\"instead\" / \"as\" / \"if\" with NO target named → never touches the stack.**"
+        },
+        {
+          "ref": "R102",
+          "quote": "**THE HOOK RETURNS TRUE FIRST**, before anything is queued, let alone"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R101",
+          "relation": "corrected by R102: R101 had parked the rot clause"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "43-dark-c.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Owner ruling (2026-08-22/23); the Manual says replacement effects don't use the stack: D-U03-12. R102 was not in the U03 pack; read from the register.",
+    "sourceHashes": {
+      "R102": "5e24f1f507495aef77c4b72cb612a83e002cfc7af4c24d1fcd7b44364df62381"
+    }
+  }
+]

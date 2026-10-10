@@ -1,0 +1,278 @@
+[
+  {
+    "id": "D-U03-1",
+    "kind": "a-sources-disagree",
+    "rule": "concepts.cards.token.not-card",
+    "tier": 1,
+    "summary": "The Manual calls tokens \"temporary cards\", and Void Mandible prints \"nontoken card\", which only makes sense if some cards are tokens. The owner ruled that tokens are not cards, and that \"card\" in card text never includes a token.",
+    "sides": [
+      {
+        "source": "Manual p.15",
+        "quote": "Tokens are temporary cards that are created directly"
+      },
+      {
+        "source": "card: Void Mandible",
+        "quote": "When a nontoken card is played during battle, sacrifice me."
+      },
+      {
+        "source": "R129",
+        "quote": "Everything is a card, including units. Tokens are NOT cards, however."
+      },
+      {
+        "source": "R133",
+        "quote": "> \"I think Void Mandible is just trying to save space (card < unit or spell)."
+      }
+    ],
+    "resolution": "Question for the owner (the same question as D-U14-7). The printed words support two readings: (1) \"temporary cards\" is loose description, so a token is not a \"card\" for card text, and Void Mandible's \"nontoken card\" is shorthand for \"nontoken unit or spell\" (R129, R133, R306; the rule follows this); (2) a token is a card, so card text that says \"card\" reaches tokens and Void Mandible's word is literal. Printed text outranks an R-ruling, so the rule as written stands only if reading (1) is right."
+  },
+  {
+    "id": "D-U03-2",
+    "kind": "a-sources-disagree",
+    "rule": "concepts.cards.faces.back-not-token",
+    "tier": 4,
+    "summary": "R101 transcribes the back face Beyond, Codex Incarnate with the type line \"Book Token Unit\". R157 §10 (owner, later) rules that the back face is NOT a token.",
+    "sides": [
+      {
+        "source": "R101",
+        "quote": "cost 0, 8/3, *Book Token Unit*"
+      },
+      {
+        "source": "R157",
+        "quote": "side. And the back is NOT a token."
+      }
+    ],
+    "resolution": "The back face is in none of the printed data this project extracts (printed.json, the Manual, the Rulebook); its type line is known only from the owner's transcription in R101. The rule follows R157 §10, the owner's later, explicit answer, and the register already marks R101's token clause as reversed. Question for the owner only if the physical back face really prints \"Token\" on its type line: printed text would then outrank R157 under the authority order."
+  },
+  {
+    "id": "D-U03-3",
+    "kind": "f-register-chain-wrong",
+    "rule": "concepts.targets.recheck",
+    "tier": 2,
+    "summary": "R88 and R144 still say that a target restriction is asked when targets are chosen and never asked again at resolution. R324 (later) judges every target again against its restriction as the effect begins to resolve. The register marks R64 and R256 as amended by R324, but not R88 or R144.",
+    "sides": [
+      {
+        "source": "R88",
+        "quote": "cast and is never re-asked (R5/R56), so the world may legally stop satisfying"
+      },
+      {
+        "source": "R144",
+        "quote": "re-asked at resolution**, and a card that needs it re-checked does so in its"
+      },
+      {
+        "source": "R324",
+        "quote": "When an item begins to resolve, every target it declared is judged again by the"
+      }
+    ],
+    "resolution": "R324 is later and designer-backed; the rule follows it. The register should mark R88's sentence, and the census sentence in R144, as amended by R324, as it already does for R64 and R256. The same item as D-U14-4."
+  },
+  {
+    "id": "D-U03-4",
+    "kind": "f-register-chain-wrong",
+    "rule": "concepts.abilities.triggered.per-target",
+    "tier": 2,
+    "summary": "R161 §16, presented as current, says the engine still makes ONE trigger that creates two tokens for two targeted allies, and that the engine change was not made. Test 136 asserts two separate triggers on the stack. R184 credits the fix (the 'targeted' event's seat and kind) to \"R163\", and digital-rules.md has no R163.",
+    "sides": [
+      {
+        "source": "R161",
+        "quote": "left.** The owner says two *triggers*; this is one trigger creating two tokens."
+      },
+      {
+        "source": "R184",
+        "quote": "dispatched, carrying `formation` plus R163's `seat` + `kind`."
+      },
+      {
+        "source": "file: client/engine/test/136-triggers-and-modes.test.ts",
+        "quote": "test('R157 §16: two targeted allies are TWO TRIGGERS on the stack, not one that makes two', () => {"
+      }
+    ],
+    "resolution": "The rule follows R157 §16 (two targets, two triggers), which the test now asserts. The register should mark R161 §16's approximation paragraph as closed by whichever ruling closed it, and either restore R163 or correct R184's citation of it."
+  },
+  {
+    "id": "D-U03-5",
+    "kind": "g-other",
+    "rule": "concepts.targets.region",
+    "tier": 4,
+    "summary": "Sources silent on whether a plain \"target unit\" can reach a unit in another region. R265 defines ally and enemy by region, and then reports an engine measurement that no unit target reaches another region; R12 says only that things exist in one region at a time.",
+    "sides": [
+      {
+        "source": "R265",
+        "quote": "Claim 3 — ally and enemy are region-scoped"
+      },
+      {
+        "source": "R12",
+        "quote": "**Things exist in exactly one region at a time.**"
+      }
+    ],
+    "resolution": "No printed, designer or owner sentence states the rule for plain unit targets. The rule states R265's measured behaviour at medium confidence, as the owner's law. Question for the owner only if some card is meant to target a unit in another region."
+  },
+  {
+    "id": "D-U03-6",
+    "kind": "c-owner-call-only",
+    "rule": "concepts.abilities.once.bin",
+    "tier": 3,
+    "summary": "How a once-per-turn limit works for a card in a bin (one use per player per card name, shared by copies in one bin) is an owner reading of \"per card\" for a card not in play. No printed or designer source.",
+    "sides": [
+      {
+        "source": "R124",
+        "quote": "card name**: a bin holds bare names, not instances, so the name in that seat's"
+      }
+    ],
+    "resolution": "Owner call; the rule states it with basis owner."
+  },
+  {
+    "id": "D-U03-7",
+    "kind": "c-owner-call-only",
+    "rule": "concepts.targets.ally.self",
+    "tier": 3,
+    "summary": "That \"an ally\" and \"target ally\" include the effect's own source rests on the owner's reading of the printed words (the pool says \"another\" when it means not-me). No designer source.",
+    "sides": [
+      {
+        "source": "R265",
+        "quote": "Yes, an ally includes itself. Otherwise it'd say \"Another target ally\"."
+      },
+      {
+        "source": "R71",
+        "quote": "**\"An ally\" MAY be the Wraith (or its host) ITSELF — a unit is its own"
+      }
+    ],
+    "resolution": "Owner call, and the permissive reading; the rule states it."
+  },
+  {
+    "id": "D-U03-8",
+    "kind": "g-other",
+    "rule": "concepts.targets.distinct",
+    "tier": 4,
+    "summary": "Sources silent on whether two different grafts in one graft composite may target the same object. R307 rules distinct targets only within one part, and says so. The RAQ treats the whole composite as a single effect.",
+    "sides": [
+      {
+        "source": "R307",
+        "quote": "Not decided here: whether two **different** parts of a graft composite may"
+      },
+      {
+        "source": "RAQ 1355115946032889914#7",
+        "quote": "Triggered/Activated Graft is SINGLE effect on the stack"
+      }
+    ],
+    "resolution": "The rule states only the settled case (targets asked for together, as in Twin Flame). Question for the owner only if a composite with two targeted grafts is meant to be barred from naming one object twice: the RAQ's \"SINGLE effect\" would then extend the rule to the whole composite."
+  },
+  {
+    "id": "D-U03-9",
+    "kind": "g-other",
+    "rule": "concepts.abilities.once.spent-on-use",
+    "tier": 4,
+    "summary": "R113 says a bounded use is spent once the ability is put on the stack and that nothing hands it back after that; its own keep-list (and the engine) leaves the use unspent when a \"you may\" is declined or cannot be offered as the ability resolves, after it was stacked.",
+    "sides": [
+      {
+        "source": "R113",
+        "quote": "the ability is activated, or when it is put on the stack.** Before that moment the player"
+      },
+      {
+        "source": "R113",
+        "quote": "Hexbane Shiitake declined, or never asked in the end-of-turn window; Murkdrop Distiller with nothing in the bin to cache"
+      },
+      {
+        "source": "R113",
+        "quote": "> \"Its ability can only be triggered once per turn, but you can choose for each spell if"
+      }
+    ],
+    "resolution": "The rule follows the keep-list: a declined or impossible optional choice never spends the use, whenever it is made. Question for the owner only if the designer's \"you can choose for each spell if you want to let it trigger and to put the ability on the stack\" means the choice must be made before the trigger is stacked; then a decline at resolution would come too late and would spend the use."
+  },
+  {
+    "id": "D-U03-10",
+    "kind": "b-engine-only",
+    "rule": "concepts.abilities.once.trashed",
+    "tier": 3,
+    "summary": "Sources silent on how [Switch1] bounds a \"When I am trashed\" ability. R124's per-player-per-name limit covers abilities that listen from the bin; the engine fires a trash trigger from a fresh stand-in per trashed card, so two copies trashed in one turn both trigger.",
+    "sides": [
+      {
+        "source": "card: Maw of Despair",
+        "quote": "When I am trashed, [Switch1] Glimpse 2."
+      },
+      {
+        "source": "R124",
+        "quote": "card name**: a bin holds bare names, not instances, so the name in that seat's"
+      },
+      {
+        "source": "file: client/engine/src/engine.ts",
+        "quote": "which is right: each trashed card is its own instance. Its id is not in"
+      }
+    ],
+    "resolution": "The rule states the engine's behaviour with basis engine. Question for the owner only if \"once per turn\" on a trash trigger is meant per player and card name, as R124 reads it for a card in a bin; then the second copy trashed in a turn would not trigger."
+  },
+  {
+    "id": "D-U03-11",
+    "kind": "f-register-chain-wrong",
+    "rule": "concepts.abilities.granted.is-ability",
+    "tier": 2,
+    "summary": "R63, presented as current, says granted text is silenced by R62 exactly like printed text. R328 reversed R62's veto: an ability gained after the strip is not removed. The register marks R62 reversed by R328 but does not mark R63 amended.",
+    "sides": [
+      {
+        "source": "R63",
+        "quote": "Granted text is silenced by R62 exactly like printed text — it is an ability the"
+      },
+      {
+        "source": "R328",
+        "quote": "stripping applies**. Anything the unit gains **afterwards** — a mod attached, an"
+      }
+    ],
+    "resolution": "Mark R63's silencing sentence amended by R328 (only granted text that predates the strip is silenced). The rule follows R328."
+  },
+  {
+    "id": "D-U03-12",
+    "kind": "a-sources-disagree",
+    "rule": "concepts.abilities.replacement.targeted",
+    "tier": 4,
+    "summary": "The Manual says replacement effects don't use the stack. R102 (owner) puts the substitute of a replacement that names a target (Beyond, Codex Incarnate's rot clause) on the stack as a triggered ability, while the event itself is replaced at once.",
+    "sides": [
+      {
+        "source": "Manual p.41",
+        "quote": "Instead” are called replacement effects. Unlike triggered abilities, replacement effects don’t use the stack"
+      },
+      {
+        "source": "R102",
+        "quote": "2. **A replacement that names a TARGET still uses the stack.** A target has to be"
+      }
+    ],
+    "resolution": "The rules follow both: the replacement itself never waits on the stack (R102 replaces the damage before anything is queued), and only a substitute that needs a target goes on the stack. Question for the owner only if the Manual's sentence is meant to cover the substitute too; then a target would have to be chosen with no stack, and Beyond's clause would not be respondable."
+  },
+  {
+    "id": "D-U03-13",
+    "kind": "g-other",
+    "rule": "concepts.targets.becomes-targeted",
+    "tier": 1,
+    "summary": "The designer says a graft onto Mohruung makes \"he will trigger first\". A graft in deployment is not put on the stack, so R53's \"above the spell that targeted\" does not order it. The engine queues the trigger first but attaches the graft before the trigger resolves (round-2 probe: the graft line precedes the Crystal line in the log).",
+    "sides": [
+      {
+        "source": "RAQ 1355115946032889914#4",
+        "quote": "Applying Graft is 'targeting' effect, so if you try to Graft something underneath the Mohruung, he will trigger first"
+      },
+      {
+        "source": "R53",
+        "quote": "the stack **above** the spell that targeted — the trigger resolves first."
+      },
+      {
+        "source": "file: client/engine/src/apply.ts",
+        "quote": "e.fireEvent('targeted', ev);   // grafting is targeting (Graft 101 §5)"
+      }
+    ],
+    "resolution": "Question for the owner. \"he will trigger first\" reads two ways: (1) the trigger resolves (the Crystal is made) before the graft is applied; (2) the trigger only fires first, and may resolve after the graft is attached. The rule states reading (1) and the engine does (2): F-U03-5. Under reading (2) the rule's last sentence becomes \"triggers when the graft is applied\" and F-U03-5 closes."
+  },
+  {
+    "id": "D-U03-14",
+    "kind": "b-engine-only",
+    "rule": "concepts.targets.becomes-targeted",
+    "tier": 3,
+    "summary": "Sources silent on whether a \"when I become targeted\" trigger resolves before or after an augment applied in deployment is attached. R53 orders only an effect on the stack; the designer speaks only of grafts. The round-2 verifier reports the engine attaches the deployment augment first, then resolves the trigger (as it does for a graft).",
+    "sides": [
+      {
+        "source": "R53",
+        "quote": "the stack **above** the spell that targeted — the trigger resolves first."
+      },
+      {
+        "source": "card: Mohruung",
+        "quote": "When I become targeted, [Switch1] Create a Crystal 2."
+      }
+    ],
+    "resolution": "No rule states the order for a deployment augment. Question for the owner only if the designer's graft answer is meant for every mod applied in deployment; then it follows D-U03-13."
+  }
+]

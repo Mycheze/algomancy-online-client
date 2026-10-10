@@ -1,0 +1,232 @@
+[
+ {
+  "id": "D-U08-1",
+  "kind": "a-sources-disagree",
+  "rule": "turn.planning.order",
+  "tier": 2,
+  "summary": "The printed rules have the initiative player take the resource step and the haste step first, then the non-initiative player, who gets to see what the initiative player did. R18 (its standing half) has both players act at once, interleaved in any order, inside a hidden simultaneous segment.",
+  "sides": [
+   {
+    "source": "Rulebook 2023 p.5",
+    "quote": "phases, the initiative team must make all of their plays first while the non-intiative gets to wait"
+   },
+   {
+    "source": "Manual p.27",
+    "quote": "IT FIRST, THEN NIT"
+   },
+   {
+    "source": "Manual p.20",
+    "quote": "Teams always act together in all situations and phases of"
+   },
+   {
+    "source": "R18",
+    "quote": "no stack, no responses), players may interleave plays in any order, and a player with no"
+   },
+   {
+    "source": "R18",
+    "quote": "false: the haste step is a **hidden simultaneous segment** — nobody sees the"
+   }
+  ],
+  "resolution": "Authority order: printed beats an R-ruling. turn.planning.order states print (IT first, then NIT, for steps 4 and 5; steps 1-3 simultaneous, as the Manual p.27 legend colours mark them on the scan). The engine divergence is F-U08-1. R18 argued the hidden model is \"indistinguishable from the printed\" step, but it compared against Manual p.18 only and never against the p.27 legend or Rulebook 2023 p.5; under print the non-initiative player sees the initiative player's resources and haste plays before choosing."
+ },
+ {
+  "id": "D-U08-2",
+  "kind": "a-sources-disagree",
+  "rule": "turn.resource.ends",
+  "tier": 4,
+  "summary": "Manual p.18 says the planning phase ends once everyone has created and activated resources, yet the same page puts the haste step after the resource step and p.27 lists the haste step as the fifth planning step.",
+  "sides": [
+   {
+    "source": "Manual p.18",
+    "quote": "The planning phase ends when all players have created and activated their desired resources."
+   },
+   {
+    "source": "Manual p.18",
+    "quote": "After the resource step is the very short haste step, where players can only play"
+   },
+   {
+    "source": "R97",
+    "quote": "2. `legalActions`' `phase === 'planning' && s.hasteDone` branch — the client's affordance."
+   }
+  ],
+  "resolution": "This document reads the p.18 sentence as the end of the resource step and places the haste step as the last step of the planning phase (turn.haste.what), per p.27 and the engine's phase model quoted in R97. No rules consequence found: nothing in the pack depends on whether the haste step is \"in\" planning."
+ },
+ {
+  "id": "D-U08-3",
+  "kind": "a-sources-disagree",
+  "rule": "turn.haste.what",
+  "tier": 4,
+  "summary": "Rulebook 2023 p.7 has a single \"mana step\" in which players take resources and play haste cards. The Manual splits it into a resource step and a later haste step. R97 equates the printed \"mana step\" with the haste step alone, but the Prismite card says its exchange may be done \"only during the mana step\", and R17 and the engine place the exchange in the resource step.",
+  "sides": [
+   {
+    "source": "Rulebook 2023 p.7",
+    "quote": "The mana step is when players have the ability to take and play resources, as well as"
+   },
+   {
+    "source": "Manual p.18",
+    "quote": "After the resource step is the very short haste step, where players can only play"
+   },
+   {
+    "source": "R97",
+    "quote": "So **the printed \"mana step\" IS this engine's R18 haste step**, and Dispatch Courier"
+   },
+   {
+    "source": "R132",
+    "quote": "during the mana step. {i}(This does not use one of your activations for turn.)\""
+   },
+   {
+    "source": "R17",
+    "quote": "exchange: during planning, an **active** (face-up) Prismite may be swapped for a"
+   }
+  ],
+  "resolution": "The Manual supersedes Rulebook 2023 where they differ (data/rules/README.md), so the two-step order stands (turn.planning.steps). Read \"mana step\" on a card as the Rulebook defines it, the resource step and the haste step together; R97's equation is too narrow, though harmless for Dispatch Courier, whose grant only matters where plays happen (the haste step). Question for the owner only if a Prismite exchange should also be legal during the haste step: the card's \"Do this only during the mana step\" would allow it under the Rulebook's definition, while turn.resource.actions.exchange places it in the resource step."
+ },
+ {
+  "id": "D-U08-4",
+  "kind": "a-sources-disagree",
+  "rule": "turn.haste.grants",
+  "tier": 4,
+  "summary": "The RAQ write-up on Dispatch Courier says the unit is played \"despite gaining\" haste; R123 says a play \"as if it had [Haste]\" is timing only and the unit never carries the attribute.",
+  "sides": [
+   {
+    "source": "RAQ 1465292396664193171#0",
+    "quote": "No, despite gaining :haste: they can still only be played during :battle:."
+   },
+   {
+    "source": "R123",
+    "quote": "it had [Haste]\" is TIMING ONLY — the played unit never carries the attribute."
+   }
+  ],
+  "resolution": "The RAQ answers a timing question and its \"gaining\" is incidental wording; turn.haste.grants states only the timing, which both sides agree on. Question for the owner only if a card ever reads whether a unit in play has [Haste]: then the RAQ wording (the authority) would say the granted unit has it."
+ },
+ {
+  "id": "D-U08-5",
+  "kind": "g-other",
+  "rule": "turn.draw.constructed.first-turn",
+  "tier": 3,
+  "summary": "The sources do not say whether the first turn of a constructed game has the draw of 4 and the recycle of 2. The Manual's first-turn shortcut (the first draws dealt with the opening hand) is written for live draft. The engine deals 4 and then has each player draw 4 and put 2 back on turn 1.",
+  "sides": [
+   {
+    "source": "Manual p.16",
+    "quote": "their opening hand, in which case they should not draw"
+   },
+   {
+    "source": "Manual p.16",
+    "quote": "the draft step in constructed, players simply draw 2"
+   },
+   {
+    "source": "Rulebook 2023 p.6",
+    "quote": "Players draw 2 cards during the draw step on every turn after the first."
+   }
+  ],
+  "resolution": "Sources silent on constructed's opening hand size and on whether the first-turn shortcut applies there. turn.draw.constructed.first-turn rests on the Manual's \"every turn\" (confidence low), which is what the engine does (opening 4, then draw 4 and recycle 2 on turn 1). Question for the owner only if constructed should deal its first draw with the opening hand as live draft does. Rulebook 2023 p.6 (\"every turn after the first\") would put no draw on turn 1; the Manual supersedes it, and its opening hand differs."
+ },
+ {
+  "id": "D-U08-6",
+  "kind": "c-owner-call-only",
+  "rule": "turn.haste.always",
+  "tier": 3,
+  "summary": "That the haste step happens every turn, even when nobody can play anything, is the owner's call. The Manual says only that the step ends when everyone has played what they want, \"which can be none\".",
+  "sides": [
+   {
+    "source": "R224",
+    "quote": "\"Always offer the step.\""
+   },
+   {
+    "source": "Manual p.18",
+    "quote": "the haste cards they wanted to play (which can be none)."
+   }
+  ],
+  "resolution": "Owner call; no designer source. Consistent with print (an empty step is allowed), and it keeps the step's presence from revealing a hidden hand (Annex D)."
+ },
+ {
+  "id": "D-U08-7",
+  "kind": "c-owner-call-only",
+  "rule": "turn.draw.state-checks.constructed",
+  "tier": 3,
+  "summary": "That a player's units are not checked for death between the draw of 4 and the recycle of 2 in constructed is the owner's call (2026-10-06, quoted in R313). No designer source rules on it.",
+  "sides": [
+   {
+    "source": "R313",
+    "quote": "- **Constructed's draw phase is one step.** Draw 4 and put 2 back are two"
+   }
+  ],
+  "resolution": "Owner call; consistent with Manual p.16 calling the two steps one combined step in practice (\"two steps by drawing 4 cards, then recycling 2\")."
+ },
+ {
+  "id": "D-U08-8",
+  "kind": "g-other",
+  "rule": "turn.haste.plays.battle-stays",
+  "tier": 4,
+  "summary": "calebgannon reversed his own earlier answer: in 2025 he said haste adds the haste step to a card's timings, so a battle card with haste works there; on 2026-01-25 he said battle cards stay battle-only. The register marks the earlier claim OUTDATED.",
+  "sides": [
+   {
+    "source": "RAQ 1464899726796390433#1",
+    "quote": "haste basically says 'This card can be played during the haste step in addition to its other timings'"
+   },
+   {
+    "source": "RAQ 1464899726796390433#0",
+    "quote": "it's gotta be no"
+   }
+  ],
+  "resolution": "The later designer answer, and the [Solved] write-up (RAQ 1465292396664193171#0), govern. turn.haste.plays.battle-stays states them."
+ },
+ {
+  "id": "D-U08-9",
+  "kind": "c-owner-call-only",
+  "rule": "turn.haste.prophesy",
+  "tier": 3,
+  "summary": "That a [Haste] at the end of a prophecy condition lets the card be prophesied in the haste step is the owner's reading of the marker; no designer source explains the marker.",
+  "sides": [
+   {
+    "source": "R277",
+    "quote": "2. **A trailing `[Haste]` in the printed CONDITION widens the PROPHESY"
+   }
+  ],
+  "resolution": "Owner call (R277). Only one card in the pool carries the marker (Divine Intervention, per R277)."
+ },
+ {
+  "id": "D-U08-10",
+  "kind": "g-other",
+  "rule": "turn.planning.order.sync",
+  "tier": 2,
+  "summary": "Print syncs every step: no player begins the resource step until every player has finished the draft step. The engine lets a seat that has drafted (or, in constructed, recycled its 2) begin and even finish its resource step while the other seat still drafts. No ruling states the early start.",
+  "sides": [
+   {
+    "source": "Rulebook 2023 p.5",
+    "quote": "Turns in Algomancy are global, meaning all players share the same phases, and sync up at the end of each step."
+   },
+   {
+    "source": "Manual p.16",
+    "quote": "Once all players have passed their pack, the draft step"
+   },
+   {
+    "source": "file: client/engine/test/20-draft.test.ts",
+    "quote": "// committed seat may proceed simultaneously while the opponent drafts"
+   }
+  ],
+  "resolution": "The rule states print; the engine behaviour is F-U08-4. The early start happens inside the hidden plan segment, so the drafting seat cannot see it and the information effect may be nil. Question for the owner only if the early start should be kept as a digital convention (Annex D) rather than fixed."
+ },
+ {
+  "id": "D-U08-11",
+  "kind": "a-sources-disagree",
+  "rule": "turn.general.initiative",
+  "tier": 2,
+  "summary": "Print has the initiative player act first \"in all situations\", the non-initiative player waiting to see what they do. R18's digital half makes the haste step (and, with it, the resource step and deployment) a hidden simultaneous segment, so initiative-first order survives only in battle.",
+  "sides": [
+   {
+    "source": "Rulebook 2023 p.5",
+    "quote": "together and are required to act first in all situations. For example, during the mana and main"
+   },
+   {
+    "source": "Manual p.20",
+    "quote": "plays first, allowing the Non-initiative-Team (NIT) to act"
+   },
+   {
+    "source": "R18",
+    "quote": "false: the haste step is a **hidden simultaneous segment** — nobody sees the"
+   }
+  ],
+  "resolution": "Authority order: printed beats an R-ruling, so turn.general.initiative states print and the engine divergence is F-U08-1. The planning half is D-U08-1; deployment's order is 507/508 (U09)."
+ }
+]

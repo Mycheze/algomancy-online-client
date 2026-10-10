@@ -1,0 +1,86 @@
+[
+  {
+    "id": "F-U06-1",
+    "rule": "types.spell-units.played-by-effect",
+    "title": "Wake the Dead plays a spell unit out of a bin without casting its spell",
+    "summary": "R165 rules that Wake the Dead's \"Play up to two units\" is a real play, and the Hooba-Pon RAQ says playing a spell unit means its spell part happens and the body arrives only if the spell resolves. R165 itself records, under \"Left open\", that Wake the Dead spawns a spell unit's body and skips the spell. Nothing later in the register or the ledgers closes it. Suspected still live; a test should play a spell unit (Leaping Lillik, Spawntender) through Wake the Dead and assert that its spell effect happens. The verifier measured it (round 1 probe: Jelly played from a bin by Wake the Dead): the body arrives, no target is asked, no spell-played event fires, and the victim stays 7/5. Affects types.spell-units.is-a-spell and types.spell-units.is-a-unit too.",
+    "evidence": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "- **A SPELL UNIT raised by Wake the Dead does not cast its spell.** *\"Up to two"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "  and skips the spell, and has since it was written; `playInline` (batch-water-a)"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "quote": "Yes, the spell part happens and if it resolves, the unit will spawn into formation."
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-dark-a.ts",
+        "quote": "        g.spawnUnit(ctx.controller, c.name, ctx.region,"
+      }
+    ]
+  },
+  {
+    "id": "F-U06-2",
+    "rule": "types.tokens.copying-a-token",
+    "title": "Borrower-of-Forms copy test never runs its Download half",
+    "summary": "393-raq-mods 'RAQ Borrower of Forms: copying a Robot token makes a nontoken unit, which Download cannot take' wraps its Download assertion in if (plays.length). The only token on the board is the defender's own Robot (the attacker is a nontoken spawn('Unit Token')), so Download is never offered (the verifier measured plays.length = 0) and the 'Download cannot take' half is vacuous. The test should give Download a real target token and assert the Borrower is not offered, failing if Download is not playable.",
+    "evidence": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "quote": "  if (plays.length) {"
+      },
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "quote": "  const atk = spawn(h, A, 'Unit Token');"
+      }
+    ]
+  },
+  {
+    "id": "F-U06-3",
+    "title": "Wake the Dead plays a spell unit from a bin without its spell part",
+    "summary": "Wake the Dead ('Play up to two units in any bin…') offers spell units (isUnitCard) but spawns their bodies directly: the spell part never happens, nothing goes on the stack, no 'spellPlayed' fires and nothing can negate it. The designer (RAQ Hooba-Pon thread) rules that a spell unit played via 'play a unit' casts its spell and spawns only if it resolves. Probe: Jelly from A's bin, victim stays 7/5, no target asked. digital-rules R165 lists it as 'Left open, and filed rather than fixed'.",
+    "evidence": [
+      {
+        "file": "client/engine/src/cards/sets/batch-dark-a.ts",
+        "quote": "        g.spawnUnit(ctx.controller, c.name, ctx.region,"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "- **A SPELL UNIT raised by Wake the Dead does not cast its spell.** *\"Up to two"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "quote": "Yes, the spell part happens and if it resolves, the unit will spawn into formation."
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "quote": "Q: Does that count as 'playing a spell' for some triggers? A: Yes."
+      }
+    ],
+    "rule": "types.spell-units.played-by-effect"
+  },
+  {
+    "id": "F-U06-4",
+    "title": "A spell unit played by Wake the Dead skips its spell part and is not a played spell",
+    "summary": "Wake the Dead 'plays' units from a bin via spawnUnit(asPlay) inline: a spell unit (Jelly) arrives with no stack item, no target, no spell effect and no spellPlayed event, so Origon/Riftbreaker/'play a spell' watchers never see it. Designer (Hooba-Pon RAQ) and Manual p.43 say a played spell unit casts its spell and is a spell. Already filed as open in R165 (known; engineDiffers F-U06-1). Measured by probe u06-r2-probes.test.ts.",
+    "evidence": [
+      {
+        "file": "client/engine/src/cards/sets/batch-dark-a.ts",
+        "quote": "{ owner: c.seat, from: 'bin', asPlay: true });"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "**A SPELL UNIT raised by Wake the Dead does not cast its spell.**"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "quote": "Q: Does that count as 'playing a spell' for some triggers? A: Yes."
+      }
+    ],
+    "rule": "types.spell-units.played-by-effect"
+  }
+]

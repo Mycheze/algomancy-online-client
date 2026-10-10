@@ -1,0 +1,2889 @@
+[
+  {
+    "key": "card.augment-box.copy",
+    "textHash": "be7181c39f4b36d4",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U05-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts:Reconfigure",
+        "agrees": true,
+        "note": "slotRestricts uses isAugment(t.card) — the PHYSICAL card — so a Borrower wearing Bubb's face is not an [Augment] unit"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "pattern": "cannot be the first target of Reconfigure",
+        "passed": true,
+        "asserts_claim": "partly: the assertion is inside `if (castable)`; with the copy as the only would-be [Augment] unit Reconfigure is not castable, so the assert never runs (the non-castability itself is consistent with the rule)"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U05/u05-r2-verify-probes.test.ts",
+        "title": "card.augment-box.copy: Reconfigure IS castable (a real [Augment] unit is present) and offers it, but never a Borrower that copied Bubb",
+        "passed": true,
+        "demonstrates": "yes: real Rampart Guardian offered as first target, the Bubb-copying Borrower is not"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "RAQ 1372468222158180424#6",
+        "supports": "yes",
+        "note": "_passer: True BoFy doesn't have the augment symbol"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Reconfigure's `[Augment]` check also stays printed, because the thread says \"True BoFy doesn't have :augment: symbol on him\"."
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts",
+        "text": "slotRestricts: [(_g, t) => 'card' in t && isAugment(t.card), null],"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Example has no bound test (illustrative); the cited 393 guard is conditionally vacuous — the round-2 probe supplies the missing positive case."
+  },
+  {
+    "key": "card.augment-box.permission",
+    "textHash": "43b28383cb8db407",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "isAugment (marker-derived)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R55",
+        "supports": "yes",
+        "note": "cache route is further gated by R303 (live permission), which the \"(see 721)\" defers to"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "an augment** — from hand, from bin, or from cache"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Note: from the cache only under a live glimpse/fulfilled-prophecy permission (R303); acceptable only because 721 carries that."
+  },
+  {
+    "key": "card.augment-box.permission.reminder",
+    "textHash": "5ed0432e255d00ea",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "hasAugmentMarker / isAugment",
+        "agrees": true,
+        "note": "Reconfigure is not an augment"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/48-playtest-hotfix.test.ts",
+        "pattern": "a spell that merely mentions [Augment] in reminder text is not an augment",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R55",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "text is **not** a marker"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.augment-box.text-box",
+    "textHash": "31b714a0a34c66ac",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "cards/dsl.ts augmentText / EffectCtx.sourceId=host",
+        "agrees": true,
+        "note": "donated text runs with the host as \"me\" and host controller as \"you\""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/45-hybrids-ld-b.test.ts",
+        "pattern": "Vengeance: donated as an augment, the HOST's controller is \"you\" — their opponents are taxed",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.32",
+        "supports": "yes",
+        "note": "verbatim"
+      },
+      {
+        "ref": "card: Vengeance",
+        "supports": "partly",
+        "note": "printed.json has Vengeance text box with [Augment] line; quote not re-checked against scan"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "in the paragraph following the augment symbol and add it"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.augment-box.type-line",
+    "textHash": "d513da0eff753728",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "cards/dsl.ts Printed.augmentAttrs",
+        "agrees": true,
+        "note": "attrs only; host stats unchanged"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/28-metal-c.test.ts",
+        "pattern": "Trashling: 2/2 Unaware body; type-line [Augment] donates Unaware (attrs only)",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/16-earth-a.test.ts",
+        "pattern": "Bubb: 5/6 Unaware; type-line [Augment] donates Unaware (attrs only, no stats)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.32",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Trashling",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.15",
+        "supports": "partly",
+        "note": "about text-box paragraphs, on-topic"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "unit’s ability text box or before attributes in the type line."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.augment-box.what",
+    "textHash": "d7fbe948b59bc96a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "cards/dsl.ts Printed.augmentAttrs / augmentText",
+        "agrees": true,
+        "note": "type-line and text-box augment both modelled"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.32",
+        "supports": "yes",
+        "note": "verbatim"
+      },
+      {
+        "ref": "Rulebook 2023 p.15",
+        "supports": "yes",
+        "note": "verbatim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "unit’s ability text box or before attributes in the type line."
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "Some cards have a little “+” symbol (1) at the beginning of a line in their text box (or"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.banner.cost",
+    "textHash": "90498b4805fdc734",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:canPayProphecy / canPayAmbush",
+        "agrees": true,
+        "note": "banner mana + banner pips, not the orb"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/313-prophecy-affinity.test.ts",
+        "pattern": "R301 §2: mana without the affinity does not buy a prophecy",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/36-cache-prophecy.test.ts",
+        "pattern": "R42/R301: the banner is priced on its own pips, not the card's",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/14-water-a.test.ts",
+        "pattern": "Lurking Slimebeast: [Battle] Ambush [3b] = 3 mana at one water pip (R22)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U05/u05-verify-probes.test.ts",
+        "title": "card.banner.cost: an Ambush banner's own affinity pips are required — mana without them is refused",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Lurking Slimebeast",
+        "supports": "yes",
+        "note": "printed.json ambush {b,3}"
+      },
+      {
+        "ref": "R301",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A prophecy banner is a cost like any other"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.banner.not-the-cards-cost",
+    "textHash": "6ad2db01f0dabebc",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.costOf",
+        "agrees": true,
+        "note": "reads faceDef(e).mana; ambushed Lurking Slimebeast costs 4"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U05/u05-verify-probes.test.ts",
+        "title": "card.banner.not-the-cards-cost: a unit played through its Ambush banner still costs its cost-orb mana",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "RAQ 1396955380000755795#2",
+        "supports": "yes",
+        "note": "verbatim _passer write-up"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const m = this.faceDef(e).mana;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.banner.prophecy",
+    "textHash": "b91fa2c0d943e2a9",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U05-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doPlayCached",
+        "agrees": true,
+        "note": "cache release through doPlayFrom; the prophecy permission (E.cachePermission) gates it; free, no affinity, printed timing via playAtTiming"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:cachePermission",
+        "agrees": true,
+        "note": "'prophecy' once fulfilled"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/36-cache-prophecy.test.ts",
+        "pattern": "R42: a released prophecy is FREE and ignores affinity",
+        "passed": true,
+        "asserts_claim": "yes: banner paid, release costs nothing and needs no earth affinity"
+      },
+      {
+        "file": "client/engine/test/36-cache-prophecy.test.ts",
+        "pattern": "R42: normal TIMING still applies",
+        "passed": true,
+        "asserts_claim": "yes: a fulfilled {Battle} release refused at deployment, offered in battle"
+      },
+      {
+        "file": "client/engine/test/313-prophecy-affinity.test.ts",
+        "pattern": "(whole file)",
+        "passed": true,
+        "asserts_claim": "yes: banner affinity required (R301), release still ignores affinity"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R301",
+        "supports": "yes",
+        "note": "banner is a cost (mana spent, affinity required); release free and affinity-free"
+      },
+      {
+        "ref": "R42 (its prophesy half)",
+        "supports": "yes",
+        "note": "card moves to cache with its prophecy attached; release free; normal timing"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "still releases the card for free and still ignores affinity on the way out (Caleb"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "with its prophecy attached. Only a card that says so may be prophesied from"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A prophecy banner is a cost like any other: its mana is **spent** and its affinity is"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Text omits that prophesying is deployment-only (R42/R277) and that only cards that say so may be prophesied from the bin; not wrong, just incomplete."
+  },
+  {
+    "key": "card.banner.timing",
+    "textHash": "61771f73f4a02f59",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "apply.ts ambush mode / engine.ts:E.mayProphesy",
+        "agrees": true,
+        "note": "banner icon governs its play only"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/08-cards2.test.ts",
+        "pattern": "Good Whale: the parked Ambush mode works ([4bb], into the attacking column)",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/257-prophecy-release-timing.test.ts",
+        "pattern": "R277: the marker does not move a fulfilled release out of battle and into the haste step",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.40",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R277",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "the card itself doesn’t have battle timing."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.banner.timing.ambush",
+    "textHash": "bff7ca2dff18045e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doPlayFrom ambush mode / canPayAmbush",
+        "agrees": true,
+        "note": "Good Whale (deploy) ambushes in battle"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/08-cards2.test.ts",
+        "pattern": "Good Whale: the parked Ambush mode works ([4bb], into the attacking column)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.40",
+        "supports": "yes",
+        "note": "verbatim"
+      },
+      {
+        "ref": "card: Good Whale",
+        "supports": "yes",
+        "note": "printed.json ambush {cost:bb, mana:4}"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "the card itself doesn’t have battle timing."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.banner.timing.prophecy-haste",
+    "textHash": "bc00b3fa326e8504",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.mayProphesy / E.cachedTiming",
+        "agrees": true,
+        "note": "marker widens the prophesy window; release at printed timing"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/257-prophecy-release-timing.test.ts",
+        "pattern": "R277: a banner marked [Haste] may be prophesied during the haste step",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/257-prophecy-release-timing.test.ts",
+        "pattern": "R277: the marker does not move a fulfilled release out of battle and into the haste step",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/257-prophecy-release-timing.test.ts",
+        "pattern": "R277: an UNMARKED banner is still deployment-only — the haste step refuses it",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R277",
+        "supports": "yes",
+        "note": "both halves verbatim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "The RELEASE is always at the card's printed timing."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.banner.what",
+    "textHash": "122fd9eeae5b7243",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "cards/dsl.ts Printed.ambush / prophecy",
+        "agrees": true,
+        "note": "all 6 ambush and 8 prophecy banners in printed.json carry mana + pips"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/313-prophecy-affinity.test.ts",
+        "pattern": "R301 §1: every printed prophecy banner carries affinity pips",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Good Whale / Shib",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R301",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A prophecy banner is a cost like any other"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.complexity.set-symbol",
+    "textHash": "366e1e40587808a8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.12",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.3",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Indicates the expansion and"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.complexity.use",
+    "textHash": "9c8fda40465b644e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "ui custom rules simpleOnly (digital option)",
+        "agrees": true,
+        "note": "not engine rules; a deal filter"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/297-custom-rules-resolve.test.ts",
+        "pattern": "BL-43 resolve §3 Simple cards only leaves out exactly the cards that are not simple",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.2",
+        "supports": "yes",
+        "note": "Quick Start: remove rare (gold set symbol) cards if not experienced"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": " all of the rare cards from the decks (gold set symbol). Shuffle the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.cost-orb.copy",
+    "textHash": "0f8b31fa845a9077",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.costOf (faceDef)",
+        "agrees": true,
+        "note": "R336"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "pattern": "RAQ Borrower of Forms: a Borrower that copied a Robot costs 0, so Lumengrove Lurker can recall it",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1372468222158180424#10",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R336",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A copy is read by its face"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.cost-orb.mana-cost",
+    "textHash": "d9584a0212c0f06f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.12/p.13",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.3",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "▪ A mana cost (2) that must be paid in order to be played."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.cost-orb.pips",
+    "textHash": "42fc6f679c46985d",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U05-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:affinity",
+        "agrees": true,
+        "note": "counts resources of the element; expended still counts; dormant gives no affinity"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "pattern": "RAQ Mana question: affinity counts resources already spent",
+        "passed": true,
+        "asserts_claim": "yes: 2 wood + 4 shards play three gg cards"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U05/u05-r2-verify-probes.test.ts",
+        "title": "card.cost-orb.pips: affinity counts expended resources of the element but not dormant ones",
+        "passed": true,
+        "demonstrates": "yes for 'expended counts'; also measures that a DORMANT resource of the element does not count"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": "affinity requirement must be met to play"
+      },
+      {
+        "ref": "Manual p.12",
+        "supports": "yes",
+        "note": "resource types needed to be present among your resources"
+      },
+      {
+        "ref": "RAQ 1358299200953126963#0",
+        "supports": "yes",
+        "note": "calebgannon: at least that many resources of that type, tapped or not"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Affinity: To have the ability to play a card, a player"
+      },
+      {
+        "file": "data/corpus/algomancy_corpus.jsonl",
+        "text": "The affinity dots just require you have at least that many resources of that type somewhere in your manabase"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "// expended still counts"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "dormant gives no affinity"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Minor omission: 'among their resources' should exclude dormant (face-down) resources, which the engine does not count toward affinity."
+  },
+  {
+    "key": "card.cost-orb.pips-not-cost",
+    "textHash": "531d9feab932c368",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "cards/sets/helpers.ts:manaOf",
+        "agrees": true,
+        "note": "mana number only"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R157 §1",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Pips aren't a relevant part of looking at the cost"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.cost-orb.printed-cost",
+    "textHash": "ac46ad01956ea480",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "engine.ts eventSpellCost / Tides budget",
+        "agrees": true,
+        "note": "taxed Squish (paid 4) read as 2; Tides budget reads printed [3]"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "pattern": "RAQ printed cost: Arcane Concentrator and Channeled Amalgam read a taxed Squish as a 2",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "pattern": "RAQ Tides 8: the total cost of 8 or less reads printed costs — Tranquility does not shrink it",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353980184042143835#0",
+        "supports": "yes",
+        "note": "_passer verbatim"
+      },
+      {
+        "ref": "RAQ 1396955380000755795#9",
+        "supports": "yes",
+        "note": "_passer write-up verbatim"
+      }
+    ],
+    "quote_spans": [],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.cost-orb.x",
+    "textHash": "fd7d02af0dbfb474",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "helpers.ts castCostOf / StackItem.x",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/133-x-cost-semantics.test.ts",
+        "pattern": "R157 §1 — Unstable Apparition at X = 0: the spell really costs 0, so no Fireball",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R157 §1",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "And paying X replaces the letter X on the printed card temporarily"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.cost-orb.x-outside-cast",
+    "textHash": "e0915d7fac184283",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U05-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/helpers.ts:manaOf",
+        "agrees": true,
+        "note": "R158 §1: a card known by name has cost 0 for X"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-water-b.ts:tidesCanPlay",
+        "agrees": true,
+        "note": "X card with xMin>0 refused; otherwise played inline with no X (0)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "pattern": "RAQ Tides 6a: an X spell counts as cost 0",
+        "passed": true,
+        "asserts_claim": "yes: Wildfire offered at [0], on the stack with no X, deals 0"
+      },
+      {
+        "file": "client/engine/test/39-light-b.test.ts",
+        "pattern": "Living Vault: an X-cost card in hand is offered at pay",
+        "passed": true,
+        "asserts_claim": "yes: Mindburn offered at [0]"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1396955380000755795#6",
+        "supports": "yes",
+        "note": "Tides-specific; the pool's only free-play effect that can reach a spell is Tides (Wake the Dead plays units), so the generalisation is coextensive"
+      },
+      {
+        "ref": "R158 §1",
+        "supports": "yes",
+        "note": "a card in a zone has had no X paid, so its cost is 0"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/corpus/algomancy_corpus.jsonl",
+        "text": "6. Any spells with X cost can only be played with X=0 making most of them useless"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "The middle row is a decision, not an approximation: nobody has paid an X for a"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-water-b.ts",
+        "text": "if (c.mana === 'X' && (c.xMin ?? 0) > 0) return false;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "'as a unit in play' is vacuous today: every X card in the pool is a spell. A card printing 'X can't be zero' (Frosted Denial) cannot be played by the free effect at all — the text could say so."
+  },
+  {
+    "key": "card.general.parts",
+    "textHash": "a67c3cf36aff8aab",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.12",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "Algomancy cards each have the following characteristics:"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.general.printed-card-governs",
+    "textHash": "3dbe69741f85ecf1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "printed.json generated from corrected oracle",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/209-interdiction-rift-type-line.test.ts",
+        "pattern": "§1 Interdiction Rift is \"{Battle} Cosmic Spell\" — the owner's ruling, exactly",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/137-multiplier-and-mode.test.ts",
+        "pattern": "R157 §25: Arbiter of Armistice's printed type line has no {Switch}, and nothing else moved",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R240",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R157 §25",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Correct, that's a typo in the oracle text"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.name.another",
+    "textHash": "bb6d2b16e31170b9",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "EffectCtx.selfModId (R131)",
+        "agrees": true,
+        "note": "exclusion by entity, not name"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/121-another-identity.test.ts",
+        "pattern": "R131 Rotbeast: a SECOND Rotbeast augment is \"another\" — each moves the other",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R131",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "So an \"other\"/\"another\" clause **never** filters by CARD NAME. Two copies of a"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.name.copy",
+    "textHash": "157941708f30fb9e",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U05-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:nameOf/faceName",
+        "agrees": true,
+        "note": "game name = the copied face; Entity.card stays the physical card that bins / returns to hand"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/26-metal-a.test.ts",
+        "pattern": "R118: a Borrower that became something else still bins",
+        "passed": true,
+        "asserts_claim": "yes: nameOf = Good Whale, bin gets Borrower of Forms"
+      },
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "pattern": "RAQ Borrower of Forms: recalled, it goes back to the hand",
+        "passed": true,
+        "asserts_claim": "yes: hand gets Borrower of Forms, not Good Whale"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1372468222158180424#7",
+        "supports": "yes",
+        "note": "recalled, BoFy back to hand. Quote is de-bolded: the source reads 'you do get **BoFy back to hand**'"
+      },
+      {
+        "ref": "RAQ 1372468222158180424#2",
+        "supports": "yes",
+        "note": "dies -> bin as BoFy"
+      },
+      {
+        "ref": "R118 (its ruling 1)",
+        "supports": "yes",
+        "note": "split identity: game name changes, physical card bins as Borrower"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**1. SPLIT IDENTITY.** A copy changes the **game name** — statics, \"name a card\","
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "and then dies puts **Borrower of Forms** in the bin."
+      },
+      {
+        "file": "data/corpus/algomancy_corpus.jsonl",
+        "text": "If he dies, then he goes to bin/discard, but anything he was mimicking is Erased (BoFy erased it on resolution)."
+      }
+    ],
+    "basis_ok": true,
+    "problem": "The 'erased as itself' clause has no bound test; it follows from the same physical-card field (not separately measured)."
+  },
+  {
+    "key": "card.name.every-card",
+    "textHash": "e2b73a3298481497",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.12",
+        "supports": "yes",
+        "note": "verbatim"
+      },
+      {
+        "ref": "Rulebook 2023 p.3",
+        "supports": "yes",
+        "note": "verbatim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "All cards have a card name."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.name.front-face",
+    "textHash": "fda5ac55fb165231",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "engine.ts frontFace on destroy",
+        "agrees": true,
+        "note": "binned as front, not token, not erased"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/135-exchange-and-zones.test.ts",
+        "pattern": "R157 §10: a transformed Scholar killed in play BINS as \"Scholar of the Void\"",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R157 §10",
+        "supports": "yes",
+        "note": "owner verbatim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Turns back over. In all zones, other than play"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.name.unique-token",
+    "textHash": "e93a9c391d66b963",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "Automaton of Abundance",
+        "agrees": true,
+        "note": "(name, X) pairs"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/26-metal-a.test.ts",
+        "pattern": "R157 §24: a batch of a Robot 3, a Robot 2 and a Robot 1 yields THREE extras",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R157 §24",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "history R104",
+        "supports": "yes",
+        "note": "correctly cited as history"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "'Unique' means unique (name, X) pair"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.stats.base",
+    "textHash": "f153de47c8c5d475",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.baseWith",
+        "agrees": true,
+        "note": "rewrites sorted by timestamp, last wins; counters on top"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/26-metal-a.test.ts",
+        "pattern": "Aberrant Statweaver: \"your units are base 3/3\" — in play and virus-donated",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "pattern": "RAQ timestamps: Body Swap with a Statweavered unit trades the 3/3 base for the 1/1",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/28-metal-c.test.ts",
+        "pattern": "Unmake: deletes only units with BASE power 2 or less (counters don't count)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.42",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1357965714807586897#1",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R66",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "last-wins by timestamp"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "3/3 or 5/0, before any other modifiers like +1/+1 and"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.stats.changes",
+    "textHash": "b41ae76eab1331c7",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.addTemp / addCounters",
+        "agrees": true,
+        "note": "temp deltas until regroup; counters permanent"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.40",
+        "supports": "yes",
+        "note": "all four quotes verbatim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "A +1/+1 or -1/-1 counter denotes a permanent change to"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "  If a card doesn’t specifically say “place counters” when mentioning stat"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.stats.changes.all-counters",
+    "textHash": "24ee2d4bf8b44a04",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.addCounters",
+        "agrees": true,
+        "note": "one signed counter count; Flux Resonator adds one of the same sign"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/120-counter-attribution.test.ts",
+        "pattern": "Resonator: -1/-1 counters get one more of the SAME — all counters count",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R130",
+        "supports": "yes",
+        "note": "\"All counters count as counters.\" No sign filter; \"unless it prints a sign\" is a harmless reading of a card that names +1/+1"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**The ruling**, verbatim: *\"All counters count as counters.\"* No sign filter,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.stats.changes.cancel",
+    "textHash": "d163995877c450b8",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U05-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:addCounters",
+        "agrees": true,
+        "note": "counters are one signed int (target.counters += n), so +1/+1 and -1/-1 cancel pairwise"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "pattern": "RAQ counters: after the cancelling the unit has no",
+        "passed": true,
+        "asserts_claim": "partly: shows no -1/-1 remains (Sporebloom Siren spares the unit); does not count the remaining +1/+1"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U05/u05-r2-verify-probes.test.ts",
+        "title": "card.stats.changes.cancel: +1/+1 x2 then one -1/-1 leaves exactly one +1/+1 and no -1/-1; one of each leaves none",
+        "passed": true,
+        "demonstrates": "yes: counters 2-1 = 1 and 1-1 = 0"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.40",
+        "supports": "yes",
+        "note": "literal: the two cancel out and will both be removed"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "If both a +1/+1 counter and -1/-1 counter are placed on a unit, the two cancel out and will both"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "/** +1/+1 (n>0) or -1/-1 (n<0) counters; net counters cancel pairwise (Manual)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.stats.layers",
+    "textHash": "4e3897ffc7d75f11",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.effStats",
+        "agrees": true,
+        "note": "layers 1-2 baseWith, 3 counters/temp/statics, 4 Tough/Balanced, 5 Inverted, 6 Unaware"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/387-raq-combat.test.ts",
+        "pattern": "RAQ Tough: a 0/4 Tough unit with a +1/+1 counter is a 1/10",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.42",
+        "supports": "yes",
+        "note": "verbatim"
+      },
+      {
+        "ref": "RAQ 1362832912579559664#0",
+        "supports": "yes",
+        "note": "_passer verbatim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "counters, 4. Attributes like Tough, 5. Inverted, 6.Un-"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (a === 'Tough') t *= 2;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.stats.negative-power",
+    "textHash": "c7a5be1a855fcc16",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:colPower",
+        "agrees": true,
+        "note": "each member contributes max(0, power)"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U05/u05-verify-probes.test.ts",
+        "title": "card.stats.negative-power: a negative-power unit deals 0 combat damage and does not subtract from its column",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.42",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "A: It deals 0 damage."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "return s + Math.max(0, p);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.stats.printed-and-changed",
+    "textHash": "1bba9440f4f0d384",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "Leave None Pure purity check reads layer 2",
+        "agrees": true,
+        "note": "even a same-number base rewrite counts (stricter than \"any difference\", consistent)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/59-base-stats.test.ts",
+        "pattern": "Leave None Pure: a rewritten base counts as a stat change",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.42",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R157 §14",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Literally any change to a unit's stats counts"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.stats.units",
+    "textHash": "63e1faa7a02013d8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "cards/dsl.ts:Printed.kind",
+        "agrees": true,
+        "note": "kind 'spellUnit' carries power/toughness and spawns as a unit on resolution"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.3",
+        "supports": "yes",
+        "note": "both quotes verbatim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "moved. They can be easily recognized by the existence of stats on the card (5)."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.stats.what",
+    "textHash": "748e8d50190444ac",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": "verbatim"
+      },
+      {
+        "ref": "Rulebook 2023 p.10",
+        "supports": "yes",
+        "note": "\"health is a measure of how much damage a unit can take before it dies\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "combat, and health is a measure of how much damage a unit can take before it dies."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.text-box.abilities",
+    "textHash": "8654f806c889aebf",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.3",
+        "supports": "yes",
+        "note": "verbatim"
+      },
+      {
+        "ref": "Manual p.12",
+        "supports": "yes",
+        "note": "verbatim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "▪ Most cards have Abilities (7), which describe the card’s effects."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.text-box.brackets",
+    "textHash": "e016962345f6d19a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:playAtTiming canCast / pendingCosts",
+        "agrees": true,
+        "note": "unpayable [cost] makes the cast illegal; modes declared in cast window"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/45-hybrids-ld-b.test.ts",
+        "pattern": "Darkblast: R35 — with nothing else in hand the cost is unpayable and the CAST is illegal",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/38-light-a.test.ts",
+        "pattern": "R157 §21: the printed \"[lost or gained]\" is a MODE, so X is one ledger and never the sum",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": "verbatim"
+      },
+      {
+        "ref": "R157 §21",
+        "supports": "yes",
+        "note": "owner verbatim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "additional actions that are paid as a cost or modes"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "additional cost or a modal choice"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.text-box.brackets.paid-when-free",
+    "textHash": "6bb6c5422fb7e304",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "Tides pushInlinePlay collects cast [cost] (R338)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "pattern": "RAQ Tides 5: an additional cost is still paid, and a unit from the same Tides is not in play to pay it",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1396955380000755795#5",
+        "supports": "yes",
+        "note": "verbatim"
+      }
+    ],
+    "quote_spans": [],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.text-box.brackets.symbols",
+    "textHash": "9b1fec7f55759497",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "97-mode-conformance printsModal / ui/cardtext icon pass",
+        "agrees": true,
+        "note": "marker brackets are recognised as icons and never declared as modes"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/97-mode-conformance.test.ts",
+        "pattern": "R57: nothing declares a mode it does not print",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/97-mode-conformance.test.ts",
+        "pattern": "R57: a card printing a modal bracket declares EffectDef.modes",
+        "passed": true,
+        "asserts_claim": "yes: the first half of the example"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R284",
+        "supports": "yes",
+        "note": "census sentence names exactly these markers as not-prose"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "than a marker like `[Augment]`, `[Switch1]`, `[once]`, `[4bb]` or `[2]`:"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Bound test asserts only the second half of the example (\"nothing declares a mode it does not print\"); the first half is the sibling test at line 139, which also passes."
+  },
+  {
+    "key": "card.text-box.brackets.unbracketed",
+    "textHash": "d6fce7dc55a8c01c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "cards/sets/batch-hybrids-wm-b.ts:Abduct",
+        "agrees": true,
+        "note": "payOrDecline asked of the unit's controller inside run (resolution)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/30-hybrids-wm-b.test.ts",
+        "pattern": "Abduct: controller may pay [x] to keep the unit; otherwise control flips (X at cast)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R284",
+        "supports": "yes",
+        "note": "table row"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Abduct's ransom is prose, not a bracket"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-hybrids-wm-b.ts",
+        "text": "kind: 'payOrDecline', seat: owner,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.text-box.brackets.who-and-when",
+    "textHash": "aad328ed5d54e32c",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U05-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:collectModes",
+        "agrees": true,
+        "note": "modal brackets suspend a 'mode' decision to item.controller before the item is pushed"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:collectCastCosts",
+        "agrees": true,
+        "note": "bracketed castCost chosen and PAID before the item reaches the stack (R35/R64)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/97-mode-conformance.test.ts",
+        "pattern": "R284: Void Memory declares its half at cast",
+        "passed": true,
+        "asserts_claim": "yes: decision kind 'mode', seat = caster, stack empty while open, mode on the stack after the pick"
+      },
+      {
+        "file": "client/engine/test/136-triggers-and-modes.test.ts",
+        "pattern": "R157 §21: the mode is FIXED at cast",
+        "passed": true,
+        "asserts_claim": "yes: the mode on the stack stays 'gained' after the ledgers move"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R284",
+        "supports": "yes",
+        "note": "verbatim owner ruling: owner of the effect chooses mode / pays additional cost on cast, not on resolution"
+      },
+      {
+        "ref": "R157 §21",
+        "supports": "yes",
+        "note": "the modal choice must be made as it is put on the stack"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> B]. […] The owner of the effect chooses the mode or pays the additional cost"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> on cast. Not on resolution or any other time. […] All modal/additional costs"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "EVERY PRINTED BRACKET IS THE CASTER'S (R284)."
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None material. Nuance: for the two cost brackets a card imposes on OTHER cards (Arbiter of Armistice, Volatile Toxicity) the payer is whoever plays the taxed card (R284 §3), which 'owner of the effect' covers only if the effect is read as the taxed card's play. Example 1's 'each opponent discards one of that type if able' is exercised only on the miss branch."
+  },
+  {
+    "key": "card.text-box.graft-symbol",
+    "textHash": "8ac2582d9047f626",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "cards/dsl.ts graftEffect",
+        "agrees": true,
+        "note": "only post-symbol effect transfers"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 point 6: a grafted Omniwield Evoker adds its counter to the host trigger and charges nothing",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.33",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1355115946032889914#5",
+        "supports": "yes",
+        "note": "verbatim"
+      }
+    ],
+    "quote_spans": [],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.text-box.reminder",
+    "textHash": "f002b891d1091d57",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "hasAugmentMarker",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/48-playtest-hotfix.test.ts",
+        "pattern": "a spell that merely mentions [Augment] in reminder text is not an augment",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.24",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R55",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "text is **not** a marker"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.timing.battle",
+    "textHash": "3384dc9d725a81f1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:playAtTiming",
+        "agrees": true,
+        "note": "planning/haste step needs timing haste (or an R97 grant that refuses {Battle}); deploy needs deploy|haste; battle needs battle"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/36-cache-prophecy.test.ts",
+        "pattern": "R42: normal TIMING still applies — a {Battle} release is refused at deployment",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.26",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.3",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(timing === 'deploy' || timing === 'haste', 'battle cards can only be played during battle');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.timing.battle.gaining-haste",
+    "textHash": "5f2ea13a023e6fdb",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U05-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:hastePlayAllowance",
+        "agrees": true,
+        "note": "returns 0 for timing 'battle' before any grantor is consulted"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/26-metal-a.test.ts",
+        "pattern": "Dispatch Courier: a {Battle} unit stays a battle card",
+        "passed": true,
+        "asserts_claim": "yes: Monke not offered / refused in the haste step under the grant"
+      },
+      {
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "pattern": "RAQ Dispatch Courier: a Battle spell unit is not playable",
+        "passed": true,
+        "asserts_claim": "yes: Jelly refused in the haste step under the grant"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1465292396664193171#0",
+        "supports": "yes",
+        "note": "verbatim"
+      },
+      {
+        "ref": "RAQ 1464899726796390433#0",
+        "supports": "yes",
+        "note": "calebgannon reversal 'it's gotta be no'"
+      },
+      {
+        "ref": "RAQ 1465292396664193171#1",
+        "supports": "partly",
+        "note": "the quote splices the Q and the A with an ellipsis; same post as #0"
+      },
+      {
+        "ref": "R97",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/corpus/algomancy_corpus.jsonl",
+        "text": "A: No, despite gaining :haste: they can still only be played during :battle: ."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (ctx.card.timing === 'battle') return 0;  // RAQ: a battle card stays one"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> A: **No, despite gaining {Haste} they can still only be played during {Battle}.**"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.timing.haste",
+    "textHash": "e1a8c7d6c9858313",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:playAtTiming",
+        "agrees": true,
+        "note": "planning/haste step needs timing haste (or an R97 grant that refuses {Battle}); deploy needs deploy|haste; battle needs battle"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/08-cards2.test.ts",
+        "pattern": "Molten Upheaval + the haste step: haste cards play between planning and battle (R18)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U05/u05-verify-probes.test.ts",
+        "title": "card.timing.haste: a Haste card is also playable during deployment",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.26",
+        "supports": "partly",
+        "note": "about deployment, on-topic"
+      },
+      {
+        "ref": "Rulebook 2023 p.3",
+        "supports": "yes",
+        "note": "\"mana step and the main phase\""
+      },
+      {
+        "ref": "R97",
+        "supports": "yes",
+        "note": "mana step = haste step"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "the printed \"mana step\" IS this engine's R18 haste step"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.timing.ignore",
+    "textHash": "d251a0a05f5dc7ea",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U05-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-water-a.ts:playInline/pushInlinePlay",
+        "agrees": true,
+        "note": "Tides' picks are played inline with no playAtTiming gate"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "pattern": "RAQ Tides 2: a free play ignores timing",
+        "passed": true,
+        "asserts_claim": "yes: deploy unit and deploy spell unit played in battle"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Tides of the Cosmos",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1357483405276614856#0",
+        "supports": "yes",
+        "note": "Caleb Gannon (designer): yep!"
+      },
+      {
+        "ref": "RAQ 1396955380000755795#1",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "You may play them now, for free."
+      },
+      {
+        "file": "data/corpus/algomancy_corpus.jsonl",
+        "text": "lets you play every card in the battle step, even if it has not the battle or virus simble"
+      },
+      {
+        "file": "data/corpus/algomancy_corpus.jsonl",
+        "text": "2. Tides allows you to ignore timing of played cards."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.timing.ignore.only-when-said",
+    "textHash": "c53fd91546899f5b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.cachedTiming",
+        "agrees": true,
+        "note": "cache releases at printed timing"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/36-cache-prophecy.test.ts",
+        "pattern": "R45: glimpse still obeys timing, and a short deck glimpses fewer",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/36-cache-prophecy.test.ts",
+        "pattern": "R42: normal TIMING still applies — a {Battle} release is refused at deployment",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R157 §12",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R42 (its release half)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Cards that let you ignore timing say something like"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.timing.mods",
+    "textHash": "5a98c37a7d3abb37",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "apply.ts battleAugmentAllowed; graft offers deploy-only",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 point 1: a graft is offered in deployment and never in the haste step or in battle, even for a Haste card",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.32",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": " Modification is independent of timing modifiers that aren’t virus, so battle cards"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.timing.none",
+    "textHash": "299f682954c473ee",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:playAtTiming",
+        "agrees": true,
+        "note": "planning/haste step needs timing haste (or an R97 grant that refuses {Battle}); deploy needs deploy|haste; battle needs battle"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "pattern": "RAQ Tides 2: a free play ignores timing — a deploy unit and a deploy spell unit, in battle",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U05/u05-verify-probes.test.ts",
+        "title": "card.timing.none: a card with no timing icon is refused in the haste step and in battle",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": "\"Cards with no icon can only be played during deployment.\""
+      },
+      {
+        "ref": "Manual p.12",
+        "supports": "partly",
+        "note": "\"can be played during deployment\" (permission, not restriction)"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Cards with no icon can only be played during deployment."
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(timing === 'battle', 'only battle cards can be played now');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Bound test shows only the Tides exception; the \"only because\" half (refusal without Tides) is measured by the probe."
+  },
+  {
+    "key": "card.timing.per-line",
+    "textHash": "960cc94e060b8787",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "apply.ts discardMe timing (c.discardMe.timing ?? ...)",
+        "agrees": true,
+        "note": "unmarked line usable in battle; {Battle}-marked refused outside battle"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/58-playtest-round9.test.ts",
+        "pattern": "R65: a \"Discard me\" line works during battle, whatever the card's own timing says",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/37-attrs-wight.test.ts",
+        "pattern": "R40: Nothyr's battle-timing discard-me line is refused outside battle",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R65",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R157 §8",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "still restricts it to battle; nothing restricts it to deployment"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.timing.virus",
+    "textHash": "51f4bac7731eb62e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:battleAugmentAllowed (doAugment)",
+        "agrees": true,
+        "note": "'only Virus cards can augment from hand during battle' unless Rook"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/04-mods.test.ts",
+        "pattern": "virus augment during battle: on the stack, donated to an enemy, text-only transfer",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/29-hybrids-wm-a.test.ts",
+        "pattern": "Rook: a NON-virus augment from HAND during battle — refused without it, legal with it",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": "\"Virus cards can also be applied as augments from your hand during battle.\""
+      },
+      {
+        "ref": "Rulebook 2023 p.3",
+        "supports": "yes",
+        "note": "verbatim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "'only Virus cards can augment from hand during battle');"
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "▪ The virus icon (4) allows you to augment cards from hand during"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.timing.what",
+    "textHash": "c96cb0fa11b3bf2c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "cards/dsl.ts Printed.timing + virus",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.12/13/34",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Haste cards can also"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.type-line.attribute-colours",
+    "textHash": "37a5cdc52f07a61a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "engine.ts statLayerAttrs (column-shared); Burst/Unstable are flags, not Attr",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.12",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.24",
+        "supports": "yes",
+        "note": "gold text = combat, shared in column"
+      },
+      {
+        "ref": "Manual p.25",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Combat attributes (denoted in gold text) are shared by"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.type-line.attributes",
+    "textHash": "381612bad8a788de",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "ui printedTextBox (R282)",
+        "agrees": true,
+        "note": "type-line attribute rendered as rules text"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/262-type-line-attributes.test.ts",
+        "pattern": "R282: a card whose only rules content is a type-line attribute stops saying no rules text",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Whispering Mantid",
+        "supports": "yes",
+        "note": "printed.json: text empty, attrs [Sneaky]"
+      },
+      {
+        "ref": "R282",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "That's cause they're attributes in the type line"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.type-line.card-type",
+    "textHash": "3a54a8999c9c8cd0",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U05-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/printed.json:kind",
+        "agrees": true,
+        "note": "every row's type line ends in the word(s) matching its kind: spell->Spell, spellUnit->Spell Unit, spellToken->Spell Token, unit->Unit / Token Unit / Resource"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U05/u05-r2-verify-probes.test.ts",
+        "title": "card.type-line.card-type: every printed type line ends Unit / Spell / Spell Unit / Token Unit / Spell Token / Resource, matching its kind",
+        "passed": true,
+        "demonstrates": "yes: whole-pool census, zero exceptions (138 Spell, 14 Spell Unit, 3 Spell Token, 3 Token Unit, 3 Resource, 331 Unit)"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "partly",
+        "note": "says some spells also have the unit type; does not state the ending rule"
+      },
+      {
+        "ref": "card: Jelly",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Robot",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Fireball",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Earth Resource",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R284",
+        "supports": "partly",
+        "note": "a spellToken's type line reads 'Spell Token'"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Some spells also have the unit type. Rather than being"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "{Battle} {Burst} Spell Token"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Robot Token Unit"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[e] Earth Resource"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "{Battle} Jellyfish Spell Unit"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Jelly, fifteen more). A spellToken's reads \"Spell Token\"."
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Descriptive, supported by the pool. A Spell Token is also played (R305) yet ends 'Token', which the first sentence's 'card that can be played' does not cover — the second sentence does."
+  },
+  {
+    "key": "card.type-line.card-type.spell-unit",
+    "textHash": "1a85740aac56e64b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "helpers.ts isUnitCard; apply.ts isSpellCard",
+        "agrees": true,
+        "note": "spellUnit counted as both"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "pattern": "RAQ Hooba-Pon spell unit: it counts as playing a spell",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R284",
+        "supports": "partly",
+        "note": "stated for Void Memory's halves; generalised"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A {Spell Unit} answers **both** halves"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.type-line.icons-not-attributes",
+    "textHash": "90c03af6a7e91c12",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "printed.json Tidal Menace attrs []",
+        "agrees": true,
+        "note": "{Haste} parsed to timing, not attrs"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/262-type-line-attributes.test.ts",
+        "pattern": "R282: a card with no attribute and no text still says nothing, and the guard does not reach it",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Tidal Menace",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R282",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A genuine vanilla still says nothing"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.type-line.order",
+    "textHash": "a4f06ae8a7cb3cba",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.effStats layer 4 (statLayerAttrs order)",
+        "agrees": true,
+        "note": "Tough/Balanced applied in application order"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/08-cards2.test.ts",
+        "pattern": "R19: layer-4 application order — Tough→Balanced ≠ Balanced→Tough",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.42",
+        "supports": "yes",
+        "note": "verbatim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Attributes apply in order from top to bottom. So if"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "card.type-line.subtypes",
+    "textHash": "0ebf9818d224863e",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U05-r2",
+    "engine": [
+      {
+        "loc": "client/engine/test/209-interdiction-rift-type-line.test.ts:signature two",
+        "agrees": true,
+        "note": "no generic subtype model in src/; the census treats every non-marker word other than Unit/Spell/Token/Resource as a subtype — exactly the rule's definition"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/209-interdiction-rift-type-line.test.ts",
+        "pattern": "§3 signature two: no subtype word",
+        "passed": true,
+        "asserts_claim": "yes: pins the one-card subtypes derived by that definition; 'AI' excluded"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Good Whale",
+        "supports": "yes",
+        "note": "{Piercing} Whale Unit"
+      },
+      {
+        "ref": "card: Trashling",
+        "supports": "yes",
+        "note": "{Virus} marker stands between subtypes"
+      },
+      {
+        "ref": "R240",
+        "supports": "partly",
+        "note": "on-topic: AI is not a subtype; supports the population-of-one sweep, not the definition itself"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Augment] {Unaware} Scrap Robot {Virus} Unit"
+      },
+      {
+        "file": "client/engine/test/209-interdiction-rift-type-line.test.ts",
+        "text": "const HEADS = new Set(['Unit', 'Spell', 'Token', 'Resource']);"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "space *and* the `AI`, which is not a subtype of this card and is not a subtype at all."
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Definitional; no printed source defines 'subtype'. By this definition the resource cards' element words (Earth, Fire, Water) are subtypes, which the 209 census accepts."
+  },
+  {
+    "key": "card.type-line.what",
+    "textHash": "e6fb9225ba0b46e3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U05-r1",
+    "engine": [],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.12",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Trashling",
+        "supports": "yes",
+        "note": "printed.json type matches"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "▪ Attributes (6) describe the qualities of the card, including some combat abili-"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  }
+]

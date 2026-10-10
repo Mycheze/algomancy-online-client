@@ -1,0 +1,2630 @@
+[
+  {
+    "key": "combat.attack.general",
+    "parent": "604",
+    "order": 1,
+    "text": "Attacking is how a player brings units, and the spell tokens that travel with them, into a neighbouring enemy region for battle. Attacks are declared in the attack step, the first step of a battle round (see 505).",
+    "examples": [
+      {
+        "text": "Example: The initiative player declares an attack with one unit. That unit moves into the other player's region, and at regroup it returns home.",
+        "test": "02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2"
+      }
+    ],
+    "see": [
+      "505",
+      "601"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "During the Attack Step, players select a set of units"
+        },
+        {
+          "ref": "Manual p.20",
+          "quote": "and other cards in play, such as spell tokens, to bring"
+        },
+        {
+          "ref": "Manual p.20",
+          "quote": "into a neighboring enemy region for battle. These"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "02-combat.test.ts",
+        "422-cr-attacking-blocking.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.20 ATTACKING paragraph; Rulebook 2023 p.9 says the same.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.attack.general.players",
+    "parent": "combat.attack.general",
+    "order": 1,
+    "text": "Units attack players directly. They do not attack individual units unless a spell directs them to.",
+    "examples": [
+      {
+        "text": "Example: An attacking column that is not blocked deals its combat damage to the defending player.",
+        "test": "423-cr-combat-damage.test.ts::cr:combat.damage.pairing — an unblocked attacking column hits the player"
+      }
+    ],
+    "see": [
+      "608"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "Units attack players directly. They do not attack individual units unless"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "423-cr-combat-damage.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The Manual's note continues 'directed by a spell (such as Battle above)'; the card name is left out of the rule text.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.attack.general.rounds",
+    "parent": "combat.attack.general",
+    "order": 2,
+    "text": "In a two-player game and in team games, each team gets one chance to attack per turn. In the first battle round the initiative player attacks into the non-initiative player's region; in the second battle round the non-initiative player attacks with the units it sent to counterattack or, if the first round had no attack, with any of its units (see 505, 610 and combat.attack.decline.next-round).",
+    "examples": [
+      {
+        "text": "Example: The initiative player attacks with a 2/2. The non-initiative player sends a 4/3 to counterattack while declaring blocks. After the first round's combat, the 4/3 attacks in the second round.",
+        "test": "02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2"
+      }
+    ],
+    "see": [
+      "505",
+      "610",
+      "combat.attack.decline.next-round"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "1. The IT declare their attacks, sending units into NIT"
+        },
+        {
+          "ref": "Manual p.20",
+          "quote": "1. The NIT puts their attacking units into formation."
+        },
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "takes place again with the non-initative attackers. Each team only gets one chance to attack,"
+        },
+        {
+          "ref": "Manual p.20",
+          "quote": "The NIT can still declare attacks even if the IT decides not to attack."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R15",
+          "quote": "never commits counterattackers — in that case NIT may attack round 2 with **any**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "02-combat.test.ts",
+        "396-raq-timing.test.ts",
+        "422-cr-attacking-blocking.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Free-for-all attacking (intent cards, Rulebook 2023 p.9) is left to section 903/905 (unit U22).",
+    "sourceHashes": {
+      "R15": "e9757a2a1c4b7ad66b358fba9e6d8ca20cacb03fd5c6e1121f4687ec41eeb12c"
+    }
+  },
+  {
+    "key": "combat.attack.declaring",
+    "parent": "604",
+    "order": 2,
+    "text": "To attack, the attacking player chooses which of its units go and places them in an attacking formation (see 602). The attacking formation is set in the attack step, and from then on its units are locked in position.",
+    "examples": [
+      {
+        "text": "Example (illustrative): A player with three units attacks with two of them, side by side in two columns. The third stays at home.",
+        "test": "422-cr-attacking-blocking.test.ts::cr:combat.attack.declaring — a player with three units attacks with two side by side; the third stays home, and the formation cannot be declared again"
+      }
+    ],
+    "see": [
+      "602"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.22",
+          "quote": "Attacking formations are set during the attack step"
+        },
+        {
+          "ref": "Manual p.22",
+          "quote": "is set, the units are locked in position and are considered"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "422-cr-attacking-blocking.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "How a formation is built (front row first, two rows) is section 602 (unit U10). Rulebook 2023 p.9 citation dropped in round 1: it is about entering the region, not about setting the formation.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.attack.declaring.optional",
+    "parent": "combat.attack.declaring",
+    "order": 1,
+    "text": "Attacking is optional. A player may declare no attack.",
+    "examples": [
+      {
+        "text": "Example: The initiative player has a unit that could attack and declares no attack. The battle moves to the second round.",
+        "test": "396-raq-timing.test.ts::RAQ Temporal Rift thread: the non-initiative player still attacks when the initiative player declines"
+      }
+    ],
+    "see": [
+      "combat.attack.decline"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "The NIT can still declare attacks even if the IT decides not to attack."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The Manual note presupposes the initiative player may decide not to attack.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.attack.declaring.no-summoning-sickness",
+    "parent": "combat.attack.declaring",
+    "order": 2,
+    "text": "There is no summoning sickness. A unit may attack, or block, however recently it entered play.",
+    "examples": [
+      {
+        "text": "Example (illustrative): A unit played in the haste step attacks in the battle phase of the same turn (see 504).",
+        "test": "422-cr-attacking-blocking.test.ts::cr:combat.attack.declaring.no-summoning-sickness — a unit that entered play during the battle phase, before the declaration, may attack"
+      }
+    ],
+    "see": [
+      "504",
+      "combat.blocks.who.recent"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.43",
+          "quote": "A: Yes! Algomancy has no summoning sickness. As"
+        },
+        {
+          "ref": "Manual p.43",
+          "quote": "long as a unit is in play, it can attack/block."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "422-cr-attacking-blocking.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The Q&A is about units that spawn during battle. Read literally ('as long as a unit is in play, it can attack') it would also let any unit attack in the second battle round; the round-2 pool rule (combat.attack.declaring.round-two) is the more specific printed rule. See D-U11-8.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.attack.declaring.spell-tokens",
+    "parent": "combat.attack.declaring",
+    "order": 3,
+    "text": "Spell tokens may go with an attack, but only together with at least one unit, and only spell tokens the attacking player controls in the region the attack leaves from.",
+    "examples": [
+      {
+        "text": "Example: A player counterattacking names a spell token and no unit when declaring blocks. The declaration is refused.",
+        "test": "78-round17-core.test.ts::R87: spell tokens still travel only with units, and only from the region they stand in"
+      },
+      {
+        "text": "Example (illustrative): A player declares an attack naming a Poison token and no unit. The Poison does not go: with no unit, the declaration is no attack at all (see combat.attack.decline). With a unit beside it, the Poison goes along.",
+        "test": "422-cr-attacking-blocking.test.ts::cr:combat.attack.declaring.spell-tokens — an attack naming a spell token and no unit is not refused: it is taken as declining to attack, and the token stays home"
+      }
+    ],
+    "see": [
+      "304",
+      "combat.blocks.counterattack.tokens"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.15",
+          "quote": "During the attack step, spell tokens can be brought"
+        },
+        {
+          "ref": "Manual p.15",
+          "quote": "so on their own, however and must follow at least one"
+        },
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "attack step if they have units to guide them."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R87",
+          "quote": "Spell tokens travel with a formation, in either direction, and they need a"
+        },
+        {
+          "ref": "R87",
+          "quote": "a spell token you control, standing in the region this formation"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "78-round17-core.test.ts",
+        "422-cr-attacking-blocking.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Printed text gives the 'needs a unit' half; R87 gives 'you control' and 'in the region the formation leaves from'. Round 1: the engine takes an ATTACK naming only spell tokens as declining to attack (the token stays home), where a counterattack naming only tokens is refused; measured by the verifier's probe. See D-U11-10.",
+    "sourceHashes": {
+      "R87": "9dd306a3fefd3160b14fb625d78d25dd99cf9fe6c645d47a05920706c2a44214"
+    }
+  },
+  {
+    "key": "combat.attack.declaring.tokens-irreversible",
+    "parent": "combat.attack.declaring",
+    "order": 4,
+    "text": "Bringing a spell token into another region with an attack cannot be undone.",
+    "examples": [
+      {
+        "text": "Example: A Poison token goes along with an attack into the enemy region. In the counterattack, fought in its owner home region, the token is still in the enemy region and cannot be cast.",
+        "test": "422-cr-attacking-blocking.test.ts::cr:combat.attack.declaring.tokens-irreversible — a spell token brought along with an attack stays in that region for the rest of the battle and cannot be cast back home in the counterattack"
+      }
+    ],
+    "see": [
+      "304"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "This move is irreversible though"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "422-cr-attacking-blocking.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.attack.declaring.lured",
+    "parent": "combat.attack.declaring",
+    "order": 5,
+    "text": "A unit targeted by an Alluring trigger may not be declared as an attacker, or sent to counterattack, for the rest of the battle phase (see 802.15).",
+    "examples": [
+      {
+        "text": "Example: An Alluring attacker targets a defending unit. That unit cannot be sent out to counterattack when blocks are declared.",
+        "test": "53-playtest-round7.test.ts::R84: a lured unit cannot be sent out to counterattack"
+      },
+      {
+        "text": "Example: The same lured unit, put by hand into the second round's attacker pool, still cannot be declared as an attacker.",
+        "test": "53-playtest-round7.test.ts::R84: a lured unit may not be declared as an attacker (a guard, by hand)"
+      }
+    ],
+    "see": [
+      "802.15",
+      "610"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R84",
+          "quote": "may not be sent out as a counterattacker, and may not be declared as an"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R76",
+          "relation": "its Alluring rule was replaced by R84"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "53-playtest-round7.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R84 rests on Caleb's Discord words ('It won't be able to counter-attack into your region'), which are not in a RAQ thread in the register, so the basis is the ruling. R84 notes the 'may not be declared as an attacker' half is unreachable on its own in 1v1, because the round-2 pool is the sent units.",
+    "sourceHashes": {
+      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
+    }
+  },
+  {
+    "key": "combat.attack.declaring.round-two",
+    "parent": "combat.attack.declaring",
+    "order": 6,
+    "text": "In the second battle round, the attacking player may attack only with the units it sent to counterattack in the first round, unless the first round had no attack (see 604 and 610).",
+    "examples": [
+      {
+        "text": "Example: The non-initiative player sent one unit to counterattack and kept another at home. In the second round, only the sent unit may attack.",
+        "test": "02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2"
+      }
+    ],
+    "see": [
+      "610",
+      "combat.attack.decline.next-round"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "1. The NIT puts their attacking units into formation."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R15",
+          "quote": "If IT declines to attack (no round-1 battle), NIT never gets a block step and so"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "02-combat.test.ts",
+        "21-fixes.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R15 is assigned to U13 (610); cited here, outside my pack, because it fixes who may be declared as an attacker. Manual p.20 Phase 2 step 1 names the units 'sent in Phase 1' only implicitly ('their attacking units').",
+    "sourceHashes": {
+      "R15": "e9757a2a1c4b7ad66b358fba9e6d8ca20cacb03fd5c6e1121f4687ec41eeb12c"
+    }
+  },
+  {
+    "key": "combat.attack.effects",
+    "parent": "604",
+    "order": 3,
+    "text": "When an attack is declared, the attacking units, and the spell tokens with them, move into the region attacked. They remain there until the regroup phase, when they return to their own region (see 506).",
+    "examples": [
+      {
+        "text": "Example: A unit that counterattacked into the initiative player's region is back in its own region once regroup is over.",
+        "test": "02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2"
+      }
+    ],
+    "see": [
+      "506",
+      "601"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "cards will remain in the new region(s) until the regroup"
+        },
+        {
+          "ref": "Rulebook 2023 p.9",
+          "quote": "By doing so, you and your units that you attacked with are now in the new region"
+        },
+        {
+          "ref": "Manual p.27",
+          "quote": "Return to your region"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "02-combat.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.attack.effects.presence",
+    "parent": "combat.attack.effects",
+    "order": 1,
+    "text": "Once a player has sent attacking units into an enemy region, that player is present there and may interact with things in that region using spells and effects (see 601).",
+    "examples": [
+      {
+        "text": "Example: After an attack, both players are present in the battle region, so each sees every death in it.",
+        "test": "314-prophecy-units-die.test.ts::R302 §3: combat puts the attacker in the region, so both seats see every death in it"
+      }
+    ],
+    "see": [
+      "601"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "Once a player has sent attacking units into an enemy"
+        },
+        {
+          "ref": "Manual p.20",
+          "quote": "region, they can now interact with things in that region"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "314-prophecy-units-die.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.attack.effects.attacking-units",
+    "parent": "combat.attack.effects",
+    "order": 2,
+    "text": "The units in the attacking formation are the attacking units. A unit that arrives in the battle region outside the formation, such as one created there during the battle, is not attacking.",
+    "examples": [
+      {
+        "text": "Example: Aberrant Populace attacks and creates two Wisps. The Wisps are in the battle region but not in the formation, so they are not attacking.",
+        "test": "08-cards2.test.ts::Aberrant Populace: attack → two Wisps out of formation"
+      }
+    ],
+    "see": [
+      "602",
+      "combat.block-window.late-blocker"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.15",
+          "quote": "If a unit spawns during battle, it is placed outside"
+        },
+        {
+          "ref": "Manual p.15",
+          "quote": "of formation (meaning it is not attacking or blocking), but still in the same region."
+        },
+        {
+          "ref": "card: Aberrant Populace",
+          "quote": "(They aren't in formation.)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "08-cards2.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "A unit put INTO the formation by an effect (Hooba-Bot's Robot, Tiderunner Initiate) is in formation; whether it then counts as having attacked for 'when I attack' triggers is not stated by any source.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.attack.effects.triggers",
+    "parent": "combat.attack.effects",
+    "order": 3,
+    "text": "Abilities that trigger when a unit attacks trigger as the attack is declared. They are put on the stack before the attack window opens, so players can respond to them in that window (see 605 and 706).",
+    "examples": [
+      {
+        "text": "Example: Tempest Wrangler attacks and its Alluring trigger goes on the stack. In the attack window the defending player negates it with Containment Protocol, and no unit is lured.",
+        "test": "390-raq-stack.test.ts::RAQ trigger-like attributes: Containment Protocol negates a waiting Alluring trigger"
+      },
+      {
+        "text": "Example: Hooba-Bot attacks; its trigger asks where the Robot goes, and the Robot lands in the chosen slot.",
+        "test": "108-formation-class.test.ts::BL-24 Hooba-Bot (played as a unit): attack → the ask"
+      }
+    ],
+    "see": [
+      "605",
+      "706",
+      "802.15"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Palewing",
+          "quote": "When I attack or block, [Switch1] Discard a card."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R84",
+          "quote": "It goes on the stack and can be negated."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts",
+        "108-formation-class.test.ts",
+        "53-playtest-round7.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "Printed cards say 'When I attack'; R84 says the Alluring trigger goes on the stack and can be negated. That every attack trigger is on the stack when the attack window opens is generalised from Alluring and from the tests; no source states it for all of them. See D-U11-9.",
+    "sourceHashes": {
+      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
+    }
+  },
+  {
+    "key": "combat.attack.effects.alone",
+    "parent": "combat.attack.effects",
+    "order": 4,
+    "text": "A unit attacks alone when it is the only unit in its attacking formation. Spell tokens that travel with it do not count as company.",
+    "examples": [
+      {
+        "text": "Example: Whispering Mantid (Sneaky) attacking by itself cannot be blocked; attacking beside another unit, it can.",
+        "test": "08-cards2.test.ts::Whispering Mantid: Sneaky — unblockable only when attacking alone (R20)"
+      }
+    ],
+    "see": [
+      "802.14"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Surly Stalker",
+          "quote": "When I attack or block alone, [Switch1] Double my power and defense until regroup."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R20",
+          "quote": "(spell tokens riding along don't count as company)"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "08-cards2.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "R20 defines 'attacking alone' for Sneaky (assigned to U20). Applying the same definition to Surly Stalker's 'attack ... alone' is my reading; no source says so for that card.",
+    "sourceHashes": {
+      "R20": "a7ed69765e88424d1df6f44df198512df5fa6376ae825ba31ff49b32390d7304"
+    }
+  },
+  {
+    "key": "combat.attack.decline",
+    "parent": "604",
+    "order": 4,
+    "text": "If the attacking player declares no attack, there is no combat in that round: no attack window, no block step, no block window, no combat damage step and no after combat step.",
+    "examples": [
+      {
+        "text": "Example: Both players decline to attack. The whole battle phase passes with no priority window at all.",
+        "test": "165-token-loss-warning.test.ts::[CT-55] a battle both players decline opens no priority window at all"
+      }
+    ],
+    "see": [
+      "505",
+      "609"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "did not get attacked, in which case combat and after"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R194",
+          "quote": "A declined attack fights no combat, so there is no"
+        },
+        {
+          "ref": "R15",
+          "quote": "If IT declines to attack (no round-1 battle), NIT never gets a block step and so"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "165-token-loss-warning.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Printed text skips combat and after combat in a region that was not attacked; that the attack window and block window are skipped too is R194/R15 (owner calls). See D-U11-1. 'No combat', not 'no battle': the engine still counts a declined round as a completed battle for 'One Battle Passes'. See D-U11-11.",
+    "sourceHashes": {
+      "R15": "e9757a2a1c4b7ad66b358fba9e6d8ca20cacb03fd5c6e1121f4687ec41eeb12c",
+      "R194": "b5a45cc0ecccdb7c3471030b213cc8593ef622de9c332ff7da3863ef327b11c9"
+    }
+  },
+  {
+    "key": "combat.attack.decline.next-round",
+    "parent": "combat.attack.decline",
+    "order": 1,
+    "text": "If the initiative player declares no attack in the first battle round, the non-initiative player may still attack in the second battle round, and may attack with any of its units.",
+    "examples": [
+      {
+        "text": "Example: The initiative player declines to attack. The non-initiative player, who sent nobody to counterattack, attacks in the second round with a unit that stayed at home.",
+        "test": "396-raq-timing.test.ts::RAQ Temporal Rift thread: the non-initiative player still attacks when the initiative player declines"
+      }
+    ],
+    "see": [
+      "610"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "The NIT can still declare attacks even if the IT decides not to attack."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R15",
+          "quote": "never commits counterattackers — in that case NIT may attack round 2 with **any**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts",
+        "21-fixes.test.ts",
+        "422-cr-attacking-blocking.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "RAQ 1353986897902567424#2 says the same, but its thread is still open ([Considered]), so it is not cited as a designer source. See D-U11-4.",
+    "sourceHashes": {
+      "R15": "e9757a2a1c4b7ad66b358fba9e6d8ca20cacb03fd5c6e1121f4687ec41eeb12c"
+    }
+  },
+  {
+    "key": "combat.attack-window.general",
+    "parent": "605",
+    "order": 1,
+    "text": "The attack window is the priority window that follows the declaration of an attack, in the region attacked.",
+    "examples": [
+      {
+        "text": "Example: An attack is declared. Priority goes to the initiative player, then to the other player; when both pass, the step moves on.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.priority.window — in an empty attack window each player receives priority in turn"
+      }
+    ],
+    "see": [
+      "703"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "2. There is a priority window for interaction."
+        },
+        {
+          "ref": "Manual p.27",
+          "quote": "2. Priority window"
+        },
+        {
+          "ref": "Rulebook 2023 p.13",
+          "quote": "There is a priority window during the attack step, so player A recieves priority first."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.attack-window.general.initiative-first",
+    "parent": "combat.attack-window.general",
+    "order": 1,
+    "text": "The initiative player receives priority first in the attack window (see 703).",
+    "examples": [
+      {
+        "text": "Example: In the first round's attack window the initiative player is asked first; the other player is asked after the initiative player passes.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.priority.window — in an empty attack window each player receives priority in turn"
+      }
+    ],
+    "see": [
+      "703"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.30",
+          "quote": "Within a priority window, first the initiative player will receive"
+        },
+        {
+          "ref": "Rulebook 2023 p.13",
+          "quote": "There is a priority window during the attack step, so player A recieves priority first."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "425-cr-casting-and-stack.test.ts",
+        "422-cr-attacking-blocking.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The Rulebook example has the attacking player A as the initiative player. In the second round the initiative player is the defender; the Manual's rule (initiative first) still applies, since the initiative player is present in its own region.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.attack-window.general.end",
+    "parent": "combat.attack-window.general",
+    "order": 2,
+    "text": "When all players pass priority in succession with the stack empty, the attack window ends and the block step begins (see 606).",
+    "examples": [
+      {
+        "text": "Example: A spell cast in the attack window resolves after two passes and a new window opens; two more passes on the empty stack end the attack window.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.priority.window.resolve — two passes resolve the top item"
+      }
+    ],
+    "see": [
+      "606",
+      "703"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.13",
+          "quote": "If player A passes priority and player B passes priority, the phase ends and we move directly to the block/counterattack step."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.attack-window.general.gravity",
+    "parent": "combat.attack-window.general",
+    "order": 3,
+    "text": "Until blocks are declared, a column of the attacking formation that loses its last unit closes up: the columns on its sides move in to fill the gap (see 602).",
+    "examples": [
+      {
+        "text": "Example: The middle column of a three-column attack is killed in the block step, before blocks are declared. The right-hand column slides left into the gap, and the attack is two columns wide.",
+        "test": "64-formation-collapse.test.ts::R72: a middle column emptied before blocks collapses"
+      }
+    ],
+    "see": [
+      "602",
+      "combat.block-window.general.locked"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.22",
+          "quote": "If the last unit in a column is removed from a formation, the columns on its sides will close in to fill the gap. This"
+        },
+        {
+          "ref": "Rulebook 2023 p.10",
+          "quote": "If the last unit in a column is removed from an attacking formation"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R72 its gravity half",
+          "quote": "the line closes ranks only before blocks"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "64-formation-collapse.test.ts",
+        "422-cr-attacking-blocking.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The full gravity rule is 602 (unit U10). R72 is partly superseded only in its side-block note. The bound test kills the column in the block step before the declaration; the verifier's probe (data/comprehensive-rules/build/probes/U11/u11-probes.test.ts) showed the same closing-up for a column killed in the attack window.",
+    "sourceHashes": {
+      "R72": "eed4648973a278cfbffddb860451cdd2629e8dfb6ab2b6c9a15137cdce515969"
+    }
+  },
+  {
+    "key": "combat.attack-window.general.still-present",
+    "parent": "combat.attack-window.general",
+    "order": 4,
+    "text": "If every attacking unit is removed during the attack window, the attacking player is still present in the region for the rest of the battle phase.",
+    "examples": [
+      {
+        "text": "Example (illustrative): The only attacker is destroyed in the attack window. Its controller may still cast spells in that region later in the battle phase.",
+        "test": "422-cr-attacking-blocking.test.ts::cr:combat.attack-window.general.still-present — the attacking player stays present after its only attacker is destroyed in the attack window"
+      }
+    ],
+    "see": [
+      "601",
+      "combat.blocks.empty-attack"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.19",
+          "quote": "inside of it for the remainder of the battle phase, even"
+        },
+        {
+          "ref": "Manual p.19",
+          "quote": "if the units they’ve sent into the region are removed."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "422-cr-attacking-blocking.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.blocks.general",
+    "parent": "606",
+    "order": 1,
+    "text": "Blocking is how a player who has been attacked defends. In the block step, the defending player may place its units in front of the attacking formation.",
+    "examples": [
+      {
+        "text": "Example: Two columns attack, a 3/5 and a 4/5; the defending player places a 2/5 in front of the 3/5. That column is blocked and the two units deal damage to each other; the unblocked 4/5 hits the player.",
+        "test": "423-cr-combat-damage.test.ts::cr:combat.damage.pairing — an unblocked attacking column hits the player"
+      }
+    ],
+    "see": [
+      "602",
+      "608"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.23",
+          "quote": "When a player is attacked, they get an opportunity to"
+        },
+        {
+          "ref": "Manual p.23",
+          "quote": "defend during the block step. To do so, they may place"
+        },
+        {
+          "ref": "Manual p.23",
+          "quote": "units in front of the formation that is attacking them."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "423-cr-combat-damage.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Rulebook 2023 p.11 says the same.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.blocks.general.formation",
+    "parent": "combat.blocks.general",
+    "order": 1,
+    "text": "The blocking units form the defending formation. Like any formation, it has a front row and a back row (see 602).",
+    "examples": [
+      {
+        "text": "Example: Two units block one attacking column, one in the front row and one behind it. The attacker damages the front one.",
+        "test": "422-cr-attacking-blocking.test.ts::cr:combat.blocks.general.formation — two blockers in one column stand front and back: they are adjacent to each other and the front one takes the damage"
+      }
+    ],
+    "see": [
+      "602"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.23",
+          "quote": "The resulting group of defending units is also called a"
+        },
+        {
+          "ref": "Manual p.22",
+          "quote": "just like soldiers lining up for battle. Formations have a front"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "422-cr-attacking-blocking.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.blocks.general.empty-columns",
+    "parent": "combat.blocks.general",
+    "order": 2,
+    "text": "Unlike an attacking formation, the defending formation may have empty columns: the defending player need not block every attacking column, and an empty blocking column is never closed up.",
+    "examples": [
+      {
+        "text": "Example: Against a three-column attack, the defending player blocks only the third column. The first two columns are unblocked, and the attack stays three columns wide.",
+        "test": "66-formation-placement.test.ts::R75: a blocking formation may legitimately have EMPTY columns"
+      }
+    ],
+    "see": [
+      "602"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.11",
+          "quote": "unlike offensive formations, the defending formation can have some missing columns."
+        },
+        {
+          "ref": "Manual p.23",
+          "quote": "ing formation is allowed to be assigned with empty"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "66-formation-placement.test.ts",
+        "422-cr-attacking-blocking.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "'Never closed up' is the test's title ('never repaired'); the Manual's closing-up rule speaks of a column whose last unit is removed, which an empty blocking column never had.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.blocks.general.none",
+    "parent": "combat.blocks.general",
+    "order": 3,
+    "text": "The defending player may declare no blockers at all.",
+    "examples": [
+      {
+        "text": "Example: The defending player declares no blocks and sends a unit to counterattack; the attacker's unblocked column hits the defending player.",
+        "test": "02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.23",
+          "quote": "defend during the block step. To do so, they may place"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "02-combat.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "'may place' — blocking is a choice, subject to any compulsion such as Alluring (combat.blocks.who.lured).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.blocks.general.locked",
+    "parent": "combat.blocks.general",
+    "order": 4,
+    "text": "Blocks are declared once. Once declared, the defending formation is set and its units are locked in position. A unit can join it later only by an effect that puts a unit into formation (see 607).",
+    "examples": [
+      {
+        "text": "Example (illustrative): After declaring blocks, the defending player cannot move a blocker from one column to another.",
+        "test": "422-cr-attacking-blocking.test.ts::cr:combat.blocks.general.locked — blocks cannot be declared a second time in the block window"
+      }
+    ],
+    "see": [
+      "602",
+      "combat.block-window.late-blocker"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.22",
+          "quote": "formations are set during the block step. Once a formation"
+        },
+        {
+          "ref": "Manual p.22",
+          "quote": "is set, the units are locked in position and are considered"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "422-cr-attacking-blocking.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The late-blocker rule is combat.block-window.late-blocker.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.blocks.general.one-column",
+    "parent": "combat.blocks.general",
+    "order": 5,
+    "text": "A blocking unit stands in one slot of the defending formation, so it blocks only the attacking column it stands in front of.",
+    "examples": [
+      {
+        "text": "Example (illustrative): One blocker cannot block two attacking columns at once; to block both, the defending player needs a unit in front of each.",
+        "test": "422-cr-attacking-blocking.test.ts::cr:combat.blocks.general.one-column — one unit may not block two attacking columns"
+      }
+    ],
+    "see": [
+      "602"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.23",
+          "quote": "Once a defending unit has been placed in front of an attacking column, that entire column is considered blocked."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [
+        "apply.ts:checkBlocks"
+      ],
+      "tests": [
+        "422-cr-attacking-blocking.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "The printed text gives 'a unit placed in front of an attacking column blocks that column'. That a unit may block in ONE column only is the engine's (apply.ts:checkBlocks, 'a unit can only block in one column', per the round-1 verifier); no source says it in words. See D-U11-7.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.blocks.who",
+    "parent": "606",
+    "order": 2,
+    "text": "The defending player may block with units it controls in the battle region.",
+    "examples": [
+      {
+        "text": "Example: A unit created in the enemy region during the first round's attack is not in its controller's region when the counterattack arrives, so it cannot block it.",
+        "test": "98-spawn-region.test.ts::R115 inverts R28: Tidelurker's mid-attack 2/2 stays in the enemy region and CANNOT block the counterattack"
+      }
+    ],
+    "see": [
+      "601"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.23",
+          "quote": "defend during the block step. To do so, they may place"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R84",
+          "quote": "is a property of the unit and that column only** — region, controller,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "98-spawn-region.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "The Manual says the attacked player places 'units'; 'controls' and 'in the battle region' come from R84's list of what 'able' depends on (region, controller, still in play) and from the region rule (601: effects never reach another region).",
+    "sourceHashes": {
+      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
+    }
+  },
+  {
+    "key": "combat.blocks.who.recent",
+    "parent": "combat.blocks.who",
+    "order": 1,
+    "text": "A unit may block however recently it entered play (see 604).",
+    "examples": [
+      {
+        "text": "Example (illustrative): A unit that entered the defending player's region during the attack window may be declared as a blocker.",
+        "test": "422-cr-attacking-blocking.test.ts::cr:combat.blocks.who.recent — a unit that entered the defending region during the attack window may block"
+      }
+    ],
+    "see": [
+      "combat.attack.declaring.no-summoning-sickness"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.43",
+          "quote": "long as a unit is in play, it can attack/block."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "422-cr-attacking-blocking.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.blocks.who.able",
+    "parent": "combat.blocks.who",
+    "order": 2,
+    "text": "Whether a unit is able to block a column depends only on that unit and that column. It never depends on what the defending player chose to do with its other units, except where two Alluring duties name the same unit (see 802.15).",
+    "examples": [
+      {
+        "text": "Example: An Alluring column lures a defending unit. The defending player cannot excuse it by putting it on another column instead; it is still able to block the Alluring column, so it must.",
+        "test": "53-playtest-round7.test.ts::R84 UFAB: an Alluring column may not be side-stepped by blocking the OTHERS"
+      }
+    ],
+    "see": [
+      "802.15"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R84",
+          "quote": "\"Able\" is a property of the unit and that column only"
+        },
+        {
+          "ref": "R84",
+          "quote": "depends on what the defender chose to do with that unit elsewhere."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "53-playtest-round7.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R84's 'Two duties on one unit' paragraph is the only exception, an owner call (Bena 2026-08-22); its detail belongs to 802.15 (unit U20).",
+    "sourceHashes": {
+      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
+    }
+  },
+  {
+    "key": "combat.blocks.who.attributes",
+    "parent": "combat.blocks.who",
+    "order": 3,
+    "text": "These attributes change which units may block a column, or how many it takes: Flying (802.2), Feeble (802.12), Evasive (802.13), Sneaky (802.14), Alluring (802.15) and Pure (802.25).",
+    "examples": [
+      {
+        "text": "Example: Only a Flying unit can block a Flying column, but a Pure unit ignores Flying and can block it too.",
+        "test": "40-light-c.test.ts::Just a Unit: {Pure} blocks a Flying column, and only it can"
+      },
+      {
+        "text": "Example: Wisps are Feeble and cannot block.",
+        "test": "08-cards2.test.ts::Spectrogenesis: three Wisps; Feeble means they cannot block"
+      },
+      {
+        "text": "Example: An Evasive column needs two blockers.",
+        "test": "07-cards.test.ts::Curio Drifter: Evasive requires two blockers"
+      }
+    ],
+    "see": [
+      "802.2",
+      "802.12",
+      "802.13",
+      "802.14",
+      "802.15",
+      "802.25"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Air Plant",
+          "quote": "(Only flying units can block flying units.)"
+        },
+        {
+          "ref": "card: Spectrogenesis",
+          "quote": "They are 0/1 units that can't block"
+        },
+        {
+          "ref": "card: Just a Unit",
+          "quote": "(Pure cards and cards they are interacting with ignore all other attributes.)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R84",
+          "quote": "still in play, {Feeble}, {Flying}, lone-{Sneaky}, {Evasive}, {Pure}."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "40-light-c.test.ts",
+        "08-cards2.test.ts",
+        "07-cards.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "A pointer rule; each attribute's own rule is in 802 (units U19/U20).",
+    "sourceHashes": {
+      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
+    }
+  },
+  {
+    "key": "combat.blocks.who.not-sent",
+    "parent": "combat.blocks.who",
+    "order": 4,
+    "text": "A unit sent to counterattack leaves the region and is treated as if it does not exist until the first battle round is over, so it cannot also block (see 610).",
+    "examples": [
+      {
+        "text": "Example (illustrative): The defending player has one unit. It may block, or it may be sent to counterattack, but not both.",
+        "test": "422-cr-attacking-blocking.test.ts::cr:combat.blocks.who.not-sent — a unit may not both block and be sent to counterattack"
+      }
+    ],
+    "see": [
+      "610",
+      "combat.blocks.counterattack"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "a counter-attack. The counter-attacking units leave"
+        },
+        {
+          "ref": "Manual p.20",
+          "quote": "the region and are treated as if they don’t exist until"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "422-cr-attacking-blocking.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "'Cannot also block' is inferred from 'leave the region and are treated as if they don't exist'; no source says it in words.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.blocks.who.lured",
+    "parent": "combat.blocks.who",
+    "order": 5,
+    "text": "A unit targeted by an Alluring trigger must block that Alluring column if it is able to. If the column is blocked at all, the lured unit must be one of its blockers (see 802.15).",
+    "examples": [
+      {
+        "text": "Example: An Alluring column lures unit A. The defending player tries to block that column with unit B instead. The declaration is refused.",
+        "test": "53-playtest-round7.test.ts::R84: a substitute is not good enough — the lured unit must be in the column"
+      },
+      {
+        "text": "Example: The Alluring column is also Evasive and the defending player has only the lured unit. It cannot block an Evasive column alone, so it need not block it, and may block another column.",
+        "test": "388-raq-blocks-and-windows.test.ts::RAQ Alluring: a lone lured unit cannot block an Evasive column"
+      }
+    ],
+    "see": [
+      "802.15",
+      "802.13"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1460216519731577027#0",
+          "quote": "as Alluring says 'If able'"
+        },
+        {
+          "ref": "RAQ 1460216519731577027#2",
+          "quote": "he can block with either A+B or A+C, but he cannot declare block with B+C"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R84",
+          "quote": "If `blocks[ci]` is non-empty, `A` must be one of its members."
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R76",
+          "relation": "its Alluring rule ('defenders that are able to block it must block it') was replaced by R84"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "53-playtest-round7.test.ts",
+        "388-raq-blocks-and-windows.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "The detail of Alluring (one target per column, Evasive, two duties) belongs to 802.15 (unit U20).",
+    "sourceHashes": {
+      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd",
+      "RAQ 1460216519731577027#0": "63a4b895f811f113cde189e9a3ed5550ec06a1341d47212d337bee1a20f36ec8",
+      "RAQ 1460216519731577027#2": "d7698cffd19e07f01e242174c16a8c42a56a6e360df249219dc77b641e0d1bee"
+    }
+  },
+  {
+    "key": "combat.blocks.blocked",
+    "parent": "606",
+    "order": 3,
+    "text": "An attacking column is blocked once a defending unit has been placed in front of it. The whole column is blocked, however many attacking units it holds.",
+    "examples": [
+      {
+        "text": "Example: A column of two attackers is blocked by one unit. Neither attacker deals combat damage to the defending player.",
+        "test": "423-cr-combat-damage.test.ts::cr:combat.damage.pairing.blocked — the Manual p.23 example"
+      }
+    ],
+    "see": [
+      "608"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.23",
+          "quote": "Once a defending unit has been placed in front of an attacking column, that entire column is considered blocked."
+        },
+        {
+          "ref": "Rulebook 2023 p.11",
+          "quote": "column, that entire column is considered “Blocked”. Blocked"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1366447016653361192#0",
+          "quote": "1.) yes 2.) yes."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "423-cr-combat-damage.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "The RAQ answer '1.) yes' confirms a column with a declared blocker is blocked.",
+    "sourceHashes": {
+      "RAQ 1366447016653361192#0": "05620a5837cacb4b273019696423e12208483f1a8d94503ce4ad383e93009888"
+    }
+  },
+  {
+    "key": "combat.blocks.blocked.stays",
+    "parent": "combat.blocks.blocked",
+    "order": 1,
+    "text": "A blocked column stays blocked for the rest of the battle round, even if every unit blocking it leaves, whether it dies, is recalled, is erased or changes control.",
+    "examples": [
+      {
+        "text": "Example: The only blocker dies in the block window. The vanilla attacker's column is still blocked and deals no damage to the defending player.",
+        "test": "157-blocked-stays-blocked.test.ts::R185: a blocker that DIES leaves the column blocked"
+      },
+      {
+        "text": "Example: The only blocker is stolen by Download mid-combat. The column is still blocked.",
+        "test": "157-blocked-stays-blocked.test.ts::R185: a blocker STOLEN mid-combat (Download) leaves the column blocked"
+      }
+    ],
+    "see": [
+      "608",
+      "combat.block-window.late-blocker.stays"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.23",
+          "quote": "The column is considered blocked even if the defending unit is removed"
+        },
+        {
+          "ref": "Rulebook 2023 p.11",
+          "quote": "units won’t deal combat damage to you, even if the units blocking"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1366447016653361192#0",
+          "quote": "1.) yes 2.) yes."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R185",
+          "quote": "the column stays blocked."
+        },
+        {
+          "ref": "R185",
+          "quote": "it DIES, it is RECALLED,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "157-blocked-stays-blocked.test.ts",
+        "387-raq-combat.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "R185 lists the four routes (dies, recalled, erased, stolen) and calls it the owner's answer; the Manual and the RAQ answer ('2.) yes') already state it. R13's conclusion says the same and stands; only its reason was corrected by R319.",
+    "sourceHashes": {
+      "R185": "a2baa6ebf7628aa9c8a0d6542c2ed9993d9d44ba4ad0db5d8e342b3e7135306d",
+      "RAQ 1366447016653361192#0": "05620a5837cacb4b273019696423e12208483f1a8d94503ce4ad383e93009888"
+    }
+  },
+  {
+    "key": "combat.blocks.blocked.no-damage-through",
+    "parent": "combat.blocks.blocked",
+    "order": 2,
+    "text": "A blocked column deals no combat damage to the defending player, except as Piercing allows (see 608 and 802.16).",
+    "examples": [
+      {
+        "text": "Example: A blocked non-Piercing column whose blocker died before damage deals nothing to the defending player.",
+        "test": "387-raq-combat.test.ts::RAQ Piercing: a blocked NON-Piercing column whose blocker died deals nothing to the player"
+      }
+    ],
+    "see": [
+      "608",
+      "802.16"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.23",
+          "quote": "Blocked units do not deal combat damage to you."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "A pointer; the damage rules are 608 (unit U12).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.blocks.side",
+    "parent": "606",
+    "order": 4,
+    "text": "A defending unit may be placed blocking where no attacker is. This is a side-block, and the blocking column it makes is a side-blocking column.",
+    "examples": [
+      {
+        "text": "Example: One unit attacks. The defending player places two units to the side of it, each in its own column, and leaves the attacker unblocked.",
+        "test": "400-raq-fix-blocks.test.ts::R321 side-blocks: two units block where no attacker is"
+      }
+    ],
+    "see": [
+      "602",
+      "603"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.23",
+          "quote": "columns. Units may even be placed blocking in slots"
+        },
+        {
+          "ref": "Manual p.23",
+          "quote": "where attackers aren’t, which can be beneficial for"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R321",
+          "quote": "Side-blocks: a defender may block where no attacker is"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R72",
+          "relation": "its note that a blocker may not be assigned where no attacker is was replaced by R321"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "400-raq-fix-blocks.test.ts",
+        "388-raq-blocks-and-windows.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "'Side-block' is R321's term (and the RAQ's), not printed.",
+    "sourceHashes": {
+      "R321": "57bf15d8b02784f4b61ea34b6935e1fc693cc9bedc10c2d1d64e6d15cea5982b"
+    }
+  },
+  {
+    "key": "combat.blocks.side.either-side",
+    "parent": "combat.blocks.side",
+    "order": 1,
+    "text": "Side-blocks may stand on either side of the attacking formation.",
+    "examples": [
+      {
+        "text": "Example: A unit side-blocks to the left of a one-column attack. A new column opens before the attacking column, and the attacking column is still unblocked.",
+        "test": "400-raq-fix-blocks.test.ts::R321 a side-block on the left opens a column before column 1"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R321",
+          "quote": "Side-blocks may stand to either side of the attack."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "400-raq-fix-blocks.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "The Manual's 'slots where attackers aren't' puts no side on it; R321 takes the permissive reading.",
+    "sourceHashes": {
+      "R321": "57bf15d8b02784f4b61ea34b6935e1fc693cc9bedc10c2d1d64e6d15cea5982b"
+    }
+  },
+  {
+    "key": "combat.blocks.side.any-number",
+    "parent": "combat.blocks.side",
+    "order": 2,
+    "text": "Any number of units may side-block, each as its own column.",
+    "examples": [
+      {
+        "text": "Example: Two units side-block beside a one-column attack; each makes its own side-blocking column.",
+        "test": "400-raq-fix-blocks.test.ts::R321 side-blocks: two units block where no attacker is"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1366447016653361192#3",
+          "quote": "Yep you should be able to"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R321",
+          "quote": "of units may side-block, each as its own column"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "400-raq-fix-blocks.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "Round 1: the register's claim summary was removed as a quote; Caleb's words are 'Yep you should be able to'.",
+    "sourceHashes": {
+      "R321": "57bf15d8b02784f4b61ea34b6935e1fc693cc9bedc10c2d1d64e6d15cea5982b",
+      "RAQ 1366447016653361192#3": "124742aaacf8865f4c690dbb58502525babe350889ba1b3e13c54d6e324965e6"
+    }
+  },
+  {
+    "key": "combat.blocks.side.reach",
+    "parent": "combat.blocks.side",
+    "order": 3,
+    "text": "A block declaration may reach no further out from the attacking formation than it has blocking columns, so a single side-block stands next to the attacking formation.",
+    "examples": [
+      {
+        "text": "Example: Against a one-column attack, a single side-block may stand right beside the attack on either side, but not three columns out.",
+        "test": "400-raq-fix-blocks.test.ts::R321 side-blocks reach no further out than the declaration is wide"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R321",
+          "quote": "reach no further out than it has blocking columns"
+        },
+        {
+          "ref": "R321",
+          "quote": "so a single side-block stands next to the line"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "400-raq-fix-blocks.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R321 states this under 'How it is encoded'; no printed or designer source limits where a side-block may stand. See D-U11-2.",
+    "sourceHashes": {
+      "R321": "57bf15d8b02784f4b61ea34b6935e1fc693cc9bedc10c2d1d64e6d15cea5982b"
+    }
+  },
+  {
+    "key": "combat.blocks.side.counts-as-blocked",
+    "parent": "combat.blocks.side",
+    "order": 4,
+    "text": "A side-blocking column counts as a blocked column.",
+    "examples": [
+      {
+        "text": "Example: Roving Quillback attacks alone and two units side-block beside it. Quillback deals 1 damage to the defending player for each blocked column: 2, for the two side-blocking columns.",
+        "test": "400-raq-fix-blocks.test.ts::R321 side-blocks: two units block where no attacker is"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1366447016653361192#2",
+          "quote": "yeah it should!"
+        },
+        {
+          "ref": "RAQ 1366447016653361192#2",
+          "quote": "So Roving Quillback will consider side-blocking columns as 'blocked'?"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R321",
+          "quote": "A side-blocking column counts as **blocked**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "400-raq-fix-blocks.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R321": "57bf15d8b02784f4b61ea34b6935e1fc693cc9bedc10c2d1d64e6d15cea5982b",
+      "RAQ 1366447016653361192#2": "5b05603d2f9ed0a5d5beb73ade78f1a37809fe0abf3a6e3bd6deea3db7c83a8a"
+    }
+  },
+  {
+    "key": "combat.blocks.side.blocks-nothing",
+    "parent": "combat.blocks.side",
+    "order": 5,
+    "text": "A side-block blocks no attacker. It does not count as blocking a lone Sneaky attacker, and no Flying or Evasive rule applies to it.",
+    "examples": [
+      {
+        "text": "Example (illustrative): A lone Sneaky unit attacks. A unit side-blocking beside it is allowed, and the Sneaky unit is still unblocked.",
+        "test": "422-cr-attacking-blocking.test.ts::cr:combat.blocks.side.blocks-nothing — a side-block beside a lone Sneaky attacker is allowed and the Sneaky unit is still unblocked"
+      }
+    ],
+    "see": [
+      "802.2",
+      "802.13",
+      "802.14"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R321",
+          "quote": "nothing, so it does not count as blocking a lone {Sneaky} attacker, and it"
+        },
+        {
+          "ref": "R321",
+          "quote": "answers no {Flying} or {Evasive} rule."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "422-cr-attacking-blocking.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R321's 'answers no {Flying} or {Evasive} rule' is read here as: a side-block is neither restricted by those rules nor counts towards satisfying them. Whether a side-block is allowed at all beside a lone Sneaky attacker is my reading of 'does not count as blocking'.",
+    "sourceHashes": {
+      "R321": "57bf15d8b02784f4b61ea34b6935e1fc693cc9bedc10c2d1d64e6d15cea5982b"
+    }
+  },
+  {
+    "key": "combat.blocks.side.no-damage",
+    "parent": "combat.blocks.side",
+    "order": 6,
+    "text": "A side-blocking column deals no combat damage, Piercing included, because no attacker stands in front of it (see 608).",
+    "examples": [
+      {
+        "text": "Example: A 5/5 Piercing unit side-blocks. It deals no combat damage to the attacking player.",
+        "test": "400-raq-fix-blocks.test.ts::R321 a Piercing side-blocker deals no combat damage to the attacking player"
+      }
+    ],
+    "see": [
+      "608",
+      "802.16"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1365594171867664445#2",
+          "quote": "They wouldn't attack at all since they don't have any attacking enemy units in front of them."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R321",
+          "quote": "A side-block deals **no combat damage**, Piercing included"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "400-raq-fix-blocks.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "A pointer; the damage rule is 608 (unit U12).",
+    "sourceHashes": {
+      "R321": "57bf15d8b02784f4b61ea34b6935e1fc693cc9bedc10c2d1d64e6d15cea5982b",
+      "RAQ 1365594171867664445#2": "bd777f7785251cf1029a2d7f5ba322510404ca15361576cb748a4deb7f88b3e3"
+    }
+  },
+  {
+    "key": "combat.blocks.side.adjacency",
+    "parent": "combat.blocks.side",
+    "order": 7,
+    "text": "Side-blocking units are part of the defending formation, so they are adjacent to their neighbours in it (see 603).",
+    "examples": [
+      {
+        "text": "Example (illustrative): A unit side-blocks next to a unit blocking the attacking column. The two are adjacent, which matters to cards that count adjacent units.",
+        "test": "422-cr-attacking-blocking.test.ts::cr:combat.blocks.side.adjacency — a side-blocker is adjacent to the blocker beside it"
+      }
+    ],
+    "see": [
+      "603"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.23",
+          "quote": "where attackers aren’t, which can be beneficial for"
+        },
+        {
+          "ref": "Manual p.23",
+          "quote": "adjacency matters cards."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "422-cr-attacking-blocking.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "The Manual gives adjacency as the reason to side-block, which presupposes side-blockers are adjacent to their neighbours; it does not say so in words.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.blocks.counterattack",
+    "parent": "606",
+    "order": 5,
+    "text": "In the first battle round, the defending player declares at the same time as its blocks which of its units it sends to counterattack (see 610).",
+    "examples": [
+      {
+        "text": "Example: The non-initiative player declares no blocks and sends one unit; that unit takes no part in the first round and attacks in the second.",
+        "test": "02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2"
+      }
+    ],
+    "see": [
+      "610"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "3. The NIT declare their blocking formations while also"
+        },
+        {
+          "ref": "Manual p.20",
+          "quote": "having the opportunity to send attacking units for"
+        },
+        {
+          "ref": "Manual p.27",
+          "quote": "3. NIT declare blocks/send units to attack"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "02-combat.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.blocks.counterattack.tokens",
+    "parent": "combat.blocks.counterattack",
+    "order": 1,
+    "text": "Spell tokens may go with the counterattacking units, under the same conditions as with an attack (see 604).",
+    "examples": [
+      {
+        "text": "Example: The defending player sends a unit to counterattack and names two Poison tokens to go with it. The tokens leave with the unit.",
+        "test": "78-round17-core.test.ts::R87: declareBlocks takes spellTokens"
+      }
+    ],
+    "see": [
+      "combat.attack.declaring.spell-tokens",
+      "610"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R87",
+          "quote": "Spell tokens travel with a formation, in either direction, and they need a"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "78-round17-core.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R87 quotes Caleb ('or you can bring them into enemy regions during an attack') and _passer from Discord, outside the RAQ register, so the basis is the ruling.",
+    "sourceHashes": {
+      "R87": "9dd306a3fefd3160b14fb625d78d25dd99cf9fe6c645d47a05920706c2a44214"
+    }
+  },
+  {
+    "key": "combat.blocks.counterattack.second-round",
+    "parent": "combat.blocks.counterattack",
+    "order": 2,
+    "text": "In the second battle round the defending player declares blocks only. There are no further counterattacks.",
+    "examples": [
+      {
+        "text": "Example (illustrative): In the second round the initiative player blocks the counterattack; it cannot send units to attack back.",
+        "test": "422-cr-attacking-blocking.test.ts::cr:combat.blocks.counterattack.second-round — in round 2 the defender may not send counterattackers"
+      }
+    ],
+    "see": [
+      "610"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "so there are no additional counter attacks here."
+        },
+        {
+          "ref": "Manual p.20",
+          "quote": "3. The IT declare their blocking formation."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "422-cr-attacking-blocking.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.blocks.triggers",
+    "parent": "606",
+    "order": 6,
+    "text": "Abilities that trigger when a unit blocks trigger as blocks are declared. They are put on the stack before the block window opens (see 607 and 706).",
+    "examples": [
+      {
+        "text": "Example: Spewing Mushroom says 'When I attack or block'. Declared as a blocker, it creates its Poison.",
+        "test": "182-correctness-sample.test.ts::Spewing Mushroom: BLOCKING fires it too"
+      },
+      {
+        "text": "Example: Palewing blocks and its controller discards a card.",
+        "test": "42-dark-b.test.ts::Palewing: blocking discards too"
+      }
+    ],
+    "see": [
+      "607",
+      "706"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Spewing Mushroom",
+          "quote": "When I attack or block, [Switch] Create a Poison X, where X is my power."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R322",
+          "quote": "the declaration fires those"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "182-correctness-sample.test.ts",
+        "42-dark-b.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "The printed cards give the trigger; that it fires at the declaration is R322's 'the declaration fires those' (said of the 'blocked' event) and the tests. When it reaches the stack relative to the block window is not stated by any source. See D-U11-9.",
+    "sourceHashes": {
+      "R322": "5e8047a00d274e87b580a74760c9c25054e659bfc751cab75d33aad619d2e05b"
+    }
+  },
+  {
+    "key": "combat.blocks.empty-attack",
+    "parent": "606",
+    "order": 7,
+    "text": "If no attacking unit is left when the block step begins, the block step still takes place: the defending player declares blocks, which may be none, and the battle round continues.",
+    "examples": [
+      {
+        "text": "Example: The only attacker is destroyed before blocks and the attack collapses to nothing. The defending player declares no blocks, and the block window follows.",
+        "test": "53-playtest-round7.test.ts::R84: an attack that has collapsed to nothing still lets the defender declare"
+      }
+    ],
+    "see": [
+      "combat.attack-window.general.still-present"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "53-playtest-round7.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "medium",
+    "notes": "ENGINE-ONLY: only the test states this. Printed text says the attacking player stays present after its units are removed (Manual p.19) but not whether the block step still happens. See D-U11-6.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.block-window.general",
+    "parent": "607",
+    "order": 1,
+    "text": "The block window is the priority window that follows the declaration of blocks.",
+    "examples": [
+      {
+        "text": "Example: Blocks are declared. The game is now in a priority window, not yet in the combat damage step; one pass is not enough to deal damage.",
+        "test": "423-cr-combat-damage.test.ts::cr:combat.damage.overview — the step begins only once blocks are declared"
+      }
+    ],
+    "see": [
+      "703"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "4. There is a priority window for interaction."
+        },
+        {
+          "ref": "Manual p.27",
+          "quote": "4. Priority window"
+        },
+        {
+          "ref": "Manual p.30",
+          "quote": "Block step"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "423-cr-combat-damage.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.block-window.general.end",
+    "parent": "combat.block-window.general",
+    "order": 1,
+    "text": "When all players pass priority in succession with the stack empty, the block window ends and the combat damage step begins (see 608).",
+    "examples": [
+      {
+        "text": "Example: After blocks, the first pass deals no damage; the second pass starts the combat damage step.",
+        "test": "423-cr-combat-damage.test.ts::cr:combat.damage.overview — the step begins only once blocks are declared"
+      }
+    ],
+    "see": [
+      "608"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.11",
+          "quote": "declared and both players have"
+        },
+        {
+          "ref": "Rulebook 2023 p.11",
+          "quote": "passed priority, we move to the"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "423-cr-combat-damage.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.block-window.general.locked",
+    "parent": "combat.block-window.general",
+    "order": 2,
+    "text": "Once blocks have been declared, a column that loses its last unit is not closed up; the columns stay where they are for the rest of the battle round (see 602).",
+    "examples": [
+      {
+        "text": "Example: After blocks, the middle attacking column dies. It stays as a hole, and the columns beside it do not move.",
+        "test": "64-formation-collapse.test.ts::R72 (Manual): after blocks are declared, an emptied column stays as a HOLE"
+      }
+    ],
+    "see": [
+      "602",
+      "combat.attack-window.general.gravity"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.22",
+          "quote": "only happens before blocks are declared. After blocks, columns will not move to fill gaps."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R72 its gravity half",
+          "quote": "the line closes ranks only before blocks"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "64-formation-collapse.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "A pointer; the gravity rule is 602 (unit U10).",
+    "sourceHashes": {
+      "R72": "eed4648973a278cfbffddb860451cdd2629e8dfb6ab2b6c9a15137cdce515969"
+    }
+  },
+  {
+    "key": "combat.block-window.general.promotion",
+    "parent": "combat.block-window.general",
+    "order": 3,
+    "text": "A unit behind a removed unit still moves up to the front row after blocks have been declared (see 602).",
+    "examples": [
+      {
+        "text": "Example: After blocks, the front unit of a column dies; the unit behind it moves to the front.",
+        "test": "64-formation-collapse.test.ts::R72 (Manual): the back row promotes AFTER blocks too"
+      }
+    ],
+    "see": [
+      "602"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.22",
+          "quote": "If a unit is removed from a formation, any units behind it move to the front row and take its place."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "64-formation-collapse.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The Manual sentence has no timing qualifier; R72 reads it as untimed.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.block-window.late-blocker",
+    "parent": "607",
+    "order": 2,
+    "text": "After blocks have been declared, a unit that joins the defending formation (for example Tiderunner Initiate, played into an open spot) may be placed in front of an attacking column that has no blocker. That column is then blocked.",
+    "examples": [
+      {
+        "text": "Example: The defending player declares no blocks, then plays Tiderunner Initiate in front of the unblocked attacker. The attacker deals its damage to the Tiderunner, not to the player.",
+        "test": "400-raq-fix-blocks.test.ts::R322 a Tiderunner put in front of an unblocked attacker fights it"
+      }
+    ],
+    "see": [
+      "602",
+      "702"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Tiderunner Initiate",
+          "quote": "You may play me into an open spot in your formation."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1366447016653361192#1",
+          "quote": "3.) I think it would be considered blocked even against an empty column."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R322",
+          "quote": "A blocker put in after blocks may block an unblocked column"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "400-raq-fix-blocks.test.ts",
+        "388-raq-blocks-and-windows.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "Caleb's 'even against an empty column' has two readings; R322 offers the spot only where the column still has an attacker. See D-U11-3 (question for the owner).",
+    "sourceHashes": {
+      "R322": "5e8047a00d274e87b580a74760c9c25054e659bfc751cab75d33aad619d2e05b",
+      "RAQ 1366447016653361192#1": "bb2e9add4233c31bbcfbc92538edbd8db613375135196b284f67dc344abb26c3"
+    }
+  },
+  {
+    "key": "combat.block-window.late-blocker.stays",
+    "parent": "combat.block-window.late-blocker",
+    "order": 1,
+    "text": "A column blocked this way stays blocked if that unit later leaves, like any blocked column (see 606).",
+    "examples": [
+      {
+        "text": "Example: Tiderunner Initiate is played in front of an unblocked attacker and is then removed. The column is still blocked.",
+        "test": "388-raq-blocks-and-windows.test.ts::RAQ Blocked: a unit played in as a blocker after blocks"
+      }
+    ],
+    "see": [
+      "combat.blocks.blocked.stays"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1366447016653361192#1",
+          "quote": "4.) according to 3, the column should still be blocked in that case"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "388-raq-blocks-and-windows.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1366447016653361192#1": "bb2e9add4233c31bbcfbc92538edbd8db613375135196b284f67dc344abb26c3"
+    }
+  },
+  {
+    "key": "combat.block-window.late-blocker.no-prior-blocks",
+    "parent": "combat.block-window.late-blocker",
+    "order": 2,
+    "text": "The defending player may block this way even if it declared no blockers.",
+    "examples": [
+      {
+        "text": "Example: The defending player declared no blocks; Tiderunner Initiate is still offered the spot in front of the attacker.",
+        "test": "400-raq-fix-blocks.test.ts::R322 a Tiderunner put in front of an unblocked attacker fights it"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R322",
+          "quote": "defender may start a formation this way even having declared no blockers."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "400-raq-fix-blocks.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "The RAQ question assumed an unblocked column; that the defender need have no formation at all is R322's reading.",
+    "sourceHashes": {
+      "R322": "5e8047a00d274e87b580a74760c9c25054e659bfc751cab75d33aad619d2e05b"
+    }
+  },
+  {
+    "key": "combat.block-window.late-blocker.defender-only",
+    "parent": "combat.block-window.late-blocker",
+    "order": 3,
+    "text": "Only a unit joining the defending formation can be placed this way. A unit joining the attacking formation is never placed in a blocking position.",
+    "examples": [
+      {
+        "text": "Example: After blocks, the attacking player is offered no blocking spot; the defending player is offered one, in front of the unblocked column.",
+        "test": "400-raq-fix-blocks.test.ts::R322 the attacker is never offered a blocking spot"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R322",
+          "quote": "So after blocks are declared, a unit joining the DEFENDING formation may stand"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "400-raq-fix-blocks.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R322": "5e8047a00d274e87b580a74760c9c25054e659bfc751cab75d33aad619d2e05b"
+    }
+  },
+  {
+    "key": "combat.block-window.late-blocker.when",
+    "parent": "combat.block-window.late-blocker",
+    "order": 4,
+    "text": "A unit can be placed this way from the block window until the combat damage step is over.",
+    "examples": [
+      {
+        "text": "Example (illustrative): In the window between the Swift and normal damage sub-steps, the defending player plays Tiderunner Initiate in front of an unblocked attacking column. The column is blocked for the normal sub-step.",
+        "test": "422-cr-attacking-blocking.test.ts::cr:combat.block-window.late-blocker.when — between the Swift and normal sub-steps a Tiderunner put in front of the unblocked normal column blocks it for the normal sub-step"
+      }
+    ],
+    "see": [
+      "608"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R322",
+          "quote": "attacker and no block entry, from the block window until combat damage is"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "422-cr-attacking-blocking.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R322 states the window under 'How it is encoded'. The RAQ question speaks only of the 'after block' window. See D-U11-5.",
+    "sourceHashes": {
+      "R322": "5e8047a00d274e87b580a74760c9c25054e659bfc751cab75d33aad619d2e05b"
+    }
+  },
+  {
+    "key": "combat.block-window.late-blocker.not-declared",
+    "parent": "combat.block-window.late-blocker",
+    "order": 5,
+    "text": "A unit placed this way was not declared as a blocker, so the events of the block declaration do not happen for it.",
+    "examples": [
+      {
+        "text": "Example (illustrative): A unit that says 'When I block' is played into a blocking spot after blocks. Whether its trigger fires is not settled by any designer source; under R322 no block event is fired for it.",
+        "test": "422-cr-attacking-blocking.test.ts::cr:combat.block-window.late-blocker.not-declared — no blocked event fires for a unit placed in front of an attacker after blocks"
+      }
+    ],
+    "see": [
+      "combat.blocks.triggers"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R322",
+          "quote": "No `blocked` event fires for the late blocker"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "422-cr-attacking-blocking.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "low",
+    "notes": "R322 says no 'blocked' event fires for the late blocker. That 'when I block' card triggers listen to that event is my reading; I did not read the engine. See D-U11-5.",
+    "sourceHashes": {
+      "R322": "5e8047a00d274e87b580a74760c9c25054e659bfc751cab75d33aad619d2e05b"
+    }
+  },
+  {
+    "key": "combat.block-window.after-blocking-triggers",
+    "parent": "607",
+    "order": 3,
+    "text": "An ability that triggers \"after the blocking step\" triggers once blocks have been declared, and resolves in the block window.",
+    "examples": [
+      {
+        "text": "Example: Roving Quillback attacks and two units side-block. Once both players pass in the block window, its trigger resolves and the defending player loses 2 life, before any combat damage.",
+        "test": "400-raq-fix-blocks.test.ts::R321 side-blocks: two units block where no attacker is"
+      }
+    ],
+    "see": [
+      "706"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Roving Quillback",
+          "quote": "[Augment] After the blocking step, I deal 1 damage to each opponent for each blocked column."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "400-raq-fix-blocks.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "The card says 'after the blocking step'; that this is the block window (and not, say, the start of combat damage) is shown by the test: the life loss lands after two passes, before combat damage.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.blocks.general.gap-adjacency",
+    "parent": "combat.blocks.general",
+    "order": 6,
+    "text": "An empty blocking column keeps its place in the defending formation. Two blockers with an empty blocking column between them are not neighbours, so they are not adjacent (see 603).",
+    "examples": [
+      {
+        "text": "Example (illustrative): Against a three-column attack, the defending player blocks the first and third columns. The two blockers are not adjacent: the empty middle blocking column lies between them.",
+        "test": null
+      }
+    ],
+    "see": [
+      "603",
+      "combat.blocks.side.adjacency"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.22",
+          "quote": "adjacent to their left, right, front and back neighbors until"
+        },
+        {
+          "ref": "Manual p.23",
+          "quote": "formation, but unlike offensive formations, the defending formation is allowed to be assigned with empty"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R75 its adjacency definition",
+          "quote": "- `(ci - 1, ri)` — the neighbouring column, **same row**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "422-cr-attacking-blocking.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "Added in round 1 from the verifier's measured engine behaviour. R75 (not in the pack; read from digital-rules.md) defines adjacency by grid position; the Manual makes empty blocking columns real. The engine compresses the block keys, so blockers on columns 1 and 3 read as adjacent (F-U11-3).",
+    "engineDiffers": [
+      "F-U11-3"
+    ],
+    "sourceHashes": {
+      "R75": "c20ea9bab21d021659c85d652dd11bb9376e9700c1e0e6ec9f085566e9509f8a"
+    }
+  }
+]

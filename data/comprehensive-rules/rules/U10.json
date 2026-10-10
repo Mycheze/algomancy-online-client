@@ -1,0 +1,3189 @@
+[
+  {
+    "key": "combat.general.units",
+    "parent": "600",
+    "order": 1,
+    "text": "Units are the basis of combat. They attack opponents, enter other players' regions and defend against units that enter their own. Combat takes place inside regions (rule 601), with the units that take part arranged in formations (rule 602) made up of columns (rule 603).",
+    "examples": [
+      {
+        "text": "Example: Two units attack into the opponent's region. The defender blocks one of them; the other is unblocked and deals its damage to the defending player.",
+        "test": "421-cr-regions-formations.test.ts::cr:combat.general.units — an attacking unit enters the defending player region, an unblocked attacker damages that player, and a defending unit blocks an attacker"
+      }
+    ],
+    "see": [
+      "601",
+      "602",
+      "603"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.22",
+          "quote": "Units are the basis of combat: they are used to attack opponents, enter new regions and defend against invaders."
+        },
+        {
+          "ref": "Rulebook 2023 p.10",
+          "quote": "Units are the basis of combat, as they are used to attack opponents, enter new regions and defend yourself against invaders."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "421-cr-regions-formations.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Orientation rule for chapter 6; the cross-references are this document's structure.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.regions.definition",
+    "parent": "601",
+    "order": 1,
+    "text": "All gameplay takes place inside regions. There is one region for each player, and each player starts in their own region.",
+    "examples": [
+      {
+        "text": "Example: At the start of a two-player game there are two regions, and each player is present only in their own.",
+        "test": "421-cr-regions-formations.test.ts::cr:combat.regions.definition — a new game has one region per player, and each player starts present only in their own region"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.19",
+          "quote": "All gameplay in Algomancy takes place inside of regions, with one region for each player."
+        },
+        {
+          "ref": "Rulebook 2023 p.8",
+          "quote": "Each player exists in their own unique region."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "421-cr-regions-formations.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.regions.definition.isolated",
+    "parent": "combat.regions.definition",
+    "order": 1,
+    "text": "Each region is isolated from every other region. Nothing in one region interacts with anything in another region, and each region treats the players and cards in other regions as if they don't exist.",
+    "examples": [
+      {
+        "text": "Example: Towering Colossus prints “Enemies gain +2/+2.” An enemy unit standing in a different region from the Colossus does not get the bonus.",
+        "test": "243-ally-and-enemy-scope.test.ts::R265 §3c a static that says ENEMIES does not reach an enemy in another region"
+      }
+    ],
+    "see": [
+      "combat.regions.information"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.19",
+          "quote": "a location that is completely isolated from the other"
+        },
+        {
+          "ref": "Manual p.42",
+          "quote": "region treats the players and cards in other regions"
+        },
+        {
+          "ref": "Rulebook 2023 p.8",
+          "quote": "nothing that happens inside of one region will affect anything in another region."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R91 (its region-scoping half)",
+          "quote": "Just treat each region as if they exist in a completely different game"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R91",
+          "relation": "its duration note superseded by R118; the region-scoping half stands"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "243-ally-and-enemy-scope.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "R91 quotes Caleb's own words from rules-questions; they are cited through R91 because they are not in a RAQ thread. Manual p.19's 'zero information' clause is handled in combat.regions.information and D-U10-1.",
+    "sourceHashes": {
+      "R91": "56a9ed56119d29270ebb3a0b394209482176a22f7a55de8195e2defe7500b180"
+    }
+  },
+  {
+    "key": "combat.regions.definition.every-effect-local",
+    "parent": "combat.regions.definition",
+    "order": 2,
+    "text": "Every effect is specific to the region it takes place in, and never affects anything in another region. Read every card as if it said “in this region”: “Delete target unit” means “Delete target unit in this region”, and “Each player sacrifices two units” means “Each player in this region sacrifices two units in this region”.",
+    "examples": [
+      {
+        "text": "Example: Ghord's controller sacrifices a unit, and each opponent sacrifices a nontoken unit. Only the opponent's units in Ghord's region can be sacrificed this way.",
+        "test": "396-raq-timing.test.ts::RAQ Another set: a Ghord sacrifice reaches only the opponent units in its own region"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.19",
+          "quote": "Every single effect is specific to the region it takes"
+        },
+        {
+          "ref": "Manual p.19",
+          "quote": "“Delete target unit in this region”. “Each player sacrifices two units” means “Each player in this region"
+        },
+        {
+          "ref": "Rulebook 2023 p.8",
+          "quote": "unit” really means “Delete target unit in this region” because it cannot see the units in other regions. The only exception to"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1454169054402314362#0",
+          "quote": "Just add 'in this region' to every card if it helps."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts",
+        "12-fire-a.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1454169054402314362#0": "4948c1881274500d06ed76c23f405dbebb16d265e89961225a7fdbc579825628"
+    }
+  },
+  {
+    "key": "combat.regions.definition.all",
+    "parent": "combat.regions.definition",
+    "order": 3,
+    "text": "“All” means all in this region. An effect that affects or counts “all” of something affects or counts only the ones in its own region.",
+    "examples": [
+      {
+        "text": "Example: Cosmic Reversal recalls all other spell units. A spell unit that its opponent left at home, outside the battle region, is not recalled.",
+        "test": "229-cosmic-and-control.test.ts::R250 + R243: the board half is scoped to the region, like every other all"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.8",
+          "quote": "“Destroy all units” means “Destroy all units in this region”"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R243",
+          "quote": "card that says 'all' is actually 'all in this region')"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "229-cosmic-and-control.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R243": "4c5bc6d02712fd64927882b54069b5c9b94714bfb5d543432cd6f891f5e07315"
+    }
+  },
+  {
+    "key": "combat.regions.definition.statics-and-triggers",
+    "parent": "combat.regions.definition",
+    "order": 4,
+    "text": "A static ability sees and affects only things in its own region. A triggered ability triggers only on events in its own region: a spell played in one region does not trigger an ability of a unit in another region.",
+    "examples": [
+      {
+        "text": "Example: Flourishing Flora watches for another ally spawning. An ally that spawns in a different region does not trigger it.",
+        "test": "243-ally-and-enemy-scope.test.ts::R265 §3d a trigger that watches for another ALLY does not see one spawn in another region"
+      },
+      {
+        "text": "Example: Crevice Lurker makes abilities cost [one] more during battle. It taxes both players' abilities in its region, the opponent's as well as its controller's.",
+        "test": "390-raq-stack.test.ts::RAQ Crevice Lurker: it taxes the opponent too, not only its controller"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.42",
+          "quote": "A: No, it only sees the units in the region it’s in."
+        },
+        {
+          "ref": "Manual p.42",
+          "quote": "Q: If I play a spell in one region, will that trigger effects"
+        },
+        {
+          "ref": "Manual p.21",
+          "quote": "Sparkwraith in their own region (region 4). Sparkwraith does not trigger from casting of Maw of"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "243-ally-and-enemy-scope.test.ts",
+        "390-raq-stack.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Prickly Protector is the Manual's example (p.42). The Crevice Lurker example comes from RAQ 1355103348378042515#0 ('It affects all players in his region (both ally & opponent) during battle').",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.regions.definition.sacrifice",
+    "parent": "combat.regions.definition",
+    "order": 5,
+    "text": "A player cannot sacrifice a unit that is in a different region, even a unit they control, and cannot do so to pay a cost in their current region.",
+    "examples": [
+      {
+        "text": "Example (illustrative): A player with no units in the battle region plays an effect that says “Each player sacrifices a unit.” They sacrifice nothing, even though they have units at home.",
+        "test": "421-cr-regions-formations.test.ts::cr:combat.regions.definition.sacrifice — Cull makes each player sacrifice a unit, and a player whose only units are in another region sacrifices nothing"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.41",
+          "quote": "You cannot sacrifice units that are in a different region, even if they"
+        },
+        {
+          "ref": "Manual p.42",
+          "quote": "Q: Can I sacrifice units that I have in another region to"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "421-cr-regions-formations.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.41's own example ('if you have no units in a region and play the effect “Each player sacrifices a unit”').",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.regions.exclusive",
+    "parent": "601",
+    "order": 2,
+    "text": "Every unit and every spell token in play is in exactly one region at a time.",
+    "examples": [
+      {
+        "text": "Example: A unit attacks and a Fireball token rides along with it. Both are now in the battle region and no longer in their home region.",
+        "test": "421-cr-regions-formations.test.ts::cr:combat.regions.exclusive — every unit and spell token in play names one region, and an attacking unit and the spell token riding with it leave their home region for the battle region"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "only cast spell tokens in the region the token is in."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R12",
+          "quote": "Things exist in exactly one region at a time."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "421-cr-regions-formations.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R12 states it for everything. The Rulebook line is supporting only: it places a spell token in one region, which is consistent with, not a statement of, the rule. R12's Temporal Rift clause ('that region's battle and stack') is not used: see D-U10-5.",
+    "sourceHashes": {
+      "R12": "f6c728716f0fd27850a4344a0498bb1d9607b2f0f9e6a5838dfeeb0ea91292b3"
+    }
+  },
+  {
+    "key": "combat.regions.exclusive.no-region-zones",
+    "parent": "combat.regions.exclusive",
+    "order": 1,
+    "text": "The stack, the bins and the cache are not in any region. Whether an effect can reach a player's bin, hand or cache depends on whether that player is present in the effect's region (rule 601.4).",
+    "examples": [
+      {
+        "text": "Example: During deployment, an effect that targets a cached card can reach only its controller's own cache. In battle, where both players are present, it can reach either cache.",
+        "test": "421-cr-regions-formations.test.ts::cr:combat.regions.exclusive.no-region-zones — cached and binned cards carry no region, no region holds a stack, and a cache is reachable only where its owner is present"
+      }
+    ],
+    "see": [
+      "combat.regions.presence.player-things"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R265",
+          "quote": "Three zones have no region and are deliberately global"
+        },
+        {
+          "ref": "R291",
+          "quote": "True of the zone, wrong about its owner."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "421-cr-regions-formations.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R265 lists the three zones; R291 says the cache-has-no-region fact does not make an absent owner's cache reachable. B4 adjudicated that R265 rules nothing about which seats' bins an effect reaches. The stack's lack of a region is discussed in D-U10-5.",
+    "sourceHashes": {
+      "R265": "9f0ae66af8e06b3d710b1ba66aa3f83b7c78f95f228f39fa471b39260be1fd5e",
+      "R291": "dd422fb3df1ded08a2bcb94fa3267d5004856953838adf81a7a68e78b96f0ef2"
+    }
+  },
+  {
+    "key": "combat.regions.arrangement",
+    "parent": "601",
+    "order": 3,
+    "text": "The regions are arranged in a circle. Each player's region has two neighbouring regions, one to the left and one to the right, except in a two-player game, where each region has one neighbouring region.",
+    "examples": [],
+    "see": [
+      "903",
+      "904"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.19",
+          "quote": "The regions are arranged in a large circle. Each player"
+        },
+        {
+          "ref": "Manual p.19",
+          "quote": "has two neighboring regions to their left and right"
+        },
+        {
+          "ref": "Manual p.19",
+          "quote": "(except in 1v1 games, where players only have one"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {},
+    "untestableReason": "The client plays two-player games only, so no game has more than two regions.",
+    "untested": true
+  },
+  {
+    "key": "combat.regions.arrangement.elimination",
+    "parent": "combat.regions.arrangement",
+    "order": 1,
+    "text": "When a player is eliminated, the regions on either side of theirs become neighbours, and the game continues.",
+    "examples": [],
+    "see": [
+      "104",
+      "903"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.8",
+          "quote": "When a player is eliminated, their adjacent regions become connected and the game continues."
+        },
+        {
+          "ref": "Manual p.19",
+          "quote": "neighboring regions move next to each other and the"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {},
+    "untestableReason": "The client plays two-player games only, so no game has more than two regions.",
+    "untested": true
+  },
+  {
+    "key": "combat.regions.arrangement.teams",
+    "parent": "combat.regions.arrangement",
+    "order": 2,
+    "text": "In a team game, once a player's neighbouring opponents have been eliminated, that player may send attacks through allied regions into the nearest enemy region.",
+    "examples": [],
+    "see": [
+      "904"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.8",
+          "quote": "their nearby opponents are eliminated, players may send attacks through allied regions into the nearest enemy region."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {},
+    "untestableReason": "The client plays two-player games only, so no game has more than two regions.",
+    "untested": true
+  },
+  {
+    "key": "combat.regions.presence",
+    "parent": "601",
+    "order": 4,
+    "text": "A player is always present in their own region. A player who attacks into another region becomes present in that region as well, and stays present there until regroup, even if every unit they sent into it is removed.",
+    "examples": [
+      {
+        "text": "Example: A player attacks into the opponent's region. From then until regroup, both players are present there, so a unit that dies in that region dies in front of both of them.",
+        "test": "314-prophecy-units-die.test.ts::R302 §3: combat puts the attacker in the region, so both seats see every death in it"
+      }
+    ],
+    "see": [
+      "604"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.19",
+          "quote": "Players can enter neighboring regions during the battle"
+        },
+        {
+          "ref": "Manual p.19",
+          "quote": "them, and will remain present in those regions until the"
+        },
+        {
+          "ref": "Manual p.19",
+          "quote": "regroup phase in addition to their own region. Once a"
+        },
+        {
+          "ref": "Manual p.19",
+          "quote": "if the units they’ve sent into the region are removed."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R302",
+          "quote": "declaring an attack puts the attacker in the defender's"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "314-prophecy-units-die.test.ts",
+        "421-cr-regions-formations.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R302": "e62ab6c3b0d06431986946cbf0f1840e6b40b755f7ce22587b965f6d60b875b6"
+    }
+  },
+  {
+    "key": "combat.regions.presence.only-by-attacking",
+    "parent": "combat.regions.presence",
+    "order": 1,
+    "text": "Attacking is the only way a player enters another player's region. A player who declares no attack does not enter the region they could have attacked.",
+    "examples": [
+      {
+        "text": "Example: A player declares no attack. They do not become present in the region they could have attacked.",
+        "test": "421-cr-regions-formations.test.ts::cr:combat.regions.presence.only-by-attacking — a player who declares no attack does not enter the region it could have attacked"
+      }
+    ],
+    "see": [
+      "604"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.8",
+          "quote": "this rule is with the attack step, where players can enter neighboring regions by sending units over to battle."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R302",
+          "quote": "Declining to attack ends the round without entering"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "421-cr-regions-formations.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R302": "e62ab6c3b0d06431986946cbf0f1840e6b40b755f7ce22587b965f6d60b875b6"
+    }
+  },
+  {
+    "key": "combat.regions.presence.outside-battle",
+    "parent": "combat.regions.presence",
+    "order": 2,
+    "text": "Outside the battle phase, every player is alone in their own region. A player cannot interact with any other player, or with another player's units, outside the battle phase.",
+    "examples": [
+      {
+        "text": "Example: During deployment, Prismatic Observer can recall a card from its controller's own cache only. The opponent's cache is out of reach, because the opponent is not in the Observer's region.",
+        "test": "293-cached-targets-are-regional.test.ts::R291 §2 the report: Prismatic Observer sacrificed in deployment cannot reach the opponent's cache"
+      }
+    ],
+    "see": [
+      "505",
+      "507"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.19",
+          "quote": "This means interacting with opponents and their units"
+        },
+        {
+          "ref": "Manual p.19",
+          "quote": "can only be done during the battle phase."
+        },
+        {
+          "ref": "Manual p.26",
+          "quote": "Each player is in their own region during the deployment phase, meaning it is not possible to interact with"
+        },
+        {
+          "ref": "Manual p.42",
+          "quote": "A: No you cannot. Due to the region mechanic, each"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "293-cached-targets-are-regional.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.regions.presence.player-things",
+    "parent": "combat.regions.presence",
+    "order": 3,
+    "text": "While a player is present in a region, effects in that region can affect that player, and that player's hand, bin, cache and resources. While a player is not present, effects in that region cannot affect any of them.",
+    "examples": [
+      {
+        "text": "Example: In battle, both players are present in the battle region, so Prismatic Observer may recall a card from either player's cache.",
+        "test": "293-cached-targets-are-regional.test.ts::R291 §3 the control: in battle the Observer reaches the opponent's cache, as printed"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.19",
+          "quote": "Additionally, if a player enters a region, their bin, hand,"
+        },
+        {
+          "ref": "Manual p.19",
+          "quote": "resources, and even the player themself can be interacted with."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R291",
+          "quote": "A player's cache can be targeted exactly when that player is"
+        },
+        {
+          "ref": "R243",
+          "quote": "present and the enemy bin is reachable exactly as before; only a fixture"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "293-cached-targets-are-regional.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "The Manual names bin, hand, resources and the player; R291 adds the cache. The second sentence (not present -> not reachable) is the converse the Manual implies ('if a player enters a region'), stated outright by R291 for the cache and R239's reach half for players.",
+    "sourceHashes": {
+      "R243": "4c5bc6d02712fd64927882b54069b5c9b94714bfb5d543432cd6f891f5e07315",
+      "R291": "dd422fb3df1ded08a2bcb94fa3267d5004856953838adf81a7a68e78b96f0ef2"
+    }
+  },
+  {
+    "key": "combat.regions.presence.each-opponent",
+    "parent": "combat.regions.presence",
+    "order": 4,
+    "text": "“Each opponent” and “each player” mean each such player who is present in the effect's region. If no such player is present, that part of the effect does nothing.",
+    "examples": [
+      {
+        "text": "Example: A player sacrifices Bloated Manablub during deployment. “Each opponent loses 3 life” reaches nobody, because no opponent is in that player's region.",
+        "test": "158-silent-region-branches.test.ts::Bloated Manablub — \"Each opponent loses 3 life\" in a region holding no opponent says so and takes no life"
+      },
+      {
+        "text": "Example: Rebalance resolves in a region where no opponent is present. No unit changes hands.",
+        "test": "208-region-scoping-is-absolute.test.ts::Rebalance — no opponent in the region: nobody is asked, no unit changes hands, and it says so"
+      }
+    ],
+    "see": [
+      "102"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.42",
+          "quote": "That refers to each opponent in your current region."
+        },
+        {
+          "ref": "Manual p.42",
+          "quote": "Meaning if you have this effect during deployment,"
+        },
+        {
+          "ref": "Manual p.42",
+          "quote": "it would not hit any other players."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R25",
+          "quote": "\"Each opponent/player\" effects read the **event region's present seats**"
+        },
+        {
+          "ref": "R239 (its reach half)",
+          "quote": "that happens in a region where a player or unit currently isn't is 100% ignored, as if that effect"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R239",
+          "relation": "its visibility half narrowed by R243; the reach half stands"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "158-silent-region-branches.test.ts",
+        "208-region-scoping-is-absolute.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R239": "a02f0bfbccbfab651183f6ddabb290691820d8a135dd82108f62ac824c56d82c",
+      "R25": "07ed90e8f19c288269e80c2ff745b7dad7e92325e0a2eb2092101ab2c79a1521"
+    }
+  },
+  {
+    "key": "combat.regions.presence.ally-enemy",
+    "parent": "combat.regions.presence",
+    "order": 5,
+    "text": "An ally is a unit under your control in the region where the effect is happening. An enemy is a unit in that region that is not under your control. A unit in another region is neither.",
+    "examples": [
+      {
+        "text": "Example: No “target ally” or “target enemy” in the card pool offers a unit standing in a different region.",
+        "test": "243-ally-and-enemy-scope.test.ts::R265 §3a no ally or enemy slot in the pool can see a unit in another region"
+      }
+    ],
+    "see": [
+      "110"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R265",
+          "quote": "Ally = all units under your control in the current region. Enemy = all units not under your control in the current region."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "243-ally-and-enemy-scope.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R265's other halves (an ally includes the source; 'another' excludes it) belong to rule 110 (U03).",
+    "sourceHashes": {
+      "R265": "9f0ae66af8e06b3d710b1ba66aa3f83b7c78f95f228f39fa471b39260be1fd5e"
+    }
+  },
+  {
+    "key": "combat.regions.presence.regroup",
+    "parent": "combat.regions.presence",
+    "order": 6,
+    "text": "At regroup, every player and every unit returns to its own region: a unit returns to its controller's region (see rule 506).",
+    "examples": [
+      {
+        "text": "Example: Life Plant's 1/1s, created in the enemy region during an attack, return to their controller's region at regroup.",
+        "test": "98-spawn-region.test.ts::R115: the stranded 1/1s walk home at regroup"
+      }
+    ],
+    "see": [
+      "506"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.26",
+          "quote": "All units and players return to their regions"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R115",
+          "quote": "already returns every out-of-position unit to its controller's home region"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "98-spawn-region.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R115": "6487690c1da97d2ab55b0ba89ca85829c60c72f3409070630666aabf42947483"
+    }
+  },
+  {
+    "key": "combat.regions.created",
+    "parent": "601",
+    "order": 5,
+    "text": "A unit or spell token created by an effect is created in the region where the effect's source is when the effect resolves. That need not be its controller's own region.",
+    "examples": [
+      {
+        "text": "Example: Life Plant attacks into the opponent's region, and its controller loses life there. Its 1/1s are created in the opponent's region, not at home.",
+        "test": "98-spawn-region.test.ts::R115: report #83 — Life Plant attacking in the enemy region creates its 1/1s THERE"
+      },
+      {
+        "text": "Example: Tidelurker attacks and creates a 2/2 in the enemy region. That 2/2 cannot block the counterattack in its controller's own region.",
+        "test": "98-spawn-region.test.ts::R115 inverts R28: Tidelurker's mid-attack 2/2 stays in the enemy region and CANNOT block the counterattack"
+      }
+    ],
+    "see": [
+      "combat.formations.outside.spawned",
+      "304"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.15",
+          "quote": "play in the region they were created."
+        },
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "When you create a spell token, it is put directly into play in the region it was created in."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R115",
+          "quote": "**Anything made by anything needs to spawn in that region**"
+        },
+        {
+          "ref": "R115",
+          "quote": "*That region* = the region the SOURCE is in **right now**, at the moment the effect"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R28",
+          "relation": "withdrawn by R115 (a created unit arrived in its controller's home region)"
+        },
+        {
+          "ruling": "R52",
+          "relation": "withdrawn by R115 (confirmed R28 as the global default)"
+        },
+        {
+          "ruling": "R33",
+          "relation": "absorbed into R115"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "98-spawn-region.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The designer's words reach us through R115 (from playtest report #83), not a RAQ thread, so they are cited as the ruling.",
+    "sourceHashes": {
+      "R115": "6487690c1da97d2ab55b0ba89ca85829c60c72f3409070630666aabf42947483"
+    }
+  },
+  {
+    "key": "combat.regions.one-at-a-time",
+    "parent": "601",
+    "order": 6,
+    "text": "Battle is resolved one region at a time. Once players have begun interacting inside a region, every step of battle is completed in that region before those players can interact anywhere else.",
+    "examples": [
+      {
+        "text": "Example: The non-initiative player sends a counterattacker at block time. Battle in the first region runs through to its end before the counterattack battle begins in the other region.",
+        "test": "421-cr-regions-formations.test.ts::cr:combat.regions.one-at-a-time — the first battle round runs every one of its steps in the defending region before the counterattack round begins in the other region"
+      }
+    ],
+    "see": [
+      "505",
+      "610"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.21",
+          "quote": "Once players have begun interacting inside of a region, all steps"
+        },
+        {
+          "ref": "Manual p.21",
+          "quote": "of that region before those players can interact elsewhere."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "421-cr-regions-formations.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.regions.one-at-a-time.others-dont-exist",
+    "parent": "combat.regions.one-at-a-time",
+    "order": 1,
+    "text": "While battle is being resolved in a region, units in any other region are treated as if they don't exist.",
+    "examples": [
+      {
+        "text": "Example: A unit with an “After combat” ability stays at home while its controller attacks. When battle ends in the opponent's region, the ability does not trigger.",
+        "test": "390-raq-stack.test.ts::RAQ after combat: the control, an after-combat unit in ANOTHER region makes nothing"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.21",
+          "quote": "will be treated as if they don’t exist."
+        },
+        {
+          "ref": "Manual p.21",
+          "quote": "other region as if they don’t exist."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.regions.one-at-a-time.order",
+    "parent": "combat.regions.one-at-a-time",
+    "order": 2,
+    "text": "Regions are resolved in clockwise order starting with the region to the left of the initiative player, so the initiative player's region resolves last. In a two-player game, battle is resolved first in the non-initiative player's region and then, if there was a counterattack, in the initiative player's region.",
+    "examples": [
+      {
+        "text": "Example: The initiative player attacks into the non-initiative player's region. After that battle, the counterattack is fought in the initiative player's region.",
+        "test": "421-cr-regions-formations.test.ts::cr:combat.regions.one-at-a-time.order — in a two-player game the first battle is in the non-initiative region and the counterattack battle is in the initiative region"
+      }
+    ],
+    "see": [
+      "505",
+      "610"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.21",
+          "quote": "is clockwise starting to the left"
+        },
+        {
+          "ref": "Manual p.21",
+          "quote": "the region of the initiative player"
+        },
+        {
+          "ref": "Manual p.21",
+          "quote": "Once battle has been completed"
+        },
+        {
+          "ref": "Manual p.21",
+          "quote": "will move to IT’s region and"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "421-cr-regions-formations.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "The two-player sentence reads Manual p.21's 1v1 paragraph ('when the IT attacks into the NIT's region ... the players will move to IT's region'). The Manual's parenthetical allowing non-overlapping regions to resolve simultaneously is a table convenience and is not stated as a rule.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.regions.after-combat-presence",
+    "parent": "601",
+    "order": 7,
+    "text": "An “After combat” ability works for a unit that is present in the region where the battle happened, whether or not that unit is in a formation. It does not trigger in a region where no battle took place.",
+    "examples": [
+      {
+        "text": "Example: A unit with an “After combat” ability is in the battle region but outside the formation. Its ability still triggers after combat.",
+        "test": "390-raq-stack.test.ts::RAQ after combat: an after-combat trigger fires for a unit in the battle region that is not in formation"
+      }
+    ],
+    "see": [
+      "609"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.43",
+          "quote": "A: No, because a battle did not happen."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1356667460211966060#0",
+          "quote": "It just needs to be present in a region where battle is happening. Doesn't need to be in formation"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1356667460211966060#0": "65990a25471e20f696ebe324e7248f44649e3e802ddbc63e0c1abfa9f7bd1d58"
+    }
+  },
+  {
+    "key": "combat.regions.information",
+    "parent": "601",
+    "order": 8,
+    "text": "Regions limit what effects can reach and count. They do not hide information: a player may see what happens in a region they are not present in.",
+    "examples": [
+      {
+        "text": "Example: The log line of an effect in the battle region is shown to a player who is not present in that region.",
+        "test": "219-region-scoped-all.test.ts::§2b an event from a region you are not in is still yours to read"
+      }
+    ],
+    "see": [
+      "combat.regions.definition.isolated"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R243",
+          "quote": "Regions do NOT scope information, but they do scope 'global' things (every"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R239",
+          "relation": "its visibility half ('can even see that it exists') narrowed by R243"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "219-region-scoped-all.test.ts",
+        "421-cr-regions-formations.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "See D-U10-1: the Manual's 'zero information' sentence and Caleb's 'nothing can send information across regions' (quoted in R91) read, on their surface, the other way. The rule is the owner's reading (R243): those lines are about what an effect may carry between regions, not what a player may see. Test 219 is a server test; the round-1 verifier's probe measured the same (both seats see a region-stamped log line).",
+    "sourceHashes": {
+      "R243": "4c5bc6d02712fd64927882b54069b5c9b94714bfb5d543432cd6f891f5e07315"
+    },
+    "rebuttal": "Text kept. The rule states the current ruling (R243) with basis owner and medium confidence, and its notes and D-U10-1 record the printed and designer lines that read the other way. A rule body states the law; the qualification lives in the basis, the notes and the discrepancy."
+  },
+  {
+    "key": "combat.formations.definition",
+    "parent": "602",
+    "order": 1,
+    "text": "When units attack or block, they are placed in a formation. The units a player attacks with make up that player's attacking formation; the units a player blocks with make up that player's defending formation.",
+    "examples": [
+      {
+        "text": "Example: A player attacks with three units in two columns; those three units are the attacking formation. The two units the defender blocks with are the defending formation.",
+        "test": "421-cr-regions-formations.test.ts::cr:combat.formations.definition — the units declared as attackers make up the attacking formation and the units declared as blockers make up the defending formation"
+      }
+    ],
+    "see": [
+      "604",
+      "606"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.22",
+          "quote": "When units attack or block, they are placed in a formation,"
+        },
+        {
+          "ref": "Manual p.23",
+          "quote": "The resulting group of defending units is also called a"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "421-cr-regions-formations.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.formations.definition.shape",
+    "parent": "combat.formations.definition",
+    "order": 1,
+    "text": "A formation has a front row and a back row, and any number of columns. Each column of a formation holds at most two units: one in the front row and one in the back row.",
+    "examples": [
+      {
+        "text": "Example: A player may attack five columns wide, but cannot put three units in one column.",
+        "test": "421-cr-regions-formations.test.ts::cr:combat.formations.definition.shape — a formation may be many columns wide, but a column of three units is refused on either side"
+      }
+    ],
+    "see": [
+      "combat.columns.definition"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.22",
+          "quote": "and back row but can scale infinitely in width."
+        },
+        {
+          "ref": "Manual p.22",
+          "quote": "MAXIMUM OF 2 ROWS"
+        },
+        {
+          "ref": "Rulebook 2023 p.10",
+          "quote": "two units deep, as there is a front and back row."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "421-cr-regions-formations.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.formations.definition.when-set",
+    "parent": "combat.formations.definition",
+    "order": 2,
+    "text": "An attacking formation is set during the attack step. A defending formation is set during the block step.",
+    "examples": [
+      {
+        "text": "Example: The defender cannot declare blockers during the attack step, and the attacker cannot change the attack once the block step has begun.",
+        "test": "421-cr-regions-formations.test.ts::cr:combat.formations.definition.when-set — attacks are declared only in the attack step and blocks only in the block step"
+      }
+    ],
+    "see": [
+      "604",
+      "606"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.22",
+          "quote": "Attacking formations are set during the attack step while the defensive"
+        },
+        {
+          "ref": "Rulebook 2023 p.10",
+          "quote": "the attack step and defensive formations are set during the block step."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "421-cr-regions-formations.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.formations.definition.whole-side",
+    "parent": "combat.formations.definition",
+    "order": 3,
+    "text": "A player's formation is that player's whole side of the battle in that region: every unit they have arrayed there, in every column. It is not a single column. An effect that targets a formation targets one player's whole side.",
+    "examples": [
+      {
+        "text": "Example: Galactic Germination targets an attacking formation of three units in two columns. It creates three 1/1s.",
+        "test": "156-reaping-and-formation.test.ts::Galactic Germination: \"target formation\" is THE WHOLE SIDE"
+      }
+    ],
+    "see": [
+      "110"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R184 (its \"target formation\" half)",
+          "quote": "entire formation in that region, every unit arrayed there. Not a column."
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R184",
+          "relation": "its Reaping half amended and corrected by R283; the 'target formation' half stands"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "156-reaping-and-formation.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R184": "64d36787c1084d75da052f3a80b7d2186fdf5734d785bcc0186720a149489635"
+    }
+  },
+  {
+    "key": "combat.formations.definition.empty",
+    "parent": "combat.formations.definition",
+    "order": 4,
+    "text": "A formation remains a formation for as long as its battle lasts, even when every unit in it has been removed. An effect that counts the units in an empty formation counts zero.",
+    "examples": [
+      {
+        "text": "Example: Galactic Germination targets a formation, and every unit in it dies before the spell resolves. It resolves and creates no units.",
+        "test": "156-reaping-and-formation.test.ts::Galactic Germination: an EMPTY formation is still a formation"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R184 (its \"target formation\" half)",
+          "quote": "legal exactly while its battle runs; **emptying it does not remove it**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "156-reaping-and-formation.test.ts",
+        "421-cr-regions-formations.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R184 states this for a formation as a target. See D-U10-6 for 'my formation' with no living unit, where R75 answers 'no slots'.",
+    "sourceHashes": {
+      "R184": "64d36787c1084d75da052f3a80b7d2186fdf5734d785bcc0186720a149489635"
+    }
+  },
+  {
+    "key": "combat.formations.definition.locked",
+    "parent": "combat.formations.definition",
+    "order": 5,
+    "text": "Once a formation is set, its units are locked in their positions until regroup, when they all leave formation. A unit's position changes only as rules 602.3–602.5 describe, or when an effect moves it.",
+    "examples": [
+      {
+        "text": "Example: Riftwalker's ability switches its position with another ally in its formation.",
+        "test": "28-metal-c.test.ts::Riftwalker: [one] switches my position with a target ally in my formation"
+      }
+    ],
+    "see": [
+      "combat.formations.front-first",
+      "combat.formations.promotion",
+      "combat.formations.collapse",
+      "506"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.22",
+          "quote": "is set, the units are locked in position and are considered"
+        },
+        {
+          "ref": "Manual p.22",
+          "quote": "regroup where they all leave formation."
+        },
+        {
+          "ref": "Manual p.26",
+          "quote": "All units leave formation"
+        },
+        {
+          "ref": "card: Riftwalker",
+          "quote": "Switch my position with another target ally in my formation."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "28-metal-c.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.formations.outside",
+    "parent": "602",
+    "order": 2,
+    "text": "A unit can be in a battle region without being in a formation. A unit outside the formation is neither attacking nor blocking.",
+    "examples": [
+      {
+        "text": "Example: A defending unit stands in the battle region but is not declared as a blocker. It blocks nothing, and the unblocked attacker deals its damage to the defending player.",
+        "test": "421-cr-regions-formations.test.ts::cr:combat.formations.outside — a defending unit in the battle region that is not in the defending formation neither blocks nor takes combat damage"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.15",
+          "quote": "of formation (meaning it is not attacking or blocking), but still in the same region."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "421-cr-regions-formations.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.formations.outside.spawned",
+    "parent": "combat.formations.outside",
+    "order": 1,
+    "text": "A unit that spawns during battle, whether created by an effect or played as a spell unit, is placed in its region outside the formation, unless the card says otherwise.",
+    "examples": [
+      {
+        "text": "Example: Aberrant Populace attacks and creates two Wisps. The Wisps are in the battle region, outside the formation.",
+        "test": "08-cards2.test.ts::Aberrant Populace: attack → two Wisps out of formation"
+      }
+    ],
+    "see": [
+      "combat.formations.placement",
+      "combat.formations.play-into"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.15",
+          "quote": "If a unit spawns during battle, it is placed outside"
+        },
+        {
+          "ref": "Manual p.43",
+          "quote": "A: They spawn in the region but not in formation unless"
+        },
+        {
+          "ref": "Manual p.43",
+          "quote": "they specifically say so."
+        },
+        {
+          "ref": "card: Aberrant Populace",
+          "quote": "(They aren't in formation.)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "08-cards2.test.ts",
+        "98-spawn-region.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.formations.outside.stolen",
+    "parent": "combat.formations.outside",
+    "order": 2,
+    "text": "A unit whose control changes during a battle, after the formations are set, leaves its formation. It stays out of every formation for the rest of that battle, attacking and blocking for nobody, and joins its new controller's side at regroup.",
+    "examples": [
+      {
+        "text": "Example: Download steals an enemy Robot token after blocks. The Robot leaves the formation and takes no further part in the battle.",
+        "test": "145-erase-routes.test.ts::R172 (viii): Download — a Robot token stolen mid-battle is OUT of the formation"
+      },
+      {
+        "text": "Example: At regroup, the stolen Robot joins its new controller's side.",
+        "test": "145-erase-routes.test.ts::R172 (ix): Download — the stolen Robot token joins its NEW controller's side at regroup"
+      }
+    ],
+    "see": [
+      "711"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R172 (its §4, a unit stolen mid-battle)",
+          "quote": "**it sits out until regroup.**"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R8",
+          "relation": "narrowed by R172: a stolen unit no longer joins the new controller's formation mid-battle"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "145-erase-routes.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "engine differs: F-U10-4 (measured: after Organic Exchange both units stay in the formations, swapped; the Download steal in 145-erase-routes still sits out).",
+    "sourceHashes": {
+      "R172": "f2dcff3abbd86d856448719117ab0e47d8b54c70d14a0e56e2d890eeeebcfc2d"
+    },
+    "untested": true,
+    "engineDiffers": [
+      "F-U10-4"
+    ]
+  },
+  {
+    "key": "combat.formations.front-first",
+    "parent": "602",
+    "order": 3,
+    "text": "The front row of a column must be filled before a unit can be placed in its back row. So a column of a formation holds no unit, one unit in its front row, or two units. It never holds a unit in its back row alone.",
+    "examples": [
+      {
+        "text": "Example: While building an attack, a player puts a unit in the back slot of an empty column. When the attack is declared, that unit stands in the front row.",
+        "test": "55-ui-formation.test.ts::building an attack: a back unit with nobody in front moves up on Done"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.22",
+          "quote": "front row of a column must be filled first before a unit can be placed in a back row."
+        },
+        {
+          "ref": "Rulebook 2023 p.10",
+          "quote": "• The front row of a column must be"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R75 (its front-row note)",
+          "quote": "So a column is `[]`, `[front]` or `[front, back]` and never"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "64-formation-collapse.test.ts",
+        "55-ui-formation.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.22 loses the 'T' of 'The' in extraction; the quote starts at 'front'.",
+    "sourceHashes": {
+      "R75": "c20ea9bab21d021659c85d652dd11bb9376e9700c1e0e6ec9f085566e9509f8a"
+    }
+  },
+  {
+    "key": "combat.formations.promotion",
+    "parent": "602",
+    "order": 4,
+    "text": "If a unit in the front row of a column leaves the formation, the unit behind it moves up into the front row. This happens whenever it occurs during the battle: before blocks, after blocks and during combat damage.",
+    "examples": [
+      {
+        "text": "Example: Blocks have been declared. The front unit of an attacking column dies; the unit behind it moves to the front of that column.",
+        "test": "64-formation-collapse.test.ts::R72 (Manual): the back row promotes AFTER blocks too"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.22",
+          "quote": "If a unit is removed from a formation, any units behind it move to the front row and take its place."
+        },
+        {
+          "ref": "Rulebook 2023 p.10",
+          "quote": "• If a unit is removed from a formation, any units behind it move to the"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R72 (its gravity rule)",
+          "quote": "a unit behind a removed one moves up and takes its place"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "64-formation-collapse.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R72": "eed4648973a278cfbffddb860451cdd2629e8dfb6ab2b6c9a15137cdce515969"
+    }
+  },
+  {
+    "key": "combat.formations.collapse",
+    "parent": "602",
+    "order": 5,
+    "text": "If the last unit in a column of an attacking formation leaves it before blocks are declared, the columns on either side close in to fill the gap, so the line has no empty column.",
+    "examples": [
+      {
+        "text": "Example: A three-column attack loses the only unit of its middle column during the attack window. The right-hand column moves left, and the line is two columns wide.",
+        "test": "64-formation-collapse.test.ts::R72: a middle column emptied before blocks collapses"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.22",
+          "quote": "If the last unit in a column is removed from a formation, the columns on its sides will close in to fill the gap. This"
+        },
+        {
+          "ref": "Rulebook 2023 p.10",
+          "quote": "• If the last unit in a column is removed from an attacking formation"
+        },
+        {
+          "ref": "Rulebook 2023 p.10",
+          "quote": "before blocks, the columns to its left"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "64-formation-collapse.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.formations.collapse.after-blocks",
+    "parent": "combat.formations.collapse",
+    "order": 1,
+    "text": "After blocks are declared, columns never move to fill a gap. A column emptied after blocks stays in the line as a hole for the rest of the battle, even if its blockers are removed too.",
+    "examples": [
+      {
+        "text": "Example: After blocks, the only attacker in the middle column dies. The column stays where it is, empty, and the columns to its right do not move.",
+        "test": "64-formation-collapse.test.ts::R72 (Manual): after blocks are declared, an emptied column stays as a HOLE"
+      },
+      {
+        "text": "Example: Later in the same battle the blockers of that column die too. The hole still does not close.",
+        "test": "64-formation-collapse.test.ts::R72 (Manual): the hole is permanent"
+      }
+    ],
+    "see": [
+      "combat.damage.pairing.attackers-gone"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.22",
+          "quote": "only happens before blocks are declared. After blocks, columns will not move to fill gaps."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R72 (its gravity rule)",
+          "quote": "So after the defender has answered, an emptied column is a **permanent hole**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "64-formation-collapse.test.ts",
+        "421-cr-regions-formations.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R72": "eed4648973a278cfbffddb860451cdd2629e8dfb6ab2b6c9a15137cdce515969"
+    }
+  },
+  {
+    "key": "combat.formations.collapse.any-removal",
+    "parent": "combat.formations.collapse",
+    "order": 2,
+    "text": "Rules 602.4 and 602.5 apply however a unit leaves its formation: it may die, be recalled, cached or erased, or leave in any other way.",
+    "examples": [
+      {
+        "text": "Example: Before blocks, the only unit of a middle column is recalled to its owner's hand. The line closes up just as it would after a death.",
+        "test": "64-formation-collapse.test.ts::R72: a unit RECALLED out of a middle column closes the gap too"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.22",
+          "quote": "If a unit is removed from a formation, any units behind it move to the front row and take its place."
+        },
+        {
+          "ref": "Manual p.22",
+          "quote": "If the last unit in a column is removed from a formation, the columns on its sides will close in to fill the gap. This"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "64-formation-collapse.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The Manual says 'removed' in both the promotion sentence and the collapse sentence, with no restriction on how. That generality is the rule.",
+    "sourceHashes": {},
+    "rebuttal": "Text kept. The verifier read the cited line as the promotion rule only; the collapse sentence ('If the last unit in a column is removed from a formation') uses the same unrestricted word, and is now cited too."
+  },
+  {
+    "key": "combat.formations.collapse.immediate",
+    "parent": "combat.formations.collapse",
+    "order": 3,
+    "text": "A formation closes up immediately when a unit leaves it, as a state-based action. An ability that triggers on that unit leaving play sees the formation already closed up.",
+    "examples": [
+      {
+        "text": "Example: Before blocks, the only unit of a middle column dies. By the time any ability that triggers on the death looks at the formation, the gap has already closed.",
+        "test": "64-formation-collapse.test.ts::R72: the gap is closed before any observer runs"
+      }
+    ],
+    "see": [
+      "713"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R72 (its gravity rule)",
+          "quote": "It is a **state-based action** in the sense the report asked for"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "64-formation-collapse.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "",
+    "sourceHashes": {
+      "R72": "eed4648973a278cfbffddb860451cdd2629e8dfb6ab2b6c9a15137cdce515969"
+    }
+  },
+  {
+    "key": "combat.formations.collapse.defending",
+    "parent": "combat.formations.collapse",
+    "order": 4,
+    "text": "A defending formation may have empty columns, and they are never closed up.",
+    "examples": [
+      {
+        "text": "Example: The defender blocks the first and third attacking columns and leaves the second unblocked. The defending formation keeps its gap.",
+        "test": "66-formation-placement.test.ts::R75: a blocking formation may legitimately have EMPTY columns"
+      }
+    ],
+    "see": [
+      "606"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.23",
+          "quote": "formation, but unlike offensive formations, the defending formation is allowed to be assigned with empty"
+        },
+        {
+          "ref": "Rulebook 2023 p.11",
+          "quote": "unlike offensive formations, the defending formation can have some missing columns."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R72 (its gravity rule)",
+          "quote": "so a sparse block map is never something to repair."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "66-formation-placement.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Rulebook 2023 p.11 is not in this unit's pack; added from the extract's printed pages.",
+    "sourceHashes": {
+      "R72": "eed4648973a278cfbffddb860451cdd2629e8dfb6ab2b6c9a15137cdce515969"
+    }
+  },
+  {
+    "key": "combat.formations.placement",
+    "parent": "602",
+    "order": 6,
+    "text": "When an effect creates a unit, or puts one into play, “in my formation” or “in formation” without naming a position, the effect's controller chooses the position as the effect resolves.",
+    "examples": [
+      {
+        "text": "Example: Hooba-Lin's host attacks, and its trigger creates a 1/1 “in my formation”. As the trigger resolves, Hooba-Lin's controller chooses where in the formation the 1/1 goes.",
+        "test": "108-formation-class.test.ts::BL-24 Hooba-Lin (augment): the host attacks → the ask, and the 1/1 lands in the chosen slot"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R75 (its placement rule)",
+          "quote": "When something spawns something 'in my formation' or 'in formation', it's up"
+        },
+        {
+          "ref": "R75 (its placement rule)",
+          "quote": "to the controller of the effect to choose where the unit goes. They can put it"
+        },
+        {
+          "ref": "R75 (its placement rule)",
+          "quote": "column which only has 1 unit. That choice should be made on effect"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R75",
+          "relation": "its edge adjacency superseded by R304, and its 'only the attacking line can widen' narrowed by R322; the placement rule stands"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "66-formation-placement.test.ts",
+        "108-formation-class.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R75": "c20ea9bab21d021659c85d652dd11bb9376e9700c1e0e6ec9f085566e9509f8a"
+    }
+  },
+  {
+    "key": "combat.formations.placement.legal-positions",
+    "parent": "combat.formations.placement",
+    "order": 1,
+    "text": "The positions such a unit may take are: a new column at either end of the line; the back slot of any column that holds exactly one unit; and the front slot of a hole left after blocks (rule 602.5a).",
+    "examples": [
+      {
+        "text": "Example: An attacking line has two columns, the first with two units and the second with one. The legal positions are a new column at the left end, the back slot of the second column, and a new column at the right end.",
+        "test": "66-formation-placement.test.ts::R75: a two-unit column offers no back slot"
+      },
+      {
+        "text": "Example: A unit placed into the formation may fill a hole left after blocks. No placement ever creates a hole.",
+        "test": "66-formation-placement.test.ts::R75: a placement can FILL an R72 hole, and can never create one"
+      }
+    ],
+    "see": [
+      "combat.formations.collapse.after-blocks",
+      "combat.formations.placement.empty-formation"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R75 (its placement rule)",
+          "quote": "to either side of the existing units OR in the second slot of a column for a"
+        },
+        {
+          "ref": "R75 (its placement rule)",
+          "quote": "**a new column at either END of the line** — leftmost or rightmost;"
+        },
+        {
+          "ref": "R75 (its placement rule)",
+          "quote": "**the BACK slot of a column that holds exactly one unit**;"
+        },
+        {
+          "ref": "R75 (its placement rule)",
+          "quote": "**the front slot of an R72 hole** — a column emptied of attackers that its"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "66-formation-placement.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "The owner's words give the ends and the second slot of a one-unit column; the hole is a third kind added by the ruling's author (R75: 'The hole is a third kind the ruling does not enumerate'). See D-U10-4.",
+    "sourceHashes": {
+      "R75": "c20ea9bab21d021659c85d652dd11bb9376e9700c1e0e6ec9f085566e9509f8a"
+    }
+  },
+  {
+    "key": "combat.formations.placement.ends-only",
+    "parent": "combat.formations.placement",
+    "order": 2,
+    "text": "“Either side of the existing units” means the two ends of the line. A unit is never put into a new column between two existing columns.",
+    "examples": [
+      {
+        "text": "Example: An attacking line has three columns. A unit placed “in my formation” may open a new column at the left or right end, but never between the first and second columns.",
+        "test": "66-formation-placement.test.ts::R75: \"either side\" means the two ENDS"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R75 (its placement rule)",
+          "quote": "**\"Either side of the existing units\" is read as the two ENDS, not as an"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "66-formation-placement.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "A reading recorded by the ruling's author, not in the owner's quoted words. See D-U10-4.",
+    "sourceHashes": {
+      "R75": "c20ea9bab21d021659c85d652dd11bb9376e9700c1e0e6ec9f085566e9509f8a"
+    }
+  },
+  {
+    "key": "combat.formations.placement.defending",
+    "parent": "combat.formations.placement",
+    "order": 3,
+    "text": "A defending formation never gains a new column at its ends this way. A unit placed into a defending formation may go into the back slot of a blocking column that holds one unit. After blocks have been declared, it may also stand in front of an attacking column that still has an attacker and no blocker, and that column is then blocked (see rule 606).",
+    "examples": [
+      {
+        "text": "Example: The defender's only blocking column already holds two units. An effect that puts a unit into the defender's formation has no position for it.",
+        "test": "66-formation-placement.test.ts::R75: a full BLOCKING formation offers nothing"
+      },
+      {
+        "text": "Example: After blocks, the defender plays Tiderunner Initiate in front of an unblocked attacker. That column is now blocked, and the attacker deals its combat damage to the Tiderunner.",
+        "test": "400-raq-fix-blocks.test.ts::R322 a Tiderunner put in front of an unblocked attacker fights it"
+      }
+    ],
+    "see": [
+      "606",
+      "607",
+      "combat.formations.placement.defending-emptied-block"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1366447016653361192#1",
+          "quote": "I think it would be considered blocked even against an empty column."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R322",
+          "quote": "So after blocks are declared, a unit joining the DEFENDING formation may stand"
+        },
+        {
+          "ref": "R75 (its placement rule, as narrowed by R322)",
+          "quote": "**Only the ATTACKING line can widen.**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "66-formation-placement.test.ts",
+        "400-raq-fix-blocks.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "medium",
+    "notes": "R322 and RAQ thread 1366447016653361192 are not in this unit's pack (classified to U11); added from the register. R322 says the extra spot is offered 'from the block window until combat damage is over'. See D-U10-3 on why the defending line has no new end columns.",
+    "sourceHashes": {
+      "R322": "5e8047a00d274e87b580a74760c9c25054e659bfc751cab75d33aad619d2e05b",
+      "R75": "c20ea9bab21d021659c85d652dd11bb9376e9700c1e0e6ec9f085566e9509f8a",
+      "RAQ 1366447016653361192#1": "bb2e9add4233c31bbcfbc92538edbd8db613375135196b284f67dc344abb26c3"
+    }
+  },
+  {
+    "key": "combat.formations.placement.one-or-none",
+    "parent": "combat.formations.placement",
+    "order": 4,
+    "text": "If exactly one position is legal, the unit goes there and no choice is asked. If no position is legal, the effect places nothing.",
+    "examples": [
+      {
+        "text": "Example: Only one position is open in the formation. The unit goes there without its controller being asked.",
+        "test": "66-formation-placement.test.ts::R75: exactly one legal placement is auto-picked"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R75 (its placement rule)",
+          "quote": "is legal, and a **logged** no-op when none is."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "66-formation-placement.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "",
+    "sourceHashes": {
+      "R75": "c20ea9bab21d021659c85d652dd11bb9376e9700c1e0e6ec9f085566e9509f8a"
+    }
+  },
+  {
+    "key": "combat.formations.placement.source-formation",
+    "parent": "combat.formations.placement",
+    "order": 5,
+    "text": "“My formation” means the formation the effect's source is in. If the source is in play but not in any formation when the effect resolves, the effect places nothing and creates nothing.",
+    "examples": [
+      {
+        "text": "Example: Hooba-Lin's host attacks, then is stolen before the trigger resolves, so it is in play but out of the formation. No 1/1 is created.",
+        "test": "108-formation-class.test.ts::R225 Hooba-Lin: alive but out of the formation (R172) → no token, no question"
+      }
+    ],
+    "see": [
+      "combat.formations.outside.stolen"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R225 (its second grade)",
+          "quote": "formation by pointing at the SOURCE."
+        },
+        {
+          "ref": "R225 (its second grade)",
+          "quote": "the source is **alive and in play but unslotted**"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R225",
+          "relation": "its first grade (a source that died with its trigger on the stack places nothing) reversed by R325"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "108-formation-class.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R225": "1f75c14d516cb37d2dcc1b90fd62e8f808ad5d3fb1fdf808e54c380667a3e1c1"
+    }
+  },
+  {
+    "key": "combat.formations.placement.source-gone",
+    "parent": "combat.formations.placement",
+    "order": 6,
+    "text": "If the effect's source has left play while its effect is on the stack, “my formation” means the formation the source was in when it left play, and the effect still places the unit there.",
+    "examples": [
+      {
+        "text": "Example: Hooba-Lin attacks and is killed with its trigger on the stack. The 1/1 is still created, in the formation Hooba-Lin was in.",
+        "test": "108-formation-class.test.ts::R325 Hooba-Lin: killed under its own attack trigger"
+      }
+    ],
+    "see": [
+      "714"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353895783266516992#2",
+          "quote": "But there are some which will remember they were in formation and will work fine (Hooba-Bot, Hooba-Pon, Hooba-Lin, Embermaw Fledgling, Lumengrove Lurker)."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R325",
+          "quote": "formation it stood in), it reads the source's **last-known state**: what the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "108-formation-class.test.ts",
+        "421-cr-regions-formations.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R325": "a8d4151f54c2ff13247eed657bddc54a936613942ac00b9140df2db6c13abfa2",
+      "RAQ 1353895783266516992#2": "83fda5aac7c0abc39be0eb511b893b31ffa926160cc95d236239fcb54be22e45"
+    }
+  },
+  {
+    "key": "combat.formations.placement.still-in-formation",
+    "parent": "combat.formations.placement",
+    "order": 7,
+    "text": "An effect whose text says “if I am still in formation” does nothing if its source is no longer in the formation when the effect resolves, including when the source has left play.",
+    "examples": [
+      {
+        "text": "Example: Hooba-Nan attacks and is killed with its trigger on the stack. The trigger creates no 1/1s.",
+        "test": "390-raq-stack.test.ts::RAQ dead unit: Hooba-Nan gone with its trigger on the stack makes nothing"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Hooba-Nan",
+          "quote": "if I am still in formation"
+        },
+        {
+          "ref": "card: Rousing Spirit",
+          "quote": "When I attack, if I am still in formation"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1353895783266516992#1",
+          "quote": "There are only couple of effects which will do nothing since unit is gone (Rousing Spirit, Hooba-Nan)."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1353895783266516992#1": "65a0c51a153352e128eef786b5383dc0e9cbd1c14d6856b85af2e3b4402ea45c"
+    }
+  },
+  {
+    "key": "combat.formations.placement.counting",
+    "parent": "combat.formations.placement",
+    "order": 8,
+    "text": "An amount that counts units in “my formation” is counted as the effect resolves. Units that have left the formation by then are not counted. If the source itself has left play, the amount counts the formation it was in.",
+    "examples": [
+      {
+        "text": "Example: Embermaw Fledgling attacks and dies in combat. Its after-combat trigger still counts the attacking units of the formation it was in.",
+        "test": "401-raq-fix-stack.test.ts::R325 Embermaw Fledgling gone before its after-combat trigger resolves"
+      }
+    ],
+    "see": [
+      "combat.columns.adjacency.left-play"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Embermaw Fledgling",
+          "quote": "where X is the number of attacking units in my formation."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1353895783266516992#2",
+          "quote": "But there are some which will remember they were in formation and will work fine (Hooba-Bot, Hooba-Pon, Hooba-Lin, Embermaw Fledgling, Lumengrove Lurker)."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R27",
+          "quote": "combat deaths reduce X, and a unit that wasn't attacking gets X = 0 → no token."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "401-raq-fix-stack.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "medium",
+    "notes": "See F-U10-1: R27 words the count as units the controller OWNS.",
+    "sourceHashes": {
+      "R27": "f9de0bd386630de9d13ba5eaecf8f59a21043f5695f988e9a7fcff619ce2a071",
+      "RAQ 1353895783266516992#2": "83fda5aac7c0abc39be0eb511b893b31ffa926160cc95d236239fcb54be22e45"
+    }
+  },
+  {
+    "key": "combat.formations.placement.spell-unit",
+    "parent": "combat.formations.placement",
+    "order": 9,
+    "text": "If an effect lets a player play a spell unit into a formation (as Hooba-Pon does), the spell part happens first. If it resolves, the unit then spawns into the formation.",
+    "examples": [
+      {
+        "text": "Example: Hooba-Pon attacks and its controller plays a spell unit from hand through it. The spell resolves, and then the unit appears in the chosen position.",
+        "test": "396-raq-timing.test.ts::RAQ Hooba-Pon spell unit: the spell part happens, then the unit spawns into the formation"
+      }
+    ],
+    "see": [
+      "303"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Hooba-Pon",
+          "quote": "you may play a unit from your hand into an open position in my formation."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1461450216874967235#0",
+          "quote": "Yes, the spell part happens and if it resolves, the unit will spawn into formation."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1461450216874967235#0": "a221c0da51ffe596defa69c129254ad614ac58b09ed0590f80b24d973827b751"
+    }
+  },
+  {
+    "key": "combat.formations.play-into",
+    "parent": "602",
+    "order": 7,
+    "text": "Some cards say they may be played into a formation (Tiderunner Initiate, Trench Stalker). The position is chosen as the card is cast, from the positions rule 602.6 allows, and the unit is already in that position when it enters play.",
+    "examples": [
+      {
+        "text": "Example: Tiderunner Initiate's spot is asked for while it is being cast, and it enters play already standing in that spot.",
+        "test": "108-formation-class.test.ts::BL-24 Tiderunner Initiate: the spot is asked in the CAST window"
+      },
+      {
+        "text": "Example: No moment exists in which the Tiderunner is in the region but outside the formation, so the opponent cannot respond to it there.",
+        "test": "73-play-into-formation.test.ts::R29 the opponent’s response window cannot catch it outside the line"
+      }
+    ],
+    "see": [
+      "combat.formations.placement",
+      "702"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Tiderunner Initiate",
+          "quote": "You may play me into an open spot in your formation."
+        },
+        {
+          "ref": "card: Trench Stalker",
+          "quote": "I can be played directly into formation"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R29 (its play-time placement)",
+          "quote": "**And it is a PLAY, so the spot is chosen at CAST.**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "108-formation-class.test.ts",
+        "73-play-into-formation.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R29": "d80d45629dc82b6c2e648a2fa8f082e38fa5d359b0b395ac4139ced7bd98a582"
+    }
+  },
+  {
+    "key": "combat.formations.play-into.spot-gone",
+    "parent": "combat.formations.play-into",
+    "order": 1,
+    "text": "If the chosen position no longer exists when the card resolves, the unit enters play in the region, outside the formation.",
+    "examples": [
+      {
+        "text": "Example: Tiderunner Initiate is cast to go behind an attacker, and the attacker dies before it resolves. The Tiderunner enters the region outside the formation.",
+        "test": "73-play-into-formation.test.ts::R29 the slot is RE-DERIVED at resolution"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R29 (its play-time placement)",
+          "quote": "card resolves into the region, outside the formation, **and says so**;"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "73-play-into-formation.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R29": "d80d45629dc82b6c2e648a2fa8f082e38fa5d359b0b395ac4139ced7bd98a582"
+    }
+  },
+  {
+    "key": "combat.formations.play-into.optional",
+    "parent": "combat.formations.play-into",
+    "order": 2,
+    "text": "Playing such a card into the formation is optional. Its controller may instead play it so that it enters the region outside the formation.",
+    "examples": [
+      {
+        "text": "Example: When Tiderunner Initiate is cast, “stay out of formation” is one of the answers offered.",
+        "test": "73-play-into-formation.test.ts::R29 \"stay out of formation\" is still on the menu"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Tiderunner Initiate",
+          "quote": "You may play me into an open spot in your formation."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R29 (its play-time placement)",
+          "quote": "Joining is optional (\"may\")."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "73-play-into-formation.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R29": "d80d45629dc82b6c2e648a2fa8f082e38fa5d359b0b395ac4139ced7bd98a582"
+    }
+  },
+  {
+    "key": "combat.formations.play-into.needs-formation",
+    "parent": "combat.formations.play-into",
+    "order": 3,
+    "text": "Such a card can be played into a formation only if its controller has a formation in that battle that still holds at least one unit: they attacked, or they declared blocks, and not every unit in it has left. As an exception, after blocks are declared the defending player may play it in front of an unblocked attacking column (rule 602.6c) even if they declared no blockers. Otherwise it is played normally, outside any formation.",
+    "examples": [
+      {
+        "text": "Example: Before blocks, the defending player has no formation. They cast Tiderunner Initiate; nothing is asked and it enters play outside any formation.",
+        "test": "73-play-into-formation.test.ts::R29 with NO formation of your own the play is legal and asks nothing"
+      },
+      {
+        "text": "Example: After blocks, the defender plays a unit in front of an unblocked attacking column. That column is blocked, and stays blocked when the unit is removed.",
+        "test": "388-raq-blocks-and-windows.test.ts::RAQ Blocked: a unit played in as a blocker after blocks blocks that column"
+      },
+      {
+        "text": "Example: After blocks, every attacking unit dies. The attacker plays Tiderunner Initiate; nothing is asked and it enters play outside any formation. (illustrative)",
+        "test": null
+      }
+    ],
+    "see": [
+      "combat.formations.placement.defending",
+      "combat.formations.placement.empty-formation"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R29 (its play-time placement)",
+          "quote": "Requires an EXISTING formation of yours (you attacked, or you declared"
+        },
+        {
+          "ref": "R322",
+          "quote": "defender may start a formation this way even having declared no blockers."
+        },
+        {
+          "ref": "R75 (its placement rule)",
+          "quote": "always grow at an end. A formation you are not standing in cannot be joined at"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R29",
+          "relation": "its no-formation case ('nothing to join and no prompt') amended by R322"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "73-play-into-formation.test.ts",
+        "388-raq-blocks-and-windows.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R322 is not in this unit's pack; added from the register. 'Still holds a unit' is R75's ('a formation you are not standing in cannot be joined'), which R29's placement shares; see 602.6k and D-U10-10.",
+    "sourceHashes": {
+      "R29": "d80d45629dc82b6c2e648a2fa8f082e38fa5d359b0b395ac4139ced7bd98a582",
+      "R322": "5e8047a00d274e87b580a74760c9c25054e659bfc751cab75d33aad619d2e05b",
+      "R75": "c20ea9bab21d021659c85d652dd11bb9376e9700c1e0e6ec9f085566e9509f8a"
+    }
+  },
+  {
+    "key": "combat.columns.definition",
+    "parent": "603",
+    "order": 1,
+    "text": "A column is one file of the battle line: the attacking units in it and the defending units placed in front of it. Each side of a column holds at most two units. A defending unit placed in front of an attacking column blocks that whole column.",
+    "examples": [
+      {
+        "text": "Example: One unit blocks a column of two attackers. Neither attacker deals damage to the defending player.",
+        "test": "421-cr-regions-formations.test.ts::cr:combat.columns.definition — one blocker in front of a two-unit attacking column blocks the whole column, so neither attacker damages the defending player"
+      }
+    ],
+    "see": [
+      "combat.formations.definition.shape",
+      "606",
+      "combat.damage.overview.column-source"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.23",
+          "quote": "units in front of the formation that is attacking them."
+        },
+        {
+          "ref": "Manual p.23",
+          "quote": "Once a defending unit has been placed in front of an attacking column, that entire column is considered blocked."
+        },
+        {
+          "ref": "Manual p.23",
+          "quote": "Each column of attacking and defending units in a"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "421-cr-regions-formations.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.columns.definition.shared-attributes",
+    "parent": "combat.columns.definition",
+    "order": 1,
+    "text": "Combat attributes are shared by the units in the same column of a formation, and are not shared with units to their left or right (see rule 802.1).",
+    "examples": [
+      {
+        "text": "Example: A unit with Flying attacks in the front of a column. The unit behind it has Flying too; the unit in the next column does not.",
+        "test": "421-cr-regions-formations.test.ts::cr:combat.columns.definition.shared-attributes — Flying on the front unit of a column is shared with the unit behind it and not with the unit in the next column"
+      }
+    ],
+    "see": [
+      "802.1",
+      "712"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.24",
+          "quote": "Combat attributes (denoted in gold text) are shared by"
+        },
+        {
+          "ref": "Manual p.24",
+          "quote": "units in the same column of a formation. For example,"
+        },
+        {
+          "ref": "Manual p.24",
+          "quote": "Combat attributes are not shared by units to the left or to the right, they"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "421-cr-regions-formations.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.24 is not in this unit's pack; added from the extract's printed pages. A pointer only: the full rule is drafted in 802.1 and 712.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.columns.definition.side-blocks",
+    "parent": "combat.columns.definition",
+    "order": 2,
+    "text": "A defending unit may also block in a column where there is no attacker (a side-block). Side-block columns stand beside the attacking line, on either side of it (see rule 606). Any number of units may side-block, and each may stand in a column of its own.",
+    "examples": [
+      {
+        "text": "Example: Two defending units block where no attacker is, each in its own column beside the attack.",
+        "test": "400-raq-fix-blocks.test.ts::R321 side-blocks: two units block where no attacker is, each its own column"
+      },
+      {
+        "text": "Example: A side-block on the left opens a column before the first attacking column, and the attacking columns are counted from it.",
+        "test": "400-raq-fix-blocks.test.ts::R321 a side-block on the left opens a column before column 1"
+      }
+    ],
+    "see": [
+      "606"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.23",
+          "quote": "columns. Units may even be placed blocking in slots"
+        },
+        {
+          "ref": "Manual p.23",
+          "quote": "where attackers aren’t, which can be beneficial for"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1366447016653361192#3",
+          "quote": "Yep you should be able to"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R321",
+          "quote": "Side-blocks may stand to either side of the attack."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "400-raq-fix-blocks.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "RAQ thread 1366447016653361192 is not in this unit's pack; added from the register. Caleb's 'Yep you should be able to' permits a column for each side-blocker; it does not require one. Whether two side-blockers may share one column: 603.1c, D-U10-8.",
+    "sourceHashes": {
+      "R321": "57bf15d8b02784f4b61ea34b6935e1fc693cc9bedc10c2d1d64e6d15cea5982b",
+      "RAQ 1366447016653361192#3": "124742aaacf8865f4c690dbb58502525babe350889ba1b3e13c54d6e324965e6"
+    }
+  },
+  {
+    "key": "combat.columns.adjacency",
+    "parent": "603",
+    "order": 2,
+    "text": "A unit in a formation is adjacent to its left, right, front and back neighbours in that formation.",
+    "examples": [
+      {
+        "text": "Example: Inspiration gives +2/+2 to its controller's units adjacent to it in formation, and to no others.",
+        "test": "23-wood-a.test.ts::Inspiration: +2/+2 to your units adjacent to it in formation"
+      },
+      {
+        "text": "Example: The defender blocks the first and third attacking columns and leaves the second unblocked. The two blockers are not neighbours, so an Inspiration in one does not buff the other. (illustrative)",
+        "test": null
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.22",
+          "quote": "adjacent to their left, right, front and back neighbors until"
+        },
+        {
+          "ref": "Rulebook 2023 p.10",
+          "quote": "right, front and back neighbors until regroup."
+        },
+        {
+          "ref": "Manual p.23",
+          "quote": "where attackers aren’t, which can be beneficial for"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "23-wood-a.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "A defending formation's columns are the attacking columns they block (R72, R304: 'A blocking column is keyed to the attacking column it answers'), and the Manual says where a blocker stands matters for adjacency (p.23). The engine reads two blockers with an unblocked column between them as neighbours: F-U10-3, D-U10-7.",
+    "sourceHashes": {},
+    "engineDiffers": [
+      "F-U10-3"
+    ]
+  },
+  {
+    "key": "combat.columns.adjacency.positions",
+    "parent": "combat.columns.adjacency",
+    "order": 1,
+    "text": "A unit in a formation has at most three adjacent positions: the same row of the column to its left, the same row of the column to its right, and the other slot of its own column. The other row of a neighbouring column is diagonal, and is not adjacent. Where a line ends, there is a position past the end only as rule 603.3 allows.",
+    "examples": [
+      {
+        "text": "Example: Hooba-Nan stands in the front row of a middle column. Its adjacent slots are the front rows of the columns on either side and the slot behind it, and nothing diagonal.",
+        "test": "23-wood-a.test.ts::Hooba-Nan in the middle: both sides and below, and nothing diagonal"
+      }
+    ],
+    "see": [
+      "combat.columns.edges"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.22",
+          "quote": "adjacent to their left, right, front and back neighbors until"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R75 (its adjacency rule)",
+          "quote": "it's referring to its sides and above/below. Nothing diagonal."
+        },
+        {
+          "ref": "R75 (its adjacency rule)",
+          "quote": "**The other row of a neighbouring column is diagonal and is"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "66-formation-placement.test.ts",
+        "23-wood-a.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "The printed words say left/right/front/back; the owner's words (R75) fix what that means within the grid. 'At most': a back-row unit at an end of a line, and any unit at an end of a defending line, has no position past that end (603.3a, 603.3b). Whether a unit is adjacent to the enemy unit facing it across the column is not addressed: D-U10-2. The engine treats blockers on either side of an unblocked column as neighbours: F-U10-3.",
+    "sourceHashes": {
+      "R75": "c20ea9bab21d021659c85d652dd11bb9376e9700c1e0e6ec9f085566e9509f8a"
+    },
+    "engineDiffers": [
+      "F-U10-3"
+    ]
+  },
+  {
+    "key": "combat.columns.adjacency.only-in-formation",
+    "parent": "combat.columns.adjacency",
+    "order": 2,
+    "text": "Adjacency exists only in a formation. A unit that is not in a formation has no adjacent units and no adjacent slots.",
+    "examples": [
+      {
+        "text": "Example: During deployment, Throwing Boulder stands in its region beside an allied unit, but neither is in a formation. Its ability (“only if I have an adjacent ally”) cannot be activated.",
+        "test": "18-earth-c.test.ts::R77: out of formation there are no adjacent slots at all"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.22",
+          "quote": "adjacent to their left, right, front and back neighbors until"
+        },
+        {
+          "ref": "Manual p.22",
+          "quote": "regroup where they all leave formation."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R75 (its adjacency rule)",
+          "quote": "If a unit references its own adjacent slots (which only exist if it's in a"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "66-formation-placement.test.ts",
+        "18-earth-c.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R75 states it ('which only exist if it's in a formation'). The Manual implies it: units are adjacent 'until regroup where they all leave formation'.",
+    "sourceHashes": {
+      "R75": "c20ea9bab21d021659c85d652dd11bb9376e9700c1e0e6ec9f085566e9509f8a"
+    }
+  },
+  {
+    "key": "combat.columns.adjacency.at-resolution",
+    "parent": "combat.columns.adjacency",
+    "order": 3,
+    "text": "An amount based on adjacency, such as the number of adjacent allies, is counted as the effect resolves.",
+    "examples": [
+      {
+        "text": "Example: Flamebreath Initiate attacks with one ally in the column beside it. X is 1, so it creates a Fireball 2. Attacking alone, X is 0 and the Fireball is 1.",
+        "test": "11-fire-wood.test.ts::Flamebreath Initiate: attack → Fireball X+1, X = adjacent allies"
+      },
+      {
+        "text": "Example: Flamebreath Initiate attacks beside an ally, and the ally is destroyed while the trigger waits. X is 0 when the trigger resolves. (illustrative)",
+        "test": "421-cr-regions-formations.test.ts::cr:combat.columns.adjacency.at-resolution — Flamebreath Initiate attacks beside an ally, the ally is destroyed while the trigger waits, and X is 0 when it resolves"
+      }
+    ],
+    "see": [
+      "706"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Flamebreath Initiate",
+          "quote": "where X is the number of allies adjacent to me."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R1",
+          "quote": "amounts are computed at resolution."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "11-fire-wood.test.ts",
+        "421-cr-regions-formations.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R1 is not in this unit's pack; added from the register (classified to U03/U15). No test changes adjacency between the trigger and its resolution; the round-1 verifier's probe did, and measured X as counted at resolution.",
+    "sourceHashes": {
+      "R1": "30128c5c491bd944cd289699e56309513bf26ce92037b2388fa6cc2a53f76493"
+    }
+  },
+  {
+    "key": "combat.columns.adjacency.left-play",
+    "parent": "combat.columns.adjacency",
+    "order": 4,
+    "text": "A unit that has left play has no adjacent units. If it left play with its effect on the stack, an amount counting the units adjacent to it is 0.",
+    "examples": [
+      {
+        "text": "Example: Flamebreath Initiate attacks and is removed with its trigger on the stack. X is 0, so the trigger still creates a Fireball 1.",
+        "test": "390-raq-stack.test.ts::RAQ dead unit: Flamebreath Initiate removed before its trigger resolves"
+      }
+    ],
+    "see": [
+      "combat.formations.placement.source-gone",
+      "714"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353895783266516992#3",
+          "quote": "If Flamebreath Initiate is removed with his trigger on the stack, the X=0 so he will still make Fireball 1."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "medium",
+    "notes": "The designer source treats adjacency differently from 'my formation': a dead Hoobas' formation is remembered (602.6f), a dead Flamebreath's adjacent allies are not (X = 0). R325 lists Flamebreath as reading its last-known state with X = 0, consistent with this.",
+    "sourceHashes": {
+      "RAQ 1353895783266516992#3": "228687b3c12ea75e3ea10e368f9f8aca9cfa31a2bdb034c35b498575757e343d"
+    }
+  },
+  {
+    "key": "combat.columns.edges",
+    "parent": "603",
+    "order": 3,
+    "text": "The empty column just past each end of an attacking line exists. For a unit in the front row at either end of an attacking line, the front-row slot of a new column past that end is an adjacent slot.",
+    "examples": [
+      {
+        "text": "Example: Hooba-Nan stands alone in an attacking line. Its trigger creates three 1/1s: one in a new column on each side and one behind it.",
+        "test": "23-wood-a.test.ts::Hooba-Nan alone: behind it AND a new column past each end"
+      },
+      {
+        "text": "Example: Hooba-Nan is at the right end of a longer line, with a unit to its left. Its trigger creates two 1/1s: one in a new column past the right end and one behind it.",
+        "test": "23-wood-a.test.ts::Hooba-Nan on the edge of the line: the open side and behind"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R304",
+          "quote": "The columns to the left and right, even when empty, DO technically exist,"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R75",
+          "relation": "its edge adjacency (nothing past the end of the line is a slot) superseded by R304"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "66-formation-placement.test.ts",
+        "23-wood-a.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R304": "7bc850df2f66b024982066f79ac34755d92651e9fa2ace8039f143d7807ea07a"
+    }
+  },
+  {
+    "key": "combat.columns.edges.front-only",
+    "parent": "combat.columns.edges",
+    "order": 1,
+    "text": "Past the end of the line, only the front-row slot is adjacent. A unit in the back row at the end of the line has no adjacent slot past that end, because the front row must be filled first (rule 602.3).",
+    "examples": [
+      {
+        "text": "Example: Hooba-Nan stands in the back row of the column at the end of the line. Its trigger creates no 1/1 past the edge.",
+        "test": "23-wood-a.test.ts::Hooba-Nan in the BACK row at the edge"
+      }
+    ],
+    "see": [
+      "combat.formations.front-first"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R304",
+          "quote": "**Front row only.** Past the end, the same-row slot beside a back-row unit is"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "23-wood-a.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R304": "7bc850df2f66b024982066f79ac34755d92651e9fa2ace8039f143d7807ea07a"
+    }
+  },
+  {
+    "key": "combat.columns.edges.attacking-only",
+    "parent": "combat.columns.edges",
+    "order": 2,
+    "text": "A defending formation has no adjacent slots past its ends.",
+    "examples": [
+      {
+        "text": "Example: A blocking unit at the end of the defending formation has no adjacent slot past that end.",
+        "test": "66-formation-placement.test.ts::R304 adjacency: a BACK-row unit and a BLOCKING line have nothing past the edge"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R304",
+          "quote": "**Attacking line only.** A blocking column is keyed to the attacking column it"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "66-formation-placement.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R304's reason (a blocking column has no index to open at) predates R321's side-blocks. See D-U10-3.",
+    "sourceHashes": {
+      "R304": "7bc850df2f66b024982066f79ac34755d92651e9fa2ace8039f143d7807ea07a"
+    }
+  },
+  {
+    "key": "combat.columns.positional-text",
+    "parent": "603",
+    "order": 4,
+    "text": "Text that names positions relative to the unit itself, such as “my empty adjacent slots” or “the empty slot behind me”, refers to exactly those positions. Its controller does not choose among positions as they do under rule 602.6.",
+    "examples": [
+      {
+        "text": "Example: Rousing Spirit attacks, and a cheap unit from its controller's bin is put into the empty slot behind it.",
+        "test": "13-fire-b.test.ts::Rousing Spirit: attack → a cheap bin unit fills the slot behind me"
+      }
+    ],
+    "see": [
+      "combat.formations.placement"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Hooba-Nan",
+          "quote": "create a 1/1 unit in all my empty adjacent slots."
+        },
+        {
+          "ref": "card: Rousing Spirit",
+          "quote": "your bin into the empty slot behind me."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R75 (its adjacency rule)",
+          "quote": "set of positions, so it does **not** get the placement choice. It fills exactly"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "13-fire-b.test.ts",
+        "23-wood-a.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R75": "c20ea9bab21d021659c85d652dd11bb9376e9700c1e0e6ec9f085566e9509f8a"
+    }
+  },
+  {
+    "key": "combat.columns.width",
+    "parent": "603",
+    "order": 5,
+    "text": "A formation can grow at either end without limit.",
+    "examples": [
+      {
+        "text": "Example: New columns are opened at the left end of an attacking line again and again, and every one of them is accepted.",
+        "test": "66-formation-placement.test.ts::R75: formations scale infinitely in width"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.22",
+          "quote": "UNLIMITED COLUMNS"
+        },
+        {
+          "ref": "Manual p.22",
+          "quote": "and back row but can scale infinitely in width."
+        },
+        {
+          "ref": "Rulebook 2023 p.10",
+          "quote": "Formations can be infinitely large in width"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "66-formation-placement.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.columns.width.columns-keep-identity",
+    "parent": "combat.columns.width",
+    "order": 1,
+    "text": "When the columns of a line move (a new column opens at the left end, or the line closes up under rule 602.5), each block and each effect that applies to a particular column moves with that column.",
+    "examples": [
+      {
+        "text": "Example: A new column opens at the left end of a line that has already been blocked. Every blocker still blocks the same attackers as before.",
+        "test": "66-formation-placement.test.ts::R75: opening a column on the LEFT re-keys every block and every column counter"
+      },
+      {
+        "text": "Example: Before blocks, a column-based battle effect stays with its column when a column to its left empties and the line closes up.",
+        "test": "64-formation-collapse.test.ts::R72: a column-scoped battle counter rides the collapse to the new index"
+      },
+      {
+        "text": "Example: A column that has already struck in a damage sub-step keeps that mark when a new column opens to its left.",
+        "test": "400-raq-fix-blocks.test.ts::R320 a struck mark moves with its column when a new column opens on the left"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R72 (its gravity rule)",
+          "quote": "the blocking column moves with its attacker"
+        },
+        {
+          "ref": "R72 (its gravity rule)",
+          "quote": "the column's ledger moves with it"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "66-formation-placement.test.ts",
+        "64-formation-collapse.test.ts",
+        "400-raq-fix-blocks.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "",
+    "sourceHashes": {
+      "R72": "eed4648973a278cfbffddb860451cdd2629e8dfb6ab2b6c9a15137cdce515969"
+    }
+  },
+  {
+    "key": "combat.columns.definition.side-block-shared-column",
+    "parent": "combat.columns.definition",
+    "order": 3,
+    "text": "Two side-blocking units may stand in the same side-block column, one in its front slot and one in its back slot.",
+    "examples": [
+      {
+        "text": "Example: The defender side-blocks with two units in one column to the right of the attack, one behind the other.",
+        "test": "421-cr-regions-formations.test.ts::cr:combat.columns.definition.side-block-shared-column — two units side-block in one column beside the attack, one in the front slot and one in the back slot"
+      }
+    ],
+    "see": [
+      "combat.columns.definition.side-blocks"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R321",
+          "quote": "Side-blocks may stand to either side of the attack."
+        }
+      ],
+      "history": [],
+      "engine": [
+        "doDeclareBlocks"
+      ],
+      "tests": [
+        "421-cr-regions-formations.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "low",
+    "notes": "ENGINE-ONLY. No printed or designer source says whether side-blockers may share a column. Caleb answered only that eight units may each take a separate column; R321 restates that as 'each as its own column'. The round-1 verifier measured the engine accepting {1:[s1,s2]}. See D-U10-8.",
+    "sourceHashes": {
+      "R321": "57bf15d8b02784f4b61ea34b6935e1fc693cc9bedc10c2d1d64e6d15cea5982b"
+    }
+  },
+  {
+    "key": "combat.formations.placement.defending-emptied-block",
+    "parent": "combat.formations.placement",
+    "order": 10,
+    "text": "After blocks, a unit placed into a defending formation may also take the front slot of a blocking column whose blockers have all left it. The unit then blocks that column.",
+    "examples": [
+      {
+        "text": "Example: The defender's only blocker in the second column dies after blocks. An effect that puts a unit into the defender's formation may put it in front of the second attacking column.",
+        "test": "421-cr-regions-formations.test.ts::cr:combat.formations.placement.defending-emptied-block — after blocks a blocking column whose blocker died offers its front slot, and a unit placed there blocks that column"
+      }
+    ],
+    "see": [
+      "combat.formations.placement.defending",
+      "combat.formations.placement.legal-positions"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R72 (its emptied BLOCK column note)",
+          "quote": "Key *presence* is that sticky flag (R13), so `blocks[ci] = []` is a hole in"
+        }
+      ],
+      "history": [],
+      "engine": [
+        "formationSlots"
+      ],
+      "tests": [
+        "421-cr-regions-formations.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "low",
+    "notes": "ENGINE-ONLY. R75's hole is a column emptied of ATTACKERS; R322's extra spot is a column with no block entry. Neither names a blocking column emptied of its blockers. The round-1 verifier measured the engine offering its front slot ('column N (an empty slot in the line)'). See D-U10-9.",
+    "sourceHashes": {
+      "R72": "eed4648973a278cfbffddb860451cdd2629e8dfb6ab2b6c9a15137cdce515969"
+    }
+  },
+  {
+    "key": "combat.formations.placement.empty-formation",
+    "parent": "combat.formations.placement",
+    "order": 11,
+    "text": "A formation that no longer holds any unit offers no position, not even a hole. A unit cannot be played or placed into it.",
+    "examples": [
+      {
+        "text": "Example: The defender declares no blockers. Their opponent's formation is the only one in the battle, so an effect that puts a unit into the defender's formation has nowhere to put it.",
+        "test": "66-formation-placement.test.ts::R75: a formation you are not standing in cannot be joined at all"
+      },
+      {
+        "text": "Example: After blocks, every attacking unit dies. The attacker then plays Tiderunner Initiate; it cannot be played into the attacking line, not even into a hole, and enters play outside any formation. (illustrative)",
+        "test": null
+      }
+    ],
+    "see": [
+      "combat.formations.definition.empty",
+      "combat.formations.placement.source-gone",
+      "combat.formations.play-into.needs-formation"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R75 (its placement rule)",
+          "quote": "always grow at an end. A formation you are not standing in cannot be joined at"
+        },
+        {
+          "ref": "R75 (its placement rule)",
+          "quote": "all — with no living unit in the grid the answer is \"no slots\", not \"open a"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "66-formation-placement.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Stated in R75's own prose, not in the owner's quoted words. The engine matches it (the round-1 verifier's probe). It sits uneasily with R184 ('emptying it does not remove it') and with the designer's answer for a source that has left play (602.6f): D-U10-6, D-U10-10. engine differs: F-U10-5 (measured: a defending formation whose only blocker died still offers the spot in front of an unblocked column; the attacking side matches).",
+    "sourceHashes": {
+      "R75": "c20ea9bab21d021659c85d652dd11bb9376e9700c1e0e6ec9f085566e9509f8a"
+    },
+    "untested": true,
+    "engineDiffers": [
+      "F-U10-5"
+    ]
+  }
+]

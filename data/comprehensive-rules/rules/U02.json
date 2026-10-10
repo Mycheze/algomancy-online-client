@@ -1,0 +1,2657 @@
+[
+  {
+    "key": "concepts.elements.list",
+    "parent": "105",
+    "order": 1,
+    "text": "The printed Manual names five elements: Fire, Water, Earth, Wood and Metal. The card pool this document describes has seven: those five, plus Light and Dark.",
+    "examples": [
+      {
+        "text": "A game can be built from any three of the seven elements: 35 trios.",
+        "test": "31-trios.test.ts::seven elements, 35 trios: Light & Dark joined the canonical element list"
+      }
+    ],
+    "see": [
+      "902"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.8",
+          "quote": "Algomancy consists of 5 Elements, which all offer different ways to play and interact"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R54",
+          "quote": "silently drop the bonus for wood, metal, light and dark, and keeping both would"
+        },
+        {
+          "ref": "R99",
+          "quote": "mode only. Shared plays all seven; draft has already narrowed `elements` to its trio."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "31-trios.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The five names are on separate lines of Manual p.8 (FIRE, WATER, EARTH, WOOD, METAL). No printed page in the pack covers Light and Dark: D-U02-1.",
+    "sourceHashes": {
+      "R54": "2c9410f526decf059127365b62dff21b94e94cd7dbca89671106d725b6b2de27",
+      "R99": "cfd4037ea46d2c5aea09ebf73bc20639fb3b512bd369be713ff28799d231b516"
+    }
+  },
+  {
+    "key": "concepts.elements.hybrid",
+    "parent": "105",
+    "order": 2,
+    "text": "A hybrid card belongs to two elements. A live-draft deck is built from the cards of the selected elements together with the hybrid cards for each pair of them.",
+    "examples": [
+      {
+        "text": "A draft of three base elements is 54 cards of each element plus 5 hybrids for each of the three pairs: 177 cards.",
+        "test": "31-trios.test.ts::ALL 10 base trios are Manual-exact: 54 per element + 5 per hybrid pair = 177"
+      }
+    ],
+    "see": [
+      "902"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.11",
+          "quote": "Once the elements are selected, shuffle them together"
+        },
+        {
+          "ref": "Manual p.11",
+          "quote": "to form the deck, including the hybrid cards for the"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "31-trios.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "Manual p.11 shows 54 cards per element and 15 hybrid cards for a three-element deck (three pairs of 5). \"Two elements\" is read off that and the test; no source defines \"hybrid\" in words. Deck building is 902 (U22).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.elements.affinity",
+    "parent": "105",
+    "order": 3,
+    "text": "Affinity is a card's elemental requirement. A card shows it as element pips, and a player must meet it to play the card.",
+    "examples": [
+      {
+        "text": "With three Shards and no water, Curio Drifter [b] is not offered; one water makes it playable.",
+        "test": "413-cr-elements-resources.test.ts::cr:concepts.elements.affinity — a card is offered and playable only once its pips are met: one Shard cannot play Curio Drifter, one water can"
+      }
+    ],
+    "see": [
+      "202",
+      "111"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "Affinity: To have the ability to play a card, a player"
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "must meet the affinity requirement of the card they"
+        },
+        {
+          "ref": "Manual p.12",
+          "quote": "Resource types needed to be present among your resources"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1358299200953126963#0",
+          "quote": "The affinity dots just require you have at least that many resources of that type somewhere in your manabase"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts",
+        "413-cr-elements-resources.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "\"Pips\" and \"affinity dots\" (Caleb) are the same thing. The cost orb and pips as card parts are 202 (U05).",
+    "sourceHashes": {
+      "RAQ 1358299200953126963#0": "a8f1d0df77e16b5c51a375da78459cfc29f5a6ac8c8fb39360681c1875061d10"
+    }
+  },
+  {
+    "key": "concepts.elements.affinity.threshold",
+    "parent": "concepts.elements.affinity",
+    "order": 1,
+    "text": "The 2023 Rulebook calls the affinity requirement the threshold.",
+    "examples": [],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "▪ Threshold (3) denotes how much affinity is required to play a card."
+        },
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "▪ They have an affinity (1), which allows you to meet the threshold requirements on cards."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Terminology only, for readers comparing against the older rulebook. RAQ 1355115946032889914#2 also says \"Affinity threshold\".",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "terminology only: the 2023 Rulebook name for the affinity requirement, nothing to execute"
+  },
+  {
+    "key": "concepts.elements.affinity-count",
+    "parent": "105",
+    "order": 4,
+    "text": "A player's affinity for an element is the number of resources of that element the player has, other than dormant ones (see the dormant rule below). A requirement of N pips of one element is met when the player's affinity for that element is at least N.",
+    "examples": [
+      {
+        "text": "With two wood resources, a player meets a [g][g] requirement however many times they play such cards.",
+        "test": "396-raq-timing.test.ts::RAQ Mana question: affinity counts resources already spent — two wood pay for many gg cards"
+      }
+    ],
+    "see": [
+      "106"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.14",
+          "quote": "resources also have an affinity towards a unique element."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1358299200953126963#0",
+          "quote": "The affinity dots just require you have at least that many resources of that type somewhere in your manabase"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts",
+        "413-cr-elements-resources.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1358299200953126963#0": "a8f1d0df77e16b5c51a375da78459cfc29f5a6ac8c8fb39360681c1875061d10"
+    }
+  },
+  {
+    "key": "concepts.elements.affinity-count.expended",
+    "parent": "concepts.elements.affinity-count",
+    "order": 1,
+    "text": "Expended resources count toward affinity. Whether a resource has been expended this turn does not matter.",
+    "examples": [
+      {
+        "text": "All-Consuming Blaze counts two open fire resources and one expended fire resource: 3 damage.",
+        "test": "07-cards.test.ts::All-Consuming Blaze: damage equals your fire affinity (expended counts, dormant does not)"
+      },
+      {
+        "text": "Sylvan Sprouting makes a 1/1 for each wood resource, expended ones included.",
+        "test": "25-wood-c.test.ts::Sylvan Sprouting: one 1/1 per wood affinity — expended wood still counts"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1358299200953126963#0",
+          "quote": "You don't care if it's tapped or not"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts",
+        "07-cards.test.ts",
+        "25-wood-c.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "Caleb says \"tapped\"; the Manual word is \"expended\" (Manual p.14).",
+    "sourceHashes": {
+      "RAQ 1358299200953126963#0": "a8f1d0df77e16b5c51a375da78459cfc29f5a6ac8c8fb39360681c1875061d10"
+    }
+  },
+  {
+    "key": "concepts.elements.affinity-count.not-spent",
+    "parent": "concepts.elements.affinity-count",
+    "order": 2,
+    "text": "Meeting an affinity requirement uses nothing up. The same resources meet the affinity requirement of every card a player plays; only the mana cost is paid.",
+    "examples": [
+      {
+        "text": "Two wood resources and many Shards pay for many [g][g] cards in one turn: the Shards pay the mana, the two wood meet every requirement.",
+        "test": "396-raq-timing.test.ts::RAQ Mana question: affinity counts resources already spent — two wood pay for many gg cards"
+      }
+    ],
+    "see": [
+      "111"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1358299200953126963#0",
+          "quote": "So you could play 100 accelerated germination if you had 2 wood and 198 shards"
+        },
+        {
+          "ref": "RAQ 1358299200953126963#0",
+          "quote": "All resources tap for generic mana"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1358299200953126963#0": "a8f1d0df77e16b5c51a375da78459cfc29f5a6ac8c8fb39360681c1875061d10"
+    }
+  },
+  {
+    "key": "concepts.elements.affinity-count.dormant",
+    "parent": "concepts.elements.affinity-count",
+    "order": 3,
+    "text": "A dormant resource gives no affinity until it is activated.",
+    "examples": [
+      {
+        "text": "A dormant fire resource adds nothing to All-Consuming Blaze; two open and one expended fire resource deal 3.",
+        "test": "07-cards.test.ts::All-Consuming Blaze: damage equals your fire affinity (expended counts, dormant does not)"
+      }
+    ],
+    "see": [
+      "106"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R151",
+          "quote": "counts what is **awake** (\"dormant gives no affinity\"; \"expended still counts\")."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "07-cards.test.ts",
+        "01-planning.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "low",
+    "notes": "ENGINE-ONLY. R151 is a digital-scope ruling and here only quotes the engine's own comment; no printed or designer source says whether a face-down resource counts. Caleb's \"somewhere in your manabase\" is open to both readings: D-U02-2 (question for the owner). R151 is not in the U02 pack; read from digital-rules.md.",
+    "sourceHashes": {
+      "R151": "94372dbd3d49bf1f08db7965552dc760ca020d3295582c003d2a9467faac063a"
+    }
+  },
+  {
+    "key": "concepts.elements.no-affinity-resources",
+    "parent": "105",
+    "order": 5,
+    "text": "Prismites and Shards give no affinity. A Prismite is not wild: it meets no element's requirement.",
+    "examples": [
+      {
+        "text": "With six fire resources and two active Prismites, a player still cannot meet Dreadwave Devourer's [b][b]; two water resources meet it.",
+        "test": "01-planning.test.ts::affinity gating: prismites are NOT wild"
+      },
+      {
+        "text": "Shards pay mana but never count toward affinity.",
+        "test": "21-fixes.test.ts::below 3 affinity no shard; shards give mana but never affinity"
+      }
+    ],
+    "see": [
+      "106"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.7",
+          "quote": "Shards are a resource that adds no affinity, but can still be expended for mana."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R17",
+          "quote": "like any resource, but grant **no affinity** — they are not wild. Their value is the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "01-planning.test.ts",
+        "21-fixes.test.ts",
+        "48-playtest-hotfix.test.ts",
+        "413-cr-elements-resources.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Manual p.18 says the same of Shards, broken across lines (\"Shards are a resource that adds no\" / \"affinity, but can still be expended\").",
+    "sourceHashes": {
+      "R17": "c78170a2f331384beebbcde66f1a2516c8e755a0394858386cbe11aaddd93980"
+    }
+  },
+  {
+    "key": "concepts.elements.affinity-as-number",
+    "parent": "105",
+    "order": 6,
+    "text": "Card text can use a player's affinity as a number. \"Your [r]\" means the player's fire affinity: the number of fire resources they have, not counting dormant ones (see the dormant rule under 105's affinity count).",
+    "examples": [
+      {
+        "text": "All-Consuming Blaze deals damage equal to your [r].",
+        "test": "07-cards.test.ts::All-Consuming Blaze: damage equals your fire affinity (expended counts, dormant does not)"
+      },
+      {
+        "text": "Premonition glimpses X, where X is your [b]: your water affinity.",
+        "test": "14-water-a.test.ts::Premonition: Glimpse X where X is your water affinity; the permission dies with the turn, the card stays"
+      },
+      {
+        "text": "Self-Assembly creates a Robot X, where X is your [m], counted as it resolves.",
+        "test": "28-metal-c.test.ts::Self-Assembly: creates a Robot X at the source's region, X = metal affinity at resolution"
+      }
+    ],
+    "see": [
+      "107"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: All-Consuming Blaze",
+          "quote": "I deal damage to any target equal to your [r]."
+        },
+        {
+          "ref": "card: Premonition",
+          "quote": "Glimpse X, where X is your [b]."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1358299200953126963#0",
+          "quote": "The affinity dots just require you have at least that many resources of that type somewhere in your manabase"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "07-cards.test.ts",
+        "14-water-a.test.ts",
+        "28-metal-c.test.ts",
+        "09-attrs.test.ts",
+        "25-wood-c.test.ts",
+        "413-cr-elements-resources.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "No source defines \"your [r]\" in words; it is read off the cards and the tests. The count is read at resolution: 107 (concepts.numbers.amounts-at-resolution). The dormant exclusion is the affinity-count.dormant rule (engine-only, D-U02-2); this rule only points at it.",
+    "sourceHashes": {
+      "RAQ 1358299200953126963#0": "a8f1d0df77e16b5c51a375da78459cfc29f5a6ac8c8fb39360681c1875061d10"
+    }
+  },
+  {
+    "key": "concepts.elements.ignoring-affinity",
+    "parent": "105",
+    "order": 7,
+    "text": "Some effects let a player play a card ignoring affinity. Such a play does not check the card's affinity requirement. Ignoring affinity does not waive the mana cost: the cost is still paid unless the effect also makes the play free.",
+    "examples": [
+      {
+        "text": "A glimpsed card can be played without its pips, but a player who cannot pay its mana cannot play it.",
+        "test": "315-cache-mod-permission.test.ts::R303: the glimpse waives the pips, NOT the mana — broke means refused"
+      },
+      {
+        "text": "Tides of the Cosmos plays a fire unit for a player whose only resources are water.",
+        "test": "396-raq-timing.test.ts::RAQ Tides 1: a free play ignores affinity — a fire unit with only water resources"
+      }
+    ],
+    "see": [
+      "403",
+      "801"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Big Glimpse Card",
+          "quote": "You may play those cards until end of turn, ignoring affinity."
+        },
+        {
+          "ref": "card: Tides of the Cosmos",
+          "quote": "You may play them now, for free."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1396955380000755795#0",
+          "quote": "Tides allows you to ignore affinity of played cards."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R303",
+          "quote": "| glimpse, this turn only (R45) | the card's mana, ignoring affinity | the card's mana, ignoring affinity |"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "315-cache-mod-permission.test.ts",
+        "396-raq-timing.test.ts",
+        "36-cache-prophecy.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R303 is not in the U02 pack; read from digital-rules.md. Prophecy releases (free, ignoring affinity) are 803 (U21).",
+    "sourceHashes": {
+      "R303": "362c6d1e5a9c15d8912809d210e41b88548997fd1e9c63acbfa5b730f81e130c",
+      "RAQ 1396955380000755795#0": "441f37f387a60ae94e99e404eceaadc1c3e235575211f8d0d5c20985a4204820"
+    }
+  },
+  {
+    "key": "concepts.elements.mods-need-affinity",
+    "parent": "105",
+    "order": 8,
+    "text": "Applying a modification needs its affinity just as playing the card does. An augment from hand, a Virus applied in battle and a graft from hand or bin each require the card's affinity, and each pays its cost.",
+    "examples": [
+      {
+        "text": "An augment from hand is refused without its affinity, and pays its cost when applied.",
+        "test": "408-raq-new-threads.test.ts::RAQ Mods are NOT Played: an augment from hand needs its affinity and pays its cost"
+      },
+      {
+        "text": "A graft from the bin needs its cost and affinity met.",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 point 3: a graft comes from the bin as well as the hand, and only when its cost and affinity are met"
+      }
+    ],
+    "see": [
+      "720",
+      "721",
+      "722",
+      "723"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.32",
+          "quote": "To apply an augment, the player must first meet its affinity"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1537748882501668934#1",
+          "quote": "When you use them you still need to pay the cost & meet affinity requirements."
+        },
+        {
+          "ref": "RAQ 1355115946032889914#2",
+          "quote": "You still must pay the cost and meet Affinity threshold"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "408-raq-new-threads.test.ts",
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "This is the default. A cache permission that lets the card be played ignoring affinity (a fulfilled prophecy, a live glimpse) lets it be grafted or augmented ignoring affinity too: R303 (\"| glimpse, this turn only (R45) | the card's mana, ignoring affinity | the card's mana, ignoring affinity |\").",
+    "sourceHashes": {
+      "RAQ 1355115946032889914#2": "9f337d12f5fd058f571fec6cde21e8b5dc71e805c91a2651f132ecfc658f8d43",
+      "RAQ 1537748882501668934#1": "ca5bd5cf15d3b63877cfd8b3a05bced3bbce7b96c6f2c7b9245b9f46dc540ca3"
+    }
+  },
+  {
+    "key": "concepts.elements.game-elements",
+    "parent": "105",
+    "order": 9,
+    "text": "Each game has a set of elements. In a live draft it is the selected elements; in constructed it is all seven. An element resource a player creates, by recycling or by exchanging a Prismite, must be of one of the game's elements.",
+    "examples": [
+      {
+        "text": "In a fire-water-earth draft, wood and metal resources are refused and never offered.",
+        "test": "21-fixes.test.ts::a fwe draft game refuses wood/metal resources and never offers them"
+      },
+      {
+        "text": "A game created for a chosen trio uses that trio for its deck, its elements and its recycle menu.",
+        "test": "31-trios.test.ts::createGame honors the chosen trio: deck, elements, and the recycle menu"
+      }
+    ],
+    "see": [
+      "106",
+      "901",
+      "902"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R299",
+          "quote": "early on a prismite), and once active may be exchanged for any element of the game."
+        },
+        {
+          "ref": "R99",
+          "quote": "mode only. Shared plays all seven; draft has already narrowed `elements` to its trio."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "21-fixes.test.ts",
+        "31-trios.test.ts",
+        "34-constructed.test.ts",
+        "413-cr-elements-resources.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "No printed or designer source limits the resources a player may create to the draft's elements; Manual p.18 says \"any resource\" and R17 \"a resource of any element\": D-U02-3. \"Shared\" is a test mode, not a format (R157 §2). Recycling may also make a Prismite or a Shard (R299; concepts.resources.recycle.prismite-shard), and a Prismite may be exchanged for a Shard (concepts.resources.prismite.exchange.element-only); neither is of an element, so this limit does not reach them.",
+    "sourceHashes": {
+      "R299": "46fc7e836df1d7e04bba74789f7fcde1ccbc21d3a515dc0c74abc3b6f211228c",
+      "R99": "cfd4037ea46d2c5aea09ebf73bc20639fb3b512bd369be713ff28799d231b516"
+    }
+  },
+  {
+    "key": "concepts.elements.game-elements.off-deck",
+    "parent": "concepts.elements.game-elements",
+    "order": 1,
+    "text": "In constructed, a player may create a resource of any of the seven elements, including an element their deck has no cards of.",
+    "examples": [
+      {
+        "text": "A constructed deck records its own elements, but all seven stay legal choices.",
+        "test": "34-constructed.test.ts::deckElements: it is a PRESENTATION default — all seven stay legal"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R99",
+          "quote": "That restraint is not caution, it is the rule: **making an off-element resource is a legal"
+        },
+        {
+          "ref": "R99",
+          "quote": "play whatever the deck holds** — BL-44, the owner, 2026-09-19: *\"it's technically legal to"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "34-constructed.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R99's menu default (the client shows the deck's elements first) is a digital convention for Annex D (U24).",
+    "sourceHashes": {
+      "R99": "cfd4037ea46d2c5aea09ebf73bc20639fb3b512bd369be713ff28799d231b516"
+    }
+  },
+  {
+    "key": "concepts.resources.what",
+    "parent": "106",
+    "order": 1,
+    "text": "Resources are the source of mana: a player needs them to play cards. Resources are permanents, and they stay in play.",
+    "examples": [
+      {
+        "text": "Two open water resources are two mana and pay for Curio Drifter; a turn later every resource is still in play.",
+        "test": "413-cr-elements-resources.test.ts::cr:concepts.resources.what — an open resource is mana that pays for a card, and resources stay in play from turn to turn"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.14",
+          "quote": "Resources are the essential source of mana in Algomancy and are required in order to play your cards."
+        },
+        {
+          "ref": "Manual p.14",
+          "quote": "Resources are also permanents and remain in play."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "413-cr-elements-resources.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.resources.kinds",
+    "parent": "106",
+    "order": 2,
+    "text": "There are three kinds of resource: element resources, Prismites and Shards. Each element resource is of one element.",
+    "examples": [],
+    "see": [
+      "105"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.14",
+          "quote": "resources also have an affinity towards a unique element."
+        },
+        {
+          "ref": "Manual p.18",
+          "quote": "Additionally, each player begins the game with two dormant Prismites, which"
+        },
+        {
+          "ref": "Rulebook 2023 p.7",
+          "quote": "Shards are a resource that adds no affinity, but can still be expended for mana."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R54",
+          "quote": "\"Create a Shard\" creates a resource of kind **`shard`**: it arrives dormant,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "48-playtest-hotfix.test.ts",
+        "308-recycle-for-prismite.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "No source lists the kinds in one sentence; the three are read off Manual pp.14 and 18, R54 and R299. Manual p.14 \"Most resources also have an affinity\" leaves room for the two that have none.",
+    "sourceHashes": {
+      "R54": "2c9410f526decf059127365b62dff21b94e94cd7dbca89671106d725b6b2de27"
+    }
+  },
+  {
+    "key": "concepts.resources.kinds.element",
+    "parent": "concepts.resources.kinds",
+    "order": 1,
+    "text": "An element resource counts one toward its controller's affinity for its element, except while it is dormant (see 105).",
+    "examples": [
+      {
+        "text": "Activating a third fire resource brings fire affinity to three.",
+        "test": "12-fire-a.test.ts::Fire Resource: activating your 3rd fire pays the p.18 affinity Shard — dormant, and every time"
+      }
+    ],
+    "see": [
+      "105"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Fire Resource",
+          "quote": "[r] Fire Resource"
+        },
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "▪ They have an affinity (1), which allows you to meet the threshold requirements on cards."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1358299200953126963#0",
+          "quote": "The affinity dots just require you have at least that many resources of that type somewhere in your manabase"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "12-fire-a.test.ts",
+        "413-cr-elements-resources.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The printed resource face shows one pip of its element on its type line. The \"(1)\" in the Rulebook p.4 line is a figure callout, not a count: that source says only that a resource has an affinity. The count of one per resource rests on the RAQ (\"at least that many resources of that type\"). The dormant exclusion is concepts.elements.affinity-count.dormant (engine-only, D-U02-2).",
+    "sourceHashes": {
+      "RAQ 1358299200953126963#0": "a8f1d0df77e16b5c51a375da78459cfc29f5a6ac8c8fb39360681c1875061d10"
+    }
+  },
+  {
+    "key": "concepts.resources.dormant-active",
+    "parent": "106",
+    "order": 3,
+    "text": "A resource is either dormant (face down) or active (face up). Every resource enters play dormant. Activating a resource turns it face up.",
+    "examples": [
+      {
+        "text": "A Shard created by Swirling Shardform enters dormant.",
+        "test": "18-earth-c.test.ts::Swirling Shardform: spawning creates two dormant Shards"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.18",
+          "quote": "All resources spawn dormant (come into play face down). Players may activate a"
+        },
+        {
+          "ref": "Manual p.18",
+          "quote": "maximum of two resources per turn by turning them face up. There is no limit to"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "01-planning.test.ts",
+        "18-earth-c.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.resources.dormant-active.starting",
+    "parent": "concepts.resources.dormant-active",
+    "order": 1,
+    "text": "Each player starts the game with two dormant Prismites.",
+    "examples": [
+      {
+        "text": "At setup each player has exactly two Prismites, both dormant.",
+        "test": "01-planning.test.ts::R17/prismites: dormant start, no affinity, planning exchange into any element"
+      }
+    ],
+    "see": [
+      "103"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.11",
+          "quote": "Deal 2 prismites to each player face down (dormant)."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R17",
+          "quote": "Prismites start the game **dormant** (Manual p.10 setup), can be expended for 1 mana"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "01-planning.test.ts",
+        "413-cr-elements-resources.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The 2023 Rulebook puts two Mana Converters in play instead: D-U02-4.",
+    "sourceHashes": {
+      "R17": "c78170a2f331384beebbcde66f1a2516c8e755a0394858386cbe11aaddd93980"
+    }
+  },
+  {
+    "key": "concepts.resources.dormant-active.no-mana",
+    "parent": "concepts.resources.dormant-active",
+    "order": 2,
+    "text": "A dormant resource cannot be expended for mana. It must be activated first.",
+    "examples": [
+      {
+        "text": "Three dormant fire resources give no open mana and cannot pay Ignis Sprite.",
+        "test": "413-cr-elements-resources.test.ts::cr:concepts.resources.dormant-active.no-mana — a dormant resource is not mana and cannot pay a cost"
+      }
+    ],
+    "see": [
+      "106"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R54",
+          "quote": "gives **one generic mana** once activated, gives **no affinity**, and **cannot"
+        },
+        {
+          "ref": "R299",
+          "quote": "A made Prismite is exactly a starting one: it arrives **dormant**, takes an activation to"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "127-token-x-and-dormant.test.ts",
+        "413-cr-elements-resources.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Stated for Shards (R54) and made Prismites (R299); generalised to every resource. Manual p.18 implies it (\"typically receive the two activations for the first turn\") but never says it, and Manual p.14 \"All resources have the ability to be expended\" read literally does not exclude dormant ones: D-U02-10. The ui test 127 pins the spendable/dormant split as the engine reports it.",
+    "sourceHashes": {
+      "R299": "46fc7e836df1d7e04bba74789f7fcde1ccbc21d3a515dc0c74abc3b6f211228c",
+      "R54": "2c9410f526decf059127365b62dff21b94e94cd7dbca89671106d725b6b2de27"
+    }
+  },
+  {
+    "key": "concepts.resources.activation",
+    "parent": "106",
+    "order": 4,
+    "text": "A player may activate at most two resources per turn. Activating a Shard counts toward that limit.",
+    "examples": [
+      {
+        "text": "With a Shard and a Prismite activated, a third activation that turn is refused.",
+        "test": "413-cr-elements-resources.test.ts::cr:concepts.resources.activation — a third activation in a turn is refused, and activating a Shard counts toward the two"
+      }
+    ],
+    "see": [
+      "502"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.18",
+          "quote": "maximum of two resources per turn by turning them face up. There is no limit to"
+        },
+        {
+          "ref": "Manual p.18",
+          "quote": "Activating a shard counts towards a player’s"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "413-cr-elements-resources.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The step procedure is 502 (U08). The exchange of a Prismite does not use an activation: concepts.resources.prismite.exchange.activation.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.resources.activation.when",
+    "parent": "concepts.resources.activation",
+    "order": 1,
+    "text": "Resources are created and activated in the resource step of the planning phase.",
+    "examples": [
+      {
+        "text": "Activating or recycling for a resource is offered in the resource step and refused after it, and in deployment.",
+        "test": "413-cr-elements-resources.test.ts::cr:concepts.resources.activation.when — creating and activating a resource is offered in the resource step and refused once it is over"
+      }
+    ],
+    "see": [
+      "502"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.18",
+          "quote": "The resource step of the planning phase is when players have the ability to create and activate resources."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "413-cr-elements-resources.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Effects can also create resources at other times (a Shard from Swirling Shardform or Hooba-Lan). They enter dormant all the same.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.resources.expend",
+    "parent": "106",
+    "order": 5,
+    "text": "A resource can be expended (turned sideways) once per turn for 1 mana, to pay the mana cost of a card or an ability. Expended resources refresh at the beginning of each turn.",
+    "examples": [
+      {
+        "text": "Resources left expended at the end of a turn are all refreshed when the next planning phase begins.",
+        "test": "413-cr-elements-resources.test.ts::cr:concepts.resources.expend — expended resources refresh at the beginning of the next turn"
+      }
+    ],
+    "see": [
+      "111"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.14",
+          "quote": "All resources have the ability to be expended for 1"
+        },
+        {
+          "ref": "Manual p.14",
+          "quote": "Expended resources refresh at the beginning of a turn."
+        },
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "All resources have the ability to be expended (turned sideways) for 1 mana once"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "413-cr-elements-resources.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Only an active resource can be expended: concepts.resources.dormant-active.no-mana.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.resources.expend.generic",
+    "parent": "concepts.resources.expend",
+    "order": 1,
+    "text": "Mana has no element. Every resource, of whatever kind, pays generic mana.",
+    "examples": [
+      {
+        "text": "Shards pay the mana for [g][g] cards; the two wood resources only meet the affinity.",
+        "test": "396-raq-timing.test.ts::RAQ Mana question: affinity counts resources already spent — two wood pay for many gg cards"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1358299200953126963#0",
+          "quote": "All resources tap for generic mana"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1358299200953126963#0": "a8f1d0df77e16b5c51a375da78459cfc29f5a6ac8c8fb39360681c1875061d10"
+    }
+  },
+  {
+    "key": "concepts.resources.expend.paying",
+    "parent": "concepts.resources.expend",
+    "order": 2,
+    "text": "To pay a mana cost, a player expends that many un-expended resources.",
+    "examples": [
+      {
+        "text": "Rampart Guardian costs 2: of three open earth, two become expended and one stays open.",
+        "test": "413-cr-elements-resources.test.ts::cr:concepts.resources.expend.paying — paying a mana cost expends exactly that many un-expended resources"
+      }
+    ],
+    "see": [
+      "111"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "Mana cost: To play a card, a player must expend a"
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "number of un-expended resources equal to the card’s"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "413-cr-elements-resources.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Costs in general are 111 (U04).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.resources.recycle",
+    "parent": "106",
+    "order": 6,
+    "text": "In the resource step a player may create a resource by recycling a card from hand. The resource enters dormant. There is no limit to how many resources a player creates this way.",
+    "examples": [
+      {
+        "text": "Four cards recycled in one resource step make four fire resources, all dormant.",
+        "test": "413-cr-elements-resources.test.ts::cr:concepts.resources.recycle — several recycles in one resource step, each resource enters dormant"
+      }
+    ],
+    "see": [
+      "408",
+      "502"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.18",
+          "quote": "The resource step of the planning phase is when players have the ability to create and activate resources. During this step, any resource can be created from"
+        },
+        {
+          "ref": "Manual p.18",
+          "quote": "outside the game by recycling a card from hand (putting it on the bottom of the"
+        },
+        {
+          "ref": "Manual p.18",
+          "quote": "how many resources can be created, though there is little advantage to creating"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "308-recycle-for-prismite.test.ts",
+        "413-cr-elements-resources.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Where the recycled card goes (R296: past the recycle mark, into the recycle pile) is 408 (U07). The Manual's \"bottom of the deck\" wording is quoted here only for \"recycling a card from hand\".",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.resources.recycle.prismite-shard",
+    "parent": "concepts.resources.recycle",
+    "order": 1,
+    "text": "Recycling may create a Prismite or a Shard instead of an element resource.",
+    "examples": [
+      {
+        "text": "Every hand card offers a Prismite and a Shard after the elements.",
+        "test": "308-recycle-for-prismite.test.ts::R299 every hand card offers a Prismite, then a Shard, after the elements"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.18",
+          "quote": "The resource step of the planning phase is when players have the ability to create and activate resources. During this step, any resource can be created from"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R299",
+          "quote": "grab prismites. If you meant shards technically yes you could but prismites are strictly"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "308-recycle-for-prismite.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The designer's words (rules-questions, 2025-05-09) are quoted inside R299; they are not a RAQ thread, so they are typed here as the ruling.",
+    "sourceHashes": {
+      "R299": "46fc7e836df1d7e04bba74789f7fcde1ccbc21d3a515dc0c74abc3b6f211228c"
+    }
+  },
+  {
+    "key": "concepts.resources.recycle.made-prismite",
+    "parent": "concepts.resources.recycle",
+    "order": 2,
+    "text": "A Prismite made by recycling is the same as a starting Prismite: it enters dormant, takes an activation, gives no affinity, and once active may be exchanged.",
+    "examples": [
+      {
+        "text": "A recycled Prismite behaves exactly as a starting one.",
+        "test": "308-recycle-for-prismite.test.ts::R299 a recycled Prismite behaves like a starting one"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R299",
+          "quote": "A made Prismite is exactly a starting one: it arrives **dormant**, takes an activation to"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "308-recycle-for-prismite.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R299": "46fc7e836df1d7e04bba74789f7fcde1ccbc21d3a515dc0c74abc3b6f211228c"
+    }
+  },
+  {
+    "key": "concepts.resources.affinity-bonus",
+    "parent": "106",
+    "order": 7,
+    "text": "When a player activates an element resource, if they then have at least three affinity of that element, they create a Shard. The Shard enters dormant.",
+    "examples": [
+      {
+        "text": "Activating a third fire resource creates a dormant Shard.",
+        "test": "12-fire-a.test.ts::Fire Resource: activating your 3rd fire pays the p.18 affinity Shard — dormant, and every time"
+      },
+      {
+        "text": "With fewer than three fire, activating a fire resource creates nothing.",
+        "test": "12-fire-a.test.ts::Fire Resource: below three affinity the clause does nothing"
+      }
+    ],
+    "see": [
+      "106"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Fire Resource",
+          "quote": "When I activate, if you have at least [r][r][r], create a Shard."
+        },
+        {
+          "ref": "card: Fire Resource",
+          "quote": "{i}(It spawns dormant.)"
+        },
+        {
+          "ref": "Manual p.18",
+          "quote": "three affinity towards that resource."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R54",
+          "quote": "printed on the physical card as a reminder — implemented once in"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "12-fire-a.test.ts",
+        "15-water-b.test.ts",
+        "16-earth-a.test.ts",
+        "21-fixes.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.18 breaks the rule over four lines (\"The elemental resources can\" / \"provide free Shards when they are\" / \"activated if the player has at least\" / \"three affinity towards that resource.\"). The 2023 Rulebook words it differently: D-U02-5.",
+    "sourceHashes": {
+      "R54": "2c9410f526decf059127365b62dff21b94e94cd7dbca89671106d725b6b2de27"
+    }
+  },
+  {
+    "key": "concepts.resources.affinity-bonus.self-counts",
+    "parent": "concepts.resources.affinity-bonus",
+    "order": 1,
+    "text": "The resource being activated counts toward the three.",
+    "examples": [
+      {
+        "text": "Two active fire resources plus the one being activated make three: the Shard is created.",
+        "test": "12-fire-a.test.ts::the resource being activated COUNTS TOWARD ITS OWN THREE — the boundary"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.7",
+          "quote": "when the third water is played, a shard can be put into hand"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "12-fire-a.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.18's picture is captioned \"3RD RESOURCE PLAYED\" / \"CREATED SHARD\".",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.resources.affinity-bonus.every-time",
+    "parent": "concepts.resources.affinity-bonus",
+    "order": 2,
+    "text": "The bonus is paid on every such activation, not once per game.",
+    "examples": [
+      {
+        "text": "A fourth fire resource activated later creates another Shard.",
+        "test": "12-fire-a.test.ts::Fire Resource: activating your 3rd fire pays the p.18 affinity Shard — dormant, and every time"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.7",
+          "quote": "Any future waters that are played will also provide this benefit."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [
+        {
+          "ruling": "R116",
+          "relation": "superseded by R132; it recorded Caleb answering \"Every time\" when asked whether the bonus repeats"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "12-fire-a.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {},
+    "rebuttal": "The history entries are not empty: they are {ruling, relation} records (R116), the shape schema.mjs requires for history; they carry no `ref` field, which is why the verifier read \"history: None\". Kept."
+  },
+  {
+    "key": "concepts.resources.affinity-bonus.all-elements",
+    "parent": "concepts.resources.affinity-bonus",
+    "order": 3,
+    "text": "The bonus applies to every element, including those whose resource face is not among the printed cards.",
+    "examples": [
+      {
+        "text": "All seven elements pay the bonus at three.",
+        "test": "12-fire-a.test.ts::CONFORMANCE: every element pays the p.18 affinity bonus at 3 — all seven, not just the three with printed faces"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.18",
+          "quote": "The elemental resources can"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R54",
+          "quote": "`apply.ts::maybeGrantShard`, for **all seven elements**, verified on the real"
+        },
+        {
+          "ref": "R54",
+          "quote": "silently drop the bonus for wood, metal, light and dark, and keeping both would"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "12-fire-a.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The card data carries only three resource faces (fire, water, earth).",
+    "sourceHashes": {
+      "R54": "2c9410f526decf059127365b62dff21b94e94cd7dbca89671106d725b6b2de27"
+    }
+  },
+  {
+    "key": "concepts.resources.affinity-bonus.not-prismite-shard",
+    "parent": "concepts.resources.affinity-bonus",
+    "order": 4,
+    "text": "Activating a Prismite or a Shard never creates a Shard, however many the player has.",
+    "examples": [
+      {
+        "text": "Prismites and Shards never pay the bonus.",
+        "test": "12-fire-a.test.ts::CONFORMANCE: a Prismite and a Shard never pay the bonus, however many you have"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.18",
+          "quote": "The elemental resources can"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R299",
+          "quote": "wake, gives no affinity (R17), grants no Shard (R116/R132 — `maybeGrantShard` returns"
+        },
+        {
+          "ref": "R299",
+          "quote": "affinity, no Shard of its own and no exchange."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "12-fire-a.test.ts",
+        "308-recycle-for-prismite.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "They have no element and give no affinity (105), so \"three affinity towards that resource\" cannot be met.",
+    "sourceHashes": {
+      "R299": "46fc7e836df1d7e04bba74789f7fcde1ccbc21d3a515dc0c74abc3b6f211228c"
+    }
+  },
+  {
+    "key": "concepts.resources.prismite",
+    "parent": "106",
+    "order": 8,
+    "text": "A Prismite is a resource with no element. It gives no affinity, and like any resource it can be expended for 1 mana.",
+    "examples": [
+      {
+        "text": "Prismites start dormant, give no affinity, and can be exchanged once active.",
+        "test": "01-planning.test.ts::R17/prismites: dormant start, no affinity, planning exchange into any element"
+      }
+    ],
+    "see": [
+      "105"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.18",
+          "quote": "Since Prismites are resources,"
+        },
+        {
+          "ref": "Manual p.18",
+          "quote": "they can be expended for mana."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R17",
+          "quote": "like any resource, but grant **no affinity** — they are not wild. Their value is the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "01-planning.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The 2023 Rulebook calls them Mana Converters.",
+    "sourceHashes": {
+      "R17": "c78170a2f331384beebbcde66f1a2516c8e755a0394858386cbe11aaddd93980"
+    }
+  },
+  {
+    "key": "concepts.resources.prismite.exchange",
+    "parent": "concepts.resources.prismite",
+    "order": 1,
+    "text": "During the resource step of the planning phase a player may exchange an active Prismite for another resource (which resources: the element-only rule below). The new resource takes the Prismite's place and keeps its current state.",
+    "examples": [
+      {
+        "text": "An active Prismite is exchanged into a fire resource during planning.",
+        "test": "01-planning.test.ts::R17/prismites: dormant start, no affinity, planning exchange into any element"
+      }
+    ],
+    "see": [
+      "502",
+      "105"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.18",
+          "quote": "The resource step of the planning phase is when players have the ability to create and activate resources. During this step, any resource can be created from"
+        },
+        {
+          "ref": "Manual p.18",
+          "quote": "typically receive the two activations for the first turn. Active Prismites may be"
+        },
+        {
+          "ref": "Manual p.18",
+          "quote": "exchanged for other resources, meaning players essentially get to pick their two"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R17",
+          "quote": "exchange: during planning, an **active** (face-up) Prismite may be swapped for a"
+        },
+        {
+          "ref": "R17",
+          "quote": "resource of any element, keeping its current state (\"players essentially get to pick"
+        },
+        {
+          "ref": "R132",
+          "quote": "\"Erase me: Create a non-prismite resource, **then activate it**. Do this only"
+        },
+        {
+          "ref": "R132",
+          "quote": "during the mana step. {i}(This does not use one of your activations for turn.)"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "01-planning.test.ts",
+        "413-cr-elements-resources.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "The printed Prismite card is not in printed.json; its text is known only from R132's quote. The step: the card says \"only during the mana step\" and the Manual describes the exchange inside the resource step; R17's \"during planning\" is broader and would also admit the haste step. The rule states the printed sources (authority order); the verifier measured that the engine agrees (refused once a player finishes the resource step): D-U02-6. \"then activate it\" vs \"keeping its current state\" for an expended Prismite: D-U02-7 (question for the owner). The game's-elements limit is D-U02-3.",
+    "sourceHashes": {
+      "R132": "422c58626eb4235e480a9a0253166d55631ccd2b6ed80e703cc36d4d43ef2321",
+      "R17": "c78170a2f331384beebbcde66f1a2516c8e755a0394858386cbe11aaddd93980"
+    }
+  },
+  {
+    "key": "concepts.resources.prismite.exchange.dormant",
+    "parent": "concepts.resources.prismite",
+    "order": 2,
+    "text": "A dormant Prismite cannot be exchanged.",
+    "examples": [
+      {
+        "text": "Exchanging a dormant Prismite is refused.",
+        "test": "01-planning.test.ts::R17/prismites: dormant start, no affinity, planning exchange into any element"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.18",
+          "quote": "typically receive the two activations for the first turn. Active Prismites may be"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R17",
+          "quote": "hidden information). A dormant Prismite cannot be exchanged. The engine and prototype"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "01-planning.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R17": "c78170a2f331384beebbcde66f1a2516c8e755a0394858386cbe11aaddd93980"
+    }
+  },
+  {
+    "key": "concepts.resources.prismite.exchange.activation",
+    "parent": "concepts.resources.prismite",
+    "order": 3,
+    "text": "The exchange activates the new resource. If that gives the player three affinity of its element, the affinity bonus creates a Shard. The exchange does not use one of the player's two activations for the turn.",
+    "examples": [
+      {
+        "text": "A Prismite exchanged into a third copy of an element creates a Shard.",
+        "test": "21-fixes.test.ts::R132: spending a Prismite into your 3rd element copy DOES grant the shard — \"then activate it\""
+      },
+      {
+        "text": "A Prismite exchanged into a second copy creates nothing: the bar is three.",
+        "test": "21-fixes.test.ts::R132: a Prismite spent into your SECOND copy pays nothing — the p.18 bar is three"
+      }
+    ],
+    "see": [
+      "106"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R132",
+          "quote": "The second half of a prismite's own line **is an activation**, so the Manual"
+        },
+        {
+          "ref": "R132",
+          "quote": "during the mana step. {i}(This does not use one of your activations for turn.)"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R116",
+          "relation": "reversed by R132: R116 had ruled an exchange is not an activation and pays no Shard"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "21-fixes.test.ts",
+        "413-cr-elements-resources.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "The card text is printed but reaches this document only through R132's quote, so the basis is the ruling.",
+    "sourceHashes": {
+      "R132": "422c58626eb4235e480a9a0253166d55631ccd2b6ed80e703cc36d4d43ef2321"
+    }
+  },
+  {
+    "key": "concepts.resources.prismite.exchange.element-only",
+    "parent": "concepts.resources.prismite",
+    "order": 4,
+    "text": "A Prismite may be exchanged for any non-Prismite resource: an element resource of one of the game's elements, or a Shard. It cannot be exchanged for another Prismite.",
+    "examples": [
+      {
+        "text": "Exchanging a Prismite into a Prismite is refused. (The same test also refuses a Shard, which this rule allows: F-U02-3.)",
+        "test": "308-recycle-for-prismite.test.ts::R299 what stays illegal: exchanging a Prismite into a Prismite or a Shard"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.18",
+          "quote": "typically receive the two activations for the first turn. Active Prismites may be"
+        },
+        {
+          "ref": "Manual p.18",
+          "quote": "exchanged for other resources, meaning players essentially get to pick their two"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R132",
+          "quote": "\"Erase me: Create a non-prismite resource, **then activate it**. Do this only"
+        },
+        {
+          "ref": "R299 (its Prismite-into-Prismite half)",
+          "quote": "Exchanging a Prismite *into* a Prismite stays illegal — an exchange names an element."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "308-recycle-for-prismite.test.ts",
+        "413-cr-elements-resources.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "The printed Prismite (\"Create a non-prismite resource\", known from R132's quote) and Manual p.18 (\"exchanged for other resources\") read literally admit a Shard; no ruling or designer source forbids one. R299's \"an exchange names an element\" is given as the reason a Prismite cannot become a Prismite, and the Shard refusal is in a test title only. Printed text outranks an R-ruling and the permissive reading is taken: D-U02-8. The engine refuses a Shard (verifier, apply.ts: \"e.need((e.s.elements as string[]).includes(element), 'not an element of this game');\"): F-U02-3. Moot at the table: a Shard is never better than an element resource.",
+    "sourceHashes": {
+      "R132": "422c58626eb4235e480a9a0253166d55631ccd2b6ed80e703cc36d4d43ef2321",
+      "R299": "46fc7e836df1d7e04bba74789f7fcde1ccbc21d3a515dc0c74abc3b6f211228c"
+    },
+    "engineDiffers": [
+      "F-U02-3"
+    ]
+  },
+  {
+    "key": "concepts.resources.shard",
+    "parent": "106",
+    "order": 9,
+    "text": "A Shard is a resource of its own kind. It enters dormant, pays one generic mana once activated, gives no affinity, and cannot be exchanged.",
+    "examples": [
+      {
+        "text": "A Shard gives mana but no affinity, and offers no element exchange.",
+        "test": "48-playtest-hotfix.test.ts::a Shard gives mana but no affinity and no element exchange"
+      },
+      {
+        "text": "A recycled Shard is mana only.",
+        "test": "308-recycle-for-prismite.test.ts::R299 a recycled Shard is mana only: no affinity, no Shard of its own, no exchange"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.7",
+          "quote": "Shards are a resource that adds no affinity, but can still be expended for mana."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R54",
+          "quote": "\"Create a Shard\" creates a resource of kind **`shard`**: it arrives dormant,"
+        },
+        {
+          "ref": "R54",
+          "quote": "gives **one generic mana** once activated, gives **no affinity**, and **cannot"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "48-playtest-hotfix.test.ts",
+        "308-recycle-for-prismite.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R54": "2c9410f526decf059127365b62dff21b94e94cd7dbca89671106d725b6b2de27"
+    }
+  },
+  {
+    "key": "concepts.resources.shard.not-prismite",
+    "parent": "concepts.resources.shard",
+    "order": 1,
+    "text": "An effect that creates a Shard creates a Shard, never a Prismite.",
+    "examples": [
+      {
+        "text": "Swirling Shardform creates two dormant Shards, not Prismites.",
+        "test": "48-playtest-hotfix.test.ts::Swirling Shardform creates two dormant SHARDS, not prismites"
+      },
+      {
+        "text": "Hooba-Lan creates a real dormant Shard.",
+        "test": "16-earth-a.test.ts::Hooba-Lan: attacking creates a real dormant Shard for its controller"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Swirling Shardform",
+          "quote": "When I spawn, create two Shards. {i}(Dormant)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R54",
+          "quote": "A Shard is not a Prismite"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "48-playtest-hotfix.test.ts",
+        "16-earth-a.test.ts",
+        "18-earth-c.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R54": "2c9410f526decf059127365b62dff21b94e94cd7dbca89671106d725b6b2de27"
+    }
+  },
+  {
+    "key": "concepts.numbers.x",
+    "parent": "107",
+    "order": 1,
+    "text": "X stands for a number that the card defines. An X in a mana cost is chosen by the player who plays the card. A token's X is set by the card that created it. Other cards define X with a \"where X is …\" clause.",
+    "examples": [
+      {
+        "text": "Wildfire asks its caster for X; Self-Assembly with three metal makes a Robot 3.",
+        "test": "413-cr-elements-resources.test.ts::cr:concepts.numbers.x — X in a mana cost is chosen by the caster, a token takes its X from the creating card, and a where-X clause reads the card"
+      }
+    ],
+    "see": [
+      "702",
+      "304"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Wildfire",
+          "quote": "I deal X damage to any target."
+        },
+        {
+          "ref": "Manual p.15",
+          "quote": "X is determined"
+        },
+        {
+          "ref": "card: Self-Assembly",
+          "quote": "[Switch1] Create a Robot X, where X is your [m]."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "32-cast-costs.test.ts",
+        "413-cr-elements-resources.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "An overview; each way is its own rule below. No source lists these three ways together. How a card halves or rounds, or what a negative number does, no source says in general: D-U02-9.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.numbers.x-cost",
+    "parent": "107",
+    "order": 2,
+    "text": "An X spell's mana cost is X alone: the player chooses X, and pays X. Its pips are not part of its cost.",
+    "examples": [
+      {
+        "text": "With no Stasis Sentry, an X spell costs exactly the X chosen.",
+        "test": "133-x-cost-semantics.test.ts::R157 §20 — with no Stasis Sentry an X spell costs exactly X"
+      }
+    ],
+    "see": [
+      "111",
+      "702"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 §1",
+          "quote": "Pips aren't a relevant part of looking at the cost of a card in Algomancy."
+        },
+        {
+          "ref": "R157 §1",
+          "quote": "And paying X replaces the letter X on the printed card temporarily."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "133-x-cost-semantics.test.ts",
+        "32-cast-costs.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "The example test title says \"R157 §20\" (reversed by R326) but asserts the no-Sentry case, which R326 leaves unchanged: F-U02-1.",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
+    }
+  },
+  {
+    "key": "concepts.numbers.x-cost.chosen-at-cast",
+    "parent": "concepts.numbers.x-cost",
+    "order": 1,
+    "text": "X is chosen and paid when the spell is cast, before it goes on the stack. Only values the player can pay are offered. Responses see the X already chosen.",
+    "examples": [
+      {
+        "text": "Wildfire's X is chosen at cast from the affordable values, paid, and stored on the spell.",
+        "test": "32-cast-costs.test.ts::Wildfire: X is chosen at cast from affordable values, paid, and stored on the item"
+      }
+    ],
+    "see": [
+      "702"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R35 (its spell X half)",
+          "quote": "X are cast-time payments: the caster picks the sacrifice / the X value (only"
+        },
+        {
+          "ref": "R35 (its spell X half)",
+          "quote": "affordable values are offered) BEFORE the spell reaches the stack, the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "32-cast-costs.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R35 is not in the U02 pack (it is U04/U14); read from digital-rules.md. Its ability-cost and grafted-rider halves are superseded (R196, R334); the spell X half stands.",
+    "sourceHashes": {
+      "R35": "40f8296cef3d2d2b3c5f150d75c557b79b8a2bdc9584690fe1752de259650f84"
+    }
+  },
+  {
+    "key": "concepts.numbers.x-cost.zero",
+    "parent": "concepts.numbers.x-cost",
+    "order": 2,
+    "text": "X may be 0 unless the card says otherwise. Choosing X = 0 is legal even when it makes the effect do nothing.",
+    "examples": [
+      {
+        "text": "A player with no open mana may still cast an X spell for X = 0.",
+        "test": "32-cast-costs.test.ts::X spells resolve from the stored X — a 0-mana caster may still cast for X = 0"
+      },
+      {
+        "text": "No Hand Killer can be activated with an empty hand at X = 0, and its [once] is spent.",
+        "test": "46-hybrids-ld-c.test.ts::R157 §22: an empty hand still activates No Hand Killer — X = 0, and the [once] is spent"
+      },
+      {
+        "text": "Torrential Reclamation for X = 0 recalls nothing, but each player still sacrifices a unit.",
+        "test": "182-correctness-sample.test.ts::Torrential Reclamation: with X = 0 the sacrifice STILL happens, and costs no life (R221)"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 §22",
+          "quote": "You can legally activate it and discard no cards."
+        },
+        {
+          "ref": "R74",
+          "quote": "**The ruling is a warning, not a prohibition.** X = 0 stays legal and the option"
+        },
+        {
+          "ref": "R221",
+          "quote": "**unconditional with the scaling on top**: `max(1, recalled.length)` rounds. The"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "32-cast-costs.test.ts",
+        "46-hybrids-ld-c.test.ts",
+        "42-dark-b.test.ts",
+        "182-correctness-sample.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R74 also makes the client warn when X = 0 does nothing: a digital convention (Annex D, U24). R221 is one card's answer, used here only as an example.",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
+      "R221": "0076866191f7c83314edb43e93ec9ecd28c2815f7b223beaeaca7ad423978788",
+      "R74": "457f2e9947acec05101d9c675b9e1d74a601c73f8fdd63f8fcb3999ebba39596"
+    }
+  },
+  {
+    "key": "concepts.numbers.x-cost.cant-be-zero",
+    "parent": "concepts.numbers.x-cost",
+    "order": 3,
+    "text": "An X spell (a card whose mana cost is X) that prints \"X can't be zero\" must be cast with X of at least 1. A player who cannot pay at least 1 cannot cast it.",
+    "examples": [
+      {
+        "text": "Frosted Denial cannot be cast with no open mana.",
+        "test": "32-cast-costs.test.ts::Frosted Denial: xMin 1 — with no open mana the cast is illegal (X can't be zero)"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Frosted Denial",
+          "quote": "X can't be zero."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R35 (its spell X half)",
+          "quote": "than the smallest legal X (\"X can't be zero\" → 1) — the cast is ILLEGAL."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "32-cast-costs.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Instrument of Reassignment prints \"X can't be 0\" on an [Augment] activated ability, not on its cost: it is played for its fixed [2] with no X, so this rule does not reach its play. The floor on an ability's X is applied when the ability is activated (R35's ability half, replaced by R196; out of this unit): D-U02-11.",
+    "sourceHashes": {
+      "R35": "40f8296cef3d2d2b3c5f150d75c557b79b8a2bdc9584690fe1752de259650f84"
+    }
+  },
+  {
+    "key": "concepts.numbers.cost-reference",
+    "parent": "107",
+    "order": 3,
+    "text": "An effect that refers to a spell's cost reads its printed cost, not what was actually paid after cost modifiers. For an X spell, that is the X it was cast for.",
+    "examples": [
+      {
+        "text": "Squish taxed up to 4 by Stasis Sentry and Tranquility is still a 2 to Arcane Concentrator and Channeled Amalgam.",
+        "test": "390-raq-stack.test.ts::RAQ printed cost: Arcane Concentrator and Channeled Amalgam read a taxed Squish as a 2"
+      },
+      {
+        "text": "Channeled Amalgam reads the X paid for an X spell.",
+        "test": "133-x-cost-semantics.test.ts::R157 §1 — Channeled Amalgam reads the PAID X of an X spell (was dead against all eleven)"
+      }
+    ],
+    "see": [
+      "111"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353980184042143835#0",
+          "quote": "Concentrator AND Tides mention 'cost' and in both cases it points printed value"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 §1",
+          "quote": "So \"that spell's cost\" = **the X actually paid**."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts",
+        "133-x-cost-semantics.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
+      "RAQ 1353980184042143835#0": "571d78408552d997fc6dccfe62ce8ed362c2e803ed38050b6f78aaf40a9cf157"
+    }
+  },
+  {
+    "key": "concepts.numbers.cost-reference.not-cast",
+    "parent": "concepts.numbers.cost-reference",
+    "order": 1,
+    "text": "An X card that is not being cast has a cost of 0. This holds for an X card in a hand, a bin, the deck or the cache, and for a unit in play.",
+    "examples": [
+      {
+        "text": "An X card in hand reads as cost 0.",
+        "test": "133-x-cost-semantics.test.ts::R157 §1 — a card that was never cast has no cost: an X card in hand reads 0"
+      },
+      {
+        "text": "Living Vault offers an X card in hand at [0].",
+        "test": "39-light-b.test.ts::Living Vault: an X-cost card in hand is offered at pay [0] (R157 §1)"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R158 §1",
+          "quote": "| a card known only by name — bin, hand, cache, deck, or a unit standing in play | **0** |"
+        },
+        {
+          "ref": "R158 §1",
+          "quote": "The middle row is a decision, not an approximation: nobody has paid an X for a"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "133-x-cost-semantics.test.ts",
+        "39-light-b.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R158's §3 is reversed by R326; §1 stands. R158 §1 still names Living Vault as refusing X cards, which test 39 contradicts: F-U02-2.",
+    "sourceHashes": {
+      "R158": "fe9ff19c6119330409f62bf10183f580ae08a886557ffdeac9f762cf6a40f3b3"
+    }
+  },
+  {
+    "key": "concepts.numbers.free-play",
+    "parent": "107",
+    "order": 4,
+    "text": "When an effect lets a player play an X spell for free, the spell is played with X = 0. An X that is a bracketed additional cost is not the mana cost: it is still chosen and paid.",
+    "examples": [
+      {
+        "text": "A fulfilled prophecy releases an X spell for X = 0: no X is asked and no mana is paid.",
+        "test": "36-cache-prophecy.test.ts::R111: a fulfilled prophecy releases an X spell for X = 0 — no X asked, no mana paid"
+      },
+      {
+        "text": "Tides of the Cosmos counts an X spell as cost 0 and plays it at X = 0.",
+        "test": "396-raq-timing.test.ts::RAQ Tides 6a: an X spell counts as cost 0 against the budget and is played at X = 0"
+      }
+    ],
+    "see": [
+      "111",
+      "803"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1396955380000755795#6",
+          "quote": "Any spells with X cost can only be played with X=0 making most of them useless"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R111",
+          "quote": "an X spell works like magic, forced to cast it for 0 (unless its X is an"
+        },
+        {
+          "ref": "R111",
+          "quote": "different X — a COST, not the mana — and is still collected as before."
+        },
+        {
+          "ref": "R339",
+          "quote": "A free play casts an X spell for X = 0"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "36-cache-prophecy.test.ts",
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R111": "a7665555ec1f0c5f66748e40b653f50067e928f541bb660389587bb9a487747b",
+      "R339": "0869d183af4b6d5c0b7583720e6974682e5394c6533a1e379c6a72e3c0aef50c",
+      "RAQ 1396955380000755795#6": "157742c7f3c00e6be2652e8065fd782217905a77d6f55e3a25cb893c4bc09bd8"
+    }
+  },
+  {
+    "key": "concepts.numbers.free-play.cant-be-zero",
+    "parent": "concepts.numbers.free-play",
+    "order": 1,
+    "text": "An X spell that prints \"X can't be zero\" therefore cannot be played for free. An effect that plays cards for free cannot play it.",
+    "examples": [
+      {
+        "text": "Tides of the Cosmos cannot pick Frosted Denial; an X card that may be zero is still a pick.",
+        "test": "404-raq-fix-tides.test.ts::R339: an X card that may not be zero is never a Tides pick; one that may be zero still is"
+      },
+      {
+        "text": "Frosted Denial is not a card Tides can play.",
+        "test": "396-raq-timing.test.ts::RAQ Tides 6: Frosted Denial (X cannot be zero) is not a card Tides can play"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Frosted Denial",
+          "quote": "X can't be zero."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1396955380000755795#7",
+          "quote": "it also means that you CANNOT play Frosted Denial from Tides of Cosmos."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R339",
+          "quote": "can't be zero\" therefore has no legal free play, and Tides of the Cosmos does"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "404-raq-fix-tides.test.ts",
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Only an X in the mana cost counts. Instrument of Reassignment prints \"X can't be 0\" on an activated ability and has a fixed [2] cost, so Tides of the Cosmos can play it free; the verifier's probe shows the engine allows it. D-U02-11.",
+    "sourceHashes": {
+      "R339": "0869d183af4b6d5c0b7583720e6974682e5394c6533a1e379c6a72e3c0aef50c",
+      "RAQ 1396955380000755795#7": "a172ea28d67f53f6e2a1523eb872e8052a9be332e2a014945425fc140dedc824"
+    }
+  },
+  {
+    "key": "concepts.numbers.x-minimum",
+    "parent": "107",
+    "order": 5,
+    "text": "Stasis Sentry gives spells with a base cost of [three] or less a base cost of [three] during battle. On an X spell it raises the X instead of the price: X must be at least 3, and the spell costs exactly X.",
+    "examples": [
+      {
+        "text": "Under a Stasis Sentry the X menu starts at 3, and X = 3 deals 3.",
+        "test": "133-x-cost-semantics.test.ts::R326 (reverses R157 §20) — under a Stasis Sentry the X menu starts at 3, and X = 3 deals 3"
+      },
+      {
+        "text": "Under a Stasis Sentry, X = 3 costs [3] and X = 5 costs [5].",
+        "test": "133-x-cost-semantics.test.ts::R157 §20 — the real cast pays it: X=3 costs [3] and X=5 costs [5] under a Stasis Sentry"
+      }
+    ],
+    "see": [
+      "111"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Stasis Sentry",
+          "quote": "[Augment] Spells with base cost [three] or less have a base cost of [three] to play during battle."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1359629594512068770#0",
+          "quote": "The X value must be at least 3 (which would deal 3 damage), but it can be higher"
+        },
+        {
+          "ref": "RAQ 1359629594512068770#1",
+          "quote": "but it can be higher if Opponent decides to do so"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R326",
+          "quote": "Under Stasis Sentry in battle, an X spell must be cast with **X of at least"
+        },
+        {
+          "ref": "R326",
+          "quote": "three**, and it costs exactly X. It is not cast at a smaller X for a price of"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R157",
+          "relation": "§20 reversed by R326 (it had Wildfire at X = 0 cost [3] and deal 0)"
+        },
+        {
+          "ruling": "R158",
+          "relation": "§3 reversed by R326 (its cost-mod implementation of R157 §20)"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "133-x-cost-semantics.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Card-specific; it is in 107 because it is the one source on how a cost floor meets an X. The second example title still says \"R157 §20\": F-U02-1.",
+    "sourceHashes": {
+      "R326": "b6fb20355c2bb9e8ad2fedaaa4da911d67653d45668cc0b805c813956f91db8c",
+      "RAQ 1359629594512068770#0": "2931e75db11a44a64aff5a8458d34b418321d25f6b79937e8d4bc50919b0bd63",
+      "RAQ 1359629594512068770#1": "ac56a4ed9d3d59979d3cc64adb2784eded371132ac83b6b0e78e753052637621"
+    },
+    "rebuttal": "The history entries are not empty: they are {ruling, relation} records (R157 and R158), the shape schema.mjs requires for history; they carry no `ref` field, which is why the verifier read \"history: None\". Kept."
+  },
+  {
+    "key": "concepts.numbers.copy-x",
+    "parent": "107",
+    "order": 6,
+    "text": "A copy of a spell uses the original's X. The X is not chosen or paid again.",
+    "examples": [
+      {
+        "text": "Maelstrom Charger's copy of Volatile Toxicity keeps the original's receipt and is not paid again.",
+        "test": "138-spell-copy.test.ts::R164 Maelstrom Charger: the copy inherits the cast-cost receipt (R35) — Volatile Toxicity is not re-paid"
+      }
+    ],
+    "see": [
+      "710"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1379132904931594372#2",
+          "quote": "the X value is the one from original spell."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R35 (its spell X half)",
+          "quote": "receipt and X instead of paying again."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "138-spell-copy.test.ts",
+        "413-cr-elements-resources.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R35": "40f8296cef3d2d2b3c5f150d75c557b79b8a2bdc9584690fe1752de259650f84",
+      "RAQ 1379132904931594372#2": "737643b32b015038bf15b0e5c585fead3244d1fd322f2fb0319ee0e167d0a7e7"
+    }
+  },
+  {
+    "key": "concepts.numbers.token-x",
+    "parent": "107",
+    "order": 7,
+    "text": "A token's X is set by the card that created it. \"Create a Crystal 3\" creates a Crystal whose X is 3.",
+    "examples": [
+      {
+        "text": "A Poison created with X = 5 puts 5 -1/-1 counters.",
+        "test": "127-token-x-and-dormant.test.ts::R151/CT-33: a Poison created with X=5 says \"Put 5 -1/-1 counters\", from the engine"
+      }
+    ],
+    "see": [
+      "304"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "▪ Many tokens have an X value (7), which is determined by the"
+        },
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "would set the X value of the created token as 3."
+        },
+        {
+          "ref": "Manual p.15",
+          "quote": "X is determined"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "127-token-x-and-dormant.test.ts",
+        "413-cr-elements-resources.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.numbers.token-x.robot",
+    "parent": "concepts.numbers.token-x",
+    "order": 1,
+    "text": "A Robot's X is the number of +1/+1 counters on it. It spawns with X counters, and if the number of counters changes, so does its X.",
+    "examples": [
+      {
+        "text": "A Robot reads its X off its counters as they change.",
+        "test": "127-token-x-and-dormant.test.ts::R151/CT-33: a Robot reads its X off its COUNTERS, so it stays true as they change"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Robot",
+          "quote": "I spawn with X +1/+1 counters on me. {i}(If the number of counters changes, so does the X value.)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "127-token-x-and-dormant.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The example test is a ui test of the rendered text; the rule itself is the printed reminder.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.numbers.amounts-at-resolution",
+    "parent": "107",
+    "order": 8,
+    "text": "A number an effect counts, such as a \"where X is …\" clause or an amount \"equal to\" or \"for each\" something, is counted when the effect resolves, not when it was played or triggered.",
+    "examples": [
+      {
+        "text": "Self-Assembly counts metal affinity at resolution.",
+        "test": "28-metal-c.test.ts::Self-Assembly: creates a Robot X at the source's region, X = metal affinity at resolution"
+      },
+      {
+        "text": "Flamebreath Initiate removed with its trigger on the stack has no adjacent allies, so X = 0 and it still makes a Fireball 1.",
+        "test": "390-raq-stack.test.ts::RAQ dead unit: Flamebreath Initiate removed before its trigger resolves still makes a Fireball 1"
+      }
+    ],
+    "see": [
+      "704",
+      "706",
+      "714"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Flamebreath Initiate",
+          "quote": "[Augment] When I attack or block, create a Fireball X+1, where X is the number of allies adjacent to me."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1353895783266516992#3",
+          "quote": "If Flamebreath Initiate is removed with his trigger on the stack, the X=0 so he will still make Fireball 1."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R1",
+          "quote": "**Conditions are checked once, at event time; amounts are computed at resolution.**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "28-metal-c.test.ts",
+        "390-raq-stack.test.ts",
+        "11-fire-wood.test.ts",
+        "413-cr-elements-resources.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R1 is classified to U03/U15 and is not in the U02 pack; read from digital-rules.md. An X chosen as a cost (107.2) or fixed by a paid cost (next rule) is not recounted.",
+    "sourceHashes": {
+      "R1": "30128c5c491bd944cd289699e56309513bf26ce92037b2388fa6cc2a53f76493",
+      "RAQ 1353895783266516992#3": "228687b3c12ea75e3ea10e368f9f8aca9cfa31a2bdb034c35b498575757e343d"
+    }
+  },
+  {
+    "key": "concepts.numbers.amounts-at-resolution.cost-snapshot",
+    "parent": "concepts.numbers.amounts-at-resolution",
+    "order": 1,
+    "text": "An X that a paid cost defines is read as the cost is paid. Volatile Toxicity's X is the sacrificed unit's defense as it was when the unit was sacrificed.",
+    "examples": [
+      {
+        "text": "Volatile Toxicity reads the defense snapshotted when the cost was paid.",
+        "test": "32-cast-costs.test.ts::Volatile Toxicity: X reads the defense snapshotted when the cost was paid"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Volatile Toxicity",
+          "quote": "[Switch] /[Sacrifice a unit]: Create a Poison X and a Fireball X, where X is the defense of the sacrificed unit."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R35 (its spell X half)",
+          "quote": "snapshotted at payment (Volatile Toxicity / Structural Collapse read the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "32-cast-costs.test.ts",
+        "413-cr-elements-resources.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R35": "40f8296cef3d2d2b3c5f150d75c557b79b8a2bdc9584690fe1752de259650f84"
+    }
+  },
+  {
+    "key": "concepts.numbers.chosen-number",
+    "parent": "107",
+    "order": 9,
+    "text": "When a card asks a player to choose or predict a number, there is no limit the card does not print. A player may name any number in the card's range.",
+    "examples": [
+      {
+        "text": "Prediction Prophet's prediction has no ceiling; a prediction above the old cap is accepted and pays out.",
+        "test": "168-three-card-divergences.test.ts::R197 §1b Prediction Prophet: a prediction ABOVE `life + 5` is accepted and pays out the 5/5 — the old cap would not have offered it"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Prediction Prophet",
+          "quote": "During [Haste], predict your life total."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R197 §1",
+          "quote": "that shape: *\"Don't assume that cards are limited, they're designed to be open"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "168-three-card-divergences.test.ts",
+        "40-light-c.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "Generalised from one card (R197 §1, Prediction Prophet) and the owner's steer it quotes. R197 §1 sets the floor at 0 for a life prediction because a life total of 0 ends the game.",
+    "sourceHashes": {
+      "R197": "d627780adff03b34e1b7b04e4acc2a54accb309bad61cfffc5d828d5aca9d32b"
+    }
+  },
+  {
+    "key": "concepts.numbers.symbols",
+    "parent": "107",
+    "order": 10,
+    "text": "This document writes the game's symbols in brackets, as the card data does. The element pips are [r] Fire, [b] Water, [e] Earth, [g] Wood, [m] Metal, [l] Light and [d] Dark.",
+    "examples": [
+      {
+        "text": "[r] is fire: All-Consuming Blaze counts fire resources.",
+        "test": "07-cards.test.ts::All-Consuming Blaze: damage equals your fire affinity (expended counts, dormant does not)"
+      },
+      {
+        "text": "[g] is wood: Sylvan Sprouting counts wood resources.",
+        "test": "25-wood-c.test.ts::Sylvan Sprouting: one 1/1 per wood affinity — expended wood still counts"
+      },
+      {
+        "text": "[m] is metal: Self-Assembly counts metal resources.",
+        "test": "28-metal-c.test.ts::Self-Assembly: creates a Robot X at the source's region, X = metal affinity at resolution"
+      }
+    ],
+    "see": [
+      "202"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Fire Resource",
+          "quote": "[r] Fire Resource"
+        },
+        {
+          "ref": "card: Water Resource",
+          "quote": "[b] Water Resource"
+        },
+        {
+          "ref": "card: Earth Resource",
+          "quote": "[e] Earth Resource"
+        },
+        {
+          "ref": "card: Exhume",
+          "quote": "where X is your [d]."
+        },
+        {
+          "ref": "card: Reap the Due",
+          "quote": "twice your [l]."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R300",
+          "quote": "be [l] for LIGHT affinity.\"*"
+        }
+      ],
+      "history": [],
+      "engine": [
+        "ELEMENT_OF_PIP"
+      ],
+      "tests": [
+        "07-cards.test.ts",
+        "25-wood-c.test.ts",
+        "28-metal-c.test.ts",
+        "14-water-a.test.ts",
+        "413-cr-elements-resources.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "[r] [b] [e] are pinned by the printed resource faces; [g] and [m] by test titles; [l] Light by the owner's words in R300 (\"It's supposed to be [l] for LIGHT affinity\", added here, not in the U02 pack); [d] Dark only by Exhume's text and the engine's pip table (verifier: cards/dsl.ts \"r: 'fire', b: 'water', e: 'earth', g: 'wood', m: 'metal', l: 'light', d: 'dark',\"). The physical cards show icons, not letters. Pips as card parts are 202 (U05). R99 was dropped as a citation: it is about deck element identity and states no symbol.",
+    "sourceHashes": {
+      "R300": "433eaa2ccb6dc1247571654060ad72dec7a9ded55d273f78a24a63e3079f3338"
+    }
+  },
+  {
+    "key": "concepts.numbers.symbols.mana",
+    "parent": "concepts.numbers.symbols",
+    "order": 1,
+    "text": "[x] is X generic mana. A number in brackets, as a digit or a word ([1], [three]), is that much generic mana. A number followed by pips ([3b]) is that much mana together with that affinity.",
+    "examples": [
+      {
+        "text": "Lurking Slimebeast's ambush [3b] is 3 mana at one water pip.",
+        "test": "14-water-a.test.ts::Lurking Slimebeast: [Battle] Ambush [3b] = 3 mana at one water pip (R22)"
+      }
+    ],
+    "see": [
+      "202",
+      "111"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Frosted Denial",
+          "quote": "The controller of target enemy effect may pay [x]."
+        },
+        {
+          "ref": "card: Stasis Sentry",
+          "quote": "[Augment] Spells with base cost [three] or less have a base cost of [three] to play during battle."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R22",
+          "quote": "stack**: pay the bracketed cost (e.g. [4bb] = 4 mana, bb affinity — not the card's"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "14-water-a.test.ts",
+        "413-cr-elements-resources.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "R22 is U21's and not in the U02 pack; read from digital-rules.md. R151 (digital) calls [x] \"a cost pip: variable mana\". Bracketed words that are not mana ([Augment], [Switch1], [once], [Haste]) are 205 and 207 (U05).",
+    "sourceHashes": {
+      "R22": "13284d9d91e09595db8e775757a4abb9cccc53c0887aef1277d93699301a0e90"
+    }
+  }
+]

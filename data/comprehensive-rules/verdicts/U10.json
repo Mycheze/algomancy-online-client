@@ -1,0 +1,3004 @@
+[
+  {
+    "key": "combat.columns.adjacency",
+    "textHash": "31b315bf01f437da",
+    "verdict": "partial",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:adjacentInFormation",
+        "agrees": false,
+        "note": "defender grid is the SORTED block keys, so blockers on attacking columns 1 and 3 (column 2 unblocked) read as neighbours; the code comment calls it an approximation"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:adjacentInFormation",
+        "agrees": true,
+        "note": "attacking line correct"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/23-wood-a.test.ts",
+        "pattern": "Inspiration: +2/+2 to your units adjacent to it in formation",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U10/u10-probes.test.ts",
+        "title": "combat.columns.adjacency: blockers on attacking columns 1 and 3 (column 2 unblocked) — does Inspiration treat them as adjacent?",
+        "passed": true,
+        "demonstrates": "yes: engine treats them as adjacent, against the rule"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.22",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.10",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "    // treated as adjacent (⚠ approximation: two blocks on columns 1 and 5 read"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "is set, the units are locked in position and are considered"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "The rule text is right; the engine differs in a defending formation with a gap: blockers separated by an unblocked column are treated as left/right neighbours (Inspiration buffs across the gap, probe 2). Not flagged as engineDiffers."
+  },
+  {
+    "key": "combat.columns.adjacency.at-resolution",
+    "textHash": "bc11d3d9d3aa8b3b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards (Flamebreath Initiate)",
+        "agrees": true,
+        "note": "X = adjacentInFormation(...) read in run()"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/11-fire-wood.test.ts",
+        "pattern": "Flamebreath Initiate: attack → Fireball X+1, X = adjacent allies",
+        "passed": true,
+        "asserts_claim": "partly: asserts the count but never changes adjacency between trigger and resolution"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U10/u10-probes.test.ts",
+        "title": "combat.columns.adjacency.at-resolution: an adjacent ally removed before Flamebreath Initiate's trigger resolves is not counted",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Flamebreath Initiate",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R1",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**Conditions are checked once, at event time; amounts are computed at resolution.**"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.columns.adjacency.left-play",
+    "textHash": "d1564a3ac2b20fd6",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:adjacentInFormation",
+        "agrees": true,
+        "note": "unit not in a grid → []"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "pattern": "RAQ dead unit: Flamebreath Initiate removed before its trigger resolves",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353895783266516992#3",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> Lurker). If Flamebreath Initiate is removed with his trigger on the stack, the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.columns.adjacency.only-in-formation",
+    "textHash": "2b87059dd3888907",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:adjacentSlots / adjacentInFormation",
+        "agrees": true,
+        "note": "unit not in any grid → []"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/18-earth-c.test.ts",
+        "pattern": "R77: out of formation there are no adjacent slots at all",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.22",
+        "supports": "partly",
+        "note": "\"regroup where they all leave formation\" is on-topic; the adjacency-only-in-formation point is R75's"
+      },
+      {
+        "ref": "R75 (its adjacency rule)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> \"If a unit references its own adjacent slots (which only exist if it's in a"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.columns.adjacency.positions",
+    "textHash": "888c9cd2d3a3c752",
+    "verdict": "partial",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:adjacentSlots",
+        "agrees": true,
+        "note": "(ci±1, ri) and (ci, 1-ri), nothing diagonal"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:adjacentInFormation",
+        "agrees": false,
+        "note": "defender: compressed grid makes non-neighbouring blocking columns adjacent"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/23-wood-a.test.ts",
+        "pattern": "Hooba-Nan in the middle: both sides and below, and nothing diagonal",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U10/u10-probes.test.ts",
+        "title": "combat.columns.adjacency: blockers on attacking columns 1 and 3 (column 2 unblocked) — does Inspiration treat them as adjacent?",
+        "passed": true,
+        "demonstrates": "yes: divergence on a defending line"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.22",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R75 (its adjacency rule)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> formation) it's referring to its sides and above/below. Nothing diagonal.\""
+      }
+    ],
+    "basis_ok": true,
+    "problem": "\"exactly three\" is wrong at the edges: a back-row unit at an end, or any unit at the end of a defending line, has no position past that end (603 edges.front-only / attacking-only), so it has fewer. Say \"at most three\". Also the defending-gap divergence (see combat.columns.adjacency)."
+  },
+  {
+    "key": "combat.columns.definition",
+    "textHash": "b489838ffb436d1c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doDeclareBlocks",
+        "agrees": true,
+        "note": "a block is keyed to an attacking column; key presence = blocked (R13)"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.23",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Once a defending unit has been placed in front of an at-"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.columns.definition.shared-attributes",
+    "textHash": "3e6b5d7b275432bf",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:effAttrs (R294)",
+        "agrees": true,
+        "note": "column-shared attributes; not shared sideways"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.24",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Combat attributes (denoted in gold text) are shared by"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "No test bound."
+  },
+  {
+    "key": "combat.columns.definition.side-blocks",
+    "textHash": "c8b3c30ca6da70bc",
+    "verdict": "partial",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doDeclareBlocks",
+        "agrees": false,
+        "note": "accepts two side-blockers stacked front/back in ONE side column (blocks {1:[s1,s2]})"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:openSideColumns",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/400-raq-fix-blocks.test.ts",
+        "pattern": "R321 side-blocks: two units block where no attacker is, each its own column",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/400-raq-fix-blocks.test.ts",
+        "pattern": "R321 a side-block on the left opens a column before column 1",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U10/u10-probes.test.ts",
+        "title": "combat.columns.definition.side-blocks: can two side-blocking units share ONE side column (front and back)?",
+        "passed": true,
+        "demonstrates": "yes: two units in one side column accepted"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.23",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1366447016653361192#3",
+        "supports": "partly",
+        "note": "\"Yep you should be able to\" permits a column each; does not require it"
+      },
+      {
+        "ref": "R321",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **Any number** of units may side-block, each as its own column — *\"if I have"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Side-blocks may stand to either side of the attack. A side-block blocks"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "\"Each side-blocking unit is its own column\" overstates the source: Caleb answers that eight units CAN each be a separate column, and the engine also lets two side-blockers share one side column (front and back). Correct: \"...may stand in a column where there is no attacker; side-block columns stand beside the attacking line on either side, and each holds at most two units.\""
+  },
+  {
+    "key": "combat.columns.edges",
+    "textHash": "a670cb23272e7d59",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:adjacentSlots",
+        "agrees": true,
+        "note": "past-the-end front slot offered for an attacking front-row unit"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/23-wood-a.test.ts",
+        "pattern": "Hooba-Nan alone: behind it AND a new column past each end",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/23-wood-a.test.ts",
+        "pattern": "Hooba-Nan on the edge of the line: the open side and behind",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R304",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R75 (history)",
+        "supports": "yes",
+        "note": "history only, correctly not cited as a ruling"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **Front row only.** Past the end, the same-row slot beside a back-row unit is"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.columns.edges.attacking-only",
+    "textHash": "3fbb484de2aee098",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:adjacentSlots",
+        "agrees": true,
+        "note": "widens = controller is attacker && front row"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/66-formation-placement.test.ts",
+        "pattern": "R304 adjacency: a BACK-row unit and a BLOCKING line have nothing past the edge",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R304",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **Attacking line only.** A blocking column is keyed to the attacking column it"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.columns.edges.front-only",
+    "textHash": "c1a19274b13ca3f0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:adjacentSlots",
+        "agrees": true,
+        "note": "widens requires ri === 0"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/23-wood-a.test.ts",
+        "pattern": "Hooba-Nan in the BACK row at the edge",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R304",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **Front row only.** Past the end, the same-row slot beside a back-row unit is"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.columns.positional-text",
+    "textHash": "d863e789b996ea7e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards (Hooba-Nan, Rousing Spirit)",
+        "agrees": true,
+        "note": "fill adjacentSlots / the slot behind directly; no placement decision"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/13-fire-b.test.ts",
+        "pattern": "Rousing Spirit: attack → a cheap bin unit fills the slot behind me",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Hooba-Nan",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Rousing Spirit",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R75 (its adjacency rule)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "\"which only exist if it's in a formation\":**"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.columns.width",
+    "textHash": "f7eac5594a7362e1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:putInSlot",
+        "agrees": true,
+        "note": "left-insert normalises indices; no width limit"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/66-formation-placement.test.ts",
+        "pattern": "R75: formations scale infinitely in width",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.22",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.10",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "UNLIMITED COLUMNS"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.columns.width.columns-keep-identity",
+    "textHash": "f49292b4602528a9",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:rekeyColumns",
+        "agrees": true,
+        "note": "blocks, col:<ci> counters, Alluring duties, sideCols and R320 struck marks move in one commit, used by both the collapse and putInSlot left-insert"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/66-formation-placement.test.ts",
+        "pattern": "R75: opening a column on the LEFT re-keys every block and every column counter",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/64-formation-collapse.test.ts",
+        "pattern": "R72: a column-scoped battle counter rides the collapse to the new index",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/400-raq-fix-blocks.test.ts",
+        "pattern": "R320 a struck mark moves with its column when a new column opens on the left",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R72 (its gravity rule)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "| `blocks[ci]` | the blocking column moves with its attacker |"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "    // R320: a column's struck-marks are the column's, so they move with it"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.formations.collapse",
+    "textHash": "871350baedcfec2a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:repairFormation",
+        "agrees": true,
+        "note": "horizontal collapse during declare/attackWindow/blocks steps"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/64-formation-collapse.test.ts",
+        "pattern": "R72: a middle column emptied before blocks collapses",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.22",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.10",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "    // (2) horizontal gravity: the line closes ranks ONLY before blocks are"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.formations.collapse.any-removal",
+    "textHash": "406fb75f4f75d4c7",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:removeFromFormation",
+        "agrees": true,
+        "note": "the one funnel for destroy/recall/cacheUnit/eraseFromPlay/giveControl; it calls repairFormation"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/64-formation-collapse.test.ts",
+        "pattern": "R72: a unit RECALLED out of a middle column closes the gap too",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.22",
+        "supports": "partly",
+        "note": "the quoted line is the promotion rule; generality of \"removed\" is implied, not stated for the collapse"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "    // R72: closing the gap is part of leaving the formation, not a follow-up"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.formations.collapse.defending",
+    "textHash": "600cdf7f03e06e44",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:repairFormation",
+        "agrees": true,
+        "note": "only the attacking line collapses; block keys kept"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/66-formation-placement.test.ts",
+        "pattern": "R75: a blocking formation may legitimately have EMPTY columns",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.23",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.11",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R72 (its gravity rule)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/66-formation-placement.test.ts",
+        "text": "test('R75: a blocking formation may legitimately have EMPTY columns, and they are never \"repaired\"', () => {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.formations.collapse.immediate",
+    "textHash": "a297615933452b25",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:removeFromFormation",
+        "agrees": true,
+        "note": "repairFormation runs before fireEvent('died'); checkDeaths is the backstop"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/64-formation-collapse.test.ts",
+        "pattern": "R72: the gap is closed before any observer runs",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R72 (its gravity rule)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "It is a **state-based action** in the sense the report asked for — run wherever"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Implicitly \"before blocks\" (602.5a); reads as unconditional on its own."
+  },
+  {
+    "key": "combat.formations.definition",
+    "textHash": "2e6e9e0f9cc2a8d6",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doDeclareAttack / doDeclareBlocks",
+        "agrees": true,
+        "note": "b.columns / b.blocks"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.22",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.23",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "When units attack or block, they are placed in a formation,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.formations.definition.empty",
+    "textHash": "853c13faf22c158d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:pushFormationTargets / targetStillLegal",
+        "agrees": true,
+        "note": "an empty side stays a legal target and counts zero"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:formationSlots",
+        "agrees": null,
+        "note": "for PLACEMENT a formation with no living unit offers no position (R75) — not a contradiction of this rule, but a limit worth a cross-reference"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/156-reaping-and-formation.test.ts",
+        "pattern": "Galactic Germination: an EMPTY formation is still a formation",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U10/u10-probes.test.ts",
+        "title": "combat.formations.definition.empty / placement.legal-positions: an attacking formation whose every unit died after blocks offers no position, not even its hole",
+        "passed": true,
+        "demonstrates": "partly: an empty formation cannot be joined"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R184 (its \"target formation\" half)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "| `targetStillLegal` | legal exactly while its battle runs; **emptying it does not remove it** (an empty formation is still the place those units stand, and a card counting them is entitled to co"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.formations.definition.locked",
+    "textHash": "7c052cc8a1cd91f5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:repairFormation / putInSlot",
+        "agrees": true,
+        "note": "positions move only by promotion/collapse or an effect (placement, Riftwalker)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/28-metal-c.test.ts",
+        "pattern": "Riftwalker: [one] switches my position with a target ally in my formation",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.22",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.26",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Riftwalker",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "is set, the units are locked in position and are considered"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.formations.definition.shape",
+    "textHash": "a28e16232912b7a2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:validFormation",
+        "agrees": true,
+        "note": "columns of at most two"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.22",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.10",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "UNLIMITED COLUMNS"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.formations.definition.when-set",
+    "textHash": "4e77d587da19e016",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doDeclareAttack / doDeclareBlocks",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.22",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.10",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "two units deep, as there is a front and back row. Attacking formations are set during"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.formations.definition.whole-side",
+    "textHash": "ec5d87d8b8b3de89",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:formationUnits / pushFormationTargets",
+        "agrees": true,
+        "note": "one candidate per side; counts every unit on that side"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/156-reaping-and-formation.test.ts",
+        "pattern": "Galactic Germination: \"target formation\" is THE WHOLE SIDE",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R184 (its \"target formation\" half)",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R184 (history)",
+        "supports": "yes",
+        "note": "history only, correctly not cited as a ruling"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "entire formation in that region, every unit arrayed there. Not a column."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.formations.front-first",
+    "textHash": "c50bf7215f1b2bc9",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:adjacentSlots / putInSlot",
+        "agrees": true,
+        "note": "columns are dense arrays; append-only placement, promotion on removal"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/55-ui-formation.test.ts",
+        "pattern": "building an attack: a back unit with nobody in front moves up on Done",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.22",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.10",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R75 (its front-row note)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "he front row of a column must be filled first before a unit can be placed in a back row."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.formations.outside",
+    "textHash": "d73b760c31cb5965",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:combat",
+        "agrees": true,
+        "note": "only units in b.columns / b.blocks attack or block"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.15",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "If a unit spawns during"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.formations.outside.spawned",
+    "textHash": "b90201ed56be4b7c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:spawnUnit",
+        "agrees": true,
+        "note": "creates in a region with no slot; only bespoke placers (in my formation / playsIntoFormation) slot a unit"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/08-cards2.test.ts",
+        "pattern": "Aberrant Populace: attack → two Wisps out of formation",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.15",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.43",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Aberrant Populace",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "They spawn in the region but not in formation unless"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.formations.placement",
+    "textHash": "964751b83a3d2fb9",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:placeInFormation",
+        "agrees": true,
+        "note": "ctx.choose by the effect controller at resolution"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/108-formation-class.test.ts",
+        "pattern": "BL-24 Hooba-Lin (augment): the host attacks → the ask, and the 1/1 lands in the chosen slot",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R75 (its placement rule)",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R75 (history)",
+        "supports": "yes",
+        "note": "history only, correctly not cited as a ruling"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "is legal, and a **logged** no-op when none is. The chooser is the **effect's**"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.formations.placement.counting",
+    "textHash": "906446ab999d3c71",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:formationSeatOf / lastKnownOf",
+        "agrees": true,
+        "note": "Embermaw reads the live grid of its (remembered) formation at resolution"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/401-raq-fix-stack.test.ts",
+        "pattern": "R325 Embermaw Fledgling gone before its after-combat trigger resolves",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Embermaw Fledgling",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1353895783266516992#2",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R27",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "combat deaths reduce X, and a unit that wasn't attacking gets X = 0 → no token."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.formations.placement.defending",
+    "textHash": "7b09d8e4574803f8",
+    "verdict": "partial",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:formationSlots",
+        "agrees": false,
+        "note": "defender grid also offers the FRONT slot of an emptied blocking column ('column N (an empty slot in the line)')"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:flashBlockSlots",
+        "agrees": true,
+        "note": "unblocked attacked column with a live attacker, blockWindow..damageWindow"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:formationSlots",
+        "agrees": true,
+        "note": "no ends for the defender"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/66-formation-placement.test.ts",
+        "pattern": "R75: a full BLOCKING formation offers nothing",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/400-raq-fix-blocks.test.ts",
+        "pattern": "R322 a Tiderunner put in front of an unblocked attacker fights it",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U10/u10-probes.test.ts",
+        "title": "combat.formations.placement.defending: an emptied BLOCKING column (its blocker died) is offered as a front-slot position",
+        "passed": true,
+        "demonstrates": "yes: offered, contrary to the rule's exhaustive list"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "RAQ 1366447016653361192#1",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R322",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R75 (its placement rule, as narrowed by R322)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "defender may start a formation this way even having declared no blockers."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "    // Only the ATTACKING grid can widen. A blocking column is keyed to an"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "The list is not exhaustive: when a blocking column loses its blocker, the engine offers its front slot as a position (R75's hole kind applied to the defending grid). Either the rule adds \"or the front slot of a blocking column emptied after blocks\", or the engine should stop offering it."
+  },
+  {
+    "key": "combat.formations.placement.ends-only",
+    "textHash": "b4804424185884ca",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:formationSlots",
+        "agrees": true,
+        "note": "only left/right ends"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/66-formation-placement.test.ts",
+        "pattern": "R75: \"either side\" means the two ENDS",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R75 (its placement rule)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "⚠ **\"Either side of the existing units\" is read as the two ENDS, not as an"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.formations.placement.legal-positions",
+    "textHash": "eebb020638b62e68",
+    "verdict": "partial",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:formationSlots",
+        "agrees": true,
+        "note": "attacker: left end, back slot of each one-unit column, front of a hole, right end; defender: no ends"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:formationSlots",
+        "agrees": false,
+        "note": "returns no slots at all when the formation holds no living unit, so a hole in an all-dead attacking line is NOT offered (R75: \"a formation you are not standing in cannot be joined\")"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/66-formation-placement.test.ts",
+        "pattern": "R75: both ENDS and the back slot of every one-unit column are offered",
+        "passed": true,
+        "asserts_claim": "partly: two one-unit columns, not the example's 1+2 line"
+      },
+      {
+        "file": "client/engine/test/66-formation-placement.test.ts",
+        "pattern": "R75: a placement can FILL an R72 hole, and can never create one",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U10/u10-probes.test.ts",
+        "title": "combat.formations.definition.empty / placement.legal-positions: an attacking formation whose every unit died after blocks offers no position, not even its hole",
+        "passed": true,
+        "demonstrates": "yes: no position offered once no unit of the formation is alive"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R75 (its placement rule)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**the BACK slot of a column that holds exactly one unit**;"
+      },
+      {
+        "file": "client/engine/test/66-formation-placement.test.ts",
+        "text": "test('R75: a two-unit column offers no back slot', () => {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Positions are right for a formation that still holds a unit. (1) Example 1 (first column one unit, second two) is bound to a test on two ONE-unit columns, which never asserts that a two-unit column offers no back slot; rebind to \"R75: a two-unit column offers no back slot\". (2) Unstated limit: when no unit of the formation remains, no position (not even its hole) is offered (probe 3)."
+  },
+  {
+    "key": "combat.formations.placement.one-or-none",
+    "textHash": "a744e8f16d1e40bf",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:placeInFormation",
+        "agrees": true,
+        "note": "options.length === 1 → no ask; no slots → logged no-op"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/66-formation-placement.test.ts",
+        "pattern": "R75: exactly one legal placement is auto-picked",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R75 (its placement rule)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "is legal, and a **logged** no-op when none is. The chooser is the **effect's**"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.formations.placement.source-formation",
+    "textHash": "327267b5356943bf",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:formationSeatOf",
+        "agrees": true,
+        "note": "alive unit in no grid → null → placeInFormation logs and places nothing"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/108-formation-class.test.ts",
+        "pattern": "R225 Hooba-Lin: alive but out of the formation (R172) → no token, no question",
+        "passed": true,
+        "asserts_claim": "yes (Hooba-Lin as the unit, stolen and stolen back, rather than a host)"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R225 (its second grade)",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R225 (history)",
+        "supports": "yes",
+        "note": "history only, correctly not cited as a ruling"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "   * out of the line (R172) still names none."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.formations.placement.spell-unit",
+    "textHash": "a248d108fe356a49",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards (Hooba-Pon)",
+        "agrees": true,
+        "note": "casts the spell part, then spawns into the slot"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "pattern": "RAQ Hooba-Pon spell unit: the spell part happens, then the unit spawns into the formation",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Hooba-Pon",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1461450216874967235#0",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "text": "  // \"Yes, the spell part happens and if it resolves, the unit will spawn into formation.\""
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "  what playing one means is about Hooba-Pon: *\"the spell part happens and if it"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.formations.placement.still-in-formation",
+    "textHash": "a8ce5dbbabae5609",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards (Hooba-Nan, Rousing Spirit)",
+        "agrees": true,
+        "note": "both check columnOf(self) at resolution; R325 names them as the exceptions"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "pattern": "RAQ dead unit: Hooba-Nan gone with its trigger on the stack makes nothing",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Hooba-Nan",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Rousing Spirit",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1353895783266516992#1",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "\"**if I am still in formation**\" (Hooba-Nan, Rousing Spirit). That clause is a"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Spirit and Hooba-Nan print \"if I am still in formation\" and are the thread's"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.formations.play-into",
+    "textHash": "62bdc390cb3f911a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:takeSpot",
+        "agrees": true,
+        "note": "spot collected in the cast window, taken inside spawnUnit before 'spawned'"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/108-formation-class.test.ts",
+        "pattern": "BL-24 Tiderunner Initiate: the spot is asked in the CAST window",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/73-play-into-formation.test.ts",
+        "pattern": "R29 the opponent’s response window cannot catch it outside the line",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Tiderunner Initiate",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Trench Stalker",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R29 (its play-time placement)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**And it is a PLAY, so the spot is chosen at CAST.** *(Added 2026-08-22 from"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.formations.play-into.needs-formation",
+    "textHash": "461bbf12791ab516",
+    "verdict": "partial",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:formationSlots",
+        "agrees": false,
+        "note": "requires at least one LIVING unit in the player's grid; a player who attacked but has lost every attacker is offered nothing"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:flashBlockSlots",
+        "agrees": true,
+        "note": "R322 exception offered from blockWindow to damageWindow even with no blockers"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/73-play-into-formation.test.ts",
+        "pattern": "R29 with NO formation of your own the play is legal and asks nothing",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/388-raq-blocks-and-windows.test.ts",
+        "pattern": "RAQ Blocked: a unit played in as a blocker after blocks blocks that column",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U10/u10-probes.test.ts",
+        "title": "combat.formations.definition.empty / placement.legal-positions: an attacking formation whose every unit died after blocks offers no position, not even its hole",
+        "passed": true,
+        "demonstrates": "yes: attacked, but Tiderunner is not asked"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R29 (its play-time placement)",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R322",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R29 (history)",
+        "supports": "yes",
+        "note": "history only, correctly not cited as a ruling"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "defender may start a formation this way even having declared no blockers."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "    if (!grid.some(col => col.some(id => this.entity(id)))) return flash;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "\"they attacked, or they declared blocks\" is too broad: the engine (R75 \"a formation you are not standing in cannot be joined\") also requires the formation to still hold a unit. A player whose every attacker has died, or a defender who declared no blockers (outside the 602.6c exception), is asked nothing (probe 3)."
+  },
+  {
+    "key": "combat.formations.play-into.optional",
+    "textHash": "ea707a83ac06bf33",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:collectFormationSpot",
+        "agrees": true,
+        "note": "'stay out of formation' option always on the menu"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/73-play-into-formation.test.ts",
+        "pattern": "R29 \"stay out of formation\" is still on the menu",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Tiderunner Initiate",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R29 (its play-time placement)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "declared there is nothing to join and no prompt. Joining is optional (\"may\")."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.formations.play-into.spot-gone",
+    "textHash": "88494a72e341b21a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:takeSpot",
+        "agrees": true,
+        "note": "slotForSpot re-derives the spot; on no match the unit enters the region outside the formation and the log says so"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/73-play-into-formation.test.ts",
+        "pattern": "R29 the slot is RE-DERIVED at resolution",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R29 (its play-time placement)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "      return `${u.card}: the open spot it was played into is gone — it enters the region, outside the formation.`;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.formations.promotion",
+    "textHash": "3d22fa13199a7df6",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:repairFormation",
+        "agrees": true,
+        "note": "vertical gravity untimed: dead ids spliced from every column at every step"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/64-formation-collapse.test.ts",
+        "pattern": "R72 (Manual): the back row promotes AFTER blocks too",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.22",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.10",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R72 (its gravity rule)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "If a unit is removed from a formation, any units behind it move to the front row and take its place."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.general.units",
+    "textHash": "54b4da5d60663da7",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:combat",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.22",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.10",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Units are the basis of combat: they are used to attack op-"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.regions.after-combat-presence",
+    "textHash": "e929c5df2ecbe561",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:fireEvent",
+        "agrees": true,
+        "note": "after-combat listeners are filtered to the battle region; formation not required"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "pattern": "RAQ after combat: an after-combat trigger fires for a unit in the battle region that is not in formation",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.43",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1356667460211966060#0",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "A: No, because a battle"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.regions.arrangement",
+    "textHash": "85594d38fe4f2a55",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": true,
+        "note": "two regions, each the other's one neighbour"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.19",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "action because there are no opponents to interact with. The player regions are arranged in a large circle, so each player has two"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.regions.arrangement.elimination",
+    "textHash": "d494e755cc082acc",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": null,
+        "note": "engine is 1v1 only; elimination ends the game, so not exercised"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.8",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.19",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "When a player is eliminated, their adjacent regions become connected and the game continues. If playing a team game, after"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Printed-only; the 1v1 engine cannot exercise it."
+  },
+  {
+    "key": "combat.regions.arrangement.teams",
+    "textHash": "e6faf4c883b4208c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": null,
+        "note": "1v1 only; not exercised"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.8",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "their nearby opponents are eliminated, players may send attacks through allied regions into the nearest enemy region."
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Printed-only; not exercisable in the 1v1 engine."
+  },
+  {
+    "key": "combat.regions.created",
+    "textHash": "aec6b2a51c20bc6c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards (creators)",
+        "agrees": true,
+        "note": "R115: creators pass ctx.region; 98-spawn-region scans for homeRegion( in run bodies"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:StackItem.region",
+        "agrees": null,
+        "note": "a triggered ability records the source region at FIRE time, not resolution; no reachable 1v1 case moves a source between regions mid-stack"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/98-spawn-region.test.ts",
+        "pattern": "R115: report #83 — Life Plant attacking in the enemy region creates its 1/1s THERE",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/98-spawn-region.test.ts",
+        "pattern": "R115 inverts R28: Tidelurker's mid-attack 2/2 stays in the enemy region and CANNOT block the counterattack",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.15",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.4",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R115",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R28 (history)",
+        "supports": "yes",
+        "note": "history only, correctly not cited as a ruling"
+      },
+      {
+        "ref": "R52 (history)",
+        "supports": "yes",
+        "note": "history only, correctly not cited as a ruling"
+      },
+      {
+        "ref": "R33 (history)",
+        "supports": "yes",
+        "note": "history only, correctly not cited as a ruling"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> region. **Anything made by anything needs to spawn in that region** (then can return"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.regions.definition",
+    "textHash": "bbfcbb9f8ef3f62d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": true,
+        "note": "one region per player, presentSeats [owner]"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.19",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.8",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "Each player exists in their own unique region. This means that outside of the combat phase, there is absolutely no player inter-"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.regions.definition.all",
+    "textHash": "464e5b84ef28dc99",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards (Cosmic Reversal)",
+        "agrees": true,
+        "note": "board half sweeps unitsIn(region)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/229-cosmic-and-control.test.ts",
+        "pattern": "R250 + R243: the board half is scoped to the region, like every other all",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.8",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R243",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "“Destroy all units” means “De-"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.regions.definition.every-effect-local",
+    "textHash": "294f0b2b95431116",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:unitsIn / seatsHere",
+        "agrees": true,
+        "note": "219 §1a: no card reads g.s.players"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "pattern": "RAQ Another set: a Ghord sacrifice reaches only the opponent units in its own region",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.19",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.8",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1454169054402314362#0",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Every single effect is specific to the region it takes"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.regions.definition.isolated",
+    "textHash": "78f34228437fa244",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:staticsFor",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/243-ally-and-enemy-scope.test.ts",
+        "pattern": "R265 §3c a static that says ENEMIES does not reach an enemy in another region",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.19",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.42",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.8",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R91 (its region-scoping half)",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R91 (history)",
+        "supports": "yes",
+        "note": "history only, correctly not cited as a ruling"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "a location that is completely isolated from the other"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.regions.definition.sacrifice",
+    "textHash": "7f760bf174b0afc2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-dark-a.ts:cullSacrifices",
+        "agrees": true,
+        "note": "each present seat chooses from unitsOf(seat, ctx.region) only"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:cast-cost pools",
+        "agrees": true,
+        "note": "sacrificeUnit cost pool is unitsOf(seat, item.region) (R265)"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U10/u10-probes.test.ts",
+        "title": "combat.regions.definition.sacrifice: \"Each player sacrifices a unit\" (Cull) takes nothing from a player whose only units are in another region",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.41",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.42",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "You cannot sacrifice units that are in a different region, even if they"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Example is unbound (illustrative); the probe demonstrates it."
+  },
+  {
+    "key": "combat.regions.definition.statics-and-triggers",
+    "textHash": "13f9393d4111b801",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:staticsFor / fireEvent",
+        "agrees": true,
+        "note": "a.region === target.region; listeners filtered to the event region"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/243-ally-and-enemy-scope.test.ts",
+        "pattern": "R265 §3d a trigger that watches for another ALLY does not see one spawn in another region",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "pattern": "RAQ Crevice Lurker: it taxes the opponent too, not only its controller",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.42",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.21",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "A: No, it only sees the units in the region it’s in."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.regions.exclusive",
+    "textHash": "3aaf06fc3bacb02e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/types.ts:Entity.region",
+        "agrees": true,
+        "note": "one region field per entity"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.4",
+        "supports": "partly",
+        "note": "on-topic only: about where spell tokens may be cast, not that each thing is in one region"
+      },
+      {
+        "ref": "R12",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**Things exist in exactly one region at a time.** This resolves the exotica: a stolen unit"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.regions.exclusive.no-region-zones",
+    "textHash": "e9734e12ae262cb3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:pushCachedCardTargets",
+        "agrees": true,
+        "note": "cache reach = presentSeats (R291)"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:pushPlayerTargets",
+        "agrees": true,
+        "note": "player/hand reach = presentSeats"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:pushBinCardTargets",
+        "agrees": null,
+        "note": "'anyBinCard' walks every player regardless of region; only {Battle}/combat cards use it, so in 1v1 both seats are always present and no divergence is reachable"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R265",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R291",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "deployment. A player's cache can be targeted exactly when that player is"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Bin half is not structurally enforced (anyBinCard, Finality loop all players; R239 left global bin sweeps as an open question), but no reachable 1v1 state differs."
+  },
+  {
+    "key": "combat.regions.information",
+    "textHash": "d62d2ab4d5ec204c",
+    "verdict": "partial",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/server/view.ts:visibleToSeat",
+        "agrees": true,
+        "note": "gates only on data.privateTo; region is not consulted (probe 10)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/219-region-scoped-all.test.ts",
+        "pattern": "§2b an event from a region you are not in is still yours to read",
+        "passed": true,
+        "asserts_claim": "not judged: the verifier could not run this client/server test; it was executed at wave end (8/8 pass), and probe 10 is the demonstration"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U10/u10-probes.test.ts",
+        "title": "combat.regions.information: a log line stamped with a region is visible to both seats",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R243",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R239 (history)",
+        "supports": "yes",
+        "note": "history only, correctly not cited as a ruling"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> \"Regions do NOT scope information, but they do scope 'global' things (every"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "a location that is completely isolated from the other"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> \"**the single rule we'll never violate is 'nothing can send information across"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Engine and R243 agree, but the literal printed text says the opposite: Manual p.19 \"This means there is zero information or interaction between regions\", and the designer (quoted in R91) \"nothing can send information across regions\". The rule should say it is an owner reading (R243) of those lines, not present it unqualified. Bound test 219 is a server test and was not run; probe 10 measures the same thing."
+  },
+  {
+    "key": "combat.regions.one-at-a-time",
+    "textHash": "8093572a82452ee1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:battle round flow",
+        "agrees": true,
+        "note": "1v1: round 1 runs to its end in the defender region before any counterattack round in the other region"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.21",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "of battle will be completed inside"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.regions.one-at-a-time.order",
+    "textHash": "910730d84bbaa1b1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:battle rounds",
+        "agrees": true,
+        "note": "1v1: round 1 in the NIT region (IT attacks), counterattack round in the IT region"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.21",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "is clockwise starting to the left"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Multiplayer half printed-only."
+  },
+  {
+    "key": "combat.regions.one-at-a-time.others-dont-exist",
+    "textHash": "73c7ad0293d785c8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:fireEvent",
+        "agrees": true,
+        "note": "region-filtered listeners"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "pattern": "RAQ after combat: the control, an after-combat unit in ANOTHER region makes nothing",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.21",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "will be treated as if they don’t"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.regions.presence",
+    "textHash": "9642c070a00f15d4",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doDeclareAttack",
+        "agrees": true,
+        "note": "pushes the attacker into presentSeats; nothing removes it before startRegroup"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/314-prophecy-units-die.test.ts",
+        "pattern": "R302 §3: combat puts the attacker in the region, so both seats see every death in it",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U10/u10-probes.test.ts",
+        "title": "combat.regions.presence: an attacker stays present in the region after every unit it sent is removed",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.19",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R302",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "regroup phase in addition to their own region. Once a"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "a sacrifice there is private; declaring an attack puts the attacker in the defender's"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.regions.presence.ally-enemy",
+    "textHash": "9b80191ca213c2e2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:pushUnitTargets / staticsFor / fireEvent",
+        "agrees": true,
+        "note": "unit families read unitsIn(region); statics and triggers are region-filtered"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/243-ally-and-enemy-scope.test.ts",
+        "pattern": "R265 §3a no ally or enemy slot in the pool can see a unit in another region",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R265",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> Yes, an ally includes itself. Otherwise it'd say \"Another target ally\". Ally = all units under your control in the current region."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.regions.presence.each-opponent",
+    "textHash": "eac1623d2e6fc571",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:seatsHere / presentSeats",
+        "agrees": true,
+        "note": "each-opponent loops walk the region's present seats; R187 makes the empty case speak"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/158-silent-region-branches.test.ts",
+        "pattern": "Bloated Manablub — \"Each opponent loses 3 life\" in a region holding no opponent says so and takes no life",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/208-region-scoping-is-absolute.test.ts",
+        "pattern": "Rebalance — no opponent in the region: nobody is asked, no unit changes hands, and it says so",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.42",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R25",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R239 (its reach half)",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R239 (history)",
+        "supports": "yes",
+        "note": "history only, correctly not cited as a ruling"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "That refers to each opponent in your current region."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.regions.presence.only-by-attacking",
+    "textHash": "f62ffd5b17558297",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doDeclareAttack",
+        "agrees": true,
+        "note": "only place a seat is added to presentSeats"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U10/u10-probes.test.ts",
+        "title": "combat.regions.presence.only-by-attacking: a player who declares no attack is not present in the region it could have attacked",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.8",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R302",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Declining to attack ends the round without entering — you cannot witness a battle you did"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "No test bound; probe demonstrates."
+  },
+  {
+    "key": "combat.regions.presence.outside-battle",
+    "textHash": "745bde0e5a20c8e6",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:startRegroup",
+        "agrees": true,
+        "note": "presentSeats reset to [owner] at regroup; only declareAttack adds a seat"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:pushCachedCardTargets",
+        "agrees": true,
+        "note": "walks presentSeats"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/293-cached-targets-are-regional.test.ts",
+        "pattern": "R291 §2 the report: Prismatic Observer sacrificed in deployment cannot reach the opponent's cache",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.19",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.26",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.42",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Each player is in their own region during the deploy-"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "treat all other players as if they don’t exist."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.regions.presence.player-things",
+    "textHash": "6d36850d4ec37a45",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:pushPlayerTargets / pushCachedCardTargets",
+        "agrees": true,
+        "note": "presentSeats"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/293-cached-targets-are-regional.test.ts",
+        "pattern": "R291 §3 the control: in battle the Observer reaches the opponent's cache, as printed",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.19",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R291",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R243",
+        "supports": "partly",
+        "note": "quote is truncated: R243 says \"'Any bin' is any bin in the region\"; the cut drops the qualifier that supports the rule"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "resources, and even the player themself can"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.regions.presence.regroup",
+    "textHash": "0f60681e9bf52680",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U10-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:startRegroup",
+        "agrees": true,
+        "note": "every unit to homeRegion(controller); presentSeats = [owner]"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/98-spawn-region.test.ts",
+        "pattern": "R115: the stranded 1/1s walk home at regroup",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.26",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R115",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "All units and players return to their regions"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  }
+]

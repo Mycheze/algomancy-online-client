@@ -1,0 +1,1985 @@
+[
+  {
+    "key": "concepts.general.goal",
+    "parent": "100",
+    "order": 1,
+    "text": "In Algomancy, each player's goal is to eliminate all of their opponents. A player is eliminated by bringing their life total to 0.",
+    "examples": [
+      {
+        "text": "A player brought to 0 life is eliminated, and the other player wins the game.",
+        "test": "412-cr-general.test.ts::cr:concepts.general.goal — bringing a player to 0 life eliminates them and the other player wins the game"
+      }
+    ],
+    "see": [
+      "104"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.6",
+          "quote": "Each player begins with 30 life. Eliminate all of your"
+        },
+        {
+          "ref": "Manual p.6",
+          "quote": "opponents by bringing their life to 0."
+        },
+        {
+          "ref": "Rulebook 2023 p.1",
+          "quote": "In order to win a game of Algomancy, you must eliminate all of your opponents by reducing their life total to zero. In team"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "412-cr-general.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Both printed editions agree. How elimination works is 104.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.general.turns",
+    "parent": "100",
+    "order": 2,
+    "text": "The game is played as a series of global turns. Every player goes through each turn's phases together.",
+    "examples": [
+      {
+        "text": "One player finishing planning does not start the battle, and one player finishing deployment does not end the turn: both players move on together, into the same turn 2.",
+        "test": "412-cr-general.test.ts::cr:concepts.general.turns — one turn counter and one phase for the table: a phase waits for both seats, and both enter turn 2 together"
+      }
+    ],
+    "see": [
+      "500"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.6",
+          "quote": "The game unfolds in a series of global turns, each"
+        },
+        {
+          "ref": "Manual p.6",
+          "quote": "play. Players navigate through these phases together,"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "412-cr-general.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The turn structure itself is 500-508 (U08/U09).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.general.formats",
+    "parent": "100",
+    "order": 3,
+    "text": "A game combines a game mode (such as live draft or constructed) with a player setup (such as 1v1, free-for-all or teams). Any game mode can be played with any player setup.",
+    "examples": [],
+    "see": [
+      "900"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.1",
+          "quote": "Algomancy is an incredibly flexible game with a variety of game options. You can pair any of the game modes with any of the"
+        },
+        {
+          "ref": "Manual p.6",
+          "quote": "The above formats can be played in a wide variety of"
+        },
+        {
+          "ref": "Manual p.6",
+          "quote": "1v1: The recommended starting setup."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The modes and setups themselves are 900-905 (U22). The Manual calls the modes \"formats\" and the configurations \"player setups\"; the Rulebook 2023 calls them \"game modes\" and \"player configurations\".",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "a description of the format taxonomy; the client runs only the 1v1 player setup, so no other combination exists to execute"
+  },
+  {
+    "key": "concepts.general.digital-scope",
+    "parent": "100",
+    "order": 4,
+    "text": "The digital client this document describes plays two-player games only: 1v1 live draft and 1v1 constructed.",
+    "examples": [
+      {
+        "text": "A new live-draft game deals hands and packs to exactly two seats.",
+        "test": "20-draft.test.ts::createGame draft: 6-card hands"
+      },
+      {
+        "text": "A new constructed game takes one deck per seat, for two seats.",
+        "test": "34-constructed.test.ts::createGame constructed: per-seat decks"
+      }
+    ],
+    "see": [
+      "900"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R27 (the \"Project decisions\" block recorded under it, not its own ruling)",
+          "quote": "**v1 formats**: 1v1 live draft + 1v1 constructed."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "412-cr-general.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R27's 'Project decisions' block is a process note (classification: process, not rules), but it is the only source that states the client's player count. Later additions (tutorial, Single Card Duel, custom draft rules) are still two-seat; Annex D covers them. Every printed multiplayer rule this unit states (concepts.ending.win.teams, concepts.ending.continues) is therefore not enforced by the client: D-U01-9. Round 1: the client's variants (Learn to Play lessons, Single Card Duel) are two-seat too (verifier, createGame).",
+    "sourceHashes": {
+      "R27": "f9de0bd386630de9d13ba5eaecf8f59a21043f5695f988e9a7fcff619ce2a071"
+    }
+  },
+  {
+    "key": "concepts.golden.printed-text-wins",
+    "parent": "101",
+    "order": 1,
+    "text": "Printed text beats the general rules and the engine's defaults. Where a card's printed text says something different from a general rule or a default, the card is followed, unless the designer has stated a different intent for that card (concepts.golden.designer-intent).",
+    "examples": [
+      {
+        "text": "Grob prints \"Up to one target unit's controller caches it\". A unit its controller has stolen goes to the stealing player's cache, as printed.",
+        "test": "135-exchange-and-zones.test.ts::R157 §27: Grob caches a STOLEN unit"
+      }
+    ],
+    "see": [
+      "400.4b",
+      "concepts.golden.designer-intent"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 (its standing steer)",
+          "quote": "and, on Grob: **\"Printed text always wins.\"** When two readings are available"
+        },
+        {
+          "ref": "R157 (its §27)",
+          "quote": "> *\"Controller's cache — the printed text wins. Printed text always wins.\"*"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "No printed or RAQ sentence in the pack states this principle; it is the owner's (R157, 2026-08-25). D-U01-5. R262 §3 applies it to destinations (an explicit printed destination beats the zones-follow-control default, 400.4b). Round 1: R157 says \"always\"; the designer-intent rule (Crevice Lurker) is an exception the designer made, and the designer outranks R157 (D-U01-11).",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
+    }
+  },
+  {
+    "key": "concepts.golden.designer-intent",
+    "parent": "101",
+    "order": 2,
+    "text": "Where the designer has stated that his intent for a card differs from its printed wording, the card works as the designer intended.",
+    "examples": [
+      {
+        "text": "Crevice Lurker prints \"Abilities cost [one] more to activate or trigger during battle\". By Caleb's stated intent it also taxes the {Resonant} attribute's trigger.",
+        "test": "390-raq-stack.test.ts::RAQ trigger-like attributes: Crevice Lurker taxes Resonant"
+      }
+    ],
+    "see": [
+      "802"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1366446116274442291#1",
+          "quote": "So as written it wouldn't work but my intent is for it to stop those from triggering"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "The one designer statement in the pack of this kind (Crevice Lurker vs Resonant). The project's authority order says the same in general (README § Authority order: 'Where Caleb states an intent that differs from print, follow Caleb'); that README is not a pack source.",
+    "sourceHashes": {
+      "RAQ 1366446116274442291#1": "039f665cd92e9cd0724ac39fa41c823da1d0e33e0db6533eaa91ea679d61c759"
+    }
+  },
+  {
+    "key": "concepts.golden.raq-over-rulings",
+    "parent": "101",
+    "order": 3,
+    "text": "A designer answer in the rules Q&A (RAQ) takes precedence over this project's own rulings. Where the two disagree, this document states the designer's answer.",
+    "examples": [],
+    "see": [
+      "concepts.golden.designer-intent"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R340",
+          "quote": "\"Trust the RAQ over our rulings.\""
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R340 quotes the owner (2026-10-10); R315 and R319 carry the same line. Which RAQ answers count (a [Solved] write-up by _passer, or calebgannon's own words) is the project's authority order, not a pack source.",
+    "sourceHashes": {
+      "R340": "67cfb9ac70bf668d742367e9bdf7fd1a1db67635cb512f2b3e3e739feb051583"
+    },
+    "untested": true,
+    "untestableReason": "an authority order for writing this document, not a game behaviour"
+  },
+  {
+    "key": "concepts.golden.permissive",
+    "parent": "101",
+    "order": 4,
+    "text": "When a card's text can be read two ways and neither reading is absurd, take the reading that lets more things happen.",
+    "examples": [],
+    "see": [
+      "concepts.golden.printed-text-wins"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 (its standing steer)",
+          "quote": "and neither is absurd, take the one that lets more things happen."
+        },
+        {
+          "ref": "R157 (its standing steer)",
+          "quote": "> Algomancy is meant to be a highly exploratory and synergistic game where"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "The owner's standing steer (R157), which R157 says governs every future ambiguity. No printed or designer source states it. D-U01-6.",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
+    },
+    "untested": true,
+    "untestableReason": "a principle for reading card text; its outcomes are demonstrated under the individual card rulings"
+  },
+  {
+    "key": "concepts.golden.as-much-as-possible",
+    "parent": "101",
+    "order": 5,
+    "text": "An effect that cannot do everything it says does as much as it can. A part of an effect that cannot happen does not stop the other parts from happening. This does not make half of an action happen: a fight or an exchange that has lost one of its two units does not happen at all (704).",
+    "examples": [
+      {
+        "text": "Recall: \"Each player recalls a unit and loses 2 life.\" A player with no unit to recall still loses 2 life.",
+        "test": "179-empty-collection-branches.test.ts::Recall — the life loss happens, the recall does not"
+      },
+      {
+        "text": "Ralph grafted onto Amphivore under a multiplier: control of the host can be given away only once, and the rest of the graft still happens on every pass.",
+        "test": "393-raq-mods.test.ts::RAQ Amphivore with Ralph grafted"
+      }
+    ],
+    "see": [
+      "704"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.43",
+          "quote": "spell will attempt to resolve as best as it can. For"
+        },
+        {
+          "ref": "Manual p.43",
+          "quote": "if one of the targets for a fight or an exchange is removed, the effect will not be able to happen (it takes"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1353859961855148103#3",
+          "quote": "You just can't give Ralph, but that's okay - rest of graft still happens."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R30 (provisional, marked ⚠)",
+          "quote": "recall still loses 2. (Do as much as you can; the two clauses are not linked"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "Manual p.43 is not in the pack (added from the extract's printed pages); it says this of a spell that lost some of its targets. When ALL targets are gone the spell fizzles instead (704, U14), and a fight or exchange that loses one of its two targets does nothing (Manual p.43, also 704). Round 2: the general statement rests on R30, which the register marks provisional (⚠), and on Caleb's graft answer; the Manual says it only of a spell whose targets were removed. The verifier measured Recall and Fight/Organic Exchange agreeing. Recorded as D-U01-15.",
+    "sourceHashes": {
+      "R30": "e7c2373b72ed97eb303382b135763419e5615c1da0ef3030b93bf9212ca66efd",
+      "RAQ 1353859961855148103#3": "0f00309dc741ed7d3ff9c1a0dbfa514d90cf1c3320dd08e4d1f95e0225957f20"
+    }
+  },
+  {
+    "key": "concepts.golden.as-much-as-possible.if-you-do",
+    "parent": "concepts.golden.as-much-as-possible",
+    "order": 1,
+    "text": "A part of an effect that begins \"If you do\" happens only if the action before it was done. Parts that are not joined this way are independent.",
+    "examples": [
+      {
+        "text": "Shoreline Specter: \"After combat, you may recall target ally. If you do, each opponent loses 2 life.\" If its controller declines the recall, no opponent loses life.",
+        "test": "182-correctness-sample.test.ts::Shoreline Specter: DECLINE the recall and the 2-life drain does not happen"
+      }
+    ],
+    "see": [
+      "concepts.golden.as-much-as-possible"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Shoreline Specter",
+          "quote": "If you do, each opponent loses 2 life."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R30",
+          "quote": "by \"if you do\".)"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R30's closing words, read with its line before ('the two clauses are not linked / by \"if you do\"'), are the independence half; Shoreline Specter's printed sentence is the dependent half.",
+    "sourceHashes": {
+      "R30": "e7c2373b72ed97eb303382b135763419e5615c1da0ef3030b93bf9212ca66efd"
+    }
+  },
+  {
+    "key": "concepts.golden.as-much-as-possible.costs",
+    "parent": "concepts.golden.as-much-as-possible",
+    "order": 2,
+    "text": "Paying a cost is not done \"as much as you can\". A cost that cannot be paid in full is not paid at all, and the effect it pays for does not happen.",
+    "examples": [
+      {
+        "text": "Lost Guardian with Darkblast grafted must pay [Discard a card] twice. With one card in hand nothing is discarded and nothing happens.",
+        "test": "17-earth-b.test.ts::R110: all or nothing — one card in hand cannot pay a doubled [Discard a card]"
+      }
+    ],
+    "see": [
+      "111"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353859961855148103#5",
+          "quote": "No Sacrifice at all and you don't get the effect."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "_passer's answer is about a cost multiplied by a graft multiplier (\"must Sacrifice 2 or 3 units, but have only 1\"). Costs in general are 111 (U04).",
+    "sourceHashes": {
+      "RAQ 1353859961855148103#5": "e76eb85747e60fd292c770c1843f8184363e120947d683bf484fd432d9730029"
+    }
+  },
+  {
+    "key": "concepts.golden.regions",
+    "parent": "101",
+    "order": 6,
+    "text": "Every effect is specific to the region it happens in. It never affects anything in another region, and it treats the players and cards in other regions as if they do not exist. A card that says \"all\" or \"each\" means all or each in this region.",
+    "examples": [
+      {
+        "text": "Cosmic Reversal, cast in one region, leaves a spell unit in another region alone.",
+        "test": "229-cosmic-and-control.test.ts::R250 + R243: the board half is scoped to the region"
+      },
+      {
+        "text": "No ally or enemy target offered by any card can be a unit in another region.",
+        "test": "243-ally-and-enemy-scope.test.ts::R265 §3a no ally or enemy slot"
+      }
+    ],
+    "see": [
+      "601"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.8",
+          "quote": "This is perhaps the single most important rule of Algomancy: Every single effect is specific to its region."
+        },
+        {
+          "ref": "Manual p.19",
+          "quote": "Every single effect is specific to the region it takes"
+        },
+        {
+          "ref": "Manual p.19",
+          "quote": "place in, meaning it will never impact anything in any"
+        },
+        {
+          "ref": "Manual p.42",
+          "quote": "region treats the players and cards in other regions"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1454169054402314362#0",
+          "quote": "Yes everything in the game is region specific. Just add 'in this region' to every card if it helps."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R243",
+          "quote": "card that says 'all' is actually 'all in this region')."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "RAQ 1454169054402314362#0 is not in the pack (found in the extract's RAQ register). Regions themselves are 601 (U10). R243 notes that the stack is not regional (R250 §1); that is 406/601. Round 1: R265 makes the stack, bins and cache regionless, so Frosted Denial, Woodland Warding and Molten Riftbreaker reach across regions in the client. Print and Caleb outrank R265, so the rule states them: D-U01-12, F-U01-2. Round 2: the verifier's probe confirmed the divergence: Molten Riftbreaker's effect resolving in one region negated its controller's Luminous Arc on the stack in another (F-U01-2). Example 1 now claims only the half its test asserts.",
+    "sourceHashes": {
+      "R243": "4c5bc6d02712fd64927882b54069b5c9b94714bfb5d543432cd6f891f5e07315",
+      "RAQ 1454169054402314362#0": "4948c1881274500d06ed76c23f405dbebb16d265e89961225a7fdbc579825628"
+    },
+    "engineDiffers": [
+      "F-U01-2"
+    ]
+  },
+  {
+    "key": "concepts.golden.regions.information",
+    "parent": "concepts.golden.regions",
+    "order": 1,
+    "text": "Regions limit what effects can reach and count. In the digital client they do not limit what players may see: a player may read what happens in a region they are not in.",
+    "examples": [
+      {
+        "text": "A log line for an event in a region the player is not in is still delivered to that player.",
+        "test": "219-region-scoped-all.test.ts::§2b an event from a region you are not in is still yours to read"
+      }
+    ],
+    "see": [
+      "601"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R243",
+          "quote": "Regions do NOT scope information, but they do scope 'global' things (every"
+        },
+        {
+          "ref": "R243",
+          "quote": "effect may COUNT is narrowed; what a player may READ is not.**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "412-cr-general.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Manual p.19 says regions have \"zero information or interaction between regions\". Whether 'information' there means what effects can read or what players can see is D-U01-1, a question for the owner. Round 1: stated as the client's convention (R243) because Manual p.19 says \"zero information or interaction between regions\" and printed outranks an owner ruling; which reading of that sentence holds is D-U01-1.",
+    "sourceHashes": {
+      "R243": "4c5bc6d02712fd64927882b54069b5c9b94714bfb5d543432cd6f891f5e07315"
+    }
+  },
+  {
+    "key": "concepts.players.region-and-life",
+    "parent": "102",
+    "order": 1,
+    "text": "Each player has their own region and their own life total.",
+    "examples": [
+      {
+        "text": "Each player has a different home region, and when one player loses 4 life the other player's life total does not change.",
+        "test": "412-cr-general.test.ts::cr:concepts.players.region-and-life — each seat owns a different home region, and a life loss of one seat leaves the life of the other alone"
+      }
+    ],
+    "see": [
+      "601",
+      "concepts.starting.live-draft.life"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.19",
+          "quote": "All gameplay in Algomancy takes place inside of regions, with one region for each player. Each region is"
+        },
+        {
+          "ref": "Manual p.6",
+          "quote": "Each player begins with 30 life. Eliminate all of your"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "412-cr-general.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Regions are 601; starting life is concepts.starting.live-draft.life.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.players.each-opponent",
+    "parent": "102",
+    "order": 2,
+    "text": "\"Each opponent\" means each opponent in the region where the effect happens.",
+    "examples": [
+      {
+        "text": "Bloated Manablub dies in a region where its opponent is present: that opponent loses 3 life and its controller loses none.",
+        "test": "412-cr-general.test.ts::cr:concepts.players.each-opponent — Bloated Manablub with the opponent present in the region takes 3 from that opponent only"
+      }
+    ],
+    "see": [
+      "concepts.golden.regions",
+      "601"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.42",
+          "quote": "A: That refers to each opponent in your current region."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R187",
+          "quote": "CARD-TODO #70. R25 scopes an effect to its region, and \"each opponent\" is read"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "412-cr-general.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Manual p.42 answers the question 'If an effect says \"each opponent loses 1 life\", who does that refer to?'.",
+    "sourceHashes": {
+      "R187": "6274df7b1d6ade0d7d34c24803a91a6d2a71ce82e7030aef03d35499247453ed"
+    }
+  },
+  {
+    "key": "concepts.players.each-opponent.none",
+    "parent": "concepts.players.each-opponent",
+    "order": 1,
+    "text": "If no opponent is in that region, an \"each opponent\" effect affects nobody. This is normal during deployment, when each player is alone in their own region.",
+    "examples": [
+      {
+        "text": "Bloated Manablub's \"Each opponent loses 3 life\" resolved in a region holding no opponent takes no life from anyone.",
+        "test": "158-silent-region-branches.test.ts::Bloated Manablub — \"Each opponent loses 3 life\""
+      }
+    ],
+    "see": [
+      "601"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.42",
+          "quote": "Meaning if you have this effect during deployment,"
+        },
+        {
+          "ref": "Manual p.42",
+          "quote": "it would not hit any other players."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R187",
+          "quote": "lists only its owner, so the loop runs **zero times** — a real, ordinary,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R187 also makes the client say so in the log; that is a display convention (Annex D).",
+    "sourceHashes": {
+      "R187": "6274df7b1d6ade0d7d34c24803a91a6d2a71ce82e7030aef03d35499247453ed"
+    }
+  },
+  {
+    "key": "concepts.players.each-player",
+    "parent": "102",
+    "order": 3,
+    "text": "\"Each player\" means each player in the region where the effect happens.",
+    "examples": [
+      {
+        "text": "Recall (\"Each player recalls a unit and loses 2 life\") cast in a battle makes both players present in that battle region lose 2 life.",
+        "test": "15-water-b.test.ts::Recall: each player recalls a unit and loses 2 life"
+      }
+    ],
+    "see": [
+      "concepts.golden.regions"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.19",
+          "quote": "“Delete target unit in this region”. “Each player sacrifices two units” means “Each player in this region"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "412-cr-general.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.players.owner",
+    "parent": "102",
+    "order": 4,
+    "text": "A card's owner is the player whose card it is. A card's owner never changes, whoever controls it and whatever zone it goes to.",
+    "examples": [
+      {
+        "text": "A unit whose control has been taken is recalled: the recall still reports the player it was stolen from as the card's owner.",
+        "test": "246-zones-follow-control.test.ts::R262 §3: ownership does NOT move"
+      },
+      {
+        "text": "The same recalled unit goes to the hand of the player who controls it, not its owner's hand.",
+        "test": "246-zones-follow-control.test.ts::R262 §1: a stolen unit recalled goes to the THIEF hand"
+      }
+    ],
+    "see": [
+      "400.4a",
+      "400.4c"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R250 (its §4, zones follow control)",
+          "quote": "| whose card is this? | its OWNER's, always, forever |"
+        },
+        {
+          "ref": "R262",
+          "quote": "**2. Ownership does not move. Only the destination does.**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Who owns a card in live draft, where every card comes out of one shared deck, is not stated by any source (D-U07-8). In constructed it is the player who brought the card (400.4c). Round 1: the verifier measured that a stolen card recalled to the thief's hand and replayed is recorded as owned by the thief; the rule states the ruling (F-U01-1).",
+    "sourceHashes": {
+      "R250": "85f8949b08f8ce75cfdb86bf8e04db453b4f36aa27bd63c5b44ca693e61ffc53",
+      "R262": "285c09786add087f0d8ecb5046ca62c5f17bc6467b4bf16b1cdcae859881edf8"
+    },
+    "engineDiffers": [
+      "F-U01-1"
+    ]
+  },
+  {
+    "key": "concepts.players.owner.token",
+    "parent": "concepts.players.owner",
+    "order": 1,
+    "text": "A token is owned by the player who created it.",
+    "examples": [
+      {
+        "text": "Accelerated Germination makes two tokens owned by its caster; an Arcane Echo copy of an opposing token is owned by the copier; a token taken with Download stays owned by its creator.",
+        "test": "412-cr-general.test.ts::cr:concepts.players.owner.token — a token is owned by the player whose effect created it, and a control change does not move that"
+      }
+    ],
+    "see": [
+      "304"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R107 (its owner-is-not-controller half)",
+          "quote": "a creation is owned by its creator."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "412-cr-general.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R107's still-standing half; its destination half (dies to the owner's bin) was reversed by R250.",
+    "sourceHashes": {
+      "R107": "230aca6c5c9d6012b7aea083d3ae340a1c886b907d219759abc2670e8529ef23"
+    }
+  },
+  {
+    "key": "concepts.players.controller",
+    "parent": "102",
+    "order": 5,
+    "text": "A card's controller is the player who controls it. The controller and the owner of a card can be different players.",
+    "examples": [
+      {
+        "text": "Uglk: each player puts a unit from their own bin into play under the opponent's control. The opponent controls the unit; the card is still owned by the player whose bin it came from.",
+        "test": "93-engine-defects.test.ts::Uglk hands an opponent CONTROL of a unit without handing over the card"
+      }
+    ],
+    "see": [
+      "711",
+      "400.4"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Uglk",
+          "quote": "each player puts a unit from their bin into play under an opponent's control."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R107 (its owner-is-not-controller half)",
+          "quote": "OWNER is not CONTROLLER, and putting a card into play never transfers it"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Change of control is 711 (U16). Which zone a card goes to when it leaves play follows its controller, not its owner: 400.4.",
+    "sourceHashes": {
+      "R107": "230aca6c5c9d6012b7aea083d3ae340a1c886b907d219759abc2670e8529ef23"
+    }
+  },
+  {
+    "key": "concepts.players.controller.from-other-zone",
+    "parent": "concepts.players.controller",
+    "order": 1,
+    "text": "Putting a card into play out of another player's zone makes you its controller, not its owner.",
+    "examples": [
+      {
+        "text": "Wake the Dead raising a unit out of the opponent's bin: the caster controls it, and the opponent still owns it.",
+        "test": "93-engine-defects.test.ts::Wake the Dead raising a unit from the ENEMY bin gives the caster control, not ownership"
+      }
+    ],
+    "see": [
+      "400.4"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Wake the Dead",
+          "quote": "Play up to two units in any bin with total cost [8] or less now, for free."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R107 (its owner-is-not-controller half)",
+          "quote": "piles are public.\"* Putting a card into play out of a zone you do not own does not"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R107",
+          "relation": "its destination half (the card dies to its OWNER's bin) reversed by R250: zones follow control"
+        }
+      ],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R107's next sentence ('It dies to its owner's bin') was reversed by R250: the unit now dies into its controller's bin (400.4, 405).",
+    "sourceHashes": {
+      "R107": "230aca6c5c9d6012b7aea083d3ae340a1c886b907d219759abc2670e8529ef23"
+    }
+  },
+  {
+    "key": "concepts.players.you",
+    "parent": "102",
+    "order": 6,
+    "text": "\"You\" on a card means the controller of the effect. An instruction that names no player (such as \"Gain rot\") is done by the controller of the effect.",
+    "examples": [
+      {
+        "text": "Primordial Coalescence (“Create three Wraiths and gain 2 Rot.”) gives its controller the Wraiths and the rot. Thought Extraction aimed at the opponent makes the opponent discard, and its “You gain 1 rot” still goes to its controller.",
+        "test": "412-cr-general.test.ts::cr:concepts.players.you — Primordial Coalescence and Thought Extraction controlled by a seat give that seat the Wraiths and the rot, never the other"
+      }
+    ],
+    "see": [
+      "concepts.players.controller"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 (its §9)",
+          "quote": "> refers to YOU, the controller/caster of the effect.\"*"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "412-cr-general.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R157 §9 quotes the owner: 'Cards always specify when something is an opponent. But just \"Gain rot\" refers to YOU, the controller/caster of the effect.' Whose effect it is: concepts.players.you.pays and 703 (U14).",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
+    }
+  },
+  {
+    "key": "concepts.players.you.mod",
+    "parent": "concepts.players.you",
+    "order": 1,
+    "text": "On a mod, \"you\" means the controller of the unit the mod is on. A mod applied to another player's unit is controlled by that unit's controller, with its ability.",
+    "examples": [
+      {
+        "text": "Pathogenic Enclave augmented onto an enemy unit: when that unit despawns, its controller's tokens are deleted, not yours (illustrative).",
+        "test": null
+      }
+    ],
+    "see": [
+      "720"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.34",
+          "quote": "will control the augment and its new ability. For example, if you augment Pathogenic Enclave onto an enemy"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 (its §6)",
+          "quote": "### 6. \"You\" on a {Virus} [Augment] is the unit's CONTROLLER"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Manual p.34 is not in the pack (added from the extract). Its line before reads 'When a card is augmented onto an opposing unit, they'. Mods are 720-724 (U17).",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
+    }
+  },
+  {
+    "key": "concepts.players.you.the-deck",
+    "parent": "concepts.players.you",
+    "order": 2,
+    "text": "\"The deck\" means the deck of the effect's controller: the shared deck in live draft, and that player's own deck in constructed.",
+    "examples": [
+      {
+        "text": "In constructed, Foretell glimpses the top card of its controller's own deck and leaves the opponent's deck alone. In live draft it glimpses the top card of the shared deck.",
+        "test": "412-cr-general.test.ts::cr:concepts.players.you.the-deck — Foretell glimpses from the own deck of its controller in constructed and from the shared deck in live draft"
+      }
+    ],
+    "see": [
+      "401"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 (its §18)",
+          "quote": "> 'The deck' always refers to the deck of the effect's controller. The targeted"
+        },
+        {
+          "ref": "R157 (its §18)",
+          "quote": "> *\"Your deck. It will be shared during live draft and solo in constructed."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "412-cr-general.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Decks are 401 (U07).",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
+    }
+  },
+  {
+    "key": "concepts.players.you.pays",
+    "parent": "concepts.players.you",
+    "order": 3,
+    "text": "When an effect needs a cost paid before it can happen, the player who would control the effect pays it. If that player does not pay, the effect does not happen.",
+    "examples": [
+      {
+        "text": "With an opponent's Crevice Lurker in the battle, a triggered ability asks its own controller whether to pay [one]; paying puts it on the stack.",
+        "test": "16-earth-a.test.ts::Crevice Lurker: R121 — a taxed trigger ASKS its controller"
+      },
+      {
+        "text": "If the controller declines to pay, the trigger does not happen.",
+        "test": "16-earth-a.test.ts::Crevice Lurker: R121 — declining prevents the trigger"
+      }
+    ],
+    "see": [
+      "111"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355103348378042515#4",
+          "quote": "The cost is paid by player who would become controller of the effect and if it's not paid, then effect is negated."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "_passer's answer is about Crevice Lurker's trigger tax (an opponent's Crevice Lurker taxes YOUR trigger, and you pay). Costs are 111 (U04).",
+    "sourceHashes": {
+      "RAQ 1355103348378042515#4": "1d48aca1018dfe91929ae9f831790f0f1bf9c203421111d35c666850893011e7"
+    }
+  },
+  {
+    "key": "concepts.players.ally",
+    "parent": "102",
+    "order": 7,
+    "text": "An ally is a unit under your control in the region where the effect is happening.",
+    "examples": [
+      {
+        "text": "An ally is counted from the controller of the effect, whichever player is making the choice.",
+        "test": "243-ally-and-enemy-scope.test.ts::R265 §4c ally is measured from the EFFECT controller"
+      }
+    ],
+    "see": [
+      "110",
+      "601"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R265",
+          "quote": "* **Ally** = every unit under your control **in the region the effect is happening in** — the source included."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R265 quotes the owner verbatim (2026-08-30). Targeting with 'ally' is 110 (U03).",
+    "sourceHashes": {
+      "R265": "9f0ae66af8e06b3d710b1ba66aa3f83b7c78f95f228f39fa471b39260be1fd5e"
+    }
+  },
+  {
+    "key": "concepts.players.ally.self",
+    "parent": "concepts.players.ally",
+    "order": 1,
+    "text": "A unit is its own ally. Only the word \"another\" leaves the source out.",
+    "examples": [
+      {
+        "text": "Shoreline Specter's \"recall target ally\" may target the Specter itself.",
+        "test": "243-ally-and-enemy-scope.test.ts::R265 §1c an ally target offers the source"
+      },
+      {
+        "text": "Riftwalker's \"another target ally in my formation\" offers its column-mate and not itself.",
+        "test": "243-ally-and-enemy-scope.test.ts::R265 §2b the ANOTHER side"
+      }
+    ],
+    "see": [
+      "110"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Riftwalker",
+          "quote": "Switch my position with another target ally in my formation."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R265",
+          "quote": "Yes, an ally includes itself. Otherwise it'd say \"Another target ally\"."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R265 measured that 'another' excludes whatever the sentence's other noun is; it is the source only when that noun is the source (110).",
+    "sourceHashes": {
+      "R265": "9f0ae66af8e06b3d710b1ba66aa3f83b7c78f95f228f39fa471b39260be1fd5e"
+    }
+  },
+  {
+    "key": "concepts.players.ally.control",
+    "parent": "concepts.players.ally",
+    "order": 2,
+    "text": "Ally and enemy follow control, not ownership. A unit you have taken control of is your ally and its owner's enemy for as long as you control it.",
+    "examples": [
+      {
+        "text": "A Good Whale whose control was taken is offered to its new controller as an ally target, and not to its owner.",
+        "test": "412-cr-general.test.ts::cr:concepts.players.ally.control — a unit you have taken control of is on your ally menu and off the ally menu of its owner"
+      }
+    ],
+    "see": [
+      "711"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R265",
+          "quote": "* \"Your control\", not your ownership: a unit you have taken control of is your ally and its owner's enemy, in that region, for as long as you hold it."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "412-cr-general.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R265": "9f0ae66af8e06b3d710b1ba66aa3f83b7c78f95f228f39fa471b39260be1fd5e"
+    }
+  },
+  {
+    "key": "concepts.players.enemy",
+    "parent": "102",
+    "order": 8,
+    "text": "An enemy is a unit not under your control in the region where the effect is happening.",
+    "examples": [
+      {
+        "text": "The same stolen Good Whale is offered to its owner as an enemy target, and not to the player who now controls it.",
+        "test": "412-cr-general.test.ts::cr:concepts.players.enemy — a unit taken from its owner is on the enemy menu of that owner and off the enemy menu of its controller"
+      }
+    ],
+    "see": [
+      "concepts.players.ally"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R265",
+          "quote": "* **Enemy** = every unit **not** under your control in that same region."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "412-cr-general.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R265 also measured that no printed card targets an enemy UNIT; 'enemy' is used by statics, triggers and region sweeps.",
+    "sourceHashes": {
+      "R265": "9f0ae66af8e06b3d710b1ba66aa3f83b7c78f95f228f39fa471b39260be1fd5e"
+    }
+  },
+  {
+    "key": "concepts.starting.live-draft",
+    "parent": "103",
+    "order": 1,
+    "text": "To set up a live draft game, follow these steps in order.",
+    "examples": [],
+    "see": [
+      "902"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.11",
+          "quote": "Once the elements are selected, shuffle them together"
+        },
+        {
+          "ref": "Manual p.11",
+          "quote": "Randomly assign a player The Initiative. Give this"
+        },
+        {
+          "ref": "Manual p.11",
+          "quote": "Deal 2 prismites to each player face down (dormant)."
+        },
+        {
+          "ref": "Manual p.11",
+          "quote": "Deal each player 16 cards: 4 for their starting hand,"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.11 gives the steps in this order (elements, shuffle, seating, help cards, initiative, prismites, cards). Seating and the optional help cards have no digital counterpart and are left out. Starting life is from Manual p.6 and Rulebook 2023 p.2; the Manual gives no position for it in the order. The Rulebook 2023 quick start deals differently: D-U01-2.",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "an introduction to the setup steps listed under it, each demonstrated there"
+  },
+  {
+    "key": "concepts.starting.live-draft.elements",
+    "parent": "concepts.starting.live-draft",
+    "order": 1,
+    "text": "Choose the elements the deck is built from. A game of 2 or 3 players uses 3 elements.",
+    "examples": [
+      {
+        "text": "A standard 1v1 live draft deck is built from 3 elements; a game set up with wood, fire and water uses exactly those three.",
+        "test": "412-cr-general.test.ts::cr:concepts.starting.live-draft.elements — a standard 1v1 live draft is built from exactly 3 elements, and a chosen trio is used as given"
+      }
+    ],
+    "see": [
+      "105",
+      "902"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.11",
+          "quote": "comprised of multiple elements. Games begin by selecting the elements to build the deck. For 2-3 players,"
+        },
+        {
+          "ref": "Manual p.11",
+          "quote": "use 3 elements. For 4-6 players use 4 elements. For 6"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "412-cr-general.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "How the elements are chosen is 105/902. R292 lets a custom live-draft lobby use 2 to 7 elements (Annex D / 902).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.starting.live-draft.deck",
+    "parent": "concepts.starting.live-draft",
+    "order": 2,
+    "text": "Shuffle all the cards of the chosen elements together, with the hybrid cards for each pair of chosen elements, to form the shared deck.",
+    "examples": [
+      {
+        "text": "A fire + water + earth deck is 54 cards of each element plus 5 hybrid cards for each pair: 177 cards, one copy of each.",
+        "test": "20-draft.test.ts::draft deck: the fire+water+earth trio is Manual-exact"
+      }
+    ],
+    "see": [
+      "401",
+      "902"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.11",
+          "quote": "Once the elements are selected, shuffle them together"
+        },
+        {
+          "ref": "Manual p.11",
+          "quote": "to form the deck, including the hybrid cards for the"
+        },
+        {
+          "ref": "Manual p.11",
+          "quote": "selected combinations as well."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The deck list is 902 and 401.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.starting.live-draft.initiative",
+    "parent": "concepts.starting.live-draft",
+    "order": 3,
+    "text": "Randomly choose one player to have the initiative.",
+    "examples": [
+      {
+        "text": "Across new games, either player can start with the initiative.",
+        "test": "412-cr-general.test.ts::cr:concepts.starting.live-draft.initiative — the first initiative is a seeded coin flip: either seat can get it, and the same seed gives the same seat"
+      }
+    ],
+    "see": [
+      "500",
+      "508"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.11",
+          "quote": "Randomly assign a player The Initiative. Give this"
+        },
+        {
+          "ref": "Rulebook 2023 p.2",
+          "quote": "•Randomly determine a player to have"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "412-cr-general.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The initiative is 500 and 508.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.starting.live-draft.life",
+    "parent": "concepts.starting.live-draft",
+    "order": 4,
+    "text": "Each player's life total starts at 30.",
+    "examples": [
+      {
+        "text": "Both players start a new live draft game at 30 life.",
+        "test": "412-cr-general.test.ts::cr:concepts.starting.live-draft.life — each seat starts a live draft (and a shared-deck game) at 30 life"
+      }
+    ],
+    "see": [
+      "112"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.6",
+          "quote": "Each player begins with 30 life. Eliminate all of your"
+        },
+        {
+          "ref": "Rulebook 2023 p.2",
+          "quote": "•Set life totals to 30."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R292",
+          "quote": "  standard 30)."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "412-cr-general.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R292's line before is '**draws per turn** after turn 1 (0–5, standard 2) and **starting life** (1–99,'. A custom live-draft lobby may change starting life (R292, Annex D).",
+    "sourceHashes": {
+      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
+    }
+  },
+  {
+    "key": "concepts.starting.live-draft.prismites",
+    "parent": "concepts.starting.live-draft",
+    "order": 5,
+    "text": "Give each player two prismites. They start dormant.",
+    "examples": [
+      {
+        "text": "At the start of the game each player has exactly two resources, both dormant prismites.",
+        "test": "01-planning.test.ts::setup & planning"
+      }
+    ],
+    "see": [
+      "106"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.11",
+          "quote": "Deal 2 prismites to each player face down (dormant)."
+        },
+        {
+          "ref": "Manual p.18",
+          "quote": "Additionally, each player begins the game with two dormant Prismites, which"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R17",
+          "quote": "Prismites start the game **dormant** (Manual p.10 setup), can be expended for 1 mana"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Manual p.18 is not in the pack (added from the extract). Prismites are 106 (U02).",
+    "sourceHashes": {
+      "R17": "c78170a2f331384beebbcde66f1a2516c8e755a0394858386cbe11aaddd93980"
+    }
+  },
+  {
+    "key": "concepts.starting.live-draft.deal",
+    "parent": "concepts.starting.live-draft",
+    "order": 6,
+    "text": "Deal each player 16 cards from the shared deck: 4 for their starting hand, 10 for their pack, and 2 for the draw of their first turn. The 4 and the 2 together are the player's opening hand of 6 cards.",
+    "examples": [
+      {
+        "text": "A new live-draft game: each player holds 6 cards and a pack of 10, and the shared deck is 32 cards smaller.",
+        "test": "20-draft.test.ts::createGame draft: 6-card hands"
+      }
+    ],
+    "see": [
+      "409",
+      "503"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.11",
+          "quote": "Deal each player 16 cards: 4 for their starting hand,"
+        },
+        {
+          "ref": "Manual p.11",
+          "quote": "10 for their pack and 2 for their first draw step of the"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R292",
+          "quote": "- **Opening hand** (1–15, standard 6: Manual p.16's 4 plus turn 1's 2), **draws"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "412-cr-general.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Manual p.16: packs are dealt 'clockwise starting with the initiative player'; that order is 503/902 (U08/U22).",
+    "sourceHashes": {
+      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
+    }
+  },
+  {
+    "key": "concepts.starting.no-first-draw",
+    "parent": "103",
+    "order": 2,
+    "text": "In live draft, the first turn's draw is dealt with the opening hand, so players do not draw in the draw step of the first turn.",
+    "examples": [
+      {
+        "text": "A new live-draft game is on turn 1's draft step with 6 cards in each hand: the 4-card starting hand and the 2 draws, and no further draw.",
+        "test": "20-draft.test.ts::createGame draft: 6-card hands (opening 4 + turn-1 draws)"
+      }
+    ],
+    "see": [
+      "503",
+      "concepts.starting.constructed.first-draw"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.16",
+          "quote": "dealt their draws for the first turn of the game with"
+        },
+        {
+          "ref": "Manual p.16",
+          "quote": "their opening hand, in which case they should not draw"
+        },
+        {
+          "ref": "Manual p.16",
+          "quote": "additional cards during the first turn."
+        },
+        {
+          "ref": "Rulebook 2023 p.6",
+          "quote": "Players draw 2 cards during the draw step on every turn after the first."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "412-cr-general.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.16 presents dealing the draw with the hand as a shortcut players 'typically' take; the client always does it (the 6-card opening hand, concepts.starting.live-draft.deal). The draw step is 503 (U08). Round 1: scoped to live draft; constructed takes its turn-1 draw phase (concepts.starting.constructed.first-draw).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.starting.constructed",
+    "parent": "103",
+    "order": 3,
+    "text": "In constructed there is no shared deck and there are no packs. Each player plays from their own deck.",
+    "examples": [
+      {
+        "text": "A new constructed game has no shared deck, and each player's hand is drawn from their own deck only.",
+        "test": "34-constructed.test.ts::createGame constructed: per-seat decks"
+      }
+    ],
+    "see": [
+      "901",
+      "503"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.10",
+          "quote": "In constructed formats, there will be no shared deck and players’ individual decks will go in the location of their “pack”."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Deck rules (at least 30 cards, at most 2 copies of a card) and the draw-4 / put-back-2 step are 901 and 503. The client deals a constructed opening hand of 4 plus the first turn's draw of 4 (34-constructed); no printed source gives a constructed opening hand, so that is left to 901/503.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.ending.elimination",
+    "parent": "104",
+    "order": 1,
+    "text": "A player whose life total reaches 0 is eliminated.",
+    "examples": [
+      {
+        "text": "Haunting Memories sets a player's life total to twice the number of cards in all bins. With every bin empty that is 0, and that player loses.",
+        "test": "46-hybrids-ld-c.test.ts::Haunting Memories: empty bins set the target to 0"
+      },
+      {
+        "text": "A player at 3 life takes combat damage from an unblocked attacker and the game is over.",
+        "test": "02-combat.test.ts::win condition"
+      }
+    ],
+    "see": [
+      "112"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.6",
+          "quote": "opponents by bringing their life to 0."
+        },
+        {
+          "ref": "Rulebook 2023 p.1",
+          "quote": "In order to win a game of Algomancy, you must eliminate all of your opponents by reducing their life total to zero. In team"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Whether a life total can go below 0 is not stated: D-U01-4. Life loss itself is 112 (U04).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.ending.elimination.immediate",
+    "parent": "concepts.ending.elimination",
+    "order": 1,
+    "text": "A life total reaching 0 ends the game at once, even in the middle of resolving an effect or paying a cost. Nothing waits for the effect to finish. A life cost that would by itself bring its payer to 0 cannot be paid at all (111).",
+    "examples": [
+      {
+        "text": "A player's own unblessed spell deals them lethal damage: the game ends as the damage is dealt, with the opponent the winner.",
+        "test": "37-attrs-wight.test.ts::R48 {Blessed}: without the attribute the same shot is lethal"
+      }
+    ],
+    "see": [
+      "111",
+      "112"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R49 (its life-cost half)",
+          "quote": "reaching 0 ends the game inside `loseLife`, so paying at cast would hand the"
+        },
+        {
+          "ref": "R49 (its life-cost half)",
+          "quote": "⚠ **May a life cost be paid if it would kill you? No.** You may pay N life only"
+        },
+        {
+          "ref": "R197 (its §1, predict your life total)",
+          "quote": "The floor is 0 and that is **not** a narrowing: `E.loseLife` ends the game the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "412-cr-general.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Both rulings describe the engine (they name its loseLife function) rather than a printed rule; no printed or designer source says when elimination is checked. This sentence is a two-player statement: with more than two players the game would continue (concepts.ending.continues), and no source says when a player in such a game is removed. A life COST may not be paid if it would bring you to 0 (R49; 111, U04). Round 1: because R49 refuses a life cost that would bring the payer to 0, the game can end mid-cost only when something makes the cost cost more life than its printed amount (a life-loss multiplier, per the verifier); whether R49 checks the multiplied amount is D-U01-14.",
+    "sourceHashes": {
+      "R197": "d627780adff03b34e1b7b04e4acc2a54accb309bad61cfffc5d828d5aca9d32b",
+      "R49": "5d3c2bff8c7d58ca657dffa7259041cc8de3a1b62ca85d59e81fcdb127319364"
+    }
+  },
+  {
+    "key": "concepts.ending.win",
+    "parent": "104",
+    "order": 2,
+    "text": "A player wins when all of their opponents have been eliminated. In a two-player game, when one player is eliminated the other player wins.",
+    "examples": [
+      {
+        "text": "The attacker reduces the defender to 0 and is the winner.",
+        "test": "02-combat.test.ts::win condition"
+      }
+    ],
+    "see": [
+      "concepts.ending.elimination"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.1",
+          "quote": "In order to win a game of Algomancy, you must eliminate all of your opponents by reducing their life total to zero. In team"
+        },
+        {
+          "ref": "Manual p.6",
+          "quote": "FFA: All players fight to be the last one standing."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.ending.win.teams",
+    "parent": "concepts.ending.win",
+    "order": 1,
+    "text": "In a team game, a team wins when the entire opposing team has been eliminated.",
+    "examples": [],
+    "see": [
+      "904"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.1",
+          "quote": "games, you must elimiate the entire opposing team."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Quoted with the Rulebook's own spelling ('elimiate'). Not enforced by the client, which plays two-player games only (concepts.general.digital-scope, D-U01-9).",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "team games are not implemented in the client (1v1 only), so there is nothing to execute"
+  },
+  {
+    "key": "concepts.ending.continues",
+    "parent": "104",
+    "order": 3,
+    "text": "In a game of more than two players, the game continues after a player is eliminated. The regions on either side of the eliminated player's region become neighbours.",
+    "examples": [],
+    "see": [
+      "601",
+      "903"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.19",
+          "quote": "neighboring regions move next to each other and the"
+        },
+        {
+          "ref": "Manual p.19",
+          "quote": "game continues."
+        },
+        {
+          "ref": "Rulebook 2023 p.8",
+          "quote": "When a player is eliminated, their adjacent regions become connected and the game continues. If playing a team game, after"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Not enforced by the client (concepts.general.digital-scope, D-U01-9). Regions and neighbours are 601; free-for-all is 903.",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "games of more than two players are not implemented in the client (1v1 only), so there is nothing to execute"
+  },
+  {
+    "key": "concepts.ending.continues.pack",
+    "parent": "concepts.ending.continues",
+    "order": 1,
+    "text": "When a player is eliminated, their pack is recycled: put on the bottom of the deck.",
+    "examples": [],
+    "see": [
+      "408",
+      "409"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.16",
+          "quote": "When a player is eliminated, their pack is recycled (put on the bottom"
+        },
+        {
+          "ref": "Rulebook 2023 p.6",
+          "quote": "the draft step, and players may not look at the packs of other players. When a player is eliminated, their pack is recycled (put on"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The Rulebook 2023 adds 'in a random order'. In the client every card put on the bottom of the deck goes to the recycle pile instead (R296, 408). Not reachable in a two-player client game: the game is over (D-U01-9).",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "games of more than two players are not implemented in the client (1v1 only), so there is nothing to execute"
+  },
+  {
+    "key": "concepts.ending.concede",
+    "parent": "104",
+    "order": 4,
+    "text": "A player may concede. Conceding ends the game in the same way as that player being eliminated: the player who conceded loses.",
+    "examples": [
+      {
+        "text": "A player concedes during deployment: the game is over and the other player has won.",
+        "test": "58-playtest-round9.test.ts::R65: conceding ends the game the way a lethal blow does"
+      }
+    ],
+    "see": [
+      "concepts.ending.elimination"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R65 (its concede half)",
+          "quote": "reaches the result record exactly as a lethal blow does. It is the one action"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "No printed or designer source mentions conceding: D-U01-7. How a conceded game is weighted for ratings and statistics (R290) and where the concede command is shown (R241) are digital conventions (Annex D).",
+    "sourceHashes": {
+      "R65": "e9ed084b299e697c3a8550bce01553259bfc5d6601416e6e6fc3adb041378a6d"
+    }
+  },
+  {
+    "key": "concepts.ending.concede.any-time",
+    "parent": "concepts.ending.concede",
+    "order": 1,
+    "text": "A player may concede at any time, with no priority and in any phase, even while a decision is waiting on them.",
+    "examples": [
+      {
+        "text": "A player who must choose a target for their own spell may concede instead, and every other action is still refused.",
+        "test": "58-playtest-round9.test.ts::R65: you may concede even while a decision is pending against you"
+      },
+      {
+        "text": "Either player can concede at every point of a game.",
+        "test": "130-seat-aware-gate.test.ts::R154 §4: concede is always reachable"
+      }
+    ],
+    "see": [
+      "concepts.ending.concede"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R65 (its concede half)",
+          "quote": "with no timing, no priority and no phase, and the one thing you may do while a"
+        },
+        {
+          "ref": "R65 (its concede half)",
+          "quote": "decision is pending *against* you, since that decision may be the reason you"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R65": "e9ed084b299e697c3a8550bce01553259bfc5d6601416e6e6fc3adb041378a6d"
+    }
+  },
+  {
+    "key": "concepts.ending.no-deck-out",
+    "parent": "104",
+    "order": 5,
+    "text": "Running out of cards does not end the game. A player who has to draw from an empty deck draws as many as there are and does not lose.",
+    "examples": [
+      {
+        "text": "A player with an empty deck and an empty recycle pile is told to draw 3: nothing is drawn, and nobody has won.",
+        "test": "300-recycle-mark.test.ts::R296 §4 an empty deck AND an empty pile draws fewer"
+      }
+    ],
+    "see": [
+      "401",
+      "408"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R296",
+          "quote": "**No deck-out loss.** A player whose deck *and* pile are both empty simply draws"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "In the client a deck that runs out is refilled from the recycle pile first (R296, 401/408); only when both are empty does a player draw fewer. No printed source mentions running out: D-U01-8.",
+    "sourceHashes": {
+      "R296": "d53f03d41df34d3f07ac7687b7104a2376c6e1fc4108537d53fe87f48c0f1a56"
+    }
+  },
+  {
+    "key": "concepts.starting.constructed.first-draw",
+    "parent": "concepts.starting.constructed",
+    "order": 1,
+    "text": "In constructed, the first turn has a draw phase like every later turn: each player draws 4 cards, then puts 2 cards from their hand on the bottom of their deck. Print gives the draw phase; no source says the first turn takes it, which is the client's convention.",
+    "examples": [
+      {
+        "text": "A new constructed game starts with 8 cards in each hand (an opening 4 plus the turn-1 draw of 4), and the draw phase stays open until each player puts 2 back.",
+        "test": "34-constructed.test.ts::createGame constructed: per-seat decks, opening 4 + draw 4"
+      }
+    ],
+    "see": [
+      "503",
+      "concepts.starting.constructed.opening-hand",
+      "concepts.starting.no-first-draw"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.6",
+          "quote": "the draw phase in constructed, players draw 4 cards, then select 2 cards from their hand and put them on the bottom of the"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [
+        "createGame"
+      ],
+      "tests": [
+        "34-constructed.test.ts::createGame constructed: per-seat decks, opening 4 + draw 4",
+        "412-cr-general.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "Basis mixed (round 2): Rulebook 2023 p.6 states what the constructed draw phase is (503); that the first turn takes it is engine-only (the verifier: no printed, designer or R-ruling source says so). The Rulebook's neighbouring line deals draws only \"on every turn after the first\", and Manual p.16 deals the first turn's draws with the opening hand. The opening hand is split out to concepts.starting.constructed.opening-hand. D-U01-13 (b). The engine-only half awaits owner sign-off (Annex P).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "concepts.starting.constructed.opening-hand",
+    "parent": "concepts.starting.constructed",
+    "order": 2,
+    "text": "In constructed, each player's opening hand is 4 cards. No source gives the constructed opening hand; it is the client's convention.",
+    "examples": [
+      {
+        "text": "Each seat of a new constructed game holds its opening 4 before the turn-1 draw phase adds 4 more.",
+        "test": "34-constructed.test.ts::createGame constructed: per-seat decks, opening 4 + draw 4"
+      }
+    ],
+    "see": [
+      "concepts.starting.constructed.first-draw",
+      "concepts.starting.no-first-draw"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [
+        "createGame"
+      ],
+      "tests": [
+        "34-constructed.test.ts::createGame constructed: per-seat decks, opening 4 + draw 4",
+        "412-cr-general.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "medium",
+    "notes": "Split out of concepts.starting.constructed.first-draw in round 2. Basis engine: the verifier measured createGame dealing 4 in constructed. The printed setup deals 4 for the starting hand only in the draft setup (Manual p.11 / Rulebook 2023 p.6), together with the first turn's draws. D-U01-13 (b). Awaits owner sign-off (Annex P).",
+    "sourceHashes": {}
+  }
+]

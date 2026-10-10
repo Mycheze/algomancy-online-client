@@ -1,0 +1,3679 @@
+[
+  {
+    "key": "concepts.abilities.activated",
+    "textHash": "a3572fc937c36521",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "apply.ts activateAbility cost payment",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.41",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "\"text\": \"[Augment] [two]: Change a target of target effect to me.\","
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Definitional, printed."
+  },
+  {
+    "key": "concepts.abilities.activated.from-hand",
+    "textHash": "426d1454dbf1580d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "apply.ts legalActions hand activation in battle",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "135-exchange-and-zones.test.ts",
+        "pattern": "discard-me mode is offered IN BATTLE and deals damage there",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R157 (§8)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> *\"It doesn't have a battle icon, but that is just an activated ability that"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.abilities.activated.when",
+    "textHash": "094ce18bd4422ab8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:legalActions activateAbility",
+        "agrees": true,
+        "note": "offered in deployment and in battle with priority; repeatable while payable"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 point 12: an unbounded host activated twice",
+        "passed": true,
+        "asserts_claim": "partly: Omniwield Evoker activated twice in deployment"
+      },
+      {
+        "file": "49-playtest-round6.test.ts",
+        "pattern": "R58: Enigmatic Warder cannot redirect an ENEMY",
+        "passed": true,
+        "asserts_claim": "partly: activation in battle"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.41",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "text": "assert.equal(ent(h, ev)!.counters, 2, 'second activation: the host part runs again');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.abilities.as-you-play",
+    "textHash": "d10af9d0ebb50ce3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts cast-window suspension (Maelstrom Charger)",
+        "agrees": true,
+        "note": "option asked in a cast suspension; no stack item; abilityTax not applied"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "151-copy-and-moved-mods.test.ts",
+        "pattern": "R178 Maelstrom Charger: Crevice Lurker cannot tax it",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "151-copy-and-moved-mods.test.ts",
+        "pattern": "R178 Maelstrom Charger: the option is asked in the cast window and never reaches the stack",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1379132904931594372#3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1379132904931594372#0",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/151-copy-and-moved-mods.test.ts",
+        "text": "'RAQ: \"Maelstrom Ability is neither Triggered nor Activated\"');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Generalises from one card (Maelstrom Charger is the only as-you-play option in the pool); fine as written."
+  },
+  {
+    "key": "concepts.abilities.granted",
+    "textHash": "45ebb5b87a1c3ae4",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts grant snapshot to Entity.granted at resolution (R63)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "27-metal-b.test.ts",
+        "pattern": "Reforge the Dead: the grant is until regroup, and only for units already there",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Reforge the Dead",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R63",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- The grant is a **snapshot of \"your units\"** at resolution. A unit that"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.abilities.granted.is-ability",
+    "textHash": "08f8710ce68ef5cb",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U03-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.suppress",
+        "agrees": true,
+        "note": "a strip is stamped (stampNow); GrantedText.at / mod ids later than the strip are not taken (R328)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/402-raq-fix-stripping.test.ts",
+        "pattern": "§8 a trigger on a mod attached after the strip still fires; one attached before it does not",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U03/u03-r2-verify-probes.test.ts",
+        "title": "concepts.abilities.granted.is-ability: a Reforge the Dead grant made BEFORE an ability strip is removed; one made AFTER it still fires",
+        "passed": true,
+        "demonstrates": "yes — the illustrative Reforge the Dead example holds both ways"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355685844467581081#0",
+        "supports": "partly",
+        "note": "calebgannon speaks of ATTRIBUTES (Suppression Field) in an [Asked] thread; abilities extended by R328 per owner"
+      },
+      {
+        "ref": "R63",
+        "supports": "yes",
+        "note": "granted text is an ability the card has"
+      },
+      {
+        "ref": "R328",
+        "supports": "yes",
+        "note": "what the unit has when the stripping applies; later gains survive"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Suppression field just removes attributes from the time it was played, so anything after that will still apply"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A card that takes attributes or abilities away takes **what the unit has when the"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Granted text is silenced by R62 exactly like printed text — it is an ability"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.abilities.mod-text",
+    "textHash": "6f1df66838405746",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.fireEvent collectTriggersFrom(face, augment)",
+        "agrees": true,
+        "note": "a card's own [Augment] text is live when played normally"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "37-attrs-wight.test.ts",
+        "pattern": "R71: at the start of deployment a Wraith body shrinks a chosen ally",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.43",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "        // a card's own [Augment] text is active when played normally (Manual Q&A)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.abilities.once",
+    "textHash": "28e6b82bd8ac26d5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.composeParts",
+        "agrees": true,
+        "note": "bounded ability reserves budgets[key]=1 on first compose and returns null after; startTurn wipes budgets"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "33-trigger-fixes.test.ts",
+        "pattern": "Unstable Apparition: [once] resets each turn",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.33",
+        "supports": "yes",
+        "note": "bounded graft \"limited to only trigger once per turn\""
+      },
+      {
+        "ref": "Rulebook 2023 p.16",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R113",
+        "supports": "yes",
+        "note": "covers [once] activation and trigger"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if ((budgetHolder.budgets[budgetKey] ?? 0) > 0) return null;   // bounded cause bounds the whole composite"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Once-per-turn ([once], bounded grafts) is **tracked per card**; changing controller does"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.abilities.once.bin",
+    "textHash": "28c980a7e26ab0af",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U03-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.composeParts",
+        "agrees": true,
+        "note": "zone-dispatched bounded ability reserves GameState.zoneBudgets keyed `${source.controller}:${budgetKey}` — per seat per card name; cleared by startTurn"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/43-dark-c.test.ts",
+        "pattern": "Rotling: the [Switch1] bounds it once per turn when it does something",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U03/u03-r2-verify-probes.test.ts",
+        "title": "concepts.abilities.once.bin: two copies of Rotling leaving ONE bin in the same turn share one [Switch1] use",
+        "passed": true,
+        "demonstrates": "yes — the second copy is not offered"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R124",
+        "supports": "yes",
+        "note": "answers 'per card' for a bin card as per seat per card name"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "card name**: a bin holds bare names, not instances, so the name in that seat's"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const zoneKey = `${source.controller}:${budgetKey}`;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.abilities.once.bounded-cause",
+    "textHash": "14455d66c655d8ab",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.composeParts",
+        "agrees": true,
+        "note": "bounded cause: composeParts returns null for the whole composite"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 point 12: a bounded host triggers once per turn",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.33",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.16",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1355115946032889914#14",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if ((budgetHolder.budgets[budgetKey] ?? 0) > 0) return null;   // bounded cause bounds the whole composite"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.abilities.once.decline",
+    "textHash": "c9723804b41e6049",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.refundPart / ctx.refundBudget",
+        "agrees": true,
+        "note": "declined or impossible optional run refunds the use"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "94-bounded-uses.test.ts",
+        "pattern": "Hexbane Shiitake declined on one spell",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R113",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R108",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> \"Its ability can only be triggered once per turn, but you can choose for each spell if"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.abilities.once.moved-mod",
+    "textHash": "298497884d69dc73",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.composeParts",
+        "agrees": true,
+        "note": "budget on the mod entity travels with Reconfigure"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Reconfigure vs Once per Turn: a spent Graxxlid moved by Reconfigure",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353848722974445658#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R331",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Reconfigure moves a mod. It does not refresh it. An augment ability whose `[once]` was already used this turn stays used on the new host"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.abilities.once.multiplier",
+    "textHash": "47dfa9b68048264a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.composeParts",
+        "agrees": true,
+        "note": "graftCopies multiplier repeats every other graft part, bounded included"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "14-water-a.test.ts",
+        "pattern": "R110: Amphivore triples a BOUNDED [Switch1] graft",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353859961855148103#2",
+        "supports": "yes",
+        "note": "_passer"
+      },
+      {
+        "ref": "R110",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- *\"Any Bounded Grafts will be repeated.\"* A [Switch1] graft's budget is spent"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.abilities.once.new-object",
+    "textHash": "610286f96d63c170",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts recall + replay = new entity with empty budgets",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 calebgannon",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355115946032889914#16",
+        "supports": "yes",
+        "note": "calebgannon"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "text": "// caudex\"; _passer: \"play Caudex, play any unit, get card, recall Caudex,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.abilities.once.per-card",
+    "textHash": "a77ec0d8609cb93e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.composeParts",
+        "agrees": true,
+        "note": "budgets live on the entity; giveControl does not touch them"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "05-rulings.test.ts",
+        "pattern": "R9: once-per-turn budgets are per card and survive control change",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R9",
+        "supports": "yes",
+        "note": "owner (Bena)"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Once-per-turn ([once], bounded grafts) is **tracked per card**; changing controller does"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.abilities.once.per-mod",
+    "textHash": "324da920e63a9647",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.composeParts",
+        "agrees": true,
+        "note": "rider budget is mod.budgets['graft'], per mod entity"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "94-bounded-uses.test.ts",
+        "pattern": "the bounded budget of a graft rider is per MOD",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R113",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "The budget is per *card* (R9), which for the rider means per **mod entity** — two copies of"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.abilities.once.spent-on-use",
+    "textHash": "a071ada4ae8c6b6b",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U03-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.composeParts",
+        "agrees": true,
+        "note": "reservation written at composition (put on the stack)"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:E.refundPart",
+        "agrees": true,
+        "note": "refund only on decline / impossible-offer branches; fizzle and negate do not refund"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/94-bounded-uses.test.ts",
+        "pattern": "a bounded trigger that is NEGATED on the stack has still spent its use",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/93-engine-defects.test.ts",
+        "pattern": "a bounded ability that FIZZLES for want of a target has SPENT its [once]",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R113",
+        "supports": "yes",
+        "note": "designer: spent when activated or put on the stack; decline/impossible offer the only survivor"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "the ability is activated, or when it is put on the stack.** Before that moment the player"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "the use back — not a fizzle, not a negation, not a run that finds there is nothing to do."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.abilities.once.transform",
+    "textHash": "90af0c0b8ac81c29",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U03-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.transformFace",
+        "agrees": true,
+        "note": "mutates u.card on the same entity; budgets untouched, no spawn/despawn"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R101 (its same-unit half)",
+        "supports": "yes",
+        "note": "budgets cannot be laundered by flipping; R157 §10 later reversed only the token half"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "ledger) cannot be laundered by flipping the card over;"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "u.frontFace = front;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "No example or test; in the current pool (Scholar of the Void / Beyond) no bounded ability spans the flip, so this is untestable on cards and rests on the code."
+  },
+  {
+    "key": "concepts.abilities.once.trashed",
+    "textHash": "a98f8b3f441b0084",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U03-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.fireOwnTrashTrigger",
+        "agrees": true,
+        "note": "each trash anchors on a fresh ghost with budgets: {} thrown away after the call — per trashed instance, unlike the zoneBudgets per-name reservation"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U03/u03-r2-verify-probes.test.ts",
+        "title": "concepts.abilities.once.trashed: two copies of a bounded \"When I am trashed\" card discarded in one turn each trigger",
+        "passed": true,
+        "demonstrates": "yes"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U03/u03-verify-probes.test.ts",
+        "title": "concepts.abilities.once.bin: a bounded \"when I am trashed\" ability is NOT limited per seat and card name — two copies trashed in one turn both trigger",
+        "passed": true,
+        "demonstrates": "yes (round-1 probe; title names the wrong key)"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R70 (its trash-trigger anchor half)",
+        "supports": "partly",
+        "note": "says the stand-in budget is not written onto the real corpse; it does not itself state 'per trashed card'. The engine comment does. Basis 'engine' is honest"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "which is right: each trashed card is its own instance. Its id is not in"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "none), so composing the trigger cannot write a bounded budget onto a corpse."
+      }
+    ],
+    "basis_ok": true,
+    "problem": "No printed/designer source; the rule is engine behaviour (basis honestly 'engine')."
+  },
+  {
+    "key": "concepts.abilities.once.unbounded-cause",
+    "textHash": "0450c32bd8609514",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.composeParts",
+        "agrees": true,
+        "note": "unbounded cause composes every time; bounded rider skipped once mod.budgets.graft set"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 point 12: an unbounded host activated twice",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.33",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1355115946032889914#13",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if ((mod.budgets['graft'] ?? 0) > 0) continue;   // used this turn: skipped, composite still fires"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.abilities.once.x-zero",
+    "textHash": "6514bfbf1aabe773",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "apply.ts legalActions No Hand Killer activation",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "136-triggers-and-modes.test.ts",
+        "pattern": "R157 §22: No Hand Killer is activatable with an EMPTY hand",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R157 (§22)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> *\"You can legally activate it and discard no cards.\"*"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.abilities.replacement",
+    "textHash": "51f8483bacdd8a70",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U03-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/dsl.ts:CardBehavior replace* hooks / amountMods",
+        "agrees": true,
+        "note": "replacement cards (Flux Resonator, Conduit of Pain, Proliferating Slime amountMods; Nullbringer replaceLifeGain; Counter Thief replaceCounters) modify the event synchronously, no stack item"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.41",
+        "supports": "yes",
+        "note": "verbatim: replacement effects don't use the stack"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Instead” are called replacement effects. Unlike triggered abilities, replacement effects don’t use the stack"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.abilities.replacement.targeted",
+    "textHash": "49c44594ed0f847f",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U03-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.replaceRotDamage",
+        "agrees": true,
+        "note": "hook returns true (damage consumed) then fires 'rotReplaced'; Beyond's triggered ability on 'rotReplaced' collects its target through the ordinary trigger path"
+      },
+      {
+        "loc": "client/engine/src/cards/registry.ts:Beyond, Codex Incarnate",
+        "agrees": true,
+        "note": "replaceRotDamage: () => true; triggered ability events ['rotReplaced'] with a 'unit' target"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/43-dark-c.test.ts",
+        "pattern": "Beyond, Codex Incarnate: R102 — the rot replacement asks its controller for a target, and the damage never lands",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R102",
+        "supports": "yes",
+        "note": "owner ruling + addendum: a replacement naming a target uses the stack; hook returns true first"
+      },
+      {
+        "ref": "R101 (history)",
+        "supports": "yes",
+        "note": "R101 parked the clause; R102 corrected it"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**THE HOOK RETURNS TRUE FIRST**, before anything is queued, let alone"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "2. **A replacement that names a TARGET still uses the stack.** A target has to"
+      },
+      {
+        "file": "client/engine/src/cards/registry.ts",
+        "text": "replaceRotDamage: () => true,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.abilities.static",
+    "textHash": "2f3ae9f20b67ad64",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts staticsFor / layer statics",
+        "agrees": true,
+        "note": "statics radiate from units in play only"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.41",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "\"text\": \"[Augment] Your spell effects with a single target are {g}Electric. {i}(Excess damage from electric sources can {/n}be directed to an adjacent unit, recursively.)\","
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Definitional, printed; no example bound."
+  },
+  {
+    "key": "concepts.abilities.triggered",
+    "textHash": "ed569d47b217bdce",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts fireEvent",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.41",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "   * NOW, at event time (R1); compose the parts (null = bounded and already"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Definitional, printed."
+  },
+  {
+    "key": "concepts.abilities.triggered.amount",
+    "textHash": "204da595e25d8ca1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts resolution-time ctx (R1)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "05-rulings.test.ts",
+        "pattern": "R1: trigger conditions check at event time; amounts compute at resolution",
+        "passed": true,
+        "asserts_claim": "yes — it is the Astral Tidewraith example"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R1",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "  hand count is measured **when the trigger resolves**, so responses can change it."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.abilities.triggered.condition",
+    "textHash": "22c93a4a607fee7d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.fireEvent conditions at event time (R1)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "151-copy-and-moved-mods.test.ts",
+        "pattern": "R178 Earthbound Replicator: a spell played at something ELSE",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "05-rulings.test.ts",
+        "pattern": "R1: trigger conditions check at event time",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355613076506017894#3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R1",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R178",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**Conditions are checked once, at event time; amounts are computed at resolution.**"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.abilities.triggered.per-target",
+    "textHash": "e00e5b695a24e914",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U03-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-wood-a.ts:Earnest Defender",
+        "agrees": true,
+        "note": "listens to 'targeted', fired per targeted unit at commit time, so two targets queue two triggers"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/136-triggers-and-modes.test.ts",
+        "pattern": "R157 §16: two targeted allies are TWO TRIGGERS on the stack",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R157 (§16)",
+        "supports": "yes",
+        "note": "owner: once per targeted ally"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> *\"Once per targeted ally — two targets, two triggers, two 1/1s.\"*"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Minor: the only card is Earnest Defender ('enemy spell'); the rule generalises to 'a spell'."
+  },
+  {
+    "key": "concepts.abilities.triggered.recheck",
+    "textHash": "625a1c31a3f323a1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "cards Hooba-Nan intervening clause",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ dead unit: Hooba-Nan gone with its trigger on the stack makes nothing",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "05-rulings.test.ts",
+        "pattern": "R1: trigger conditions check at event time",
+        "passed": true,
+        "asserts_claim": "partly: the no-recheck half"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R1",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- *Explicit exception template*: cards that DO re-check at resolution say so on the card —"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Targets are still re-judged at resolution (R324); this rule is about conditions only."
+  },
+  {
+    "key": "concepts.abilities.what",
+    "textHash": "b4ad405f8df2662c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.12",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [],
+    "basis_ok": true,
+    "problem": "Definitional, printed."
+  },
+  {
+    "key": "concepts.cards.card",
+    "textHash": "d03f34e4a0ce5c71",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R306",
+        "supports": "yes",
+        "note": "owner"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> of the game. A card is an actual physical card that has an algomancy card"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Owner definition only; the Manual p.15 calls tokens \"temporary cards\" (see concepts.cards.token.not-card)."
+  },
+  {
+    "key": "concepts.cards.card.characteristics",
+    "textHash": "5fb1b942e8d89344",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.12",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [],
+    "basis_ok": true,
+    "problem": "Definitional, printed; no engine claim."
+  },
+  {
+    "key": "concepts.cards.card.units",
+    "textHash": "838e30256a9c3f45",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts CARD_PLAY_KINDS includes unit/spellUnit/ambush",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "119-play-and-token-events.test.ts",
+        "pattern": "Void Mandible: a {Battle} UNIT is a card played",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R129",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> *\"Everything is a card, including units. Tokens are NOT cards, however.\"*"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.cards.copies",
+    "textHash": "b77b61beded6a928",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.pushSpellCopy",
+        "agrees": true,
+        "note": "copy fires no spellPlayed"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "138-spell-copy.test.ts",
+        "pattern": "R164 Earthbound Replicator: a copy is not PLAYED",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355613076506017894#4",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1355613076506017894#1",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/138-spell-copy.test.ts",
+        "text": "assert.equal(copies(h).length, 1, 'one copy, and the copy did not copy itself');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.cards.copies.mimic-not-token",
+    "textHash": "cdb1508d8a4f8d29",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts Borrower of Forms copy keeps token undefined",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Borrower of Forms: copying a Robot token makes a nontoken unit",
+        "passed": true,
+        "asserts_claim": "yes (token flag); the Download half is conditional"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1372468222158180424#9",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "text": "assert.equal(ent(h, bof)!.token, undefined, 'the Borrower is a card, whatever it copied');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.cards.copies.not-token",
+    "textHash": "4a2a6d9d330a34ff",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.pushSpellCopy",
+        "agrees": true,
+        "note": "copy keeps kind, never token"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Download: a spell copy made by Earthbound Replicator is not a token",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355613076506017894#5",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1353864175910387742#5",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1353864175910387742#6",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "text": "'with the copy the only thing on the stack, Download has nothing to take — the copy is not a token');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.cards.copies.token-copy",
+    "textHash": "db5ec638d0d69de7",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "cards Echo of Despair copy",
+        "agrees": true,
+        "note": "copy entity carries token flag"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Download: a copy Echo of Despair makes of itself is a token",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353864175910387742#3",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "text": "assert.ok(copies[0]!.token, 'and it is a token — what Download and Arcane Echo can target');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.cards.faces",
+    "textHash": "ba07e7231337f0e3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts transform mutates Entity.card (R101)",
+        "agrees": true,
+        "note": "same id, no spawned/died, counters and damage kept"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "43-dark-c.test.ts",
+        "pattern": "R101 — the transform is the SAME unit",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R101",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**A transform is the SAME unit with a different face up.** Nothing is deleted and nothing"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **counters and marked damage survive** — they are facts about the unit, not the face."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.cards.faces.back-not-token",
+    "textHash": "8fb7d1eba237904f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts transform / bin push of front face (R157 §10)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "135-exchange-and-zones.test.ts",
+        "pattern": "a transformed Scholar that died is RECURRABLE from the bin",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R157 (§10)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> side. And the back is NOT a token.\"*"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.cards.faces.own-back",
+    "textHash": "23e2f7aff30d77f1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "registry transform table checks the ANCHOR",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "43-dark-c.test.ts",
+        "pattern": "R101 — donated to a HOST the transform is refused",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R101",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "So the transform is offered only when the ANCHOR prints this back face, which the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.cards.identity",
+    "textHash": "c24a6fe9980ab540",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts collectTriggersFrom selfModId (R131)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "121-another-identity.test.ts",
+        "pattern": "R131 Rotbeast: a SECOND Rotbeast augment is \"another\"",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R131",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "So an \"other\"/\"another\" clause **never** filters by CARD NAME. Two copies of a"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.cards.identity.new-object",
+    "textHash": "53efc48883a81369",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts new entity id on re-entry",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 calebgannon",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "RAQ Another set: Organic Exchange may target two",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1454169054402314362#2",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1355115946032889914#16",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "text": "// caudex\"; _passer: \"play Caudex, play any unit, get card, recall Caudex,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.cards.token",
+    "textHash": "5b78447a665552d1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.createSpellToken / spawnUnit token",
+        "agrees": true,
+        "note": "both fire a creation event (tokenCreated / spawned)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "119-play-and-token-events.test.ts",
+        "pattern": "Mycelial Mentor: creating a POISON fires \"when you create a token\"",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.15",
+        "supports": "yes",
+        "note": "note the Manual calls tokens \"temporary cards\"; the rule avoids the word"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> *\"Spell tokens are still tokens.\"* … *\"Don't assume that cards are limited,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.cards.token.not-card",
+    "textHash": "37836daaf698347a",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U03-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:castSpellToken path",
+        "agrees": true,
+        "note": "a spell token cast fires 'spellPlayed' but not 'cardPlayed'"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/119-play-and-token-events.test.ts",
+        "pattern": "a spell TOKEN is a played spell but not a card",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R129",
+        "supports": "yes",
+        "note": "owner: Tokens are NOT cards"
+      },
+      {
+        "ref": "R306",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R305",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> \"Everything is a card, including units. Tokens are NOT cards, however.\""
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **\"card(s)\"**: a token does not."
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Tokens are temporary cards that are created directly"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Note (not an error): the Manual does call tokens 'temporary cards', so the open-question flag D-U03-1 is real."
+  },
+  {
+    "key": "concepts.cards.token.not-trashed",
+    "textHash": "6d168bd64822fe01",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts trash path (R306)",
+        "agrees": true,
+        "note": "token death: no trashed event, no ledger bump; died event intact"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "338-tokens-are-not-trashed.test.ts",
+        "pattern": "R306: a token unit dying in battle does not bump the trashed ledger",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R306",
+        "supports": "yes",
+        "note": "owner"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "So **trashing is something that happens to a CARD.** R40's definition stands"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Its **death** is untouched. A token is still a unit, and \"whenever a unit dies\""
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.cards.token.spell-token",
+    "textHash": "7c7a7ddf80cb9569",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts token target family incl. cast spellToken on stack (R333)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Download: a Fireball already cast and on the stack is a token it can take",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353864175910387742#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1353864175910387742#1",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R333",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R129",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R157 (§13)",
+        "supports": "partly",
+        "note": "\"Tokens are spells\" — on-topic"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "## R333 — A spell token already cast is still a token"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.cards.token.where",
+    "textHash": "8536e9d25d45d45c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts token creation names ctx.region",
+        "agrees": true,
+        "note": "R115 conformance tests forbid homeRegion() in card effects"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "98-spawn-region.test.ts",
+        "pattern": "R115: report #83 — Life Plant attacking in the enemy region",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.15",
+        "supports": "partly",
+        "note": "\"in the region they were created\" — does not say which region that is"
+      },
+      {
+        "ref": "R115",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> region. **Anything made by anything needs to spawn in that region** (then can return"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.cards.token.x-units",
+    "textHash": "a2053a9f78ccdd48",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U03-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets:Spawntender / Download",
+        "agrees": true,
+        "note": "the 8/8 is created as a token and offered to Download"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "pattern": "RAQ Download: a Fireball in the region and an X/X unit token are both tokens it can take",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353864175910387742#2",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "8/8 unit from Spawntender (or any X/X unit created by Awoken Tomb or similiar)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.targets.ally",
+    "textHash": "fb9b193956c7ce71",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts allyUnit/enemyUnit families region+control",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "243-ally-and-enemy-scope.test.ts",
+        "pattern": "R265 §1d the enemy target is the mirror",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R265",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> Yes, an ally includes itself. Otherwise it'd say \"Another target ally\". Ally = all units under your control in the current region. Enemy = all units not under your control in the current region."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.targets.ally.another",
+    "textHash": "babd7a9125d3b088",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts notSelf / another restrictions",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "243-ally-and-enemy-scope.test.ts",
+        "pattern": "R265 §2c across the whole another-target family",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R265",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "So the generalisable rule is narrower than \"another excludes self\": **\"another\" excludes whatever the sentence's other noun is**, and only when that noun is the source does it excludes the source."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.targets.ally.control",
+    "textHash": "1c5c488ce096f0aa",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.markIllegalTargets (R324)",
+        "agrees": true,
+        "note": "ally slot judged by current control at resolution"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ valid targets: an Ambush whose ally changed sides before it resolves recalls nothing",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355466429788328066#2",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R265",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> Yes, an ally includes itself. Otherwise it'd say \"Another target ally\". Ally = all units under your control in the current region. Enemy = all units not under your control in the current region."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.targets.ally.effect-controller",
+    "textHash": "6431a41baaa9e7ba",
+    "verdict": "confirmed",
+    "round": 3,
+    "verifier": "U03-r3",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:slotCandidates",
+        "agrees": true,
+        "note": "candidates computed with controller = item.controller, not the redirecting seat"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:canFillSlot",
+        "agrees": true,
+        "note": "redirect only into a ref slotCandidates offers"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/49-playtest-round6.test.ts",
+        "pattern": "canFillSlot enforces the slot restriction directly",
+        "passed": true,
+        "asserts_claim": "yes: enemy cannot fill the ally slot of the opponent's Fight; another of the Fight controller's units can"
+      },
+      {
+        "file": "client/ui/test/243-ally-and-enemy-scope.test.ts",
+        "pattern": "R265 §4c ally is measured from the EFFECT controller",
+        "passed": true,
+        "asserts_claim": "yes: the same ally spec asked for each seat returns only that seat's units"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355466429788328066#4",
+        "supports": "yes",
+        "note": "_passer: Warder is not an allied unit for the opponent's Ambush"
+      },
+      {
+        "ref": "R58",
+        "supports": "yes",
+        "note": "ally means ally of the effect controller"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "You can't redirect Ambush to your Enigmatic Warder, becuase he is not 'allied unit' for your opponents Ambush."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "\"Ally\" means ally **of the effect's controller**, and that is where the second"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.targets.ally.self",
+    "textHash": "6fdabb562146286e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts allyUnit includes source unless notSelf",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "243-ally-and-enemy-scope.test.ts",
+        "pattern": "R265 §1c an ally target offers the source",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Shoreline Specter",
+        "supports": "partly",
+        "note": ""
+      },
+      {
+        "ref": "R265",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R71",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> Yes, an ally includes itself. Otherwise it'd say \"Another target ally\". Ally = all units under your control in the current region. Enemy = all units not under your control in the current region."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.targets.applying-mods",
+    "textHash": "17a65a58fdc9b987",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts augment/graft/virus apply -> fireEvent targeted",
+        "agrees": true,
+        "note": "Mohruung triggers on graft and augment"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 point 5",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "17-earth-b.test.ts",
+        "pattern": "Mohruung: augment-targeting triggers a Crystal 2",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355115946032889914#4",
+        "supports": "yes",
+        "note": "graft"
+      },
+      {
+        "ref": "R53",
+        "supports": "yes",
+        "note": "all four targeting; virus via R88"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "graft. All four are targeting."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.targets.applying-mods.virus",
+    "textHash": "60ed2e6869b69b83",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts virus stack item with targets (R88)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "16-earth-a.test.ts",
+        "pattern": "Graxxlid: a Virus being applied to me IS an effect targeting me",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "23-wood-a.test.ts",
+        "pattern": "Boon of Protection: a Virus being applied to an allied unit IS an allied target",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R88",
+        "supports": "yes",
+        "note": "quotes calebgannon — designer, so basis could be designer"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> **calebgannon:** \"You can redirect a virus, it is a targeted effect\""
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.targets.becomes-targeted",
+    "textHash": "cc4ceeb4acbe81aa",
+    "verdict": "confirmed",
+    "round": 3,
+    "verifier": "U03-r3",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:commitItem",
+        "agrees": true,
+        "note": "spells/abilities fire targeted at commit, before the item is pushed: trigger lands above"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:doAugment",
+        "agrees": true,
+        "note": "deployment augment and battle Virus on a unit fire targeted with data.unit"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:doGraft",
+        "agrees": true,
+        "note": "fireEvent(targeted) precedes attachMod; the queued trigger RESOLVES only at settle(), after the graft is attached"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/48-playtest-hotfix.test.ts",
+        "pattern": "a spell aimed at Mohruung actually creates the Crystal 2",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/17-earth-b.test.ts",
+        "pattern": "Mohruung: augment-targeting triggers a Crystal 2",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 point 5",
+        "passed": true,
+        "asserts_claim": "yes for \"grafting makes a Crystal\"; it does not assert the order"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U03/u03-verify-probes.test.ts",
+        "title": "concepts.targets.becomes-targeted: the \"when I become targeted\" trigger goes on the stack ABOVE the spell that targeted, and resolves first",
+        "passed": true,
+        "demonstrates": "yes: example 4 (illustrative) — trigger above Twin Flame, Crystal made while Twin Flame still waits"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U03/u03-r3-verify-probes.test.ts",
+        "title": "concepts.targets.becomes-targeted: measure the order of Mohruung's trigger, the graft attaching, and the Crystal",
+        "passed": true,
+        "demonstrates": "measured: log order is trigger queued -> graft attaches -> Crystal made. The trigger FIRES before the graft is applied (matches the text literally) but RESOLVES after it"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Mohruung",
+        "supports": "yes",
+        "note": "printed trigger"
+      },
+      {
+        "ref": "RAQ 1355115946032889914#4",
+        "supports": "yes",
+        "note": "_passer: grafting is targeting, he will trigger first"
+      },
+      {
+        "ref": "R53",
+        "supports": "yes",
+        "note": "every targeting path; trigger above the spell"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "When I become targeted, [Switch1] Create a Crystal 2."
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Applying Graft is 'targeting' effect, so if you try to Graft something underneath the Mohruung, he will trigger first"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "the stack **above** the spell that targeted — the trigger resolves first."
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.fireEvent('targeted', ev);   // grafting is targeting (Graft 101 §5)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Engine matches the text as written (\"triggers first, before the graft is applied\": the trigger is queued before attachMod). The flagged divergence is real only under the reading \"the trigger RESOLVES before the graft is applied\": measured, the graft attaches first and the Crystal comes after. The text should say which it means. Mohruung's own trigger is [Switch1] (once per turn), which \"triggers whenever\" glosses over for that card."
+  },
+  {
+    "key": "concepts.targets.change",
+    "textHash": "dc0a89debd52b2dc",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U03-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.slotCandidates",
+        "agrees": true,
+        "note": "specForSlot + the part's other targets as chosen + sibling refs filtered; canFillSlot and rechooseTargets use it"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "pattern": "RAQ valid targets: Enigmatic Warder cannot take Throw off a Cliff",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/349-retarget-distinct-slots.test.ts",
+        "pattern": "CT-189 canFillSlot, the Enigmatic Warder gate, refuses a sibling ref on every multi-target part",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355466429788328066#3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1355466429788328066#6",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R307",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R58",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Enigmatic Warder (1/2) can't redirect Throw off a Cliff ('4 or more defense') to himself as he is not valid target for it."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- and **never a ref already in a sibling slot of the same part**. That"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.targets.change.kept",
+    "textHash": "212f939882a72bb8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "cards/sets/helpers.ts rechooseTargets / commitRetargets",
+        "agrees": true,
+        "note": "kept target counted as no change"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "140-layers-and-riders.test.ts",
+        "pattern": "Divine Intervention can keep one target while changing another",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R307",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A target that is kept is not a change and is not re-judged. R56 and R58's"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "\"not judged again then\" is true for the retarget; it is still re-judged at resolution (R324)."
+  },
+  {
+    "key": "concepts.targets.change.rescue",
+    "textHash": "1446aed7cade6818",
+    "verdict": "confirmed",
+    "round": 3,
+    "verifier": "U03-r3",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:resolveItem (partAlive)",
+        "agrees": true,
+        "note": "fizzle is judged on part.targets as they stand at resolution via targetStillLegal, so a slot rewritten by a redirect is what is judged"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:slotCandidates/canFillSlot",
+        "agrees": true,
+        "note": "Warder / Gravitational Correction redirects may only place a legal ref"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U03/u03-r3-verify-probes.test.ts",
+        "title": "concepts.targets.change.rescue: control — a spell whose only target is gone, left alone, fizzles",
+        "passed": true,
+        "demonstrates": "yes: without a redirect, Channeled Boon fizzles once its only target is deleted"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U03/u03-r3-verify-probes.test.ts",
+        "title": "concepts.targets.change.rescue: the same spell given a new legal target by Enigmatic Warder resolves instead of fizzling",
+        "passed": true,
+        "demonstrates": "yes: the Warder takes the slot and the Boon resolves on it (Warder 1/2 -> 5/6), no fizzle line"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "RAQ 1354013430805434389#2",
+        "supports": "yes",
+        "note": "_passer, verbatim in the RAQ ledger; names Warder and Gravitational Correction"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "It is possible to fix targeting before the effect would resolve to prevent fizzle (through Enigmatic Warden or Gravitational Correction)."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "return part.targets.some((t, ti) => !part.invalid?.includes(ti) && this.targetStillLegal(t));"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None. The example is unbound (illustrative); the round-3 probe pair (control + Warder) demonstrates it and could be bound. Gravitational Correction itself was not probed."
+  },
+  {
+    "key": "concepts.targets.distinct",
+    "textHash": "3416aceaf97c9bce",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.slotCandidates / commitRetargets",
+        "agrees": true,
+        "note": "sibling refs refused at cast and on retarget, per part"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "349-retarget-distinct-slots.test.ts",
+        "pattern": "CT-189 owner board: Divine Intervention cannot aim Twin Flame at one Good Whale twice",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355466429788328066#6",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R307",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "One object cannot be two targets of one effect. Twin Flame prints *\"I deal 2"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Holds per part (R307); cross-part sharing in a graft composite is undecided — \"together\" should be read as \"in one instruction\"."
+  },
+  {
+    "key": "concepts.targets.distinct.separate-effects",
+    "textHash": "455923d5c4a15bf5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts no cross-item distinctness",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "RAQ Another set: Organic Exchange may target two of your own units",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1454169054402314362#2",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "text": "assert.equal(ent(h, a1), undefined, 'the Arc still resolved on the unit it aimed at — 6 damage kills the 7/5');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.targets.legal",
+    "textHash": "1dd049a96bec04e3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts targetCandidates + restrict",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ valid targets: Minor Kraken cannot aim at a unit with more than 5 defense",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355466429788328066#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R256",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "text": "  // _passer: \"You can't target Bubb (5/6) with Minor Kraken (5 or less defense)\""
+      },
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "text": "assert.ok(!menu.includes(JSON.stringify({ unit: bubb })), 'the 5/6 is not');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.targets.legal.clause",
+    "textHash": "7a98dc54703bf49a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts restrict / slotRestricts at cast; RESOLUTION_CONDITION list",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "23-wood-a.test.ts",
+        "pattern": "Boon of Protection: negates an effect aimed at something allied",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "68-target-conformance.test.ts",
+        "pattern": "R256: a restrictive clause on a target noun is enforced at CAST",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R256",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R88",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "  -1/-1 counter on it\"* — is a conditional effect, not a narrower target."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.targets.legal.effect",
+    "textHash": "d3ec0d4e76be7aec",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.pushStackTargets stackSpell vs stackEffect",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ valid targets: Enigmatic Warder cannot become the target of a negate that wants a spell effect",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355466429788328066#5",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R128",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "an effect, including units and spell units. Units aren't spells, so if they say"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.targets.legal.formation",
+    "textHash": "af6bf22353deddab",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts formation target family",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "156-reaping-and-formation.test.ts",
+        "pattern": "Galactic Germination: \"target formation\" is THE WHOLE SIDE",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Galactic Germination",
+        "supports": "partly",
+        "note": "prints \"target formation\", not its extent"
+      },
+      {
+        "ref": "R184",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**RULED 2026-08-25 (owner): \"target formation\" is THE WHOLE SIDE** — a player's"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.targets.legal.formation-empty",
+    "textHash": "24648f348d9f24ef",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts targetStillLegal for formation",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "156-reaping-and-formation.test.ts",
+        "pattern": "Galactic Germination: an EMPTY formation is still a formation",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R184",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "| `targetStillLegal` | legal exactly while its battle runs; **emptying it does not remove it**"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.targets.legal.player",
+    "textHash": "d97d7f3a209656e8",
+    "verdict": "confirmed",
+    "round": 3,
+    "verifier": "U03-r3",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:pushPlayerTargets",
+        "agrees": true,
+        "note": "walks regions[region].presentSeats; 'opponent' skips the effect controller (ally)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/60-cast-time-targets.test.ts",
+        "pattern": "plain \"target player\"",
+        "passed": true,
+        "asserts_claim": "yes: in battle Soul Siphon offers both its controller and the opponent"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U03/u03-r3-verify-probes.test.ts",
+        "title": "concepts.targets.legal.player: in deployment \"target player\" offers only the controller and \"target opponent\" offers nobody; in battle both seats",
+        "passed": true,
+        "demonstrates": "yes: the presence clause — deployment offers only the controller, battle offers both; opponent excludes the controller"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U03/u03-verify-probes.test.ts",
+        "title": "concepts.targets.legal.player: \"target player\" (Soul Siphon) offers the effect controller as well as the opponent",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R67",
+        "supports": "yes",
+        "note": "target player may be yourself; opponent measured from effect controller"
+      },
+      {
+        "ref": "R291",
+        "supports": "partly",
+        "note": "a cache ruling; it states the presentSeats test decides who is a legal \"target player\", which supports the presence clause by reference"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "are a legal target for your own (Soul Siphon). `'opponent'` already existed"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "test that decides who is a legal \"target player\""
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (spec.what === 'opponent' && seat === ally) continue;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.targets.must-be-targeted",
+    "textHash": "3bf555a55a348304",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U03-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.compelledTargets / E.mustBeTargetedIn",
+        "agrees": false,
+        "note": "no battle-phase check: the Gatekeeper compels targets chosen in deployment too — the flagged divergence (F-U03-2) is real; the R314 'already among targets frees the other slots' half agrees"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/382-gatekeeper-multi-target.test.ts",
+        "pattern": "R314: a two-target spell aims at the Gatekeeper first",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U03/u03-verify-probes.test.ts",
+        "title": "concepts.targets.must-be-targeted: measures whether Gatekeeper of Souls compels a target chosen OUTSIDE battle (printed: \"during battle\")",
+        "passed": true,
+        "demonstrates": "yes — the engine compels a deployment Overbloom, confirming the divergence"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Gatekeeper of Souls",
+        "supports": "yes",
+        "note": "printed 'during battle'"
+      },
+      {
+        "ref": "R314",
+        "supports": "yes",
+        "note": "compels the effect, not every slot"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "\"text\": \"[Augment] When a player selects targets for an effect during battle, I must be targeted if able.\","
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Gatekeeper of Souls compels an effect to aim at it, not every target slot of"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const gates = this.mustBeTargetedIn(region);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Ruling confirmed; engine diverges by also compelling outside battle (see bugs)."
+  },
+  {
+    "key": "concepts.targets.must-be-targeted.able",
+    "textHash": "e5eff53d2a208a50",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts Gatekeeper narrowing on unit lists only",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "156-reaping-and-formation.test.ts",
+        "pattern": "Gatekeeper of Souls cannot compel a formation target",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R184",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ui/test/156-reaping-and-formation.test.ts",
+        "text": "test('Gatekeeper of Souls cannot compel a formation target — \"if able\", and it is not able', () => {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.targets.must-be-targeted.choice-only",
+    "textHash": "ecb633e1c5f40f39",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.markIllegalTargets",
+        "agrees": true,
+        "note": "Gatekeeper compulsion not applied at resolution"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U03/u03-verify-probes.test.ts",
+        "title": "concepts.targets.must-be-targeted.choice-only: a Gatekeeper of Souls arriving after targets were chosen does not make them illegal",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R324",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- Gatekeeper of Souls' compulsion is not applied. It narrows the *choice*; it"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.targets.must-be-targeted.several",
+    "textHash": "1f55f3c4b6824d17",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts Gatekeeper compulsion per untargeted Gatekeeper",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "382-gatekeeper-multi-target.test.ts",
+        "pattern": "R314: two Gatekeepers",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R314",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "With two Gatekeepers in the region, each one must be targeted if able: a"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.targets.not-target",
+    "textHash": "bb504a3fe751d867",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "cards Meteor Shower rockfall ctx.choose",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "RAQ Meteor Shower: rockfall chooses rather than targets",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353899470156206152#3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R67",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "\"text\": \"Rockfall 3 three times. {i}(To rockfall 3: Each player chooses one of their units. I deal 3 damage to each of the chosen units.)\","
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.targets.not-target.distribution",
+    "textHash": "f34ac9b53b3dfc5f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "cards/sets/batch-hybrids-fwe.ts:Channel Through",
+        "agrees": true,
+        "note": "opponent+allies declared at cast; distribution is a mid-resolution ctx.choose (pickUnit), no targeted event"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "69-damage-batch.test.ts",
+        "pattern": "R83: Channel Through declares X allies AND the opponent at cast",
+        "passed": true,
+        "asserts_claim": "partly: asserts the cast-time half; the resolution distribution is shown by the card code"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Channel Through",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R83",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> 'distribute' the damage without targeting or going onto the stack or"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-hybrids-fwe.ts",
+        "text": "//  - RESOLUTION, not targets: the per-point distribution among that"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.targets.not-target.traits",
+    "textHash": "5e840210a14b3d11",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts subjects vs targets (R71/R144)",
+        "agrees": true,
+        "note": "subjects fire no targeted event and are outside retarget slot machinery"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "37-attrs-wight.test.ts",
+        "pattern": "R144(b): a subject is not a target",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R71",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R144",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "3. **\"an ally\" / \"on an ally\" is NOT a target.** The word *target* is not"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "\"Such a choice\" depends on the preceding rule (concepts.targets.not-target); must stay adjacent."
+  },
+  {
+    "key": "concepts.targets.not-target.wraith",
+    "textHash": "f225a66672d55815",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts subjects declared at stack, fizzle when lost (R144b)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "37-attrs-wight.test.ts",
+        "pattern": "R144(b): three Wraith triggers may all aim at one 1/1",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R144",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/37-attrs-wight.test.ts",
+        "text": "assert.equal(fizzles.length, 2, 'the two that outlived it fizzled — one line each');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.targets.recheck",
+    "textHash": "ee36d9e906cf26fb",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.markIllegalTargets",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ valid targets: a target that grows past 5 defense before Minor Kraken resolves is not recalled",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355466429788328066#1",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R324",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "When an item begins to resolve, every target it declared is judged again by the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.targets.region",
+    "textHash": "90f93008f6cfb9c0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts targetCandidates unitsIn(region)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "243-ally-and-enemy-scope.test.ts",
+        "pattern": "R265 §3b nor can any other unit-shaped target",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R265",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> Yes, an ally includes itself. Otherwise it'd say \"Another target ally\". Ally = all units under your control in the current region. Enemy = all units not under your control in the current region."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.targets.region.cache",
+    "textHash": "324d5d758e5e3dc7",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.pushCachedCardTargets / pushPlayerTargets presentSeats",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "293-cached-targets-are-regional.test.ts",
+        "pattern": "R291 §1 in deployment a home region reaches only its own seat",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R291",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "        if (spec.what === 'opponent' && seat === ally) continue;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.targets.region.global",
+    "textHash": "ff14ebb4287cb1c3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:E.pushStackTargets",
+        "agrees": true,
+        "note": "no region filter on stack refs"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R265",
+        "supports": "partly",
+        "note": "R265 lists stack, bins AND cache as global; R291 later made cache targets presence-scoped, which the rule correctly omits"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "        if (it.id === excludeStackId) continue;   // R68: a negated item is not here to skip"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "No example or test bound; engine reading only."
+  },
+  {
+    "key": "concepts.targets.required",
+    "textHash": "507962111b333888",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:legalActions + collectTargets (R323)",
+        "agrees": true,
+        "note": "every required slot must be fillable at once"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ target requirements: Fight cannot be played",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "Rebalance is playable with no unit",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1410252965276684418#1",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1454169054402314362#1",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R323",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A spell or ability that needs targets can be played only when **every required"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.targets.what",
+    "textHash": "db93741ffdb1f209",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts collectTargets",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "16-earth-a.test.ts",
+        "pattern": "Fight: BOTH units are cast-time targets, ally first",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/16-earth-a.test.ts",
+        "text": "test('Fight: BOTH units are cast-time targets, ally first (R58)', () => {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.targets.what.count",
+    "textHash": "92a5754083da6556",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "cards declare N target slots (R67/R82)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "68-target-conformance.test.ts",
+        "pattern": "R67: a card printing N targets declares N cast-time target slots",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R82",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> \"Squish, on cast, only has you select 1 target unit, but it needs 2 targets"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.targets.what.declared-count",
+    "textHash": "43b63f2ab692cc16",
+    "verdict": "confirmed",
+    "round": 3,
+    "verifier": "U03-r3",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:stackItemGrants (effectAttrsFor targets: part.targets.length)",
+        "agrees": true,
+        "note": "the DECLARED cast-time count, not the survivors"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-fire-a.ts:Envoy of Lightning",
+        "agrees": true,
+        "note": "ctx.targets === 1"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/12-fire-a.test.ts",
+        "pattern": "two DECLARED targets is not",
+        "passed": true,
+        "asserts_claim": "yes: two declared, one destroyed, not Electric (no excess to the back unit)"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1397256636921417748#1",
+        "supports": "yes",
+        "note": "_passer verbatim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "source: \"_passer: \\\"No, it still has 2 targets, but one of them is invalid\\\"\","
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "targets: part.targets.length,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Only Envoy of Lightning reads a target count; the general claim rests on that one consumer."
+  },
+  {
+    "key": "concepts.targets.what.on-stack",
+    "textHash": "02ae502f89aae9d2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts collectTargets/commitItem",
+        "agrees": true,
+        "note": "targets collected before the item is committed to the stack, for casts, activations and triggers"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 Plodding Pebble example",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "68-target-conformance.test.ts",
+        "pattern": "R67: a card printing N targets declares N cast-time target slots",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355115946032889914#15",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R67",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "text": "assert.ok(dec, 'the target is asked for as the trigger goes on the stack');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.targets.what.up-to",
+    "textHash": "6f64abaef678279e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U03-r1",
+    "engine": [
+      {
+        "loc": "engine.ts collectTargets doneTargets for up-to",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "21-fixes.test.ts",
+        "pattern": "R126: an \"up to\" spell may decline every target",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R126",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "## R126 — \"up to N\" means you may declare NONE"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  }
+]

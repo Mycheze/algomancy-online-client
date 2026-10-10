@@ -1,0 +1,2994 @@
+[
+  {
+    "key": "combat.attack-window.general",
+    "textHash": "3f78f0cb7a9dac9f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doDeclareAttack",
+        "agrees": true,
+        "note": "openPriority('attackWindow') after the declaration; b.region is the defender's region"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/425-cr-casting-and-stack.test.ts",
+        "pattern": "cr:effects.priority.window — in an empty attack window each player receives priority in turn",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.27",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.13",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.openPriority('attackWindow');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.attack-window.general.end",
+    "textHash": "b5e2acefc295138e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:advanceBattleStep",
+        "agrees": true,
+        "note": "attackWindow -> step 'blocks'"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/425-cr-casting-and-stack.test.ts",
+        "pattern": "cr:effects.priority.window.resolve — two passes resolve the top item",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.13",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (b.step === 'attackWindow') {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.attack-window.general.gravity",
+    "textHash": "9ccd016270108694",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U11-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:repairFormation",
+        "agrees": true,
+        "note": "horizontal collapse gated on beforeBlocksDeclared() = declare/attackWindow/blocks; rekeyColumns closes the gap"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/64-formation-collapse.test.ts",
+        "pattern": "R72",
+        "passed": true,
+        "asserts_claim": "yes: middle column killed in the 'blocks' step -> [[a0],[a2]]; after blocks an emptied column stays a hole"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U11/u11-probes.test.ts",
+        "title": "combat.attack-window.general.gravity: a middle column killed IN THE ATTACK WINDOW closes up",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.22",
+        "supports": "yes",
+        "note": "verbatim, with 'This only happens before blocks are declared'"
+      },
+      {
+        "ref": "Rulebook 2023 p.10",
+        "supports": "yes",
+        "note": "'from an attacking formation before blocks'"
+      },
+      {
+        "ref": "R72 its gravity half",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "If the last unit in a column is removed from an attacking formation"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "    if (!this.beforeBlocksDeclared()) return;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.attack-window.general.initiative-first",
+    "textHash": "2da206780f3fb4b8",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U11-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:openPriority",
+        "agrees": true,
+        "note": "every window opens with priority = initiative, so the attack window does too — in round 2 as well, where the initiative player is the defender"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/425-cr-casting-and-stack.test.ts",
+        "pattern": "cr:effects\\.priority\\.window — in an empty attack window",
+        "passed": true,
+        "asserts_claim": "yes: priority order in the round-1 attack window is [initiative A, D]"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U11/u11-probes.test.ts",
+        "title": "combat.attack-window.general.initiative-first: in the ROUND-2 attack window the initiative player (the defender) gets priority first, not the attacker",
+        "passed": true,
+        "demonstrates": "yes: round 2 attack window opens with the initiative player"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.30",
+        "supports": "yes",
+        "note": "verbatim, general to every priority window"
+      },
+      {
+        "ref": "Rulebook 2023 p.13",
+        "supports": "yes",
+        "note": "the 1v1 example names the attack step explicitly"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "this.s.priority = this.initiative;   // initiative acts first in every window"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "There is a priority window during the attack step, so player A recieves priority first."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.attack-window.general.still-present",
+    "textHash": "4f0e863c384dbf0d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doDeclareAttack",
+        "agrees": true,
+        "note": "presentSeats gets the attacker on declaration"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:startRegroup",
+        "agrees": true,
+        "note": "presentSeats reset only at regroup; nothing removes the seat when attackers die"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U11/u11-probes.test.ts",
+        "title": "combat.attack-window.general.still-present: the attacking player stays present after its only attacker is destroyed in the attack window",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.19",
+        "supports": "yes",
+        "note": "\"...inside of it for the remainder of the battle phase, even if the units they've sent into the region are removed.\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "for (const r of this.s.regions) r.presentSeats = [r.owner];"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "if the units they’ve sent into the region are removed."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.attack.declaring",
+    "textHash": "90a2b8e4fc612a38",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U11-r2",
+    "engine": [
+      {
+        "loc": "apply.ts:doDeclareAttack",
+        "agrees": true,
+        "note": "validFormation on the chosen columns; only those units move to the battle region; step leaves 'declare' so a second declaration is refused"
+      },
+      {
+        "loc": "engine.ts:repairFormation",
+        "agrees": true,
+        "note": "the only later movement is printed gravity (vertical always, horizontal before blocks) — consistent with the same printed paragraph"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U11/u11-r2-probes.test.ts",
+        "title": "combat.attack.declaring: a player with three units attacks with two side by side; the third stays home, and the formation cannot be declared again",
+        "passed": true,
+        "demonstrates": "yes: columns [[u1],[u2]], u3 stays home, a re-declaration throws IllegalAction"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U11/u11-probes.test.ts",
+        "title": "combat.attack.general: the declared attacker moves into the defending player's region",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.22",
+        "supports": "yes",
+        "note": "'Attacking formations are set during the attack step … Once a formation is set, the units are locked in position'"
+      },
+      {
+        "ref": "Rulebook 2023 p.10",
+        "supports": "yes",
+        "note": "same sentence"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Attacking formations are set during the attack step"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "is set, the units are locked in position and are considered"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "  e.need(e.s.phase === 'battle' && b && b.step === 'declare' && seat === b.attacker, 'not your attack step');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.attack.declaring.lured",
+    "textHash": "e330e054ef592930",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:validFormation",
+        "agrees": true,
+        "note": "refuses an allured unit as attacker"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "refuses an allured unit in send"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:startRegroup",
+        "agrees": true,
+        "note": "the mark is a temporary change cleared at regroup (end of battle phase)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/53-playtest-round7.test.ts",
+        "pattern": "R84: a lured unit cannot be sent out to counterattack",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/53-playtest-round7.test.ts",
+        "pattern": "R84: a lured unit may not be declared as an attacker (a guard, by hand)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R84",
+        "supports": "yes",
+        "note": "verbatim; R84 is designer-backed (Caleb quotes), basis \"owner\" understates it slightly"
+      },
+      {
+        "ref": "R76 (history)",
+        "supports": "yes",
+        "note": "correctly cited as history only"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **`A` may not be sent out as a counterattacker, and may not be declared as an"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(!u.allured, `Alluring: ${u.card} was lured and cannot attack this battle`);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.attack.declaring.no-summoning-sickness",
+    "textHash": "a37c2fc349fffacb",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:validFormation",
+        "agrees": true,
+        "note": "no entry-time restriction"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U11/u11-probes.test.ts",
+        "title": "combat.attack.declaring.no-summoning-sickness: a unit that entered play during the battle phase, before the declaration, may attack",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.43",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Algomancy has no summoning sickness. As"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.attack.declaring.optional",
+    "textHash": "982eb006c51c8d98",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doDeclareAttack",
+        "agrees": true,
+        "note": "columns [] is a legal declaration"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "pattern": "RAQ Temporal Rift thread: the non-initiative player still attacks when the initiative player declines",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.20",
+        "supports": "partly",
+        "note": "\"if the IT decides not to attack\" implies the option rather than stating it"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "The NIT can still declare attacks even if the IT decides not to attack."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.attack.declaring.round-two",
+    "textHash": "8d39db84d97cde4b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:endBattleRound",
+        "agrees": true,
+        "note": "after a real round 1, attackerPool = sentAttackers; after a declined one it stays null"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:validFormation",
+        "agrees": true,
+        "note": "'only units sent at block time may counterattack'"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/02-combat.test.ts",
+        "pattern": "1v1 counterattack: NIT sends units at block time, they attack in round 2",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/21-fixes.test.ts",
+        "pattern": "REGRESSION: NIT can attack in round 2 when IT had no units in round 1",
+        "passed": true,
+        "asserts_claim": "yes - the exception"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.20",
+        "supports": "partly",
+        "note": "phase 2 step 1 says the NIT puts its attacking units into formation"
+      },
+      {
+        "ref": "R15",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(!pool || pool.includes(id), 'only units sent at block time may counterattack');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.attack.declaring.spell-tokens",
+    "textHash": "324f4c04814a626d",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U11-r2",
+    "engine": [
+      {
+        "loc": "apply.ts:doDeclareAttack",
+        "agrees": true,
+        "note": "an empty `columns` is a decline before spellTokens is read, so a token-only attack is no attack; each rider passes needRidingToken from `fromRegion`"
+      },
+      {
+        "loc": "apply.ts:needRidingToken",
+        "agrees": true,
+        "note": "spellToken, controller === seat, not absent, region === the region the formation leaves from"
+      },
+      {
+        "loc": "apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "a counterattack `send` of tokens with no unit is refused 'spell tokens travel only with units'"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/78-round17-core.test.ts",
+        "pattern": "R87: spell tokens still travel only with units",
+        "passed": true,
+        "asserts_claim": "yes: declareBlocks with spellTokens and no unit throws /spell tokens travel only with units/ (example 1)"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U11/u11-probes.test.ts",
+        "title": "combat.attack.declaring.spell-tokens: an attack naming a spell token and no unit is NOT refused — it is taken as declining to attack, and the token stays home",
+        "passed": true,
+        "demonstrates": "yes: example 2 — no throw, round ends as a decline, the Poison stays home"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U11/u11-probes.test.ts",
+        "title": "combat.attack.declaring.spell-tokens: with a unit beside it, the spell token goes along into the attacked region",
+        "passed": true,
+        "demonstrates": "yes: example 2's second half"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.15",
+        "supports": "yes",
+        "note": "'must follow at least one other unit into battle'"
+      },
+      {
+        "ref": "Rulebook 2023 p.4",
+        "supports": "yes",
+        "note": "'if they have units to guide them'; same paragraph says tokens are cast only in their own region"
+      },
+      {
+        "ref": "R87",
+        "supports": "yes",
+        "note": "the rule and the shared rider helper ('a spell token you control, standing in the region this formation is leaving from')"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(send.length === 0 || sentUnits > 0, 'spell tokens travel only with units');"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "  e.need(t && t.kind === 'spellToken' && t.controller === seat && !t.absent"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "so on their own, however and must follow at least one"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Spell tokens travel with a formation, in either direction, and they need a"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.attack.declaring.tokens-irreversible",
+    "textHash": "cb53191b5c9a6fb1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:needRidingToken",
+        "agrees": true,
+        "note": "tokens move only outward with a formation; no action moves a token back"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.4",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "attack step if they have units to guide them. This move is irreversible though, so plan carefully where you want to direct your"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "No test or probe can demonstrate an absence beyond reading the action set; accepted on printed basis."
+  },
+  {
+    "key": "combat.attack.decline",
+    "textHash": "c7653604a6d6a6db",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U11-r2",
+    "engine": [
+      {
+        "loc": "apply.ts:doDeclareAttack",
+        "agrees": true,
+        "note": "`if (!columns.length)` logs 'does not attack' and calls endBattleRound before any openPriority"
+      },
+      {
+        "loc": "engine.ts:endBattleRound",
+        "agrees": true,
+        "note": "goes straight to round 2 / regroup; no window, no block step"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/165-token-loss-warning.test.ts",
+        "pattern": "a battle both players decline opens no priority window",
+        "passed": true,
+        "asserts_claim": "yes: after the round-1 decline priority is null; after the round-2 decline the phase is no longer battle"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.20",
+        "supports": "partly",
+        "note": "says combat and after combat are skipped in a region not attacked; it does not name the attack/block windows"
+      },
+      {
+        "ref": "R194",
+        "supports": "yes",
+        "note": "'A declined attack fights no combat, so there is no after-combat step' — owner/engine call, consistent with the code"
+      },
+      {
+        "ref": "R15",
+        "supports": "yes",
+        "note": "on a round-1 decline 'NIT never gets a block step'"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "with the exception of regions that"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "If IT declines to attack (no round-1 battle), NIT never gets a block step and so"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "    e.ev('info', `${e.pname(seat)} does not attack.`);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.attack.decline.next-round",
+    "textHash": "6a5e89b3ba9091d2",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U11-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:endBattleRound",
+        "agrees": true,
+        "note": "round 1 with b.happened false starts round 2 for the NIT and leaves attackerPool null"
+      },
+      {
+        "loc": "apply.ts:doDeclareAttack",
+        "agrees": true,
+        "note": "attackerPool === null: a fresh attack from home with any unit"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "pattern": "Temporal Rift thread",
+        "passed": true,
+        "asserts_claim": "yes: after the IT declines, legalActions offers the NIT an attack with its home unit"
+      },
+      {
+        "file": "client/engine/test/21-fixes.test.ts",
+        "pattern": "REGRESSION: NIT can attack in round 2",
+        "passed": true,
+        "asserts_claim": "yes: the NIT attacks from home in round 2 and the unit travels"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U11/u11-probes.test.ts",
+        "title": "combat.attack.decline.next-round: when the initiative player declines, the battle phase does NOT end — the non-initiative player gets round 2 with any unit",
+        "passed": true,
+        "demonstrates": "yes: the attack is declared and connects for 2"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": "verbatim NOTE"
+      },
+      {
+        "ref": "R15",
+        "supports": "yes",
+        "note": "'NIT may attack round 2 with **any** of their units'"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "The NIT can still declare attacks even if the IT decides not to attack."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "never commits counterattackers — in that case NIT may attack round 2 with **any**"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.attack.effects",
+    "textHash": "039c2c53e6e711b6",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doDeclareAttack",
+        "agrees": true,
+        "note": "attackers and riding tokens get region = b.region"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:startRegroup",
+        "agrees": true,
+        "note": "units and spell tokens return home (tokens then erased unless spared)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/02-combat.test.ts",
+        "pattern": "1v1 counterattack: NIT sends units at block time, they attack in round 2",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.9",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.27",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "cards will remain in the new region(s) until the regroup"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "for (const id of [...columns.flat(), ...spellTokens]) e.entity(id)!.region = b.region;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.attack.effects.alone",
+    "textHash": "f840f7b4a8ddc001",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "lone Sneaky: atkUnits = b.columns.flat(); spell tokens never sit in columns"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-water-b.ts:Surly Stalker",
+        "agrees": true,
+        "note": "alone = the only live id in the grid"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/08-cards2.test.ts",
+        "pattern": "Whispering Mantid: Sneaky — unblockable only when attacking alone (R20)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Surly Stalker",
+        "supports": "partly",
+        "note": "prints \"attack or block alone\" but does not define it"
+      },
+      {
+        "ref": "R20",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "formation** (spell tokens riding along don't count as company). Two Sneaky units"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.attack.effects.attacking-units",
+    "textHash": "7f289bc4e08e382c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:formationGrid",
+        "agrees": true,
+        "note": "attacking units = b.columns; a spawned unit is not slotted unless an effect places it"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/08-cards2.test.ts",
+        "pattern": "Aberrant Populace: attack → two Wisps out of formation",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.15",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Aberrant Populace",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "of formation (meaning it is not attacking or block-"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.attack.effects.presence",
+    "textHash": "12125ce8163a613e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doDeclareAttack",
+        "agrees": true,
+        "note": "pushes the attacker into regions[b.region].presentSeats"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/314-prophecy-units-die.test.ts",
+        "pattern": "R302 §3: combat puts the attacker in the region, so both seats see every death in it",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Once a player has sent attacking units into an enemy"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (!present.includes(seat)) present.push(seat);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.attack.effects.triggers",
+    "textHash": "b74ca0ba46b66ba3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doDeclareAttack",
+        "agrees": true,
+        "note": "fires attackDeclared + per-unit 'attacked', queues Alluring, then openPriority('attackWindow') and settle"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "pattern": "RAQ trigger-like attributes: Containment Protocol negates a waiting Alluring trigger",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/108-formation-class.test.ts",
+        "pattern": "BL-24 Hooba-Bot (played as a unit): attack → the ask",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Palewing",
+        "supports": "partly",
+        "note": "prints an attack trigger; says nothing of stack timing"
+      },
+      {
+        "ref": "R84",
+        "supports": "partly",
+        "note": "about the Alluring trigger specifically"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "const uev = e.ev('attacked', `${u.card} attacks.`, { unit: id, region: b.region, seat });"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.attack.general",
+    "textHash": "7010d208299e4265",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doDeclareAttack",
+        "agrees": true,
+        "note": "step 'declare' is the first step of a round; units move to b.region"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/02-combat.test.ts",
+        "pattern": "1v1 counterattack: NIT sends units at block time, they attack in round 2",
+        "passed": true,
+        "asserts_claim": "partly - asserts the return home at regroup; the move into the region is the probe"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U11/u11-probes.test.ts",
+        "title": "combat.attack.general: the declared attacker moves into the defending player's region",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "into a neighboring enemy region for battle. These"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.attack.general.players",
+    "textHash": "8951fdd5557b6b45",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:assignCombatDamage",
+        "agrees": true,
+        "note": "an unblocked column (no block key) deals toPlayer = pow"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/423-cr-combat-damage.test.ts",
+        "pattern": "cr:combat.damage.pairing — an unblocked attacking column hits the player",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": " Units attack players directly. They do not attack individual units unless"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.attack.general.rounds",
+    "textHash": "b3a1d9a1d529d49d",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U11-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:endBattleRound",
+        "agrees": true,
+        "note": "round 1 -> round 2 (attacker NIT, pool = sentAttackers, or null after a decline) -> regroup; no third round"
+      },
+      {
+        "loc": "apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "'no counter-counterattacks' in round 2"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/02-combat.test.ts",
+        "pattern": "1v1 counterattack",
+        "passed": true,
+        "asserts_claim": "yes: IT attacks with a 2/2, NIT sends a 4/3 at block time, it attacks in round 2 and hits for 4"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U11/u11-probes.test.ts",
+        "title": "combat.blocks.counterattack.second-round: in round 2 the defender may not send counterattackers",
+        "passed": true,
+        "demonstrates": "yes: one chance each"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": "Phase 1 / Phase 2 lists and the NOTE"
+      },
+      {
+        "ref": "Rulebook 2023 p.5",
+        "supports": "yes",
+        "note": "'Each team only gets one chance to attack'"
+      },
+      {
+        "ref": "R15",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "takes place again with the non-initative attackers. Each team only gets one chance to attack,"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "  e.need(b.round === 1 || send.length === 0, 'no counter-counterattacks');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.block-window.after-blocking-triggers",
+    "textHash": "0c9d154d2d4729be",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-earth-c.ts:Roving Quillback",
+        "agrees": true,
+        "note": "triggers on 'blocksDeclared'; resolves in the block window"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/400-raq-fix-blocks.test.ts",
+        "pattern": "R321 side-blocks: two units block where no attacker is",
+        "passed": true,
+        "asserts_claim": "yes - two passes in the block window resolve it: D at 28 before combat, 27 after"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Roving Quillback",
+        "supports": "yes",
+        "note": "the only card in the pool printing \"After the blocking step\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/sets/batch-earth-c.ts",
+        "text": "type: 'triggered', events: ['blocksDeclared'],"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.block-window.general",
+    "textHash": "da991b2d32c73939",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doDeclareBlocks",
+        "agrees": true,
+        "note": "openPriority('blockWindow') after the declaration"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/423-cr-combat-damage.test.ts",
+        "pattern": "cr:combat.damage.overview — the step begins only once blocks are declared",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.27",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.30",
+        "supports": "partly",
+        "note": "lists \"Block step\" among steps with a window"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.openPriority('blockWindow');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.block-window.general.end",
+    "textHash": "c817fd49033a9f71",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:passPriority",
+        "agrees": true,
+        "note": "two passes on an empty stack call advanceBattleStep"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:advanceBattleStep",
+        "agrees": true,
+        "note": "blockWindow -> combat damage"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/423-cr-combat-damage.test.ts",
+        "pattern": "cr:combat.damage.overview — the step begins only once blocks are declared",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.11",
+        "supports": "yes",
+        "note": "\"After all of the blocks have been declared and both players have passed priority, we move to the damage step.\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "} else if (b.step === 'blockWindow') {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.block-window.general.locked",
+    "textHash": "25295c9615cc8d95",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:repairFormation",
+        "agrees": true,
+        "note": "horizontal gravity returns early once blocks are declared"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/64-formation-collapse.test.ts",
+        "pattern": "R72 (Manual): after blocks are declared, an emptied column stays as a HOLE",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.22",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R72 its gravity half",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "only happens before blocks are declared. After blocks, columns will not move to fill gaps."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.block-window.general.promotion",
+    "textHash": "170c3dc594d916d5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:repairFormation",
+        "agrees": true,
+        "note": "vertical gravity is untimed: dead ids spliced from every column whatever the step"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/64-formation-collapse.test.ts",
+        "pattern": "R72 (Manual): the back row promotes AFTER blocks too",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.22",
+        "supports": "yes",
+        "note": "verbatim, no timing qualifier"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "If a unit is removed from a formation, any units behind it move to the front row and take its place."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.block-window.late-blocker",
+    "textHash": "1f3d1acf2bcb04c7",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:flashBlockSlots",
+        "agrees": true,
+        "note": "spot for every attacking column with a live attacker and no block key"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:putInSlot",
+        "agrees": true,
+        "note": "writes b.blocks[ci]"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/400-raq-fix-blocks.test.ts",
+        "pattern": "R322 a Tiderunner put in front of an unblocked attacker fights it",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/388-raq-blocks-and-windows.test.ts",
+        "pattern": "RAQ Blocked: a unit played in as a blocker after blocks",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Tiderunner Initiate",
+        "supports": "partly",
+        "note": "gives the placement, not the blocking consequence"
+      },
+      {
+        "ref": "RAQ 1366447016653361192#1",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R322",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (b.blocks[ci] !== undefined || !col.some(id => this.entity(id))) return;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.block-window.late-blocker.defender-only",
+    "textHash": "ea4f10e60de9caa0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:flashBlockSlots",
+        "agrees": true,
+        "note": "returns [] unless seat === b.defender"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/400-raq-fix-blocks.test.ts",
+        "pattern": "R322 the attacker is never offered a blocking spot",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R322",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (!b || seat !== b.defender) return [];"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "So after blocks are declared, a unit joining the DEFENDING formation may stand"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.block-window.late-blocker.no-prior-blocks",
+    "textHash": "a263d4cfb0ff27b9",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:formationSlots",
+        "agrees": true,
+        "note": "with no live blocker the grid is empty and flash slots are still returned"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/400-raq-fix-blocks.test.ts",
+        "pattern": "R322 a Tiderunner put in front of an unblocked attacker fights it",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R322",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "defender may start a formation this way even having declared no blockers."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.block-window.late-blocker.not-declared",
+    "textHash": "6b24ec319adf5bc8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:putInSlot",
+        "agrees": true,
+        "note": "writes b.blocks[slot.block] and fires nothing; blocked events are fired only in doDeclareBlocks"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U11/u11-probes.test.ts",
+        "title": "combat.block-window.late-blocker.not-declared: no blocked event fires for a unit placed in front of an attacker after blocks",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R322",
+        "supports": "yes",
+        "note": "\"No `blocked` event fires for the late blocker\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- No `blocked` event fires for the late blocker: the declaration fires those,"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (slot.block !== undefined) { b.blocks[slot.block] = [u.id]; return; }"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Basis owner is honest (no designer source). The example text names a ruling number ('under R322'); harmless but out of house style for rule text."
+  },
+  {
+    "key": "combat.block-window.late-blocker.stays",
+    "textHash": "fca269078deb9de8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:exchangeAt",
+        "agrees": true,
+        "note": "blockedEver = b.blocks[ci] !== undefined; a late blocker writes b.blocks[ci] via putInSlot, so the key persists after it leaves"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/388-raq-blocks-and-windows.test.ts",
+        "pattern": "RAQ Blocked: a unit played in as a blocker after blocks",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1366447016653361192#1",
+        "supports": "yes",
+        "note": "Caleb: 'according to 3, the column should still be blocked in that case'"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const blockedEver = b.blocks[ci] !== undefined;"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> *\"according to 3, the column should still be blocked in that case.\"*"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Test 388's leading comment is stale (says Tiderunner is offered no spot opposite an unblocked attacker) but its assertions do pin the claim."
+  },
+  {
+    "key": "combat.block-window.late-blocker.when",
+    "textHash": "ff5642e8ab99b6d1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:flashBlockSlots",
+        "agrees": true,
+        "note": "offered only in steps blockWindow and damageWindow"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U11/u11-probes.test.ts",
+        "title": "combat.block-window.late-blocker.when: between the Swift and normal sub-steps a Tiderunner put in front of the unblocked normal column blocks it for the normal sub-step",
+        "passed": true,
+        "demonstrates": true
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U11/u11-probes.test.ts",
+        "title": "combat.block-window.late-blocker.when: no blocking spot is offered in the after combat window",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R322",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (b.step !== 'blockWindow' && b.step !== 'damageWindow') return [];"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "  attacker and no block entry, from the block window until combat damage is"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.blocks.blocked",
+    "textHash": "a0106b08df5e6aa8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:exchangeAt",
+        "agrees": true,
+        "note": "blocked is per column key; every attacker in the column is paired with the blockers"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/423-cr-combat-damage.test.ts",
+        "pattern": "cr:combat.damage.pairing.blocked — the Manual p.23 example",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.23",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.11",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1366447016653361192#0",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "tacking column, that entire column is considered blocked."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.blocks.blocked.no-damage-through",
+    "textHash": "f517c35cd4e1b8e2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:assignCombatDamage",
+        "agrees": true,
+        "note": "blockedEver with no live blockers: Piercing carries pow, otherwise nothing"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/387-raq-combat.test.ts",
+        "pattern": "RAQ Piercing: a blocked NON-Piercing column whose blocker died deals nothing to the player",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.23",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Blocked units do not deal combat damage to you."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (atkAttrs.has('Piercing')) toPlayer = pow;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.blocks.blocked.stays",
+    "textHash": "5ec98fa1bc656f6f",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U11-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:repairFormation",
+        "agrees": true,
+        "note": "vertical gravity empties the block entry but never deletes the `blocks` key; after blocks no horizontal collapse"
+      },
+      {
+        "loc": "apply.ts:doDeclareBlocks",
+        "agrees": true,
+        "note": "the column's blocked status is the presence of its key in b.blocks"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/157-blocked-stays-blocked.test.ts",
+        "pattern": "R185",
+        "passed": true,
+        "asserts_claim": "yes: dies, recalled, erased and control change (giveControl stands in for Download) all leave the column dealing nothing to the player"
+      },
+      {
+        "file": "client/engine/test/387-raq-combat.test.ts",
+        "pattern": "RAQ Piercing",
+        "passed": true,
+        "asserts_claim": "yes: 'a blocked NON-Piercing column whose blocker died deals nothing to the player'"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.23",
+        "supports": "yes",
+        "note": "verbatim"
+      },
+      {
+        "ref": "Rulebook 2023 p.11",
+        "supports": "yes",
+        "note": "verbatim"
+      },
+      {
+        "ref": "RAQ 1366447016653361192#0",
+        "supports": "yes",
+        "note": "calebgannon answering both questions (blocked; stays blocked when the blocker is removed)"
+      },
+      {
+        "ref": "R185",
+        "supports": "yes",
+        "note": "the four routes"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "The column is considered blocked even if the defending unit is removed"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "under it, on **all four** routes a blocker can leave: it DIES, it is RECALLED,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.blocks.counterattack",
+    "textHash": "5bcf182ec996905c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "send is part of the declareBlocks action; only in round 1"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/02-combat.test.ts",
+        "pattern": "1v1 counterattack: NIT sends units at block time, they attack in round 2",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": "phase 1 step 3"
+      },
+      {
+        "ref": "Manual p.27",
+        "supports": "yes",
+        "note": "turn summary \"NIT declare blocks/send units to attack\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "a counter-attack. The counter-attacking units leave"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.blocks.counterattack.second-round",
+    "textHash": "0de1dfe113ec7511",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "e.need(b.round === 1 || send.length === 0, 'no counter-counterattacks')"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U11/u11-probes.test.ts",
+        "title": "combat.blocks.counterattack.second-round: in round 2 the defender may not send counterattackers",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.5",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(b.round === 1 || send.length === 0, 'no counter-counterattacks');"
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": " so there are no additional counter attacks here."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.blocks.counterattack.tokens",
+    "textHash": "097597ee1e717ea5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "tokens in send use needRidingToken and need sentUnits > 0"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/78-round17-core.test.ts",
+        "pattern": "R87: declareBlocks takes spellTokens",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R87",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(send.length === 0 || sentUnits > 0, 'spell tokens travel only with units');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Example names 'two Poison tokens'; the bound test sends one. The claim (tokens leave with the unit) is asserted."
+  },
+  {
+    "key": "combat.blocks.empty-attack",
+    "textHash": "a5178cb9dd1e763a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:repairFormation",
+        "agrees": true,
+        "note": "an attack can collapse to [] before blocks"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "still accepts blocks {} and opens the block window"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/53-playtest-round7.test.ts",
+        "pattern": "R84: an attack that has collapsed to nothing still lets the defender declare",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.openPriority('blockWindow');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Basis 'engine' is honest: no printed or designer source is cited."
+  },
+  {
+    "key": "combat.blocks.general",
+    "textHash": "7c9d6cd48f047556",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U11-r2",
+    "engine": [
+      {
+        "loc": "apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "only the battle's defender, in step 'blocks', may declare; blockers are its own units in the attacked region"
+      },
+      {
+        "loc": "engine.ts:advanceBattleStep",
+        "agrees": true,
+        "note": "attackWindow -> 'blocks' step: the defender declares blocks"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/423-cr-combat-damage.test.ts",
+        "pattern": "cr:combat\\.damage\\.pairing — an unblocked",
+        "passed": true,
+        "asserts_claim": "yes: 3/5 and 4/5 attack, a 2/5 blocks the 3/5; blocker takes 3, attacker takes 2, player takes 4"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.23",
+        "supports": "yes",
+        "note": "the three quoted lines are one sentence of the BLOCKING paragraph, verbatim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "units in front of the formation that is attacking them."
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(e.s.phase === 'battle' && b && b.step === 'blocks' && seat === b.defender, 'not your block step');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.blocks.general.empty-columns",
+    "textHash": "461d5e13414f2126",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U11-r2",
+    "engine": [
+      {
+        "loc": "apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "a sparse blocks map is legal"
+      },
+      {
+        "loc": "engine.ts:repairFormation",
+        "agrees": true,
+        "note": "no collapse after blocks; columns with a block entry are kept"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/66-formation-placement.test.ts",
+        "pattern": "R75",
+        "passed": true,
+        "asserts_claim": "yes: only column 3 blocked; blocks keys ['2'] stay, columns.length stays 3"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U11/u11-probes.test.ts",
+        "title": "combat.blocks.general.empty-columns: blocking the first and third of three columns leaves the middle unblocked, and nothing closes up",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.11",
+        "supports": "yes",
+        "note": "verbatim"
+      },
+      {
+        "ref": "Manual p.23",
+        "supports": "yes",
+        "note": "verbatim fragment of 'the defending formation is allowed to be assigned with empty columns'"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "unlike offensive formations, the defending formation can have some missing columns."
+      },
+      {
+        "file": "client/engine/test/66-formation-placement.test.ts",
+        "text": "test('R75: a blocking formation may legitimately have EMPTY columns, and they are never \"repaired\"', () => {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.blocks.general.formation",
+    "textHash": "ef385ac587a8cb40",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "'blocking columns hold 1-2 units'"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.23",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.22",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(col.length >= 1 && col.length <= 2, 'blocking columns hold 1-2 units');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.blocks.general.gap-adjacency",
+    "textHash": "fb2c6cfef7ab2d62",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U11-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:adjacentInFormation",
+        "agrees": false,
+        "note": "engineDiffers is real: formationGrid(defender) is Object.keys(b.blocks) sorted and compacted, so blockers on columns 1 and 3 are grid neighbours; the code itself labels this '⚠ approximation'"
+      },
+      {
+        "loc": "engine.ts:repairFormation",
+        "agrees": true,
+        "note": "the empty blocking column keeps its place: after blocks nothing collapses, block keys stay at their attacking-column index"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/66-formation-placement.test.ts",
+        "pattern": "R75",
+        "passed": true,
+        "asserts_claim": "partly: 'a blocking formation may legitimately have EMPTY columns, and they are never \"repaired\"' supports 'keeps its place'; no test covers the adjacency clause"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U11/u11-r2-probes.test.ts",
+        "title": "combat.blocks.general.gap-adjacency (measurement): blockers on the first and third of three columns are read by the engine as adjacent",
+        "passed": true,
+        "demonstrates": "yes: confirms the flagged divergence — keys ['0','2'] keep their place, yet adjacentInFormation(d0) = [d2]"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U11/u11-probes.test.ts",
+        "title": "combat.blocks.side.adjacency (measurement): two blockers with an EMPTY blocking column between them read as adjacent",
+        "passed": true,
+        "demonstrates": "yes, same measurement"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.22",
+        "supports": "partly",
+        "note": "'locked in position … adjacent to their left, right, front and back neighbors' — the gap case is a reading, not stated; Manual p.23 'Units may even be placed blocking in slots where attackers aren't, which can be beneficial for adjacency matters cards' strengthens it: blocking position matters for adjacency"
+      },
+      {
+        "ref": "Manual p.23",
+        "supports": "yes",
+        "note": "empty defending columns are allowed"
+      },
+      {
+        "ref": "R75 its adjacency definition",
+        "supports": "partly",
+        "note": "adjacency is the neighbouring column, same row; with blocking columns keyed by attacking column (R72) a gap column is the neighbour"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "    // treated as adjacent (⚠ approximation: two blocks on columns 1 and 5 read"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "adjacent to their left, right, front and back neighbors until"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- `(ci - 1, ri)` — the neighbouring column, **same row**"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Ruling stands as the natural reading of the printed adjacency definition (no source states the gap case in words); the flagged engine divergence is real and measured."
+  },
+  {
+    "key": "combat.blocks.general.locked",
+    "textHash": "3faf3881df7ee51a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "declareBlocks requires step 'blocks'; after it the step is blockWindow"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:putInSlot",
+        "agrees": true,
+        "note": "later joins only through a placement effect"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U11/u11-probes.test.ts",
+        "title": "combat.blocks.general.locked: blocks cannot be declared a second time in the block window",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.22",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "is set, the units are locked in position and are considered"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(e.s.phase === 'battle' && b && b.step === 'blocks' && seat === b.defender, 'not your block step');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.blocks.general.none",
+    "textHash": "84f7c44b3ec8a75e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "blocks {} is legal"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/02-combat.test.ts",
+        "pattern": "1v1 counterattack: NIT sends units at block time, they attack in round 2",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.23",
+        "supports": "partly",
+        "note": "\"they may place units\" - permissive, implies none"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "defend during the block step. To do so, they may place"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.blocks.general.one-column",
+    "textHash": "3449e6f0220ee37c",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U11-r2",
+    "engine": [
+      {
+        "loc": "apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "one `used` set across every blocking column: a unit named in two columns is refused 'a unit can only block in one column'"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U11/u11-probes.test.ts",
+        "title": "combat.blocks.general.one-column: one unit may not block two attacking columns",
+        "passed": true,
+        "demonstrates": "yes: declaring the same unit in columns 0 and 1 throws /only block in one column/"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.23",
+        "supports": "partly",
+        "note": "states that a unit in front of a column blocks that column; the one-slot/one-column limit is the printed formation model (one slot per unit) plus the engine, which basis 'mixed' honestly says"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(!used.has(id), 'a unit can only block in one column');"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Once a defending unit has been placed in front of an attacking column, that entire column is considered blocked."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.blocks.side",
+    "textHash": "3d0952a3accf73ee",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doDeclareBlocks",
+        "agrees": true,
+        "note": "keys past the attack open empty attacking columns (sideCols)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/400-raq-fix-blocks.test.ts",
+        "pattern": "R321 side-blocks: two units block where no attacker is",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.23",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R321",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R72 (history)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "columns. Units may even be placed blocking in slots"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.blocks.side.adjacency",
+    "textHash": "9b19b9bed4353406",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:adjacentInFormation",
+        "agrees": true,
+        "note": "defender grid = blocking columns sorted by key; a side-block next to a block reads as adjacent. Caveat: the grid is COMPRESSED, so blockers with an empty blocking column between them also read as adjacent (see bugs)"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U11/u11-probes.test.ts",
+        "title": "combat.blocks.side.adjacency: a side-blocker is adjacent to the blocker beside it",
+        "passed": true,
+        "demonstrates": true
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U11/u11-probes.test.ts",
+        "title": "combat.blocks.side.adjacency (measurement): two blockers with an EMPTY blocking column between them read as adjacent",
+        "passed": true,
+        "demonstrates": "yes - measures the over-adjacency caveat, not the rule"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.23",
+        "supports": "yes",
+        "note": "\"Units may even be placed blocking in slots where attackers aren't, which can be beneficial for adjacency matters cards.\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "columns. Units may even be placed blocking in slots"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "// treated as adjacent (⚠ approximation: two blocks on columns 1 and 5 read"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "The rule as worded holds. The engine over-applies it: blockers separated by an empty blocking column are also treated as neighbours (bug list)."
+  },
+  {
+    "key": "combat.blocks.side.any-number",
+    "textHash": "184a59f6ebfd1c07",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U11-r2",
+    "engine": [
+      {
+        "loc": "apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "keys from -keys.length to n+keys.length-1 accepted; each side key is its own column"
+      },
+      {
+        "loc": "apply.ts:doDeclareBlocks",
+        "agrees": true,
+        "note": "opens one empty attacking column per side-block via openSideColumns"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/400-raq-fix-blocks.test.ts",
+        "pattern": "R321 side-blocks: two units",
+        "passed": true,
+        "asserts_claim": "yes: two side-blocks at keys 1 and 2 -> three columns, blocks keys [1,2]"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1366447016653361192#3",
+        "supports": "yes",
+        "note": "calebgannon, asked about 8 units as 8 side columns: 'Yep you should be able to'"
+      },
+      {
+        "ref": "R321",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **Any number** of units may side-block, each as its own column — *\"if I have"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "    e.need(Number.isInteger(ci) && ci >= -keys.length && ci < n + keys.length, 'no such blocking column');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.blocks.side.blocks-nothing",
+    "textHash": "ff246fdff2d1410e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "lone-Sneaky check only counts keys in [0,n); side-block columns skip the Flying/Evasive checks (if (!atkCol) continue)"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U11/u11-probes.test.ts",
+        "title": "combat.blocks.side.blocks-nothing: a side-block beside a lone Sneaky attacker is allowed and the Sneaky unit is still unblocked",
+        "passed": true,
+        "demonstrates": true
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U11/u11-probes.test.ts",
+        "title": "combat.blocks.side.blocks-nothing: a non-Flying unit may side-block beside a Flying attack",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R321",
+        "supports": "yes",
+        "note": "both quoted clauses are verbatim R321"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (!atkCol) continue;   // R321: a side-block faces nobody — no evasion to answer"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "// R321: a side-block blocks nothing, so it is not blocking the Sneaky unit"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Side-blocks may stand to either side of the attack. A side-block blocks"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.blocks.side.counts-as-blocked",
+    "textHash": "62913bcc92244fe6",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U11-r2",
+    "engine": [
+      {
+        "loc": "apply.ts:doDeclareBlocks",
+        "agrees": true,
+        "note": "a side-block gets a b.blocks key like any block; Roving Quillback counts blocks keys"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/400-raq-fix-blocks.test.ts",
+        "pattern": "R321 side-blocks: two units",
+        "passed": true,
+        "asserts_claim": "yes: lone Quillback, two side-blocks -> 2 damage to the defender from the trigger"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1366447016653361192#2",
+        "supports": "yes",
+        "note": "_passer's question + calebgannon 'yeah it should!'"
+      },
+      {
+        "ref": "R321",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- A side-blocking column counts as **blocked** — _passer: *\"So Roving Quillback"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.blocks.side.either-side",
+    "textHash": "769e8eb73dc4366e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doDeclareBlocks",
+        "agrees": true,
+        "note": "negative keys open columns on the left, keys >= n on the right"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/400-raq-fix-blocks.test.ts",
+        "pattern": "R321 a side-block on the left opens a column before column 1",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R321",
+        "supports": "yes",
+        "note": "owner encoding; the designer quotes do not mention sides"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Side-blocks may stand to either side of the attack. A side-block blocks"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.blocks.side.no-damage",
+    "textHash": "79b26a54dddfbab7",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:assignCombatDamage",
+        "agrees": true,
+        "note": "blocking half strikes only with an attacker in front (if (!atk.length) deals nothing)"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:subStepsWithStrikes",
+        "agrees": true,
+        "note": "a side-block opens no damage window"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/400-raq-fix-blocks.test.ts",
+        "pattern": "R321 a Piercing side-blocker deals no combat damage to the attacking player",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1365594171867664445#2",
+        "supports": "yes",
+        "note": "_passer (designer-side answerer) verbatim"
+      },
+      {
+        "ref": "R321",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "// R321: a blocking column strikes only with an attacker in front of it, so"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- A side-block deals **no combat damage**, Piercing included — _passer:"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.blocks.side.reach",
+    "textHash": "7c293533556d20f5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "each key must satisfy -keys.length <= ci < n + keys.length, else 'no such blocking column'"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/400-raq-fix-blocks.test.ts",
+        "pattern": "R321 side-blocks reach no further out than the declaration is wide",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R321",
+        "supports": "yes",
+        "note": "states the bound in the encoding paragraph (owner encoding, honestly basis owner)"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(Number.isInteger(ci) && ci >= -keys.length && ci < n + keys.length, 'no such blocking column');"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "reach no further out than it has blocking columns"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.blocks.triggers",
+    "textHash": "bdcd698ad40e1fdb",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doDeclareBlocks",
+        "agrees": true,
+        "note": "fires blocksDeclared and per-unit 'blocked' events, then openPriority + settle puts the triggers on the stack before anyone acts"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/182-correctness-sample.test.ts",
+        "pattern": "Spewing Mushroom: BLOCKING fires it too",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/42-dark-b.test.ts",
+        "pattern": "Palewing: blocking discards too",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Spewing Mushroom",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R322",
+        "supports": "partly",
+        "note": "\"the declaration fires those\" - about blocked events, in passing"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "const uev = e.ev('blocked', `${u.card} blocks.`, { unit: id, region: b.region, seat });"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.blocks.who",
+    "textHash": "f1c409a1bd943912",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "blockers must be the defender's own, present (not absent), in b.region"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/98-spawn-region.test.ts",
+        "pattern": "R115 inverts R28: Tidelurker's mid-attack 2/2 stays in the enemy region and CANNOT block the counterattack",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.23",
+        "supports": "partly",
+        "note": "on-topic (\"they may place units in front of the formation\"); says nothing of control or region"
+      },
+      {
+        "ref": "R84",
+        "supports": "yes",
+        "note": "\"region, controller\" among what \"able\" depends on"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(u.region === b.region, 'that unit is in another region');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.blocks.who.able",
+    "textHash": "9744b72ddcd5cb8e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:allureViolation",
+        "agrees": true,
+        "note": "judged per lured unit and column; only another Alluring duty discharged by that unit excuses it"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/53-playtest-round7.test.ts",
+        "pattern": "R84 UFAB: an Alluring column may not be side-stepped by blocking the OTHERS",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R84",
+        "supports": "yes",
+        "note": "both quotes verbatim; the two-duties exception is R84 \"Two duties on one unit\" (owner call)"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**\"Able\" is a property of the unit and that column only** — region, controller,"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**Discharging either duty excuses the rest**, and the \"must be among its"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.blocks.who.attributes",
+    "textHash": "1164fb2d6f3b5384",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "Feeble, lone Sneaky, Flying, Evasive, Pure checks; Alluring via allureViolation"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/40-light-c.test.ts",
+        "pattern": "Just a Unit: {Pure} blocks a Flying column, and only it can",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/08-cards2.test.ts",
+        "pattern": "Spectrogenesis: three Wisps; Feeble means they cannot block",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/07-cards.test.ts",
+        "pattern": "Curio Drifter: Evasive requires two blockers",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Air Plant",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Spectrogenesis",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Just a Unit",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R84",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (atkAttrs.has('Evasive')) e.need(col.length >= 2, 'Evasive requires two blockers');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.blocks.who.lured",
+    "textHash": "060f64c4280bdceb",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:allureViolation",
+        "agrees": true,
+        "note": "non-empty column must include the lured unit; empty is legal only if it could not block alone"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/53-playtest-round7.test.ts",
+        "pattern": "R84: a substitute is not good enough — the lured unit must be in the column",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/388-raq-blocks-and-windows.test.ts",
+        "pattern": "RAQ Alluring: a lone lured unit cannot block an Evasive column",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1460216519731577027#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1460216519731577027#2",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R84",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R76 (history)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **If `blocks[ci]` is non-empty, `A` must be one of its members.**"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.blocks.who.not-sent",
+    "textHash": "8dc7260b81d9023e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "'blockers cannot also be sent to attack'"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:doDeclareBlocks",
+        "agrees": true,
+        "note": "sent units get absent = true until endBattleRound round 1"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U11/u11-probes.test.ts",
+        "title": "combat.blocks.who.not-sent: a unit may not both block and be sent to counterattack",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": "\"The counter-attacking units leave the region and are treated as if they don't exist until phase 1 finishes.\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "the region and are treated as if they don’t exist until"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(!used.has(id), 'blockers cannot also be sent to attack');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.blocks.who.recent",
+    "textHash": "c4a5b5be190e10fd",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U11-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "no check on when a blocker entered play; only controller/region/absent/Feeble"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U11/u11-probes.test.ts",
+        "title": "combat.blocks.who.recent: a unit that entered the defender's region during the attack window may block",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.43",
+        "supports": "yes",
+        "note": "\"Algomancy has no summoning sickness. As long as a unit is in play, it can attack/block.\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "long as a unit is in play, it can attack/block."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  }
+]

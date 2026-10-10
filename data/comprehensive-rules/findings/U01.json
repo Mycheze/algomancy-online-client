@@ -1,0 +1,102 @@
+[
+  {
+    "id": "F-U01-1",
+    "rule": "concepts.players.owner",
+    "title": "Ownership is lost once a stolen card passes through the thief's hand",
+    "summary": "Zones follow control, so a stolen unit that is recalled goes to the thief's hand. The hand holds a bare card name, so when the thief replays it the new unit's owner defaults to the playing seat, and the engine records the thief as owner. The rulings say ownership never moves (\"its OWNER's, always, forever\"). The verifier's probe measured owner = thief after the replay. Low impact today because zones follow control, but the owner field no longer means what the ruling says it keeps meaning.",
+    "evidence": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "quote": "const owner = opts.owner ?? seat;"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "| whose card is this? | its OWNER's, always, forever |"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "**2. Ownership does not move. Only the destination does.**"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U01/u01-r2-verify-probes.test.ts",
+        "quote": "assert.equal(replayed!.owner, P, 'MEASURED: ownership moved to the thief once the card passed through the thief hand');"
+      }
+    ]
+  },
+  {
+    "id": "F-U01-2",
+    "rule": "concepts.golden.regions",
+    "title": "The stack, bins and cache are regionless, so some effects reach across regions",
+    "summary": "The Manual says every effect is specific to its region and never impacts anything in another region, and Caleb says everything in the game is region-specific. The client, by an R-ruling, gives the stack, bins and cache no region, so Frosted Denial, Woodland Warding and Molten Riftbreaker reach across regions. Unit targeting, statics and triggers are region-scoped and agree with print. Pending the owner's answer on D-U01-12; fix nothing until then.",
+    "evidence": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "Woodland Warding and Molten Riftbreaker do reach across regions, by ruling and not by defect."
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "quote": "Every single effect is specific to the region it takes"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U01/u01-r2-verify-probes.test.ts",
+        "quote": "assert.ok(negEv.some(ev => /Luminous Arc/.test(ev.msg)), 'the Luminous Arc was negated');"
+      }
+    ]
+  },
+  {
+    "id": "F-U01-3",
+    "title": "Ownership is lost when a card passes through a hand or bin",
+    "summary": "Hands and bins store bare card names, so a stolen unit that is recalled to the thief's hand (R262) and played again becomes a new entity owned by the thief. R250 and R262 say ownership never moves ('its OWNER's, always, forever'; in constructed the owner is whoever brought the card).",
+    "evidence": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "| whose card is this? | its OWNER's, always, forever |"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U01/u01-r2-verify-probes.test.ts",
+        "quote": "assert.equal(replayed!.owner, P, 'MEASURED: ownership moved to the thief once the card passed through the thief hand');"
+      }
+    ],
+    "rule": "concepts.players.owner"
+  },
+  {
+    "id": "F-U01-4",
+    "title": "Stack, bin and cache effects reach across regions",
+    "summary": "Card code that iterates g.s.stack (for example Molten Riftbreaker's 'negate all allied spells') has no region filter. An effect resolving in one region negated a spell on the stack in another region. The designer says everything in the game is region specific; R250 and R265 keep the stack global on purpose, so this is a documented owner-ruling divergence from designer and printed text, not an accident.",
+    "evidence": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "quote": "Yes everything in the game is region specific. Just add 'in this region' to every card if it helps."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "recalled. The STACK is not regional and is deliberately left global; narrowing"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U01/u01-r2-verify-probes.test.ts",
+        "quote": "assert.ok(negEv.some(ev => /Luminous Arc/.test(ev.msg)), 'the Luminous Arc was negated');"
+      }
+    ],
+    "rule": "concepts.golden.regions"
+  },
+  {
+    "id": "F-U01-5",
+    "title": "The stack, bins and cache are global: an effect in one region reaches a stack item in another",
+    "summary": "Cosmic Reversal's stack half (and Molten Riftbreaker, Frosted Denial) iterate the whole stack regardless of region, by owner ruling R250/R265. The designer says everything in the game is region specific and nothing crosses regions except attacking. Probe: Cosmic Reversal resolving in A's home region recalled A's Luminous Arc from the battle region's stack.",
+    "evidence": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "quote": "Yes everything in the game is region specific. Just add 'in this region' to every card if it helps."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "The STACK is not regional and is deliberately left global; narrowing"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "So Frosted Denial's *\"target enemy effect\"*, Woodland Warding and Molten Riftbreaker do reach across regions, by ruling and not by defect."
+      }
+    ],
+    "rule": "concepts.golden.regions"
+  }
+]

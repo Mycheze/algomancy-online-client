@@ -1,0 +1,3356 @@
+[
+  {
+    "key": "types.general.cards",
+    "textHash": "7c0779476cc96c5d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/dsl.ts:CARD_PLAY_KINDS",
+        "agrees": true,
+        "note": "unit, spell, spellUnit, ambush — a unit play is a card play"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "119-play-and-token-events.test.ts",
+        "pattern": "Void Mandible: a {Battle} UNIT is a card played",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R129",
+        "supports": "yes",
+        "note": "owner quote"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Everything is a card, including units. Tokens are NOT cards, however."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.general.kinds",
+    "textHash": "fee7c35d5b699c7b",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U06-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/printed.json:kind",
+        "agrees": true,
+        "note": "kinds are unit/spell/spellUnit/spellToken (unit tokens are engine-made); resources separate"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "188-deck-stats.test.ts",
+        "pattern": "buckets sum to the deck",
+        "passed": true,
+        "asserts_claim": "partly — a UI deck-stats sum, not a rules assertion"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.15",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.4",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.5",
+        "supports": "yes",
+        "note": "resource cards"
+      },
+      {
+        "ref": "Rulebook 2023 p.6",
+        "supports": "partly",
+        "note": "on-topic: names non-token, non-resource cards"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "There are also spell units, which have a one time effect like spells but"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Unit tokens function identically to regular units with the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.general.nouns",
+    "textHash": "5fffe9074c8b0466",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/dsl.ts:isPlayedSpellKind",
+        "agrees": true,
+        "note": "noun predicates: isPlayedSpellKind vs CARD_PLAY_KINDS"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R305",
+        "supports": "yes",
+        "note": "\"So the printed noun decides every case\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "the printed noun"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.general.nouns.card",
+    "textHash": "1267d433574e6e11",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:spellTokenBill",
+        "agrees": true,
+        "note": "lifeToPlay for Arbiter reads CARD_PLAY_KINDS; token pays 0"
+      },
+      {
+        "loc": "client/engine/src/cards/dsl.ts:CARD_PLAY_KINDS",
+        "agrees": true,
+        "note": "no spellToken"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "337-spell-tokens-are-played.test.ts",
+        "pattern": "R305: Arbiter of Armistice prints Cards",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "119-play-and-token-events.test.ts",
+        "pattern": "a spell TOKEN is a played spell but not a card",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R305",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R129",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **\"card(s)\"**: a token does not."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.general.nouns.nontoken",
+    "textHash": "1dbce088c4dacf64",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets (Void Mandible)",
+        "agrees": true,
+        "note": "\"nontoken card\" guard ignores token casts"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "40-light-c.test.ts",
+        "pattern": "Void Mandible: a spell TOKEN does not trigger it",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R305",
+        "supports": "yes",
+        "note": "noun table"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **\"nontoken spell\"**: a token does not, because the card says so."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.general.nouns.spell",
+    "textHash": "5efb8f27fb51a620",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/dsl.ts:isPlayedSpellKind",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "12-fire-a.test.ts",
+        "pattern": "INCLUDES your spell tokens",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1461450216874967235#2",
+        "supports": "yes",
+        "note": "for spell units"
+      },
+      {
+        "ref": "R305",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R157 §13",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **\"spell(s)\"**: a token counts."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.general.nouns.token",
+    "textHash": "f3689c2dcc88f2a4",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:createSpellToken",
+        "agrees": true,
+        "note": "fires 'tokenCreated' for spell tokens too, which Mycelial Mentor hears"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "119-play-and-token-events.test.ts",
+        "pattern": "Mycelial Mentor: a FIREBALL is a token too",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R129",
+        "supports": "yes",
+        "note": "current"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Spell tokens are still tokens."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.general.nouns.unit",
+    "textHash": "10ebe6f211c32460",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U06-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:createSpellToken / unit-token events",
+        "agrees": true,
+        "note": "spell tokens raise no unit-token creation; isUnitCard includes spell units"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "119-play-and-token-events.test.ts",
+        "pattern": "The World Shepherd: a SPELL token is not a UNIT token",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "26-metal-a.test.ts",
+        "pattern": "a mixed batch gets one extra per KIND, and spell tokens are not units",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.15",
+        "supports": "yes",
+        "note": "unit tokens are units"
+      },
+      {
+        "ref": "RAQ 1461450216874967235#0",
+        "supports": "partly",
+        "note": "spell units count under 'play a unit' (Hooba-Pon)"
+      },
+      {
+        "ref": "R129",
+        "supports": "yes",
+        "note": "a Poison is not a body"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Unit tokens function identically to regular units with the"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A Poison is not a body; it has no stats"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.general.stats",
+    "textHash": "6c6ca63a484f12d3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:createSpellToken",
+        "agrees": true,
+        "note": "spell tokens are not units and take no stats"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.15",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R129",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Units are permanents, meaning when summoned, they will stay in play until removed. They can be easily recognized by the existence of stats on the card (5)."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.general.type-line",
+    "textHash": "01d6f853ac559cb2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "data/cards/AlgomancyCards-OracleText.json:type",
+        "agrees": true,
+        "note": "every non-resource, non-help type line ends Unit / Spell / Spell Unit / Spell Token (checked over the whole oracle)"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Bloomcaster",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Download",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Hush Mush",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Robot",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Fireball",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "\"type\": \"Robot Token Unit\","
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "\"type\": \"{Battle} {Burst} Spell Token\","
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.mods.applied-not-played",
+    "textHash": "163e10166dbff249",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doAugment",
+        "agrees": true,
+        "note": "battle virus apply pushes a virus item; no spellPlayed/cardPlayed fired"
+      },
+      {
+        "loc": "client/engine/src/cards/dsl.ts:CARD_PLAY_KINDS",
+        "agrees": true,
+        "note": "excludes 'virus' (applying a mod is not playing)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "119-play-and-token-events.test.ts",
+        "pattern": "R37 holds: applying a VIRUS fires neither event",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1537748882501668934#0",
+        "supports": "yes",
+        "note": "_passer [Solved] write-up quote is verbatim in the source field"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "They are Applied."
+      },
+      {
+        "file": "client/engine/src/cards/dsl.ts",
+        "text": "  new Set<StackItem['kind']>(['unit', 'spell', 'spellUnit', 'ambush']);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.mods.spell-token-host",
+    "textHash": "55a66caecbddbcd2",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U06-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doAugment deploy branch / legalActions",
+        "agrees": true,
+        "note": "spell tokens offered as hosts in deployment; no c.virus gate"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:stackAugmentAttrs",
+        "agrees": true,
+        "note": "attributes only"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "78-round17-core.test.ts",
+        "pattern": "R89: a spell token is a legal augment host during deployment",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "78-round17-core.test.ts",
+        "pattern": "R89: only ATTRIBUTES transfer",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "78-round17-core.test.ts",
+        "pattern": "a text-only augment on a token grants nothing",
+        "passed": true,
+        "asserts_claim": "partly — asserts the log line"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U06/u06-probes.test.ts",
+        "title": "types.mods.spell-token-host: a NON-Virus augment (Carapace Devourer) may augment a spell token in deployment",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R89",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "R79's missing half: a SPELL TOKEN may be augmented during DEPLOYMENT"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "### It is NOT restricted to Virus cards"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.mods.spells",
+    "textHash": "056acae88cf33992",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U06-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:resolveItem/afterParts",
+        "agrees": true,
+        "note": "a graft-bearing spell unit resolves normally"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:legalActions (graft from bin)",
+        "agrees": true,
+        "note": "a binned spell unit with [Switch1] is offered as a graft"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "15-water-b.test.ts",
+        "pattern": "Spawntender: creates an 8/8, then its own 2/2 body spawns",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 point 4: a dead Leaping Lillik is a graft from the bin",
+        "passed": true,
+        "asserts_claim": "yes — asserts it is offered as a graft from the bin"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355115946032889914#3",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "later can be used as Graft from Bin"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "If LL unit dies, you can use him during Deployment as Graft"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.mods.text-live",
+    "textHash": "f0fa4561f0fdb34c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/dsl.ts:augmentBox",
+        "agrees": true,
+        "note": "the [Augment] box is live on the card in play (R268)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "248-augment-box-scope.test.ts",
+        "pattern": "§5 PIN: a card played normally still reads its own [Augment] box",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "15-water-b.test.ts",
+        "pattern": "Spawntender: creates an 8/8, then its own 2/2 body spawns",
+        "passed": true,
+        "asserts_claim": "yes for the graft half: Spawntender's [Switch1] (graft) text runs when it is played normally"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.35",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.43",
+        "supports": "yes",
+        "note": "literal Q&A"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "A: Yes, the text is active on cards played normally."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.mods.what",
+    "textHash": "ebd7826e25ccbd98",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U06-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:stackAugmentAttrs",
+        "agrees": true,
+        "note": "a modded spell/spell token on the stack reads only augmentAttrs (R79/R89)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "78-round17-core.test.ts",
+        "pattern": "a text-only augment on a token grants nothing",
+        "passed": true,
+        "asserts_claim": "partly — asserts the 'grants none' log line on a spell token, not a measured effect"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.32",
+        "supports": "yes",
+        "note": "two mod symbols; augmented card treated as single card with all additional text"
+      },
+      {
+        "ref": "Rulebook 2023 p.15",
+        "supports": "yes",
+        "note": "modified card treated as a single card"
+      },
+      {
+        "ref": "RAQ 1537748882501668934#0",
+        "supports": "yes",
+        "note": "mods are Applied, not played"
+      },
+      {
+        "ref": "R89",
+        "supports": "yes",
+        "note": "attributes only, on spell tokens; R79 the same for spells on the stack"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "When a card is augmented, it is treated as if it were a single"
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "When a card is modified, it is simply treated as if it"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "They are Applied."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "you can only do this with attributes."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.mods.when",
+    "textHash": "7f9c1d0d7ba88950",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doAugment",
+        "agrees": true,
+        "note": "battle: need(battleAugmentAllowed…, 'only Virus cards can augment from hand during battle')"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U06/u06-probes.test.ts",
+        "title": "types.mods.when: a non-Virus augment cannot be applied from hand during battle, but can in deployment",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.32",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "      'only Virus cards can augment from hand during battle');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Accurate as far as it goes; R95 permissions (Rook) and a Virus from a live cache (R311) also allow battle mods, not mentioned."
+  },
+  {
+    "key": "types.spell-units.control",
+    "textHash": "a109e4d223397e47",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:afterParts",
+        "agrees": true,
+        "note": "spawnUnit(item.spawnUnder ?? item.controller, …, { owner: item.controller })"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "23-wood-a.test.ts",
+        "pattern": "R143 #95: Hush Mush ENTERS under the negated effect's controller",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "23-wood-a.test.ts",
+        "pattern": "R143 #96: the CASTER's Flourishing Flora takes NO counter off Hush Mush",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R143",
+        "supports": "yes",
+        "note": "its enters-as half stands; owner's-bin clause replaced by R250, not used here"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "      const u = this.spawnUnit(item.spawnUnder ?? item.controller, item.card!, item.region, {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.spell-units.copy",
+    "textHash": "980b82bb8851853f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:afterParts",
+        "agrees": true,
+        "note": "spawnWearing passed to spawnUnit; no copy trigger"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "26-metal-a.test.ts",
+        "pattern": "R147: the body wears the borrowed IDENTITY from the instant it enters play",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "26-metal-a.test.ts",
+        "pattern": "R147: becoming the copy is NOT a trigger",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R147",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "## R147 — a spell unit that becomes a copy ENTERS as the copy, and copying is not a trigger"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.spell-units.copy.not-spell-unit",
+    "textHash": "301025b328f75dc4",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:afterParts",
+        "agrees": true,
+        "note": "body spawns wearing the copied face; Cosmic Reversal reads the face (R336)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Borrower of Forms: while it mimics a unit it is not a spell unit",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1372468222158180424#11",
+        "supports": "yes",
+        "note": "verbatim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "He loses his 'Spell' part when he is mimicking some other unit."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.spell-units.in-battle",
+    "textHash": "eb845ee465ab7d93",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U06-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:afterParts",
+        "agrees": true,
+        "note": "body spawns in item.region, into item.formationSpot only if the play declared one"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "the spell part happens, then the unit spawns into the formation",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U06/u06-probes.test.ts",
+        "title": "types.spell-units.in-battle: a spell unit played normally in battle arrives in the battle region outside any formation",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.43",
+        "supports": "yes",
+        "note": "spawn in the region but not in formation unless they say so"
+      },
+      {
+        "ref": "RAQ 1461450216874967235#0",
+        "supports": "yes",
+        "note": "Hooba-Pon's play places it into formation"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "They spawn in the region but not in formation unless"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Yes, the spell part happens and if it resolves, the unit will spawn into formation."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.spell-units.is-a-spell",
+    "textHash": "b36455e87e56eebb",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U06-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:playCard/commit (spellUnit stack item)",
+        "agrees": true,
+        "note": "a spell unit played from hand (incl. via Hooba-Pon) emits spellPlayed and is a spell on the stack"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-dark-a.ts:Wake the Dead",
+        "agrees": false,
+        "note": "engineDiffers real: a spell unit played from a bin is spawned inline with asPlay (cardPlayed only) — no stack item, no spellPlayed"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "it counts as playing a spell",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "Origon negates it as the first spell",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "Molten Riftbreaker dying negates it as an allied spell",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U06/u06-r2-probes.test.ts",
+        "title": "types.spell-units.played-by-effect (engine divergence measured): a Jelly that Wake the Dead plays from a bin arrives with NO spell part and NO spellPlayed event",
+        "passed": true,
+        "demonstrates": "yes — confirms the flagged divergence is real"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "RAQ 1461450216874967235#2",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1461450216874967235#3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1461450216874967235#4",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Q: Does that count as 'playing a spell' for some triggers? A: Yes."
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Q: Would Origon try to negate it? A: Yes"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Q: Molten Riftbreaker dying would negate that as 'allied SPELL'? A: Yes"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**A SPELL UNIT raised by Wake the Dead does not cast its spell.**"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Ruling confirmed; the engine divergence (Wake the Dead path) is real."
+  },
+  {
+    "key": "types.spell-units.is-a-unit",
+    "textHash": "5029de6fa8089c7a",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U06-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-water-a.ts:Hooba-Pon / Insidious Invitation",
+        "agrees": true,
+        "note": "spell units offered and played as spells via the stack"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-dark-a.ts:Wake the Dead",
+        "agrees": false,
+        "note": "engineDiffers real: isUnitCard admits spell units but they are not played as spells"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "110-literal-water.test.ts",
+        "pattern": "Hooba-Pon: a SPELL UNIT is a unit",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "110-literal-water.test.ts",
+        "pattern": "lets each player play a SPELL UNIT",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U06/u06-r2-probes.test.ts",
+        "title": "types.spell-units.played-by-effect (engine divergence measured): a Jelly that Wake the Dead plays from a bin arrives with NO spell part and NO spellPlayed event",
+        "passed": true,
+        "demonstrates": "yes — the divergence is real"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Hooba-Pon",
+        "supports": "yes",
+        "note": "'play a unit from your hand'"
+      },
+      {
+        "ref": "RAQ 1461450216874967235#0",
+        "supports": "yes",
+        "note": "spell part happens, then spawns"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Yes, the spell part happens and if it resolves, the unit will spawn into formation."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**A SPELL UNIT raised by Wake the Dead does not cast its spell.**"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Ruling confirmed; divergence (Wake the Dead) real."
+  },
+  {
+    "key": "types.spell-units.not-played",
+    "textHash": "2de6dd6a014df4ef",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-dark-a.ts:Exhume",
+        "agrees": true,
+        "note": "removeFromBin then spawnUnit — no stack item, no parts"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U06/u06-probes.test.ts",
+        "title": "types.spell-units.not-played: Exhume puts a Jelly from the bin into play with no spell effect, and Bloomcaster does not hear a play",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.43",
+        "supports": "yes",
+        "note": "literal Q&A"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "A: No, spell effects only happen when the card is"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.spell-units.on-stack",
+    "textHash": "12bdab5ae4a33ddf",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U06-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:playCard (spellUnit stack item)",
+        "agrees": true,
+        "note": "no entity until afterParts"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "RAQ Bloomcaster: a negated spell unit still leaves the Bloomcaster 1/1 behind",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U06/u06-probes.test.ts",
+        "title": "types.spell-units.on-stack: a played spell unit (Jelly) is on the stack and not in play until it resolves",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353862592661164152#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1353862592661164152#1",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "He goes on the stack (but is not Spawned / In play yet)."
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "you will get 1/1 from Bloomcaster even if Spell-Units effect is negated"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.spell-units.played-by-effect",
+    "textHash": "e25298f7d6a5b546",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U06-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-dark-a.ts:Wake the Dead",
+        "agrees": false,
+        "note": "spawnUnit(..., {from:'bin', asPlay:true}) — no stack item, spell part skipped; matches the flagged engineDiffers"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U06/u06-r2-probes.test.ts",
+        "title": "types.spell-units.played-by-effect (engine divergence measured): a Jelly that Wake the Dead plays from a bin arrives with NO spell part and NO spellPlayed event",
+        "passed": true,
+        "demonstrates": "yes — measures the divergence: body arrives, cardPlayed fires, no target asked, no -2/-2, no spellPlayed"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U06/u06-probes.test.ts",
+        "title": "types.spell-units.played-by-effect: a Jelly that Wake the Dead plays from a bin has its spell part happen",
+        "passed": false,
+        "demonstrates": "no — asserts the ruling and fails against the engine (MEASURED body=true askedForTarget=false spellPlayedEvent=false)"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.43",
+        "supports": "partly",
+        "note": "'spell effects only happen when the card is played' — the converse; with R165 (it IS a play) it implies the rule"
+      },
+      {
+        "ref": "RAQ 1461450216874967235#0",
+        "supports": "partly",
+        "note": "about a play from HAND via Hooba-Pon, not from another zone"
+      },
+      {
+        "ref": "RAQ 1461450216874967235#2",
+        "supports": "partly",
+        "note": "Hooba-Pon context"
+      },
+      {
+        "ref": "R165",
+        "supports": "partly",
+        "note": "establishes Wake the Dead's verb 'play' makes it a play; its 'Left open' section names the skipped spell part as a defect"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "spell effects only happen when the card is"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "The ruling: the printed verb decides."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**A SPELL UNIT raised by Wake the Dead does not cast its spell.**"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-dark-a.ts",
+        "text": "{ owner: c.seat, from: 'bin', asPlay: true });"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Ruling holds by composition (Manual p.43 + R165 + the Hooba-Pon RAQ); no source states the from-bin case directly. Engine divergence is real and documented in R165 'Left open'."
+  },
+  {
+    "key": "types.spell-units.prevented",
+    "textHash": "bdb1502b7d0ea4e9",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:resolveItem",
+        "agrees": true,
+        "note": "fizzle → dischargeItem to bin for spellUnit; NEGATE_BINS includes spellUnit; afterParts never reached"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "RAQ Hooba-Pon spell unit: negated, the unit does not enter play",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "05-rulings.test.ts",
+        "pattern": "a fizzled spell unit never spawns",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "RAQ Bloomcaster: a negated spell unit still leaves the Bloomcaster 1/1 behind",
+        "passed": true,
+        "asserts_claim": "yes (illustrates that a separately-stacked trigger is unaffected)"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.43",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1461450216874967235#1",
+        "supports": "yes",
+        "note": "verbatim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "invalid, the unit will not spawn and will enter the bin."
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "As always - if the spell is negated, then unit doesn't enter play."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.spell-units.resolution",
+    "textHash": "5395ad67edbbbe5a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:afterParts",
+        "agrees": true,
+        "note": "kind 'spellUnit': spawnUnit runs after the parts (spell effect) have resolved; no dischargeItem to bin"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "15-water-b.test.ts",
+        "pattern": "Spawntender: creates an 8/8, then its own 2/2 body spawns",
+        "passed": true,
+        "asserts_claim": "partly: asserts both the 8/8 and the body exist, not their order"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U06/u06-probes.test.ts",
+        "title": "types.spell-units.resolution: Spawntender creates its 8/8 before its own body enters play",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": "spell units spawn instead of going to the bin"
+      },
+      {
+        "ref": "RAQ 1461450216874967235#0",
+        "supports": "yes",
+        "note": "verbatim; spell part then spawn"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Yes, the spell part happens and if it resolves, the unit will spawn into formation."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "    if (item.kind === 'spellUnit') {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.spell-units.what",
+    "textHash": "72bf8a5a0dc02411",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/dsl.ts:isPlayedSpellKind",
+        "agrees": true,
+        "note": "spellUnit is a spell kind"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/helpers.ts:isUnitCard",
+        "agrees": true,
+        "note": "and a unit kind"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "210-cardsearch.test.ts",
+        "pattern": "a spell unit is a unit AND a spell",
+        "passed": true,
+        "asserts_claim": "partly: card-search classification, not engine play"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.3",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "There are also spell units, which have a one time effect like spells but"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.spells.spell-tokens",
+    "textHash": "a8843ac7576e6969",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/dsl.ts:isPlayedSpellKind",
+        "agrees": true,
+        "note": "spell | spellUnit | spellToken"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "12-fire-a.test.ts",
+        "pattern": "INCLUDES your spell tokens",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.15",
+        "supports": "yes",
+        "note": "\"a temporary spell\""
+      },
+      {
+        "ref": "R157 §13",
+        "supports": "yes",
+        "note": "owner; R157 §25 corrected by R305 but §13 stands"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/dsl.ts",
+        "text": "  return kind === 'spell' || kind === 'spellUnit' || kind === 'spellToken';"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.spells.to-bin",
+    "textHash": "c3f31475e3001233",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:afterParts",
+        "agrees": true,
+        "note": "dischargeItem(item, kind==='spell') → toBin(…, 'stack')"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "R40: a spell going to the bin after RESOLVING is not trashed",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.3",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "with other players. When a spell resolves, it goes directly to your discard."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.spells.what",
+    "textHash": "5ea10997bbac9bca",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:afterParts",
+        "agrees": true,
+        "note": "a spell runs its parts once and is discharged"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": "literal"
+      },
+      {
+        "ref": "Rulebook 2023 p.3",
+        "supports": "yes",
+        "note": "literal"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Spells provide one-time effects and are used to interact, create or modify certain aspects of the game."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.tokens.back-face",
+    "textHash": "d4ccc6cec27d1ad3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:destroy",
+        "agrees": true,
+        "note": "transformed entity keeps frontFace and bins as the front"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "135-exchange-and-zones.test.ts",
+        "pattern": "R157 §10: a transformed Scholar killed in play BINS as",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R157 §10",
+        "supports": "yes",
+        "note": "reverses R101 on this point"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "And the back is NOT a token."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.tokens.copying-a-token",
+    "textHash": "03e623b1674af1f3",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U06-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-metal-a.ts:Borrower of Forms",
+        "agrees": true,
+        "note": "the copy is a face (CopyRef), the entity's token flag is untouched"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:costOf",
+        "agrees": true,
+        "note": "comment cites the RAQ: a Borrower that copied Robot 3 is not a token"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "copying a Robot token makes a nontoken unit",
+        "passed": true,
+        "asserts_claim": "yes — asserts token undefined; its Download half is conditional (if playable)"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U06/u06-probes.test.ts",
+        "title": "types.tokens.copying-a-token: Download is playable with a Borrower-copy of a Robot on board and does not offer the Borrower",
+        "passed": true,
+        "demonstrates": "yes — non-vacuous version of the illustrative example: Download offers the real token, not the Borrower"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "RAQ 1372468222158180424#9",
+        "supports": "yes",
+        "note": "_passer: true BoFy is a non-token unit; Arcane Echo/Download cannot target it"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "No, true BoFy is non-token Unit … He cannot be targeted by Arcane Echo or Download."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "(\"Borrower of Forms\"): a Borrower that copied Robot 3 is not a token, \"but"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.tokens.created-units",
+    "textHash": "c9fb0def44e508d5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:createToken",
+        "agrees": true,
+        "note": "every effect-created unit carries token: true"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Download: a Fireball in the region and an X/X unit token are both tokens it can take",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Spawntender",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1353864175910387742#2",
+        "supports": "yes",
+        "note": "verbatim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "3. 8/8 unit from Spawntender (or any X/X unit created by Awoken Tomb or similiar) ✅"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.tokens.created-units.copy",
+    "textHash": "02c48141fb1be84b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:createToken",
+        "agrees": true,
+        "note": "Echo of Despair copy is created as a token"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Download: a copy Echo of Despair makes of itself is a token",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Echo of Despair",
+        "supports": "yes",
+        "note": "prints \"create a copy of me\""
+      },
+      {
+        "ref": "RAQ 1353864175910387742#3",
+        "supports": "yes",
+        "note": "verbatim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "4. Copy of Echo of Despair ✅"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.tokens.creating-not-playing",
+    "textHash": "5ba2c1a49d1fed28",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:spawnUnit",
+        "agrees": true,
+        "note": "cardPlayed only when opts.asPlay, never with a token"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U06/u06-probes.test.ts",
+        "title": "types.tokens.creating-not-playing: Manufacture creating Robot tokens is not playing them (Bloomcaster, Stalwart Sentinel silent)",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R26",
+        "supports": "yes",
+        "note": "\"Play\" excludes token creation (⚠ = engine-originated, still current)"
+      },
+      {
+        "ref": "R342",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "arrival** when played normally. \"Play\" excludes token creation — that non-token"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "played hears a token cast, and an effect-created unit token was not played at"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.tokens.kinds",
+    "textHash": "d3f66d3afaa74b37",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/types.ts:Entity.kind",
+        "agrees": true,
+        "note": "'unit' (token flag) | 'spellToken'"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.15",
+        "supports": "yes",
+        "note": "UNIT TOKENS / SPELL TOKENS"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "A spell token is a temporary spell that may be played"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.tokens.leaving-play",
+    "textHash": "7daa4d360543016b",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U06-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:eraseFromZone",
+        "agrees": true,
+        "note": "token enters bin/hand for the event window, then the state-based sweep erases it before queued triggers resolve"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "a TOKEN dying enters the bin, is NOT trashed, and is then erased",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "the erase lands before anything the visit queued can RESOLVE",
+        "passed": true,
+        "asserts_claim": "partly — asserts the token is gone from hand by the time recall() returns; no trigger is actually queued"
+      },
+      {
+        "file": "15-water-b.test.ts",
+        "pattern": "Rider of the Tides: recalling a TOKEN triggers it too",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Recall Spell Token: a Fireball token recalled off the stack enters its controller hand",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355689559609839787#4",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1355689559609839787#3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R69",
+        "supports": "yes",
+        "note": "erase is state-based, before the trigger"
+      },
+      {
+        "ref": "R335",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Same applies to Unit Tokens being Recalled or Dying (they enter your hand/bin and then are instantly erased)"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Token Spell technically enter your hand for a brief moment if you Recall them but are instantly erased"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**Timing.** The erase is a **state-based action** and it resolves *before* the"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A recalled spell token passes through the hand"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.tokens.leaving-play.not-trashed",
+    "textHash": "0249e4517f4de59d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:noteTrashed",
+        "agrees": true,
+        "note": "returns early when anchor?.token — a token is never trashed"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "338-tokens-are-not-trashed.test.ts",
+        "pattern": "R306: a token unit dying in battle does not bump the trashed ledger",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R306",
+        "supports": "yes",
+        "note": "owner reversal of R133 second half; current"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "    // R306: a token is not a card, so it is never trashed — see above."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "is never trashed."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.tokens.leaving-play.still-dies",
+    "textHash": "2d0dafa76caf155f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:destroy",
+        "agrees": true,
+        "note": "'died' fires for tokens with token:true; nontoken watchers filter on it"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U06/u06-probes.test.ts",
+        "title": "types.tokens.leaving-play.still-dies: a dying unit token is seen by \"whenever another unit dies\" but not by a \"nontoken unit dies\" watcher",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R306",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Its **death** is untouched. A token is still a unit, and \"whenever a unit dies\""
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.tokens.not-cards",
+    "textHash": "f47b7c9d946af571",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/dsl.ts:CARD_PLAY_KINDS",
+        "agrees": true,
+        "note": "no spellToken"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "119-play-and-token-events.test.ts",
+        "pattern": "a spell TOKEN is a played spell but not a card",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R133 (its tokens-are-not-cards half)",
+        "supports": "yes",
+        "note": "first half stands"
+      },
+      {
+        "ref": "R306",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R129",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "\"Tokens are specifically not considered cards in terms of specific semantics"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.tokens.region",
+    "textHash": "a018bea22f46685b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:createToken",
+        "agrees": true,
+        "note": "region = the source's region at resolution (R115)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "98-spawn-region.test.ts",
+        "pattern": "Life Plant attacking in the enemy region creates its 1/1s THERE",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.15",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R115",
+        "supports": "yes",
+        "note": "current; R28 withdrawn"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "## R115 — a created unit arrives where its SOURCE is"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.tokens.region.mid-attack",
+    "textHash": "51fd94731fb9d6bb",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:startRegroup",
+        "agrees": true,
+        "note": "units return to home region at regroup"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:spawnUnit",
+        "agrees": true,
+        "note": "created in the source region, no column"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "98-spawn-region.test.ts",
+        "pattern": "Tidelurker's mid-attack 2/2 stays in the enemy region",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "98-spawn-region.test.ts",
+        "pattern": "the stranded 1/1s walk home at regroup",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.15",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R115",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "it **walks home at regroup**, like every other unit out of position"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.tokens.spell-copies",
+    "textHash": "a0accb4e8fb914f6",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dischargeItem",
+        "agrees": true,
+        "note": "R164 copy has no card and is never a token"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Download: a spell copy made by Earthbound Replicator is not a token",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353864175910387742#5",
+        "supports": "yes",
+        "note": "verbatim"
+      },
+      {
+        "ref": "RAQ 1353864175910387742#6",
+        "supports": "yes",
+        "note": "verbatim; test drives the Replicator only (same primitive)"
+      },
+      {
+        "ref": "RAQ 1355613076506017894#5",
+        "supports": "yes",
+        "note": "verbatim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "5. Copy spell is not a token."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.tokens.spell-tokens",
+    "textHash": "7a708ba1deb8e9cc",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doCastSpellToken",
+        "agrees": true,
+        "note": "cast from play onto the stack in battle like a spell (no affinity check — R305; a token has no cost line)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "03-stack.test.ts",
+        "pattern": "Fireball goes to the stack in battle, Burst casts them all at once",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.15",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.4",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "from the battlefield."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.tokens.spell-tokens.burst",
+    "textHash": "d1bc89a263c78b29",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U06-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:spellTokenGroup",
+        "agrees": true,
+        "note": "tokensOf(seat, tok.region) filtered by card name; each becomes its own stack item"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "69-damage-batch.test.ts",
+        "pattern": "Burst casts all your tokens OF THAT NAME",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U06/u06-r2-probes.test.ts",
+        "title": "types.tokens.spell-tokens.burst: Burst groups by name across different X, and only tokens in the same region",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.15",
+        "supports": "yes",
+        "note": "play all tokens with the same name at once; still individual spells"
+      },
+      {
+        "ref": "R81",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Multiple spell tokens played with burst are still individual spells, but they"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Burst groups by NAME"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "? e.tokensOf(seat, tok.region).filter(t => t.card === tok.card).sort((a, z) => a.id - z.id)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.tokens.spell-tokens.cost",
+    "textHash": "077d30cf906d3277",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U06-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:spell-token price (E.manaToPlay purpose 'play', R305)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "337-spell-tokens-are-played.test.ts",
+        "pattern": "R305: Tranquility taxes a spell token \\[1\\] in battle",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.4",
+        "supports": "yes",
+        "note": "tokens have a mana cost, often 0"
+      },
+      {
+        "ref": "R305",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "While tokens do have a mana cost (5), it often 0, meaning"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Casting a spell token **is** playing a spell."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.tokens.spell-tokens.moving",
+    "textHash": "c8503097dbbc4df0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doDeclareAttack",
+        "agrees": true,
+        "note": "no columns → \"does not attack\" and returns before tokens move; riders checked by needRidingToken from the attack region"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:doDeclareBlocks",
+        "agrees": true,
+        "note": "sentUnits must be >0 for tokens to ride a counterattack"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "78-round17-core.test.ts",
+        "pattern": "R87: spell tokens still travel only with units, and only from the region they stand in",
+        "passed": true,
+        "asserts_claim": "partly: shows the needs-a-unit half on a counterattack; the attack half and irreversibility are read from code"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.15",
+        "supports": "yes",
+        "note": "literal"
+      },
+      {
+        "ref": "Rulebook 2023 p.4",
+        "supports": "yes",
+        "note": "irreversible"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "This move is irreversible though, so plan carefully where you want to direct your"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.tokens.spell-tokens.moving.counterattack",
+    "textHash": "294154a5a27ac76d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doDeclareBlocks",
+        "agrees": true,
+        "note": "send may include spell tokens via needRidingToken(b.region); needs a unit"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "78-round17-core.test.ts",
+        "pattern": "R87: declareBlocks takes spellTokens",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R87",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "## R87 — A counterattacker may bring spell tokens, and `declareBlocks` has to be able to say so"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.tokens.spell-tokens.moving.created-there",
+    "textHash": "4a92ba4dd29972bc",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doCastSpellToken",
+        "agrees": true,
+        "note": "battle cast needs only tok.region === battle region"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U06/u06-probes.test.ts",
+        "title": "types.tokens.spell-tokens.moving.created-there: a Fireball created for the attacker in the enemy region during combat is castable there at once",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.15",
+        "supports": "yes",
+        "note": "NOTE, literal"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Spell tokens spawned in enemy regions during combat can be used"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.tokens.spell-tokens.not-in-hand",
+    "textHash": "a9f83b3f7f0b3618",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:createSpellToken",
+        "agrees": true,
+        "note": "spell tokens are region entities; hand is a list of card names, so a token can never be counted there"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "408-raq-new-threads.test.ts",
+        "pattern": "Dreadspawn Horror does not count spell tokens as cards in hand",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355689559609839787#0",
+        "supports": "yes",
+        "note": "verbatim _passer"
+      },
+      {
+        "ref": "R342",
+        "supports": "yes",
+        "note": "current"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Spell tokens are not in hand. They won't count for things like Dreadspawn Horror or Astral Tidewraith."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A spell token is never in a hand. Anything that counts the cards in a hand"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.tokens.spell-tokens.not-units",
+    "textHash": "76a60fba1b6be3bc",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:createSpellToken",
+        "agrees": true,
+        "note": "no spawned event, no unit key, no token flag on a spell token"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "119-play-and-token-events.test.ts",
+        "pattern": "The World Shepherd: a SPELL token is not a UNIT token",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R129",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A Poison is not a body; it has no stats"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.tokens.spell-tokens.on-stack",
+    "textHash": "69ab1e17eec0650f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:spellTokenItem",
+        "agrees": true,
+        "note": "item.kind = 'spellToken'; Download's token family reaches stack items (R333)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Download: a Fireball already cast and on the stack is a token it can take",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353864175910387742#1",
+        "supports": "yes",
+        "note": "verbatim"
+      },
+      {
+        "ref": "R333",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "2. Fireball effect 'on the stack' ✅"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.tokens.spell-tokens.played",
+    "textHash": "00be9984ed4591d8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:spellTokenItem",
+        "agrees": true,
+        "note": "stamps from: 'play'; spellPlayed fires; priced by spellTokenBill at purpose 'play'"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "408-raq-new-threads.test.ts",
+        "pattern": "casting a Fireball token triggers Stalwart Sentinel",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "337-spell-tokens-are-played.test.ts",
+        "pattern": "R305: Tranquility taxes a spell token [1] in battle",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355689559609839787#2",
+        "supports": "yes",
+        "note": "verbatim"
+      },
+      {
+        "ref": "R305",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R342",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Playing spell token like Fireball will trigger Stalwart Sentinel."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Casting a spell token **is** playing a spell."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.tokens.spell-tokens.region",
+    "textHash": "59f22c869c30aaec",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doCastSpellToken",
+        "agrees": true,
+        "note": "need(tok.region === battle region, 'spell tokens are castable only in their region')"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U06/u06-probes.test.ts",
+        "title": "types.tokens.spell-tokens.region: a spell token left at home cannot be cast in a battle in another region",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.15",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.4",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "    e.need(tok.region === e.s.battle!.region, 'spell tokens are castable only in their region');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.tokens.spell-tokens.regroup",
+    "textHash": "7f48df1d15e0a938",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:startRegroup",
+        "agrees": true,
+        "note": "spell tokens erased unless spellTokenSurvivesRegroup (Harbinger)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "12-fire-a.test.ts",
+        "pattern": "regroup default is unchanged: with no Harbinger anywhere, spell tokens are erased",
+        "passed": true,
+        "asserts_claim": "yes (the exception, not the rule)"
+      },
+      {
+        "file": "12-fire-a.test.ts",
+        "pattern": "Harbinger of Immolation: in play as a UNIT, your spell tokens stay through regroup",
+        "passed": true,
+        "asserts_claim": "yes (the exception, not the rule)"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.15",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.4",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "spell tokens in a player’s own region as well."
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Fine; Harbinger of Immolation is a card exception the rule text does not mention (it is in the example)."
+  },
+  {
+    "key": "types.tokens.spell-tokens.x",
+    "textHash": "5030a0572a3f8846",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:spellTokenBill",
+        "agrees": true,
+        "note": "x never passed as a cost; printed mana 0"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "337-spell-tokens-are-played.test.ts",
+        "pattern": "R305: Tranquility taxes a spell token [1] in battle",
+        "passed": true,
+        "asserts_claim": "yes: a Crystal 2 costs [1] under Tranquility, so its X is not its cost"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.4",
+        "supports": "yes",
+        "note": "literal"
+      },
+      {
+        "ref": "R305",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "would set the X value of the created token as 3."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **The X on a token is its SIZE, not a cost.** \"Crystal 4\" is not an X-cost"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.tokens.unique",
+    "textHash": "72c658599c134ef2",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U06-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:Automaton of Abundance batch (R104/R157 §24)",
+        "agrees": true,
+        "note": "uniqueness keyed by (name, X)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "136-triggers-and-modes.test.ts",
+        "pattern": "R157 §24: end to end",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "136-triggers-and-modes.test.ts",
+        "pattern": "R157 §24: three IDENTICAL Robot 2s",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R157 §24",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R161",
+        "supports": "yes",
+        "note": "scoped to the one card's word"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "'Unique' means unique (name, X) pair — you get two extras."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "else's notion of identity moved — this is one card's word, not a redefinition."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.tokens.unit-tokens",
+    "textHash": "7f32d9a4f644dbff",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/types.ts:Entity",
+        "agrees": true,
+        "note": "unit token is kind 'unit' with token: true"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.15",
+        "supports": "yes",
+        "note": "literal"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Unit tokens function identically to regular units with the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.tokens.unit-tokens.regroup",
+    "textHash": "b9aa6aa446a364b5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:startRegroup",
+        "agrees": true,
+        "note": "only spell tokens are erased"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U06/u06-probes.test.ts",
+        "title": "types.tokens.unit-tokens.regroup: a unit token survives regroup while a spell token beside it is erased",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.15",
+        "supports": "yes",
+        "note": "literal"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Unlike spell tokens, unit tokens persist through regroup."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.tokens.what",
+    "textHash": "bd55063dd904cbf7",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:createToken",
+        "agrees": true,
+        "note": "tokens only arise from effects, straight into a region"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.15",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.4",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Tokens are temporary cards that are created directly"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.units.defense",
+    "textHash": "b2f02867e89a2328",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": "literal"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "which denotes how much damage they can sustain in"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.units.defense.lethal",
+    "textHash": "98112bf35fa24780",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:settle",
+        "agrees": true,
+        "note": "state-based death when damage >= defense"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U06/u06-probes.test.ts",
+        "title": "types.units.defense.lethal: a 3/3 dealt exactly 3 dies; dealt 2 it lives",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": "literal"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "battle will die."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.units.dies-to-bin",
+    "textHash": "51edeefb099543e0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:destroy",
+        "agrees": true,
+        "note": "dies/is deleted → bin (Unstable/tokens erased afterwards, covered elsewhere)"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U06/u06-probes.test.ts",
+        "title": "types.units.dies-to-bin: a unit that dies, or is deleted, is put into the bin",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": "literal"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "a unit dies or is deleted, it is placed in the bin (discard"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.units.no-summoning-sickness",
+    "textHash": "7a3fd39f889e6ab5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doDeclareBlocks",
+        "agrees": true,
+        "note": "no arrived-this-turn check; region and blocker legality only"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U06/u06-probes.test.ts",
+        "title": "types.units.no-summoning-sickness: a unit that spawned during the attack step may still be declared as a blocker",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.43",
+        "supports": "yes",
+        "note": "literal Q&A"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "long as a unit is in play, it can attack/block."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.units.permanent",
+    "textHash": "cb7834fdf78701a6",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.3",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Units are permanents, meaning when played, they will"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.units.power",
+    "textHash": "673fbbb3742214cb",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": "literal"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "damage they deal in combat as well as a defense value,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.units.put-vs-play",
+    "textHash": "30a8961836f8fea6",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-dark-a.ts:Exhume",
+        "agrees": true,
+        "note": "plain spawnUnit, no asPlay"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-dark-a.ts:Wake the Dead",
+        "agrees": true,
+        "note": "spawnUnit(…, { from: 'bin', asPlay: true }) fires cardPlayed"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "11-fire-wood.test.ts",
+        "pattern": "Bloomcaster: PLAYING a unit makes a 1/1",
+        "passed": true,
+        "asserts_claim": "partly: the put-into-play half uses the white-box spawn helper, not a printed \"put into play\" card"
+      },
+      {
+        "file": "139-spawn-and-play.test.ts",
+        "pattern": "Wake the Dead: the units it plays out of a bin are PLAYED",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U06/u06-probes.test.ts",
+        "title": "types.units.put-vs-play: a unit Exhume puts into play is not played (Bloomcaster makes no 1/1 for it)",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R165",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "The ruling: the printed verb decides."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.units.role",
+    "textHash": "ff1e1fa43a88ada3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": "descriptive, literal"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "to build armies, attack and defend in Algomancy. When"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Descriptive; nothing for the engine to do."
+  },
+  {
+    "key": "types.units.spawn-in-battle",
+    "textHash": "5e823ec4e51a322f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:spawnUnit",
+        "agrees": true,
+        "note": "a mid-battle spawn joins no column unless opts.spot is given"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "98-spawn-region.test.ts",
+        "pattern": "Tidelurker's mid-attack 2/2 stays in the enemy region",
+        "passed": true,
+        "asserts_claim": "yes (in-region, cannot block elsewhere); the in-no-column half is asserted by the sibling Life Plant test"
+      },
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "RAQ Hooba-Pon spell unit: the spell part happens, then the unit spawns into the formation",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.15",
+        "supports": "yes",
+        "note": "literal"
+      },
+      {
+        "ref": "Manual p.43",
+        "supports": "yes",
+        "note": "spell units Q&A"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "of formation (meaning it is not attacking or blocking), but still in the same region."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.units.spawns-with-counters",
+    "textHash": "1ac3dc635c555ec6",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U06-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:spawnUnit",
+        "agrees": true,
+        "note": "CardBehavior.spawnsWithCounters applied before the spawn event; no ability, no stack item"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "139-spawn-and-play.test.ts",
+        "pattern": "Aethercap Siphoner: a spawn watcher sees the 1/1 the card prints",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "139-spawn-and-play.test.ts",
+        "pattern": "a card's own size is not respondable",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R165",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "## R165 — \"I spawn with N counters\" is a fact about the body; \"play\" is not \"put into play\""
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "types.units.spawns-with-counters.not-put",
+    "textHash": "dbd5b42fd0a8f81c",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U06-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:spawnUnit (spawnsWithCounters via amountDelta, no countersChanged)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "139-spawn-and-play.test.ts",
+        "pattern": "Aethercap Siphoner: spawning with counters is not",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "139-spawn-and-play.test.ts",
+        "pattern": "its two +1/+1 counters are scaled by an allied Flux Resonator",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R165",
+        "supports": "yes",
+        "note": "SILENT (nobody puts) and scaled by the amount layer"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "nobody *puts* a spawn's own counters on"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "scaled by the amount layer, and nothing for an opponent to negate."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  }
+]

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "F-U02-1",
+    "rule": "concepts.numbers.x-minimum",
+    "title": "X-cost test titles still cite R157 §20, which R326 reversed",
+    "summary": "Three tests in 133-x-cost-semantics are titled \"R157 §20 — …\" although R326 reversed §20. Their assertions agree with R326 (X = 3 costs [3], X = 5 costs [5]; no Sentry costs exactly X), and one of them is the guard for RAQ 1359629594512068770#1. The labels point a reader at reversed law. Retitle them to R326 (or to R157 §1 for the no-Sentry cases).",
+    "evidence": [
+      {
+        "file": "client/engine/test/133-x-cost-semantics.test.ts",
+        "quote": "test('R157 §20 — the real cast pays it: X=3 costs [3] and X=5 costs [5] under a Stasis Sentry', () => {"
+      },
+      {
+        "file": "client/engine/test/133-x-cost-semantics.test.ts",
+        "quote": "test('R157 §20 — with no Stasis Sentry an X spell costs exactly X', () => {"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "**This reverses R157 §20**, under which Wildfire at X = 0 cost [3] and dealt 0."
+      }
+    ]
+  },
+  {
+    "id": "F-U02-2",
+    "rule": "concepts.numbers.cost-reference.not-cast",
+    "title": "R158 section 1 still says Living Vault refuses X cards in hand",
+    "summary": "R158 §1 (current) says Living Vault's printedMana returns null, so an X card in hand is never offered, and calls it the odd one out. Test 39-light-b now asserts the opposite: Living Vault offers an X card in hand at [0]. The ruling text is stale. It should be marked as corrected, or the sentence amended, so the register does not describe a bug that is fixed.",
+    "evidence": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "`printedMana` returns `null`, so an X card in hand is never offered); the"
+      },
+      {
+        "file": "client/engine/test/39-light-b.test.ts",
+        "quote": "test('Living Vault: an X-cost card in hand is offered at pay [0] (R157 §1)', () => {"
+      }
+    ]
+  },
+  {
+    "id": "F-U02-3",
+    "rule": "concepts.resources.prismite.exchange.element-only",
+    "title": "A Prismite cannot be exchanged into a Shard, though the printed card says \"a non-prismite resource\"",
+    "summary": "doExchangePrismite accepts only an element of the game. The printed Prismite reads \"Erase me: Create a non-prismite resource, then activate it\" and Manual p.18 says active Prismites \"may be exchanged for other resources\"; a Shard is a non-prismite resource. No ruling forbids the Shard (R299 rules the Prismite-into-Prismite case), and test 308's title asserts the refusal. Low impact: a Shard is never better than an element resource.",
+    "evidence": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "quote": "e.need((e.s.elements as string[]).includes(element), 'not an element of this game');"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "> \"Erase me: Create a non-prismite resource, **then activate it**. Do this only"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "Exchanging a Prismite *into* a Prismite stays illegal — an exchange names an element."
+      },
+      {
+        "file": "client/engine/test/308-recycle-for-prismite.test.ts",
+        "quote": "R299 what stays illegal: exchanging a Prismite into a Prismite or a Shard"
+      }
+    ]
+  }
+]

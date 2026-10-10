@@ -1,0 +1,78 @@
+[
+  {
+    "id": "F-U10-1",
+    "title": "R27 counts 'my formation' by OWNER, not by control",
+    "summary": "R27 words Embermaw Fledgling's X ('the number of attacking units in my formation') as the surviving units its controller OWNS in the battle columns. A unit its controller controls but does not own (raised from the enemy bin by Wake the Dead, or lent by Uglk; R250 makes such units ordinary allies) attacks in the same formation and should be counted. If the engine counts by owner, it undercounts. Suspected from the ruling's wording only; a probe should attack with a borrowed unit beside Embermaw Fledgling and read X.",
+    "evidence": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "units the controller owns in `battle.columns` at trigger resolution"
+      }
+    ],
+    "rule": "combat.formations.placement.counting"
+  },
+  {
+    "id": "F-U10-2",
+    "title": "Throwing Boulder's 'adjacent enemy' test cannot show what its title claims",
+    "summary": "18-earth-c 'R77: an ALLY is required — an adjacent enemy does not unlock it' sets up the enemy as a blocker facing the Boulder. Under R75 adjacency (the three positions inside the unit's own formation) a facing blocker is not adjacent at all, so the Boulder has no adjacent unit of any kind and the test passes whether or not the gate checks that the neighbour is an ALLY. Either the test is vacuous, or the engine treats the facing enemy as adjacent, which R75 does not allow. A real guard needs an enemy unit inside the Boulder's own formation, for example a unit stolen into it, or a probe of the adjacency query with a facing blocker.",
+    "evidence": [
+      {
+        "file": "client/engine/test/18-earth-c.test.ts",
+        "quote": "// an adjacent ENEMY"
+      },
+      {
+        "file": "client/engine/test/18-earth-c.test.ts",
+        "quote": "R77: an ALLY is required — an adjacent enemy does not unlock it"
+      }
+    ],
+    "rule": "combat.columns.adjacency.positions"
+  },
+  {
+    "id": "F-U10-3",
+    "title": "Defending formation adjacency ignores unblocked columns between blockers",
+    "summary": "adjacentInFormation builds the defender grid from the sorted block keys, so blockers on attacking columns 1 and 3 (column 2 unblocked) are treated as left/right neighbours. Inspiration then buffs across the gap (round-1 verifier probe on combat.columns.adjacency). The Manual makes blocking position matter for adjacency, and a blocking column is keyed to the attacking column it faces, so the unblocked column is a gap. The engine's own comment calls its reading an approximation.",
+    "evidence": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "quote": "    // treated as adjacent (⚠ approximation: two blocks on columns 1 and 5 read"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "quote": "is set, the units are locked in position and are considered"
+      }
+    ],
+    "rule": "combat.columns.adjacency"
+  },
+  {
+    "id": "F-U10-4",
+    "rule": "combat.formations.outside.stolen",
+    "title": "Organic Exchange keeps both units in the formations after a mid-battle control change",
+    "summary": "The rule says a unit whose control changes during a battle, after the formations are set, leaves its formation and sits out until regroup. Measured: Organic Exchange cast after blocks exchanges control of the attacker and its blocker, and both stay in the battle line, each in the other one's slot (the old attacker now blocks, the old blocker now attacks). The engine passes keepFormation for this symmetric exchange (its printed \"swap their positions\"). Either the rule needs an exception for an exchange that swaps positions, or the engine is wrong.",
+    "evidence": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U10/u10-tester-probes.out.txt",
+        "quote": "after Organic Exchange: columns=[[2]] blocks={\"0\":[1]} a=1 d=2"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-wood-b.ts",
+        "quote": "g.giveControl(a, cb, { keepFormation: true });"
+      }
+    ]
+  },
+  {
+    "id": "F-U10-5",
+    "rule": "combat.formations.placement.empty-formation",
+    "title": "A defending formation whose blockers all died still offers a position in front of an unblocked column",
+    "summary": "The rule says a formation that no longer holds any unit offers no position, and nothing can be played or placed into it. Measured: the defender blocks column 1 of a two-column attack, its only blocker dies after blocks, and formationSlots still offers \"column 2, blocking it (it is unblocked)\". When the grid holds no living unit, formationSlots returns the after-blocks spots in front of unblocked columns instead of nothing. The attacking side matches the rule. The rule, or its sibling on placing into a defending formation, has to say which one wins.",
+    "evidence": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U10/u10-tester-probes.out.txt",
+        "quote": "emptied defending formation offers: [\"column 2, blocking it (it is unblocked)\"]"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "quote": "    if (!grid.some(col => col.some(id => this.entity(id)))) return flash;"
+      }
+    ]
+  }
+]

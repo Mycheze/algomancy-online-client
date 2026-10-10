@@ -1,0 +1,284 @@
+[
+  {
+    "id": "D-U01-1",
+    "kind": "a-sources-disagree",
+    "rule": "concepts.golden.regions.information",
+    "tier": 1,
+    "summary": "The Manual says there is \"zero information or interaction between regions\". R243 says regions do NOT scope information: a player may read what happens in a region they are not in.",
+    "sides": [
+      {
+        "source": "Manual p.19",
+        "quote": "regions. This means there is zero information or interaction between regions."
+      },
+      {
+        "source": "R243",
+        "quote": "Regions do NOT scope information, but they do scope 'global' things (every"
+      }
+    ],
+    "resolution": "Question for the owner. The Manual's word \"information\" supports two readings. (A) Effects cannot read information across regions (a card cannot count or look at another region). This agrees with R243 §1 and leaves R243 §2 standing. (B) Players do not get information about other regions, which contradicts R243 §2. Manual p.42 (\"Each region treats the players and cards in other regions as if they don’t exist\") speaks of what effects and players can interact with and fits (A). Printed text outranks an R-ruling, so if the owner reads it as (B), concepts.golden.regions.information must change. Until then the rule states R243, at medium confidence."
+  },
+  {
+    "id": "D-U01-2",
+    "kind": "a-sources-disagree",
+    "rule": "concepts.starting.live-draft.deal",
+    "tier": 4,
+    "summary": "The two printed editions set the game up differently. The Rulebook 2023 quick start deals 16 cards to the hand and 2 \"Mana converters\" in play. The Manual deals the 16 as 4 hand + 10 pack + 2 first draws, and the 2 prismites dormant.",
+    "sides": [
+      {
+        "source": "Rulebook 2023 p.2",
+        "quote": "•Deal 16 cards and 2 Mana converters"
+      },
+      {
+        "source": "Rulebook 2023 p.2",
+        "quote": "x16 in hand"
+      },
+      {
+        "source": "Manual p.11",
+        "quote": "Deal each player 16 cards: 4 for their starting hand,"
+      },
+      {
+        "source": "Manual p.11",
+        "quote": "Deal 2 prismites to each player face down (dormant)."
+      }
+    ],
+    "resolution": "The rules state the Manual, which R17 (prismites start dormant) and R292 (opening hand 6 = Manual p.16's 4 plus turn 1's 2) both follow. The Rulebook's \"x16 in hand\" may only show where the 16 cards start before the first draft step combines hand and pack (Rulebook 2023 p.6), so the conflict may be smaller than it looks. Question for the owner only if a judge's CR follows the Rulebook 2023 setup."
+  },
+  {
+    "id": "D-U01-3",
+    "kind": "g-other",
+    "rule": "concepts.ending.win",
+    "tier": 4,
+    "summary": "Sources silent on a game in which every remaining player is eliminated at once: whether it is a draw, and who wins. No printed, designer or ruling source speaks of a normal game ending in a draw.",
+    "sides": [
+      {
+        "source": "Rulebook 2023 p.1",
+        "quote": "In order to win a game of Algomancy, you must eliminate all of your opponents by reducing their life total to zero. In team"
+      },
+      {
+        "source": "R49 (its life-cost half)",
+        "quote": "reaching 0 ends the game inside `loseLife`, so paying at cast would hand the"
+      }
+    ],
+    "resolution": "No rule written. R49 describes an engine that ends the game when the FIRST life total reaches 0, which would decide a simultaneous loss by the order the life is taken, but that is a description of the code, not a rule. Cards that make every player lose life at once exist (Visage of Ruin: \"each player loses half of their life total, rounded up\"; Recall). Question for the owner only if a judge's CR rules on simultaneous elimination."
+  },
+  {
+    "id": "D-U01-4",
+    "kind": "g-other",
+    "rule": "concepts.ending.elimination",
+    "tier": 4,
+    "summary": "Sources silent on whether a life total can go below 0. The printed rules say \"bringing their life to 0\" / \"reducing their life total to zero\"; nothing says what a total of -4 is.",
+    "sides": [
+      {
+        "source": "Manual p.6",
+        "quote": "opponents by bringing their life to 0."
+      },
+      {
+        "source": "R197 (its §1, predict your life total)",
+        "quote": "The floor is 0 and that is **not** a narrowing: `E.loseLife` ends the game the"
+      }
+    ],
+    "resolution": "The rule says \"reaches 0\". The verifier should check whether the engine also treats a total below 0 as eliminated (the 02-combat win-condition test reduces a player from 3 life with one attacker)."
+  },
+  {
+    "id": "D-U01-5",
+    "kind": "c-owner-call-only",
+    "rule": "concepts.golden.printed-text-wins",
+    "tier": 3,
+    "summary": "\"Printed text always wins\" is the owner's statement (R157). No printed page or designer answer in the sources states it as a rule.",
+    "sides": [
+      {
+        "source": "R157 (its §27)",
+        "quote": "> *\"Controller's cache — the printed text wins. Printed text always wins.\"*"
+      }
+    ],
+    "resolution": "Basis owner. A judge's CR may phrase the card-beats-rules principle differently; compare."
+  },
+  {
+    "id": "D-U01-6",
+    "kind": "c-owner-call-only",
+    "rule": "concepts.golden.permissive",
+    "tier": 3,
+    "summary": "Taking the reading that lets more things happen is the owner's standing steer (R157). No printed or designer source states it.",
+    "sides": [
+      {
+        "source": "R157 (its standing steer)",
+        "quote": "and neither is absurd, take the one that lets more things happen."
+      }
+    ],
+    "resolution": "Basis owner. It is a tie-break between readings, not a rule of play, and a judge may use a different one."
+  },
+  {
+    "id": "D-U01-7",
+    "kind": "c-owner-call-only",
+    "rule": "concepts.ending.concede",
+    "tier": 3,
+    "summary": "Conceding, and conceding at any time including while a decision is pending, rest on R65 alone. The printed rules do not mention conceding.",
+    "sides": [
+      {
+        "source": "R65 (its concede half)",
+        "quote": "with no timing, no priority and no phase, and the one thing you may do while a"
+      }
+    ],
+    "resolution": "Basis owner."
+  },
+  {
+    "id": "D-U01-8",
+    "kind": "c-owner-call-only",
+    "rule": "concepts.ending.no-deck-out",
+    "tier": 3,
+    "summary": "That running out of cards does not lose the game rests on R296 alone. The printed rules do not say what happens when a deck runs out.",
+    "sides": [
+      {
+        "source": "R296",
+        "quote": "**No deck-out loss.** A player whose deck *and* pile are both empty simply draws"
+      }
+    ],
+    "resolution": "Basis owner. A judge's CR may have a deck-out rule; compare."
+  },
+  {
+    "id": "D-U01-9",
+    "kind": "g-other",
+    "rule": "concepts.general.digital-scope",
+    "tier": 4,
+    "summary": "The client plays two-player games only, so the printed rules for more than two players (the game continues after an elimination, neighbouring regions join, the eliminated player's pack is recycled, team wins) have nothing in the client to enforce or demonstrate them.",
+    "sides": [
+      {
+        "source": "R27",
+        "quote": "**v1 formats**: 1v1 live draft + 1v1 constructed."
+      },
+      {
+        "source": "Manual p.19",
+        "quote": "neighboring regions move next to each other and the"
+      }
+    ],
+    "resolution": "Those rules (concepts.ending.continues, concepts.ending.continues.pack, concepts.ending.win.teams) are stated from print and will ship untested, with the reason that the client has no game of more than two players."
+  },
+  {
+    "id": "D-U01-10",
+    "kind": "g-other",
+    "rule": "concepts.players.owner",
+    "tier": 2,
+    "summary": "The RAQ register's paraphrase of claim 1372468222158180424#8 says the mods go to \"their owner's bin\". _passer's words say \"your bin/discard\", and under R250/R262 a card leaving play goes to its controller's zone.",
+    "sides": [
+      {
+        "source": "RAQ 1372468222158180424#8",
+        "quote": "Mods attached to it after it resolved go to their owner's bin when it is recalled."
+      },
+      {
+        "source": "RAQ 1372468222158180424#8",
+        "quote": "Those would go to your bin/discard as usual."
+      },
+      {
+        "source": "R250 (its §4, zones follow control)",
+        "quote": "| which zone does it go to? | its CONTROLLER's |"
+      }
+    ],
+    "resolution": "In the thread's case (you attached the mods to your own BoFy) owner and controller are the same player, so nothing conflicts. Reword the register claim to \"go to the bin as usual\" or \"their controller's bin\", so the paraphrase does not assert the owner rule that R250 reversed."
+  },
+  {
+    "id": "D-U01-11",
+    "kind": "a-sources-disagree",
+    "rule": "concepts.golden.printed-text-wins",
+    "tier": 4,
+    "summary": "R157 says \"Printed text always wins\". Caleb says Crevice Lurker works against its printed word \"Abilities\" because his intent differs, so printed text does not always win.",
+    "sides": [
+      {
+        "source": "R157",
+        "quote": "> *\"Controller's cache — the printed text wins. Printed text always wins.\"*"
+      },
+      {
+        "source": "RAQ 1366446116274442291#1",
+        "quote": "So as written it wouldn't work but my intent is for it to stop those from triggering"
+      }
+    ],
+    "resolution": "The designer outranks R157 (authority order), so the rule scopes \"always\": printed text beats general rules and engine defaults, and yields only to the designer's stated intent for that card (concepts.golden.designer-intent). R157 was about print against defaults, so the two do not otherwise conflict."
+  },
+  {
+    "id": "D-U01-12",
+    "kind": "a-sources-disagree",
+    "rule": "concepts.golden.regions",
+    "tier": 1,
+    "summary": "The Manual and Caleb say every effect is region-specific and never impacts anything in another region. R265 says the stack, bins and cache have no region, so Frosted Denial, Woodland Warding and Molten Riftbreaker reach across regions.",
+    "sides": [
+      {
+        "source": "Manual p.19",
+        "quote": "place in, meaning it will never impact anything in any"
+      },
+      {
+        "source": "RAQ 1454169054402314362#0",
+        "quote": "Yes everything in the game is region specific. Just add 'in this region' to every card if it helps."
+      },
+      {
+        "source": "R265",
+        "quote": "Three zones have no region and are deliberately global — the **stack**"
+      },
+      {
+        "source": "Manual p.19",
+        "quote": "Additionally, if a player enters a region, their bin, hand,"
+      }
+    ],
+    "resolution": "Under the authority order print and Caleb outrank R265, so the rule states them, and the client's regionless stack, bins and cache are filed as F-U01-2. Question for the owner only if he holds R265's premise that a stack item, bin or cache is in no region: neither printed sentence says which region a stack item or a bin is in, and Manual p.19 ties a bin to its player being present in a region, which supports reading (A) a stack item is in the region it was cast in and a bin is reachable where its player is present, or (B) these zones sit outside every region, as R265 holds."
+  },
+  {
+    "id": "D-U01-13",
+    "kind": "b-engine-only",
+    "rule": "concepts.starting.constructed.first-draw",
+    "tier": 3,
+    "summary": "No source gives the constructed opening hand (concepts.starting.constructed.opening-hand) or says whether the first turn takes the constructed draw phase (concepts.starting.constructed.first-draw). The client deals 4 and runs the phase on turn 1 (draw 4, put 2 back).",
+    "sides": [
+      {
+        "source": "Rulebook 2023 p.6",
+        "quote": "Players draw 2 cards during the draw step on every turn after the first."
+      },
+      {
+        "source": "Rulebook 2023 p.6",
+        "quote": "the draw phase in constructed, players draw 4 cards, then select 2 cards from their hand and put them on the bottom of the"
+      },
+      {
+        "source": "Manual p.16",
+        "quote": "their opening hand, in which case they should not draw"
+      },
+      {
+        "source": "file: client/engine/src/apply.ts",
+        "quote": "// opening hand 4 (like draft); turn 1's draw phase (draw 4, bottom 2)"
+      }
+    ],
+    "resolution": "The rule states the engine with basis engine, awaiting owner sign-off (Annex P). It ends where print would if Manual p.16's shortcut were applied to constructed (a 6-card opening hand, then draw 2 and recycle 2): both see 8 cards and keep 6. Question for the owner only if a judge's CR deals constructed differently."
+  },
+  {
+    "id": "D-U01-14",
+    "kind": "g-other",
+    "rule": "concepts.ending.elimination.immediate",
+    "tier": 4,
+    "summary": "Sources silent on whether R49's refusal of a lethal life cost looks at the printed amount or at the amount a life-loss multiplier would make the payer lose. The verifier reports the game can end mid-cost only through such a multiplier.",
+    "sides": [
+      {
+        "source": "R49 (its life-cost half)",
+        "quote": "⚠ **May a life cost be paid if it would kill you? No.** You may pay N life only"
+      }
+    ],
+    "resolution": "Belongs to 111 (U04). Question for the owner only if U04's sources are silent too: R49's words \"pay N life\" support (A) N is the printed cost, or (B) N is the life actually lost after multipliers."
+  },
+  {
+    "id": "D-U01-15",
+    "kind": "g-other",
+    "rule": "concepts.golden.as-much-as-possible",
+    "tier": 3,
+    "summary": "Sources silent on \"do as much as you can\" as a general principle. Print says it of a spell that lost some of its targets; Caleb says it of one graft; the only general statement is R30, which the register marks provisional (⚠).",
+    "sides": [
+      {
+        "source": "Manual p.43",
+        "quote": "spell will attempt to resolve as best as it can. For"
+      },
+      {
+        "source": "RAQ 1353859961855148103#3",
+        "quote": "You just can't give Ralph, but that's okay - rest of graft still happens."
+      },
+      {
+        "source": "R30",
+        "quote": "recall still loses 2. (Do as much as you can; the two clauses are not linked"
+      }
+    ],
+    "resolution": "The rule states the general principle at medium confidence: print and Caleb each apply it, and nothing in the sources limits it. Question for the owner only if R30 is to lose its ⚠ or a judge's CR limits the principle to targets."
+  }
+]

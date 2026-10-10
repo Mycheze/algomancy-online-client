@@ -45,6 +45,8 @@ export interface RuleRecord {
   engineDiffers?: string[];
   /** no executed test or probe demonstrates it (set by harness finalize, cleared by the promoter) */
   untested?: boolean;
+  /** the rule has nothing to execute (a definition, a table-only fact, a format the engine does not run): why, in one line */
+  untestableReason?: string;
   sourceHashes: Record<string, string>;
 }
 export interface Discrepancy {

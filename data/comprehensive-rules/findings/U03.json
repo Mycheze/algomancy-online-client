@@ -1,0 +1,94 @@
+[
+  {
+    "id": "F-U03-1",
+    "rule": "concepts.targets.ally.self",
+    "title": "Wraith test title still calls the self-pick an unconfirmed reading after the owner confirmed it",
+    "summary": "R71 item 4 (owner, 2026-08-21) settled that \"an ally\" may be the Wraith itself, and R265 (owner, 2026-08-30) made \"an ally includes itself\" general. The 37-attrs-wight test is still titled \"(unconfirmed reading)\" with a warning mark. The title states an open question that is closed; retitle it to cite the ruling.",
+    "evidence": [
+      {
+        "file": "client/engine/test/37-attrs-wight.test.ts",
+        "quote": "test('R71 ⚠: a lone Wraith may pick ITSELF as \"an ally\" (unconfirmed reading)', () => {"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "4. **\"An ally\" MAY be the Wraith (or its host) ITSELF — a unit is its own"
+      }
+    ]
+  },
+  {
+    "id": "F-U03-2",
+    "rule": "concepts.targets.must-be-targeted",
+    "title": "Gatekeeper of Souls compels targets chosen outside battle",
+    "summary": "Printed: \"When a player selects targets for an effect during battle, I must be targeted if able.\" The engine applies the compulsion by region only, so in deployment a player whose own Gatekeeper stands in their home region can only aim a unit-targeting effect (Overbloom) at the Gatekeeper. Measured by the round-1 verifier's probe.",
+    "evidence": [
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "quote": "\"text\": \"[Augment] When a player selects targets for an effect during battle, I must be targeted if able.\","
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-light-c.ts",
+        "quote": "// like everything else (R12), which is also what \"during battle\" amounts to:"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U03/u03-verify-probes.test.ts",
+        "quote": "assert.equal(compelled, true, 'engine applies the compulsion in deployment (diverges from the printed \"during battle\")');"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "quote": "const gates = this.mustBeTargetedIn(region);"
+      }
+    ]
+  },
+  {
+    "id": "F-U03-3",
+    "rule": "concepts.targets.ally.effect-controller",
+    "title": "The R58 Enigmatic Warder test asserts nothing on its main path",
+    "summary": "49-playtest-round6 'R58: Enigmatic Warder cannot redirect an ENEMY into an ally slot' passes twice and then looks for Fight on the stack; Fight has resolved by then, so the ally-slot assertion inside `if (after)` never runs, and the remaining assertion holds whatever the Warder did. Assert before passing, or drop the guard.",
+    "evidence": [
+      {
+        "file": "client/engine/test/49-playtest-round6.test.ts",
+        "quote": "const after = h.state.stack.find(i => i.card === 'Fight');"
+      },
+      {
+        "file": "client/engine/test/49-playtest-round6.test.ts",
+        "quote": "if (after) {"
+      }
+    ]
+  },
+  {
+    "id": "F-U03-4",
+    "rule": "concepts.targets.change.rescue",
+    "title": "RAQ 1354013430805434389#2 (retarget rescues from fizzle) has a guard that shows no rescue",
+    "summary": "The RAQ register guards the claim \"retargeting before resolution can rescue an effect from fizzling\" with the Gravitational Correction test, whose original target is still legal; it shows a retarget, not a fizzle avoided. No test moves a target off an object that would make the effect fizzle.",
+    "evidence": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "quote": "guards: [\"12-fire-a.test.ts::Gravitational Correction: retargets the effect unless its controller pays [x]\"] },"
+      },
+      {
+        "file": "client/engine/test/12-fire-a.test.ts",
+        "quote": "assert.ok(ent(h, whale), 'original target untouched');"
+      }
+    ]
+  },
+  {
+    "id": "F-U03-5",
+    "rule": "concepts.targets.becomes-targeted",
+    "title": "A deployment graft onto Mohruung is attached before Mohruung's trigger resolves",
+    "summary": "The designer: grafting onto Mohruung, \"he will trigger first\". The engine fires the targeted event, attaches the graft at once, and only then resolves the queued trigger: the round-2 verifier's probe logs \"Flame Juggle grafts onto Mohruung\" before \"Resolving Mohruung: create a Crystal 2\". The RAQ guard (393 point 5) asserts only that a Crystal is made, not the order. Pending D-U03-13.",
+    "evidence": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "quote": "Applying Graft is 'targeting' effect, so if you try to Graft something underneath the Mohruung, he will trigger first"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "quote": "e.fireEvent('targeted', ev);   // grafting is targeting (Graft 101 §5)"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U03/u03-r2-verify-probes.test.ts",
+        "quote": "assert.equal(modsRightAfterAction, 1, 'the graft is already attached when the action returns');"
+      }
+    ]
+  }
+]

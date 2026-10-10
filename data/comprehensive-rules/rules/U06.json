@@ -1,0 +1,3280 @@
+[
+  {
+    "key": "types.general.kinds",
+    "parent": "300",
+    "order": 1,
+    "text": "Apart from resource cards (106), there are three card types: unit, spell and spell unit. There are two kinds of token: unit tokens and spell tokens.",
+    "examples": [
+      {
+        "text": "Every unit, spell and spell-unit card in a deck is counted in exactly one of the unit, spell and spell-unit buckets.",
+        "test": "188-deck-stats.test.ts::§2 the unit / spell / spellUnit buckets sum to the deck"
+      },
+      {
+        "text": "Every printed card that is not a resource or a token is a unit, a spell or a spell unit; a created Robot is a unit token and a created Fireball a spell token.",
+        "test": "417-cr-card-types.test.ts::cr:types.general.kinds — every non-resource card is a unit, spell or spell unit, and every token is a unit token or a spell token"
+      }
+    ],
+    "see": [
+      "106",
+      "301",
+      "302",
+      "303",
+      "304"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "There are also spell units, which have a one time effect like spells but"
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "Some spells also have the unit type. Rather than being"
+        },
+        {
+          "ref": "Manual p.15",
+          "quote": "UNIT TOKENS"
+        },
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "Spell Tokens"
+        },
+        {
+          "ref": "Manual p.5",
+          "quote": "RESOURCE CARDS"
+        },
+        {
+          "ref": "Rulebook 2023 p.6",
+          "quote": "During the draft step, players combine all of the non-token, non-resource cards in their hand with the pack and can draft a"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "188-deck-stats.test.ts",
+        "417-cr-card-types.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "No printed source enumerates the types in one sentence; the Manual (p.13) and the Rulebook (p.3) each describe units, spells and spell units in turn, and both describe unit tokens and spell tokens (Manual p.15, Rulebook p.4). Resources are cards too (Manual p.5 \"RESOURCE CARDS\"; Rulebook p.6 \"non-token, non-resource cards\"), so the three types are scoped to non-resource cards; resources are 106. Sources silent on a single type list: D-U06-12. The engine has four card kinds (unit, spell, spellUnit, spellToken); a unit token is kind unit.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "types.general.type-line",
+    "parent": "300",
+    "order": 2,
+    "text": "A card's type line names its type. A unit's type line ends \"Unit\", a spell's ends \"Spell\", and a spell unit's ends \"Spell Unit\". A token's type line also contains the word \"Token\": \"Robot Token Unit\" is a unit token, and \"Spell Token\" a spell token.",
+    "examples": [
+      {
+        "text": "Robot reads \"Robot Token Unit\" and is a unit token; Fireball reads \"Spell Token\" and is a spell token.",
+        "test": "417-cr-card-types.test.ts::cr:types.general.type-line — the type line ends Unit, Spell or Spell Unit by type, and a token type line reads Token Unit or Spell Token"
+      }
+    ],
+    "see": [
+      "204"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Bloomcaster",
+          "quote": "Druid Flower Unit"
+        },
+        {
+          "ref": "card: Download",
+          "quote": "{Battle} Technology Spell"
+        },
+        {
+          "ref": "card: Hush Mush",
+          "quote": "{Battle} Arcane Fungus Spell Unit"
+        },
+        {
+          "ref": "card: Robot",
+          "quote": "Robot Token Unit"
+        },
+        {
+          "ref": "card: Fireball",
+          "quote": "{Battle} {Burst} Spell Token"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "417-cr-card-types.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "Read off the printed type lines of the pool (printed.json); no rules text states the convention. The rest of the type line (subtypes, braced attributes and timing) is 204.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "types.general.stats",
+    "parent": "300",
+    "order": 3,
+    "text": "Units, unit tokens and spell units have stats: power and defense. Spells and spell tokens have no stats.",
+    "examples": [
+      {
+        "text": "A Good Whale is 7/5 and a Robot token has stats; a Crystal cannot target the Fireball token beside them.",
+        "test": "417-cr-card-types.test.ts::cr:types.general.stats — units, unit tokens and spell units carry power and defense; a spell token is no unit and takes no stat change"
+      }
+    ],
+    "see": [
+      "206",
+      "types.units.power",
+      "types.units.defense"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "Units are permanents, meaning when summoned, they will stay in play until removed. They can be easily recognized by the existence of stats on the card (5)."
+        },
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "also have stats (5) and enter play rather than the discard as they resolve."
+        },
+        {
+          "ref": "Manual p.15",
+          "quote": "Unit tokens function identically to regular units with the"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R129",
+          "quote": "A Poison is not a body; it has no stats"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "417-cr-card-types.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Printed text gives stats to units and spell units; unit tokens function as units (Manual p.15). That a spell token has no stats is R129's owner reasoning about Poison; the printed spell tokens print no stats. The Rulebook calls the second stat \"health\" (D-U06-3).",
+    "sourceHashes": {
+      "R129": "630060703c282d6843d3b9b11d74e161010ed2a31ab72a6810a6cb921e78a8e9"
+    }
+  },
+  {
+    "key": "types.general.cards",
+    "parent": "300",
+    "order": 4,
+    "text": "Every unit, spell and spell unit is a card, including a unit that is in play. A token is not a card (see 304).",
+    "examples": [
+      {
+        "text": "Void Mandible, which watches for a nontoken card being played during battle, sees a {Battle} unit being played.",
+        "test": "119-play-and-token-events.test.ts::Void Mandible: a {Battle} UNIT is a card played"
+      }
+    ],
+    "see": [
+      "304"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R129",
+          "quote": "Everything is a card, including units. Tokens are NOT cards, however."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "119-play-and-token-events.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Owner rulings R129 and R133. The printed text calls tokens \"temporary cards\" (Manual p.15, Rulebook p.4), which disagrees: D-U06-1.",
+    "sourceHashes": {
+      "R129": "630060703c282d6843d3b9b11d74e161010ed2a31ab72a6810a6cb921e78a8e9"
+    }
+  },
+  {
+    "key": "types.general.nouns",
+    "parent": "300",
+    "order": 5,
+    "text": "When printed text names a type, the noun it uses decides what it reaches.",
+    "examples": [
+      {
+        "text": "Tranquility (\"Spells cost one more\") taxes a Crystal token, but Arbiter of Armistice (\"Cards played during battle\") charges it no life.",
+        "test": "417-cr-card-types.test.ts::cr:types.general.nouns — the printed noun decides: Tranquility (Spells) taxes a spell token, Arbiter of Armistice (Cards) does not"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R305",
+          "quote": "So the printed noun"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "417-cr-card-types.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Parent rule; each sub-rule carries its own sources. R305 states the principle (\"So the printed noun decides every case\").",
+    "sourceHashes": {
+      "R305": "88a482701a5f378703d6d18e30d8a3b943798c47e43ee19572963aef6c8e2da6"
+    }
+  },
+  {
+    "key": "types.general.nouns.spell",
+    "parent": "types.general.nouns",
+    "order": 1,
+    "text": "\"Spell\" includes spell units and spell tokens.",
+    "examples": [
+      {
+        "text": "Emberflame Enlightener gives \"your spells\" {Powerful}, and that includes your spell tokens.",
+        "test": "12-fire-a.test.ts::INCLUDES your spell tokens"
+      }
+    ],
+    "see": [
+      "types.spell-units.is-a-spell",
+      "304"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1461450216874967235#2",
+          "quote": "Q: Does that count as 'playing a spell' for some triggers? A: Yes."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R305",
+          "quote": "**\"spell(s)\"**: a token counts."
+        },
+        {
+          "ref": "R157 §13",
+          "quote": "Yes. Tokens are spells."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "12-fire-a.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Spell units: the Hooba-Pon RAQ (a spell unit played counts as playing a spell). Spell tokens: R157 §13 and R305.",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
+      "R305": "88a482701a5f378703d6d18e30d8a3b943798c47e43ee19572963aef6c8e2da6",
+      "RAQ 1461450216874967235#2": "883faf2775536cafa63ccea3b54aa28069fbe296a8933da998cdffd6b3917190"
+    }
+  },
+  {
+    "key": "types.general.nouns.unit",
+    "parent": "types.general.nouns",
+    "order": 2,
+    "text": "\"Unit\" includes unit tokens and spell units, but not spell tokens.",
+    "examples": [
+      {
+        "text": "The World Shepherd watches for a unit token being created; a spell token being created does not trigger it.",
+        "test": "119-play-and-token-events.test.ts::The World Shepherd: a SPELL token is not a UNIT token"
+      },
+      {
+        "text": "Automaton of Abundance copies unit tokens; a spell token in the same batch is not a unit and is not copied.",
+        "test": "26-metal-a.test.ts::a mixed batch gets one extra per KIND, and spell tokens are not units"
+      }
+    ],
+    "see": [
+      "types.spell-units.is-a-unit",
+      "types.tokens.unit-tokens"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.15",
+          "quote": "Unit tokens function identically to regular units with the"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1461450216874967235#0",
+          "quote": "Yes, the spell part happens and if it resolves, the unit will spawn into formation."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R129",
+          "quote": "A Poison is not a body; it has no stats"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "119-play-and-token-events.test.ts",
+        "26-metal-a.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "Unit tokens are units (Manual p.15). A spell unit answers \"play a unit\" (Hooba-Pon RAQ; the thread title is \"Spell Units played when you can play a unit from hand\"). A spell token is not a unit: R129 (The World Shepherd). The designer quote is the Hooba-Pon write-up's answer to the thread \"Spell Units played when you can 'play a unit from hand'\"; it bears on spell units being units only.",
+    "sourceHashes": {
+      "R129": "630060703c282d6843d3b9b11d74e161010ed2a31ab72a6810a6cb921e78a8e9",
+      "RAQ 1461450216874967235#0": "a221c0da51ffe596defa69c129254ad614ac58b09ed0590f80b24d973827b751"
+    }
+  },
+  {
+    "key": "types.general.nouns.token",
+    "parent": "types.general.nouns",
+    "order": 3,
+    "text": "\"Token\" with no other qualifier includes both unit tokens and spell tokens.",
+    "examples": [
+      {
+        "text": "Mycelial Mentor triggers when its controller creates a Fireball, a spell token.",
+        "test": "119-play-and-token-events.test.ts::Mycelial Mentor: a FIREBALL is a token too"
+      }
+    ],
+    "see": [
+      "304"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R129",
+          "quote": "\"A token\" carries no qualifier, and the set proves the reading itself"
+        },
+        {
+          "ref": "R129",
+          "quote": "Spell tokens are still tokens."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "119-play-and-token-events.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R129 (Mycelial Mentor's \"When you create a token\").",
+    "sourceHashes": {
+      "R129": "630060703c282d6843d3b9b11d74e161010ed2a31ab72a6810a6cb921e78a8e9"
+    }
+  },
+  {
+    "key": "types.general.nouns.card",
+    "parent": "types.general.nouns",
+    "order": 4,
+    "text": "\"Card\" never includes a token. A spell token being cast is a spell being played, but not a card being played.",
+    "examples": [
+      {
+        "text": "Arbiter of Armistice makes cards played during battle cost 2 life more; casting a spell token costs no life.",
+        "test": "337-spell-tokens-are-played.test.ts::R305: Arbiter of Armistice prints Cards"
+      },
+      {
+        "text": "A spell token cast fires the \"spell played\" event but not the \"card played\" one.",
+        "test": "119-play-and-token-events.test.ts::a spell TOKEN is a played spell but not a card"
+      }
+    ],
+    "see": [
+      "types.tokens.not-cards",
+      "701"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R305",
+          "quote": "**\"card(s)\"**: a token does not."
+        },
+        {
+          "ref": "R129",
+          "quote": "Everything is a card, including units. Tokens are NOT cards, however."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "337-spell-tokens-are-played.test.ts",
+        "119-play-and-token-events.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R305 noun table (Arbiter of Armistice, Vengeance, Deferral Drone) and R129. Contested by the printed \"temporary cards\": D-U06-1.",
+    "sourceHashes": {
+      "R129": "630060703c282d6843d3b9b11d74e161010ed2a31ab72a6810a6cb921e78a8e9",
+      "R305": "88a482701a5f378703d6d18e30d8a3b943798c47e43ee19572963aef6c8e2da6"
+    }
+  },
+  {
+    "key": "types.general.nouns.nontoken",
+    "parent": "types.general.nouns",
+    "order": 5,
+    "text": "\"Nontoken\" excludes every token.",
+    "examples": [
+      {
+        "text": "Void Mandible says \"nontoken card\"; a spell token being cast does not trigger it.",
+        "test": "40-light-c.test.ts::Void Mandible: a spell TOKEN does not trigger it"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R305",
+          "quote": "**\"nontoken spell\"**: a token does not, because the card says so."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "40-light-c.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R305; the same reading is behind every \"nontoken\" card R305 lists.",
+    "sourceHashes": {
+      "R305": "88a482701a5f378703d6d18e30d8a3b943798c47e43ee19572963aef6c8e2da6"
+    }
+  },
+  {
+    "key": "types.units.permanent",
+    "parent": "301",
+    "order": 1,
+    "text": "A unit is a permanent: once it enters play, it stays in play until something removes it.",
+    "examples": [
+      {
+        "text": "A Good Whale stays in play through two turns and their regroups until it is destroyed.",
+        "test": "417-cr-card-types.test.ts::cr:types.units.permanent — a unit stays in play through battle, regroup and the next turn until something removes it"
+      }
+    ],
+    "see": [
+      "404"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "Units are permanents, meaning when played, they will"
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "stay in play until removed. Units are what players use"
+        },
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "Units are permanents, meaning when summoned, they will stay in play until removed. They can be easily recognized by the existence of stats on the card (5)."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "417-cr-card-types.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "types.units.role",
+    "parent": "301",
+    "order": 2,
+    "text": "Units are what players use to build armies, and to attack and defend.",
+    "examples": [],
+    "see": [
+      "604",
+      "606"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "to build armies, attack and defend in Algomancy. When"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "a description of what units are for; attacking and blocking are demonstrated in their own rules"
+  },
+  {
+    "key": "types.units.power",
+    "parent": "301",
+    "order": 3,
+    "text": "A unit's power is how much damage it deals in combat.",
+    "examples": [
+      {
+        "text": "An unblocked The Foretold (power 3) deals 3 damage to the defending player.",
+        "test": "417-cr-card-types.test.ts::cr:types.units.power — an unblocked unit deals damage equal to its power"
+      }
+    ],
+    "see": [
+      "206",
+      "608"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "Units have a specified power, which denotes how much"
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "damage they deal in combat as well as a defense value,"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "417-cr-card-types.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "types.units.defense",
+    "parent": "301",
+    "order": 4,
+    "text": "A unit's defense is how much damage it can sustain in battle before it dies.",
+    "examples": [
+      {
+        "text": "A Good Whale (defense 5) survives a Fireball 2 with 2 damage on it, then dies to a Fireball 3.",
+        "test": "417-cr-card-types.test.ts::cr:types.units.defense — damage accumulates on a unit, and it dies once the total reaches its defense"
+      }
+    ],
+    "see": [
+      "206",
+      "112"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "which denotes how much damage they can sustain in"
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "battle before dying. A unit dealt a total amount of damage that is greater than or equal to its defense during"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "417-cr-card-types.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The Rulebook 2023 calls this stat \"health\": D-U06-3.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "types.units.defense.lethal",
+    "parent": "types.units.defense",
+    "order": 1,
+    "text": "A unit that has been dealt a total amount of damage greater than or equal to its defense during battle dies.",
+    "examples": [
+      {
+        "text": "A 3/3 dealt exactly 3 dies; dealt 2 it lives.",
+        "test": "417-cr-card-types.test.ts::cr:types.units.defense.lethal — a 3/3 dealt exactly 3 dies; dealt 2 it lives"
+      }
+    ],
+    "see": [
+      "112",
+      "713"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "battle before dying. A unit dealt a total amount of damage that is greater than or equal to its defense during"
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "battle will die."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "417-cr-card-types.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Stated here as part of what defense means. When the death happens (state checks) is 713; damage is 112.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "types.units.dies-to-bin",
+    "parent": "301",
+    "order": 5,
+    "text": "When a unit dies or is deleted, it is put into the bin.",
+    "examples": [
+      {
+        "text": "A unit that dies, or is deleted, is put into the bin.",
+        "test": "417-cr-card-types.test.ts::cr:types.units.dies-to-bin — a unit that dies, or is deleted, is put into the bin"
+      }
+    ],
+    "see": [
+      "405",
+      "types.tokens.leaving-play",
+      "803"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "a unit dies or is deleted, it is placed in the bin (discard"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "417-cr-card-types.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The exceptions live elsewhere: whose bin (405), a token (304.10), an {Unstable} or modded card (803, 720).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "types.units.no-summoning-sickness",
+    "parent": "301",
+    "order": 6,
+    "text": "A unit does not have to wait before it can attack or block: as long as a unit is in play, it can attack and block.",
+    "examples": [
+      {
+        "text": "A unit that spawned during the attack step may still be declared as a blocker.",
+        "test": "417-cr-card-types.test.ts::cr:types.units.no-summoning-sickness — a unit that spawned during the attack step may still be declared as a blocker"
+      }
+    ],
+    "see": [
+      "604",
+      "606",
+      "types.units.spawn-in-battle"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.43",
+          "quote": "A: Yes! Algomancy has no summoning sickness. As"
+        },
+        {
+          "ref": "Manual p.43",
+          "quote": "long as a unit is in play, it can attack/block."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "417-cr-card-types.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "The Q&A asks \"Can units that spawn during battle attack?\"; Manual p.15 puts a unit that spawns during battle outside of formation, so it is not attacking or blocking in that battle. Recorded as D-U06-4. No test found that asserts a newly arrived unit may attack.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "types.units.spawn-in-battle",
+    "parent": "301",
+    "order": 7,
+    "text": "A unit that enters play during battle is placed outside of formation: it is in the region, but it is not attacking or blocking. It enters a formation only if the effect that put it into play says so.",
+    "examples": [
+      {
+        "text": "A 2/2 that Tidelurker creates mid-attack stays in the enemy region, in no column, and cannot block the counterattack.",
+        "test": "98-spawn-region.test.ts::Tidelurker's mid-attack 2/2 stays in the enemy region"
+      },
+      {
+        "text": "A spell unit that Hooba-Pon plays spawns into an open position in Hooba-Pon's formation, because Hooba-Pon says so.",
+        "test": "396-raq-timing.test.ts::RAQ Hooba-Pon spell unit: the spell part happens, then the unit spawns into the formation"
+      }
+    ],
+    "see": [
+      "602",
+      "604",
+      "types.tokens.region"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.15",
+          "quote": "If a unit spawns during battle, it is placed outside"
+        },
+        {
+          "ref": "Manual p.15",
+          "quote": "of formation (meaning it is not attacking or blocking), but still in the same region."
+        },
+        {
+          "ref": "Manual p.43",
+          "quote": "A: They spawn in the region but not in formation unless"
+        },
+        {
+          "ref": "Manual p.43",
+          "quote": "they specifically say so."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "98-spawn-region.test.ts",
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The \"unless they specifically say so\" clause is the Manual's answer for spell units (p.43); the p.15 note states the general case. Hooba-Pon's text places the unit it plays into its formation.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "types.units.spawns-with-counters",
+    "parent": "301",
+    "order": 8,
+    "text": "A unit whose text says it spawns with counters enters play already carrying them. This is a fact about the unit as it arrives, not an ability: it does not use the stack, and nothing can respond to it.",
+    "examples": [
+      {
+        "text": "Aethercap Siphoner (printed 4/4, spawns with three -1/-1 counters) is already a 1/1 when an ability that watches allies spawn looks at it.",
+        "test": "139-spawn-and-play.test.ts::Aethercap Siphoner: a spawn watcher sees the 1/1 the card prints"
+      },
+      {
+        "text": "Nothing goes on the stack for Powerforge Synergist's or Aethercap Siphoner's spawn counters.",
+        "test": "139-spawn-and-play.test.ts::a card's own size is not respondable"
+      }
+    ],
+    "see": [
+      "708"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R165",
+          "quote": "\"I spawn with N counters\" is a DECLARATION about the body"
+        },
+        {
+          "ref": "R165",
+          "quote": "card **is** on arrival, not an effect aimed at it. There is nothing there to"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "139-spawn-and-play.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R165 (Robot, Powerforge Synergist, Aethercap Siphoner). The printed cards say \"I spawn with ...\"; the ruling decides it is not a trigger.",
+    "sourceHashes": {
+      "R165": "3f61e5ab4e91ee143485df7a7a5a76e059453f2d23a3f4503a7a024564b6de6d"
+    }
+  },
+  {
+    "key": "types.units.spawns-with-counters.not-put",
+    "parent": "types.units.spawns-with-counters",
+    "order": 1,
+    "text": "No player puts those counters on the unit, so an ability that triggers when a player puts counters on a unit does not trigger. An effect that changes how many counters would be put on a unit does change them.",
+    "examples": [
+      {
+        "text": "Aethercap Siphoner arriving with its counters does not count as \"you put counters on an ally\".",
+        "test": "139-spawn-and-play.test.ts::Aethercap Siphoner: spawning with counters is not"
+      },
+      {
+        "text": "With an allied Flux Resonator, Powerforge Synergist enters with three +1/+1 counters instead of two.",
+        "test": "139-spawn-and-play.test.ts::its two +1/+1 counters are scaled by an allied Flux Resonator"
+      }
+    ],
+    "see": [
+      "708",
+      "112"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R165",
+          "quote": "nobody *puts* a spawn's own counters on"
+        },
+        {
+          "ref": "R165",
+          "quote": "scaled by the amount layer, and nothing for an opponent to negate."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "139-spawn-and-play.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R165's \"SILENT\" and \"amount layer\" details; the replacement effect in question is Flux Resonator (\"if one or more counters would be put on a unit by an allied source, put that many counters plus one instead\").",
+    "sourceHashes": {
+      "R165": "3f61e5ab4e91ee143485df7a7a5a76e059453f2d23a3f4503a7a024564b6de6d"
+    }
+  },
+  {
+    "key": "types.units.put-vs-play",
+    "parent": "301",
+    "order": 9,
+    "text": "A unit that an effect \"puts into play\" was not played. A unit that an effect lets a player \"play\" was played, wherever it came from.",
+    "examples": [
+      {
+        "text": "Bloomcaster creates a 1/1 when its controller plays a unit, but not when a unit is put into play.",
+        "test": "11-fire-wood.test.ts::Bloomcaster: PLAYING a unit makes a 1/1"
+      },
+      {
+        "text": "The units Wake the Dead plays out of a bin are played: Bloomcaster and Stalwart Sentinel both see them.",
+        "test": "139-spawn-and-play.test.ts::Wake the Dead: the units it plays out of a bin are PLAYED"
+      }
+    ],
+    "see": [
+      "701"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R165",
+          "quote": "The ruling: the printed verb decides."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "11-fire-wood.test.ts",
+        "139-spawn-and-play.test.ts",
+        "417-cr-card-types.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R165 (b): Exhume, Resurrect, Rousing Spirit and Lurking Dread put into play; Wake the Dead and The Bonesculptor play. The rest of playing is 701.",
+    "sourceHashes": {
+      "R165": "3f61e5ab4e91ee143485df7a7a5a76e059453f2d23a3f4503a7a024564b6de6d"
+    }
+  },
+  {
+    "key": "types.spells.what",
+    "parent": "302",
+    "order": 1,
+    "text": "A spell provides a one-time effect.",
+    "examples": [
+      {
+        "text": "Manufacture creates three Robots once and goes to the bin; it never enters play.",
+        "test": "417-cr-card-types.test.ts::cr:types.spells.what — a spell (Manufacture) has its effect once and goes to the bin, never into play"
+      }
+    ],
+    "see": [
+      "702"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "Spells provide one-time effects and are used to interact, create or modify certain aspects of the game."
+        },
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "Generally, spells provide temporary effects and are used to interact"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "417-cr-card-types.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "types.spells.to-bin",
+    "parent": "302",
+    "order": 2,
+    "text": "When a spell resolves, it goes directly to the bin.",
+    "examples": [
+      {
+        "text": "A spell that resolves goes to the bin; because it came from the stack, it is not trashed.",
+        "test": "35-rot-debt-trash.test.ts::R40: a spell going to the bin after RESOLVING is not trashed"
+      }
+    ],
+    "see": [
+      "405",
+      "704",
+      "types.spell-units.resolution",
+      "types.tokens.leaving-play"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "When a spell resolves, it goes directly to the player’s"
+        },
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "with other players. When a spell resolves, it goes directly to your discard."
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "placed in the bin."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "35-rot-debt-trash.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Whose bin is 405 (R250, zones follow control). A spell unit (303.3) and a spell token (304.10) do not go to the bin. Resolution and fizzling are 704.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "types.spells.spell-tokens",
+    "parent": "302",
+    "order": 3,
+    "text": "A spell token is a spell.",
+    "examples": [
+      {
+        "text": "Emberflame Enlightener's \"your spells\" includes its controller's spell tokens.",
+        "test": "12-fire-a.test.ts::INCLUDES your spell tokens"
+      }
+    ],
+    "see": [
+      "types.tokens.spell-tokens"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.15",
+          "quote": "A spell token is a temporary spell that may be played"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 §13",
+          "quote": "Yes. Tokens are spells."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "12-fire-a.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
+    }
+  },
+  {
+    "key": "types.spell-units.what",
+    "parent": "303",
+    "order": 1,
+    "text": "A spell unit is both a spell and a unit. Like a spell it has a one-time effect; like a unit it has stats.",
+    "examples": [
+      {
+        "text": "A card search treats a spell unit as both a unit and a spell.",
+        "test": "210-cardsearch.test.ts::a spell unit is a unit AND a spell"
+      },
+      {
+        "text": "A played Jelly is a played spell, gives the target -2/-2, and then its body is a 2/1 unit in play.",
+        "test": "417-cr-card-types.test.ts::cr:types.spell-units.what — a played Jelly is a played spell with a one-time -2/-2, and then a unit with stats"
+      }
+    ],
+    "see": [
+      "types.general.nouns"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "Some spells also have the unit type. Rather than being"
+        },
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "There are also spell units, which have a one time effect like spells but"
+        },
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "also have stats (5) and enter play rather than the discard as they resolve."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "210-cardsearch.test.ts",
+        "417-cr-card-types.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "types.spell-units.on-stack",
+    "parent": "303",
+    "order": 2,
+    "text": "A spell unit that has been played goes on the stack. It is not in play while it is on the stack.",
+    "examples": [
+      {
+        "text": "A Jelly that has been played sits on the stack beneath Bloomcaster's trigger; negated there, it never enters play.",
+        "test": "396-raq-timing.test.ts::RAQ Bloomcaster: a negated spell unit still leaves the Bloomcaster 1/1 behind"
+      }
+    ],
+    "see": [
+      "406"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353862592661164152#1",
+          "quote": "you will get 1/1 from Bloomcaster even if Spell-Units effect is negated"
+        },
+        {
+          "ref": "RAQ 1353862592661164152#0",
+          "quote": "He goes on the stack (but is not Spawned / In play yet)."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts",
+        "417-cr-card-types.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "RAQ 1353862592661164152#0's \"He\" is Mycelial Mentor, a plain unit; the same thread's point about a negated spell unit (#1) puts a spell unit on the stack too.",
+    "sourceHashes": {
+      "RAQ 1353862592661164152#0": "b8900e5634fbf608f3841fe20f39a2a1330bd12286120aa061d5273d2c0002c0",
+      "RAQ 1353862592661164152#1": "b2755977f37b7fd5c0c0a6935c5a3df8015c2ce388d03d05adda10105fd6fed4"
+    }
+  },
+  {
+    "key": "types.spell-units.resolution",
+    "parent": "303",
+    "order": 3,
+    "text": "When a spell unit resolves, its spell effect happens first. Then the unit enters play, instead of the card going to the bin.",
+    "examples": [
+      {
+        "text": "Spawntender creates its 8/8, and then its own 2/2 body enters play.",
+        "test": "15-water-b.test.ts::Spawntender: creates an 8/8, then its own 2/2 body spawns"
+      }
+    ],
+    "see": [
+      "704",
+      "404"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "placed in the bin when they resolve, spell units spawn"
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "into play as units. If the spell unit is prevented from"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1461450216874967235#0",
+          "quote": "Yes, the spell part happens and if it resolves, the unit will spawn into formation."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "15-water-b.test.ts",
+        "417-cr-card-types.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1461450216874967235#0": "a221c0da51ffe596defa69c129254ad614ac58b09ed0590f80b24d973827b751"
+    }
+  },
+  {
+    "key": "types.spell-units.prevented",
+    "parent": "303",
+    "order": 4,
+    "text": "If a spell unit is prevented from resolving (it is negated, or every one of its targets has become invalid), the unit does not enter play and the card goes to the bin.",
+    "examples": [
+      {
+        "text": "A spell unit played through Hooba-Pon and negated never enters play.",
+        "test": "396-raq-timing.test.ts::RAQ Hooba-Pon spell unit: negated, the unit does not enter play"
+      },
+      {
+        "text": "A spell unit whose targets are all gone fizzles and never spawns.",
+        "test": "05-rulings.test.ts::a fizzled spell unit never spawns"
+      },
+      {
+        "text": "A Bloomcaster 1/1 created because a spell unit was played is still created when that spell unit is negated.",
+        "test": "396-raq-timing.test.ts::RAQ Bloomcaster: a negated spell unit still leaves the Bloomcaster 1/1 behind"
+      }
+    ],
+    "see": [
+      "704",
+      "405"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "resolving, for example due to its targets being made"
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "invalid, the unit will not spawn and will enter the bin."
+        },
+        {
+          "ref": "Manual p.43",
+          "quote": "keep in mind for spell units like Leaping Lillik."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1461450216874967235#1",
+          "quote": "As always - if the spell is negated, then unit doesn't enter play."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts",
+        "05-rulings.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Whether losing only SOME targets stops it is 704 (a spell resolves as best it can). The Manual sends a prevented spell unit to the bin; R250 makes it the controller's bin (405).",
+    "sourceHashes": {
+      "RAQ 1461450216874967235#1": "1afad7ef4c9e3ea98f6bf01bcd70ecf19a028cb13e5ef3149dfe04aa2e07d0f1"
+    }
+  },
+  {
+    "key": "types.spell-units.is-a-spell",
+    "parent": "303",
+    "order": 5,
+    "text": "Playing a spell unit is playing a spell, and while it is on the stack it is a spell: anything that refers to a spell, or to an allied spell, applies to it.",
+    "examples": [
+      {
+        "text": "A spell unit played through Hooba-Pon counts as playing a spell.",
+        "test": "396-raq-timing.test.ts::RAQ Hooba-Pon spell unit: it counts as playing a spell"
+      },
+      {
+        "text": "Origon negates it when it is the first spell its controller plays in the battle.",
+        "test": "396-raq-timing.test.ts::Origon negates it as the first spell"
+      },
+      {
+        "text": "Molten Riftbreaker dying negates it as an allied spell.",
+        "test": "396-raq-timing.test.ts::Molten Riftbreaker dying negates it as an allied spell"
+      }
+    ],
+    "see": [
+      "types.general.nouns.spell",
+      "701"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1461450216874967235#2",
+          "quote": "Q: Does that count as 'playing a spell' for some triggers? A: Yes."
+        },
+        {
+          "ref": "RAQ 1461450216874967235#3",
+          "quote": "Q: Would Origon try to negate it? A: Yes"
+        },
+        {
+          "ref": "RAQ 1461450216874967235#4",
+          "quote": "Q: Molten Riftbreaker dying would negate that as 'allied SPELL'? A: Yes"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "The designer answers are about a spell unit played through Hooba-Pon; no source limits them to that route. engine differs: F-U06-1 (measured: a spell unit Wake the Dead plays from a bin fires no spell-played event and never goes on the stack).",
+    "sourceHashes": {
+      "RAQ 1461450216874967235#2": "883faf2775536cafa63ccea3b54aa28069fbe296a8933da998cdffd6b3917190",
+      "RAQ 1461450216874967235#3": "86583bb730672c5ba5900df06a06faa79ef6d4449e4bcea1d2930256c6b46791",
+      "RAQ 1461450216874967235#4": "416e7b81b509be8a010acda6c0a2bab17aad7d9e96a32c38f367a014b50f57f4"
+    },
+    "engineDiffers": [
+      "F-U06-1"
+    ]
+  },
+  {
+    "key": "types.spell-units.is-a-unit",
+    "parent": "303",
+    "order": 6,
+    "text": "A spell unit is also a unit card. An effect that lets a player play a unit lets them play a spell unit, and it is played as a spell.",
+    "examples": [
+      {
+        "text": "Hooba-Pon offers a spell unit from the hand; its spell part happens and its body takes the open position.",
+        "test": "110-literal-water.test.ts::Hooba-Pon: a SPELL UNIT is a unit"
+      },
+      {
+        "text": "Insidious Invitation's \"play a unit from hand\" lets each player play a spell unit.",
+        "test": "110-literal-water.test.ts::lets each player play a SPELL UNIT"
+      }
+    ],
+    "see": [
+      "types.general.nouns.unit"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Hooba-Pon",
+          "quote": "you may play a unit from your hand into an open position in my formation."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1461450216874967235#0",
+          "quote": "Yes, the spell part happens and if it resolves, the unit will spawn into formation."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "110-literal-water.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "States the designer ruling for every \"play a unit\" effect; the RAQ thread names Hooba-Pon and Insidious Invitation. engine differs: F-U06-1 (measured: Wake the Dead lets a player play a spell unit from a bin but spawns its body without playing it as a spell).",
+    "sourceHashes": {
+      "RAQ 1461450216874967235#0": "a221c0da51ffe596defa69c129254ad614ac58b09ed0590f80b24d973827b751"
+    },
+    "engineDiffers": [
+      "F-U06-1"
+    ]
+  },
+  {
+    "key": "types.spell-units.in-battle",
+    "parent": "303",
+    "order": 7,
+    "text": "A spell unit played during battle enters play in the region where it resolved, outside of formation, unless its own text or the effect that played it places it in a formation.",
+    "examples": [
+      {
+        "text": "Played through Hooba-Pon, a spell unit spawns into Hooba-Pon's formation.",
+        "test": "396-raq-timing.test.ts::RAQ Hooba-Pon spell unit: the spell part happens, then the unit spawns into the formation"
+      }
+    ],
+    "see": [
+      "types.units.spawn-in-battle",
+      "602"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.43",
+          "quote": "Q: Where do spell units spawn when they are played"
+        },
+        {
+          "ref": "Manual p.43",
+          "quote": "A: They spawn in the region but not in formation unless"
+        },
+        {
+          "ref": "Manual p.43",
+          "quote": "they specifically say so."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1461450216874967235#0",
+          "quote": "Yes, the spell part happens and if it resolves, the unit will spawn into formation."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts",
+        "417-cr-card-types.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "\"the region where it resolved\" is the battle region; R115 and R147 say the same of a spell unit's body.",
+    "sourceHashes": {
+      "RAQ 1461450216874967235#0": "a221c0da51ffe596defa69c129254ad614ac58b09ed0590f80b24d973827b751"
+    }
+  },
+  {
+    "key": "types.spell-units.not-played",
+    "parent": "303",
+    "order": 8,
+    "text": "A spell unit that enters play without being played (for example, one put into play from a bin) does not produce its spell effect.",
+    "examples": [
+      {
+        "text": "Exhume puts a Jelly from the bin into play with no spell effect, and Bloomcaster does not hear a play.",
+        "test": "417-cr-card-types.test.ts::cr:types.spell-units.not-played — Exhume puts a Jelly from the bin into play with no spell effect, and Bloomcaster does not hear a play"
+      }
+    ],
+    "see": [
+      "types.units.put-vs-play",
+      "701"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.43",
+          "quote": "Q: If a spell unit spawns but was not played (e.g. if it was"
+        },
+        {
+          "ref": "Manual p.43",
+          "quote": "A: No, spell effects only happen when the card is"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "417-cr-card-types.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "types.spell-units.played-by-effect",
+    "parent": "303",
+    "order": 9,
+    "text": "A spell unit that an effect lets a player play from somewhere other than the hand is still played: its spell effect happens, and the unit enters play only if the spell resolves.",
+    "examples": [
+      {
+        "text": "A Jelly that Wake the Dead plays from a bin has its spell part happen, and its body enters play only if that spell resolves. (illustrative)",
+        "test": null
+      }
+    ],
+    "see": [
+      "types.units.put-vs-play",
+      "701"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.43",
+          "quote": "A: No, spell effects only happen when the card is"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1461450216874967235#0",
+          "quote": "Yes, the spell part happens and if it resolves, the unit will spawn into formation."
+        },
+        {
+          "ref": "RAQ 1461450216874967235#2",
+          "quote": "Q: Does that count as 'playing a spell' for some triggers? A: Yes."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R165",
+          "quote": "The ruling: the printed verb decides."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "Combines 301.9 (the printed verb decides whether it is a play) with the Hooba-Pon RAQ (what playing a spell unit means; its thread is about playing from hand, and no source limits it to the hand). R165 itself records that Wake the Dead, which prints \"play\", spawns a spell unit's body and skips its spell. engine differs: F-U06-1 (measured by the verifier: Jelly from a bin, body arrives, no target asked, no spell-played event, the victim stays 7/5).",
+    "sourceHashes": {
+      "R165": "3f61e5ab4e91ee143485df7a7a5a76e059453f2d23a3f4503a7a024564b6de6d",
+      "RAQ 1461450216874967235#0": "a221c0da51ffe596defa69c129254ad614ac58b09ed0590f80b24d973827b751",
+      "RAQ 1461450216874967235#2": "883faf2775536cafa63ccea3b54aa28069fbe296a8933da998cdffd6b3917190"
+    },
+    "engineDiffers": [
+      "F-U06-1"
+    ],
+    "rebuttal": "engineDiffers F-U06-1 was already set (it is stripped from the verifier's copy); the rule states the designer ruling, and F-U06-1 now carries the verifier's measurement."
+  },
+  {
+    "key": "types.spell-units.control",
+    "parent": "303",
+    "order": 10,
+    "text": "If a spell unit's own text says that another player gains control of it, it enters play under that player's control. There is no moment when its caster controls it. Its owner does not change.",
+    "examples": [
+      {
+        "text": "Hush Mush negates an opponent's effect and enters play as that opponent's unit, with no trigger and no handover.",
+        "test": "23-wood-a.test.ts::R143 #95: Hush Mush ENTERS under the negated effect's controller"
+      },
+      {
+        "text": "An ability of the caster's that watches allies spawn does not see Hush Mush arrive.",
+        "test": "23-wood-a.test.ts::R143 #96: the CASTER's Flourishing Flora takes NO counter off Hush Mush"
+      }
+    ],
+    "see": [
+      "102",
+      "711"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R143 (its enters-as-that-player's-unit half)",
+          "quote": "A spell unit whose text says another player gains control of it ENTERS as"
+        },
+        {
+          "ref": "R143 (its enters-as-that-player's-unit half)",
+          "quote": "that player's unit.** There is no moment at which the caster controls the body,"
+        },
+        {
+          "ref": "R143 (its enters-as-that-player's-unit half)",
+          "quote": "**OWNERSHIP DOES NOT FOLLOW.**"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R143",
+          "relation": "partly superseded: its \"still your bin it dies to\" clause was replaced by R250 (zones follow control)"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "23-wood-a.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Hush Mush (\"Its controller gains control of me.\"). Owner call (R143); no designer source: D-U06-8.",
+    "sourceHashes": {
+      "R143": "fe3e0152f54c131e73fc9659c92bd35bebe1328b2ed54a4c79fceff86679caf9"
+    }
+  },
+  {
+    "key": "types.spell-units.copy",
+    "parent": "303",
+    "order": 11,
+    "text": "If a spell unit's own text says it becomes a copy of something, it enters play already as that copy. Becoming the copy is not a triggered ability.",
+    "examples": [
+      {
+        "text": "Borrower of Forms has the copied unit's name, stats and attributes from the instant it enters play.",
+        "test": "26-metal-a.test.ts::R147: the body wears the borrowed IDENTITY from the instant it enters play"
+      },
+      {
+        "text": "Becoming the copy puts nothing on the stack, so no trigger-ordering question is asked.",
+        "test": "26-metal-a.test.ts::R147: becoming the copy is NOT a trigger"
+      }
+    ],
+    "see": [
+      "710"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R147",
+          "quote": "A spell unit whose own text says it becomes a copy ENTERS PLAY as that copy."
+        },
+        {
+          "ref": "R147",
+          "quote": "There is no moment at which it is standing there as itself, so there is nothing"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "26-metal-a.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Borrower of Forms (\"I become an exact copy of that unit.\"). Copies in general are 710.",
+    "sourceHashes": {
+      "R147": "0e980b5d69ea6ba81371890fb4f0e4e7201412442f1830d53a1293b0c46958f6"
+    }
+  },
+  {
+    "key": "types.spell-units.copy.not-spell-unit",
+    "parent": "types.spell-units.copy",
+    "order": 1,
+    "text": "While a spell unit is a copy of a unit, it is not a spell unit.",
+    "examples": [
+      {
+        "text": "Cosmic Reversal returns spell units in play to their controllers' hands; a Borrower of Forms copying a unit stays in play.",
+        "test": "393-raq-mods.test.ts::RAQ Borrower of Forms: while it mimics a unit it is not a spell unit"
+      }
+    ],
+    "see": [
+      "710"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1372468222158180424#11",
+          "quote": "He loses his 'Spell' part when he is mimicking some other unit."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1372468222158180424#11": "86c2011c57a956236b27abb5b49dd626204fd79aea129d3bba45b9d3a022b74c"
+    }
+  },
+  {
+    "key": "types.tokens.what",
+    "parent": "304",
+    "order": 1,
+    "text": "Tokens are created by effects, directly into play.",
+    "examples": [
+      {
+        "text": "Manufacture creates three Robot tokens straight into play, through no hand, stack or bin.",
+        "test": "417-cr-card-types.test.ts::cr:types.tokens.what — tokens are created by an effect straight into play, through no hand, stack or bin"
+      }
+    ],
+    "see": [
+      "404"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.15",
+          "quote": "Tokens are temporary cards that are created directly"
+        },
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "Tokens are temporary cards that are created directly into play"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "417-cr-card-types.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Both printed sources call tokens \"temporary cards\"; this document follows the owner's ruling that a token is not a card (304.2, D-U06-1).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "types.tokens.not-cards",
+    "parent": "304",
+    "order": 2,
+    "text": "A token is not a card.",
+    "examples": [
+      {
+        "text": "A spell token being cast is a spell played but not a card played.",
+        "test": "119-play-and-token-events.test.ts::a spell TOKEN is a played spell but not a card"
+      }
+    ],
+    "see": [
+      "types.general.cards",
+      "types.general.nouns.card"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R133 (its tokens-are-not-cards half)",
+          "quote": "Tokens are NOT cards, however."
+        },
+        {
+          "ref": "R306",
+          "quote": "Tokens are specifically not considered cards in terms of specific semantics"
+        },
+        {
+          "ref": "R129",
+          "quote": "Everything is a card, including units. Tokens are NOT cards, however."
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R133",
+          "relation": "partly superseded: its second half (\"Tokens are trashed, yes\") was withdrawn by R306"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "119-play-and-token-events.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Owner call. The printed text calls tokens \"temporary cards\", and Void Mandible prints \"nontoken card\": D-U06-1. What the noun \"card\" reaches is 300.5d.",
+    "sourceHashes": {
+      "R129": "630060703c282d6843d3b9b11d74e161010ed2a31ab72a6810a6cb921e78a8e9",
+      "R133": "6b4f0b8f575f96f005fba919ee325511f5278cb5409a6219c2ba7d9b21e21ce3",
+      "R306": "63ddd3a55f5ae1c3565593e3bc4c1c6ad19bb0124baf0ac5f651e7ad794e765f"
+    }
+  },
+  {
+    "key": "types.tokens.kinds",
+    "parent": "304",
+    "order": 3,
+    "text": "A token is either a unit token or a spell token.",
+    "examples": [
+      {
+        "text": "Created Robots and Wisps are unit tokens; created Fireballs, Poisons and Crystals are spell tokens.",
+        "test": "417-cr-card-types.test.ts::cr:types.tokens.kinds — a created token is either a unit token (a unit with the token flag) or a spell token"
+      }
+    ],
+    "see": [
+      "types.general.kinds"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.15",
+          "quote": "UNIT TOKENS"
+        },
+        {
+          "ref": "Manual p.15",
+          "quote": "A spell token is a temporary spell that may be played"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "417-cr-card-types.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The printed pool has three named spell tokens (Fireball, Crystal, Poison) and three named unit tokens (Robot, Wisp, Wraith); most unit tokens are unnamed X/X units (304.4).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "types.tokens.created-units",
+    "parent": "304",
+    "order": 4,
+    "text": "A unit that an effect creates is a unit token, whether or not the effect calls it a token.",
+    "examples": [
+      {
+        "text": "Download (\"Gain control of target token\") can take an X/X unit that an effect created.",
+        "test": "393-raq-mods.test.ts::RAQ Download: a Fireball in the region and an X/X unit token are both tokens it can take"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Spawntender",
+          "quote": "Create an 8/8 unit."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1353864175910387742#2",
+          "quote": "3. 8/8 unit from Spawntender (or any X/X unit created by Awoken Tomb or similiar) ✅"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1353864175910387742#2": "e451a1e673b7d7dd1ea39f617df7c999ba851ad186aaa4d812bd8ee9e67f0d34"
+    }
+  },
+  {
+    "key": "types.tokens.created-units.copy",
+    "parent": "types.tokens.created-units",
+    "order": 1,
+    "text": "A copy of a unit that an effect creates is a token, even when the unit copied is not.",
+    "examples": [
+      {
+        "text": "The copy Echo of Despair creates of itself is a token.",
+        "test": "393-raq-mods.test.ts::RAQ Download: a copy Echo of Despair makes of itself is a token"
+      }
+    ],
+    "see": [
+      "710"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Echo of Despair",
+          "quote": "create a copy of me."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1353864175910387742#3",
+          "quote": "4. Copy of Echo of Despair ✅"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1353864175910387742#3": "1df590deb52f750db15cbd1ae36380f43b93c3d85ddf7de7398839c45e108846"
+    }
+  },
+  {
+    "key": "types.tokens.spell-copies",
+    "parent": "304",
+    "order": 5,
+    "text": "A copy of a spell made on the stack, such as one made by Earthbound Replicator or Maelstrom Charger, is not a token.",
+    "examples": [
+      {
+        "text": "Download cannot take a spell copy that Earthbound Replicator made.",
+        "test": "393-raq-mods.test.ts::RAQ Download: a spell copy made by Earthbound Replicator is not a token"
+      }
+    ],
+    "see": [
+      "710"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353864175910387742#5",
+          "quote": "6. Copy of a spell resulting from Earthbound Replicator ❌"
+        },
+        {
+          "ref": "RAQ 1353864175910387742#6",
+          "quote": "7. Copy of a spell resulting from Maelstrom Charger ❌"
+        },
+        {
+          "ref": "RAQ 1355613076506017894#5",
+          "quote": "5. Copy spell is not a token."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1353864175910387742#5": "6611609333a47e5387947853661472348a4d4f287554fcd67d23427ede33b119",
+      "RAQ 1353864175910387742#6": "11aef4c4ea3911830b44a1b0102fbc1a6b6edfd11e7f354ca09f30e23e644b8f",
+      "RAQ 1355613076506017894#5": "f95b7ece21aa9ddc253f3d32a90eb86fc603388c336ffaffb685279d02f0927f"
+    }
+  },
+  {
+    "key": "types.tokens.copying-a-token",
+    "parent": "304",
+    "order": 6,
+    "text": "A nontoken unit that becomes a copy of a token does not become a token.",
+    "examples": [
+      {
+        "text": "A Borrower of Forms that copies a Robot token is a nontoken unit.",
+        "test": "393-raq-mods.test.ts::copying a Robot token makes a nontoken unit"
+      },
+      {
+        "text": "With that Borrower on the board beside a real token, Download offers the token but not the Borrower. (illustrative)",
+        "test": "417-cr-card-types.test.ts::cr:types.tokens.copying-a-token — Download is playable with a Borrower copy of a Robot on board and does not offer the Borrower"
+      }
+    ],
+    "see": [
+      "710"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1372468222158180424#9",
+          "quote": "No, true BoFy is non-token Unit … He cannot be targeted by Arcane Echo or Download."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts",
+        "417-cr-card-types.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "The bound test's Download half sits inside if (plays.length) and never runs (the verifier measured no Download play): F-U06-2. The verifier's probe with a real token shows the Download half.",
+    "sourceHashes": {
+      "RAQ 1372468222158180424#9": "c36ad5193f1cf044c9cbbdbd96fbc249d56fe04c8ad1f9fcfc5629b57f72c443"
+    }
+  },
+  {
+    "key": "types.tokens.back-face",
+    "parent": "304",
+    "order": 7,
+    "text": "The back face of a card that transforms is not a token. The transformed card is still a card, and in every zone other than play it is its front face.",
+    "examples": [
+      {
+        "text": "A transformed Scholar of the Void that dies goes to the bin as Scholar of the Void.",
+        "test": "135-exchange-and-zones.test.ts::R157 §10: a transformed Scholar killed in play BINS as"
+      }
+    ],
+    "see": [
+      "710"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 §10",
+          "quote": "And the back is NOT a token."
+        },
+        {
+          "ref": "R157 §10",
+          "quote": "Turns back over. In all zones, other than play, it exists as the front"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R101",
+          "relation": "partly reversed by R157 §10: R101 made the transformed card a token, and rejected flipping it back on leaving play"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "135-exchange-and-zones.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Scholar of the Void / Beyond, Codex Incarnate. The back face prints \"Book Token Unit\" per R101's transcription: D-U06-5. Transforming itself is 710.",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
+    }
+  },
+  {
+    "key": "types.tokens.region",
+    "parent": "304",
+    "order": 8,
+    "text": "A token enters play in the region where the source that created it is when the effect resolves.",
+    "examples": [
+      {
+        "text": "Life Plant, attacking in the enemy region, creates its 1/1s there and not at home.",
+        "test": "98-spawn-region.test.ts::Life Plant attacking in the enemy region creates its 1/1s THERE"
+      }
+    ],
+    "see": [
+      "601",
+      "108"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.15",
+          "quote": "in the region they were created. Spell tokens may only"
+        },
+        {
+          "ref": "Manual p.15",
+          "quote": "play in the region they were created."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R115",
+          "quote": "**Anything made by anything needs to spawn in that region**"
+        },
+        {
+          "ref": "R115",
+          "quote": "*That region* = the region the SOURCE is in **right now**, at the moment the effect"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R28",
+          "relation": "withdrawn by R115 (R28 put a created unit in its controller's home region)"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "98-spawn-region.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R115 quotes the designer (\"Anything made by anything needs to spawn in that region\"). The printed \"the region they were created\" does not say which region that is; R115 does.",
+    "sourceHashes": {
+      "R115": "6487690c1da97d2ab55b0ba89ca85829c60c72f3409070630666aabf42947483"
+    }
+  },
+  {
+    "key": "types.tokens.region.mid-attack",
+    "parent": "types.tokens.region",
+    "order": 1,
+    "text": "A unit token created during battle in an enemy region stays in that region, outside of formation. It cannot block a counterattack, and it returns to its controller's home region at regroup.",
+    "examples": [
+      {
+        "text": "Tidelurker's 2/2, created mid-attack, stays in the enemy region and cannot block the counterattack.",
+        "test": "98-spawn-region.test.ts::Tidelurker's mid-attack 2/2 stays in the enemy region"
+      },
+      {
+        "text": "The stranded 1/1s return home at regroup.",
+        "test": "98-spawn-region.test.ts::the stranded 1/1s walk home at regroup"
+      }
+    ],
+    "see": [
+      "types.units.spawn-in-battle",
+      "506",
+      "610"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.15",
+          "quote": "of formation (meaning it is not attacking or blocking), but still in the same region."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R115",
+          "quote": "A token minted **mid-attack** is created in the **enemy region**. It is in that region and"
+        },
+        {
+          "ref": "R115",
+          "quote": "it **cannot block the counterattack**"
+        },
+        {
+          "ref": "R115",
+          "quote": "it **walks home at regroup**, like every other unit out of position"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "98-spawn-region.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R115": "6487690c1da97d2ab55b0ba89ca85829c60c72f3409070630666aabf42947483"
+    }
+  },
+  {
+    "key": "types.tokens.unit-tokens",
+    "parent": "304",
+    "order": 9,
+    "text": "A unit token is a unit. It works exactly as a unit card does, except as these rules say otherwise.",
+    "examples": [
+      {
+        "text": "A Robot token with two counters attacks unblocked and deals 2 damage.",
+        "test": "417-cr-card-types.test.ts::cr:types.tokens.unit-tokens — a unit token attacks and deals its power like a unit card"
+      }
+    ],
+    "see": [
+      "301",
+      "types.tokens.leaving-play"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.15",
+          "quote": "Unit tokens function identically to regular units with the"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "417-cr-card-types.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The printed exception (what happens when it leaves play) is replaced by the designer's answer in 304.10.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "types.tokens.unit-tokens.regroup",
+    "parent": "types.tokens.unit-tokens",
+    "order": 1,
+    "text": "Unit tokens stay in play through regroup.",
+    "examples": [
+      {
+        "text": "A unit token survives regroup while a spell token beside it is erased.",
+        "test": "417-cr-card-types.test.ts::cr:types.tokens.unit-tokens.regroup — a unit token survives regroup while a spell token beside it is erased"
+      }
+    ],
+    "see": [
+      "506",
+      "types.tokens.spell-tokens.regroup"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.15",
+          "quote": "Unlike spell tokens, unit tokens persist through regroup."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "417-cr-card-types.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "types.tokens.leaving-play",
+    "parent": "304",
+    "order": 10,
+    "text": "A token that leaves play goes to the zone it was sent to: a unit token that dies enters the bin, and a recalled token, unit or spell, enters its controller's hand. It really is there, so abilities that watch that zone see it. It is then erased from the game, before anything that triggered on its arrival resolves.",
+    "examples": [
+      {
+        "text": "A unit token that dies enters the bin, is not trashed, and is then erased.",
+        "test": "35-rot-debt-trash.test.ts::R69 + R306: a TOKEN dying enters the bin, is NOT trashed, and is then erased"
+      },
+      {
+        "text": "The erase happens before anything the token's visit triggered can resolve.",
+        "test": "35-rot-debt-trash.test.ts::R69: the erase lands before anything the visit queued can RESOLVE"
+      },
+      {
+        "text": "Rider of the Tides, which watches cards entering a hand during battle, sees a recalled unit token.",
+        "test": "15-water-b.test.ts::Rider of the Tides: recalling a TOKEN triggers it too"
+      },
+      {
+        "text": "A Fireball recalled off the stack enters its controller's hand, Rider of the Tides sees it, and it is erased.",
+        "test": "393-raq-mods.test.ts::RAQ Recall Spell Token: a Fireball token recalled off the stack enters its controller hand"
+      }
+    ],
+    "see": [
+      "410",
+      "713",
+      "405",
+      "402"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355689559609839787#4",
+          "quote": "3. Same applies to Unit Tokens being Recalled or Dying (they enter your hand/bin and then are instantly erased)"
+        },
+        {
+          "ref": "RAQ 1355689559609839787#3",
+          "quote": "2. Token Spell technically enter your hand for a brief moment if you Recall them but are instantly erased"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R69 (its zone-visit half)",
+          "quote": "**Timing.** The erase is a **state-based action** and it resolves *before* the"
+        },
+        {
+          "ref": "R335",
+          "quote": "A recalled spell token passes through the hand"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R69",
+          "relation": "partly superseded: its token-trash subsection reversed by R306; its Unstable order amended by R137"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "35-rot-debt-trash.test.ts",
+        "15-water-b.test.ts",
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The printed Manual says a token leaving play is erased and returned to the token pile \"instead of the hand or bin\"; the designer says otherwise and wins: D-U06-2. A token put into a cache does the same (an engine call, R69; U07 states it as zones.changes.tokens.cached).",
+    "sourceHashes": {
+      "R335": "a64cd8c064631a89300a212d31e5dd2ecf07fd7e02e8d15f31d3a7365d11b52b",
+      "R69": "4765548d7e5280fe64527ba6b02f2f307ddb47cce7eb72a9ff53142ae02ff9b4",
+      "RAQ 1355689559609839787#3": "49651c3a7eb2f5dad8538f4f0d972498ac3efde032eed37a7fa95a305916a10a",
+      "RAQ 1355689559609839787#4": "95729ce10f69a4d6d99b4e697bef8ca60d3e911670df6a82a939387b72bdbdf3"
+    }
+  },
+  {
+    "key": "types.tokens.leaving-play.not-trashed",
+    "parent": "types.tokens.leaving-play",
+    "order": 1,
+    "text": "A token that enters a bin is not trashed.",
+    "examples": [
+      {
+        "text": "A unit token dying in battle does not add to the count of cards trashed in that battle.",
+        "test": "338-tokens-are-not-trashed.test.ts::R306: a token unit dying in battle does not bump the trashed ledger"
+      }
+    ],
+    "see": [
+      "801",
+      "405"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R306",
+          "quote": "A token is not a card (R133's first half, which stands), so a token"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "338-tokens-are-not-trashed.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R306. Trashing itself is 801.",
+    "sourceHashes": {
+      "R306": "63ddd3a55f5ae1c3565593e3bc4c1c6ad19bb0124baf0ac5f651e7ad794e765f"
+    }
+  },
+  {
+    "key": "types.tokens.leaving-play.still-dies",
+    "parent": "types.tokens.leaving-play",
+    "order": 2,
+    "text": "A unit token that dies still dies: abilities that trigger when a unit dies see it, unless they say \"nontoken\".",
+    "examples": [
+      {
+        "text": "A dying unit token is seen by \"whenever another unit dies\" but not by a \"nontoken unit dies\" watcher.",
+        "test": "417-cr-card-types.test.ts::cr:types.tokens.leaving-play.still-dies — a dying unit token is seen by \"whenever another unit dies\" but not by a \"nontoken unit dies\" watcher"
+      }
+    ],
+    "see": [
+      "713"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R306",
+          "quote": "Its **death** is untouched. A token is still a unit, and \"whenever a unit dies\""
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "417-cr-card-types.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R306": "63ddd3a55f5ae1c3565593e3bc4c1c6ad19bb0124baf0ac5f651e7ad794e765f"
+    }
+  },
+  {
+    "key": "types.tokens.spell-tokens",
+    "parent": "304",
+    "order": 11,
+    "text": "A spell token is a spell that is in play. Its controller may cast it from play; casting it works the same way as casting a spell from the hand.",
+    "examples": [
+      {
+        "text": "A Fireball token goes to the stack in battle when cast.",
+        "test": "03-stack.test.ts::Fireball goes to the stack in battle, Burst casts them all at once"
+      }
+    ],
+    "see": [
+      "types.spells.spell-tokens",
+      "702"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.15",
+          "quote": "A spell token is a temporary spell that may be played"
+        },
+        {
+          "ref": "Manual p.15",
+          "quote": "from the battlefield."
+        },
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "only cards currently that are “cast” from play, which functions the same way as if they were cast from your hand, but you may"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "03-stack.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Casting is 702.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "types.tokens.spell-tokens.region",
+    "parent": "types.tokens.spell-tokens",
+    "order": 1,
+    "text": "A spell token can be cast only in the region it is in.",
+    "examples": [
+      {
+        "text": "A spell token left at home cannot be cast in a battle in another region.",
+        "test": "417-cr-card-types.test.ts::cr:types.tokens.spell-tokens.region — a spell token left at home cannot be cast in a battle in another region"
+      }
+    ],
+    "see": [
+      "601"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.15",
+          "quote": "be played in the region they are in."
+        },
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "only cast spell tokens in the region the token is in. To get around this, spell tokens can be brought into other regions during the"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "417-cr-card-types.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "types.tokens.spell-tokens.played",
+    "parent": "types.tokens.spell-tokens",
+    "order": 2,
+    "text": "Casting a spell token is playing a spell. It is played from play, so it is played from somewhere other than the hand.",
+    "examples": [
+      {
+        "text": "Casting a Fireball token triggers Stalwart Sentinel.",
+        "test": "408-raq-new-threads.test.ts::casting a Fireball token triggers Stalwart Sentinel"
+      },
+      {
+        "text": "Tranquility (\"Spells cost [one] more to play during battle\") makes a spell token cost [1].",
+        "test": "337-spell-tokens-are-played.test.ts::R305: Tranquility taxes a spell token [1] in battle"
+      }
+    ],
+    "see": [
+      "701",
+      "702",
+      "types.general.nouns.card"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355689559609839787#2",
+          "quote": "Playing spell token like Fireball will trigger Stalwart Sentinel."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R305",
+          "quote": "Casting a spell token **is** playing a spell."
+        },
+        {
+          "ref": "R342",
+          "quote": "playing a spell (R305) from where it stands in play, so \"when you play a unit"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "408-raq-new-threads.test.ts",
+        "337-spell-tokens-are-played.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R305 (owner) for \"is played\"; the RAQ (Stalwart Sentinel: \"when you play a unit or spell from anywhere other than your hand\") and R342 for \"from somewhere other than the hand\". Not a card being played: 300.5d.",
+    "sourceHashes": {
+      "R305": "88a482701a5f378703d6d18e30d8a3b943798c47e43ee19572963aef6c8e2da6",
+      "R342": "d40ffb96e31fbdf6aa3cac68ee0921ffeeccc03bf47fa883e587063d06209598",
+      "RAQ 1355689559609839787#2": "9c76b60c85d3c9f2a35adeb8e2e628e36abc6d98658ab643da695d1b4dec6d2b"
+    }
+  },
+  {
+    "key": "types.tokens.spell-tokens.not-in-hand",
+    "parent": "types.tokens.spell-tokens",
+    "order": 3,
+    "text": "A spell token is never in a hand. An effect that counts the cards in a hand does not count spell tokens.",
+    "examples": [
+      {
+        "text": "Dreadspawn Horror does not count spell tokens as cards in hand.",
+        "test": "408-raq-new-threads.test.ts::Dreadspawn Horror does not count spell tokens as cards in hand"
+      }
+    ],
+    "see": [
+      "402",
+      "types.tokens.leaving-play"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355689559609839787#0",
+          "quote": "1. Spell tokens are not in hand. They won't count for things like Dreadspawn Horror or Astral Tidewraith."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R342",
+          "quote": "A spell token is never in a hand. Anything that counts the cards in a hand"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "408-raq-new-threads.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "A recalled spell token does enter a hand, briefly (304.10).",
+    "sourceHashes": {
+      "R342": "d40ffb96e31fbdf6aa3cac68ee0921ffeeccc03bf47fa883e587063d06209598",
+      "RAQ 1355689559609839787#0": "1ff907ab13f4bd3d73eae1c6ecb4e0b3c8f0f3e170cfabc913aa6b2c1c77b117"
+    }
+  },
+  {
+    "key": "types.tokens.spell-tokens.on-stack",
+    "parent": "types.tokens.spell-tokens",
+    "order": 4,
+    "text": "A spell token that has been cast is still a token while it is on the stack.",
+    "examples": [
+      {
+        "text": "Download can take a Fireball that has already been cast and is on the stack.",
+        "test": "393-raq-mods.test.ts::RAQ Download: a Fireball already cast and on the stack is a token it can take"
+      }
+    ],
+    "see": [
+      "406"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353864175910387742#1",
+          "quote": "2. Fireball effect 'on the stack' ✅"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R333",
+          "quote": "A spell token already cast is still a token"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R333": "0b3c670d84fac9eb0a52eafdd3ae5e6af61958470b5461a9236399566d2ef758",
+      "RAQ 1353864175910387742#1": "10774ef8ff034c6b985c2dbe4f791fd4196ce73820247adcf3f440aa3f3afcf8"
+    }
+  },
+  {
+    "key": "types.tokens.spell-tokens.cost",
+    "parent": "types.tokens.spell-tokens",
+    "order": 5,
+    "text": "A token has a mana cost, which is often 0. Effects that change the cost of playing spells apply when a spell token is cast.",
+    "examples": [
+      {
+        "text": "Tranquility makes a spell token cost [1] in battle.",
+        "test": "337-spell-tokens-are-played.test.ts::R305: Tranquility taxes a spell token [1] in battle"
+      }
+    ],
+    "see": [
+      "111",
+      "702"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "▪ While tokens do have a mana cost (5), it often 0, meaning"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R305",
+          "quote": "Casting a spell token **is** playing a spell."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "337-spell-tokens-are-played.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R305 prices a token cast through the ordinary cost modifiers. Paying costs is 702 and 111.",
+    "sourceHashes": {
+      "R305": "88a482701a5f378703d6d18e30d8a3b943798c47e43ee19572963aef6c8e2da6"
+    }
+  },
+  {
+    "key": "types.tokens.spell-tokens.x",
+    "parent": "types.tokens.spell-tokens",
+    "order": 6,
+    "text": "Many tokens have an X value, set by the effect that created them: \"Create a Crystal 3\" creates a Crystal whose X is 3. A token's X is its size, not a cost.",
+    "examples": [],
+    "see": [
+      "107"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "▪ Many tokens have an X value (7), which is determined by the"
+        },
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "would set the X value of the created token as 3."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R305",
+          "quote": "**The X on a token is its SIZE, not a cost.**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Applies to unit tokens too (Robot X). X in general is 107.",
+    "sourceHashes": {
+      "R305": "88a482701a5f378703d6d18e30d8a3b943798c47e43ee19572963aef6c8e2da6"
+    }
+  },
+  {
+    "key": "types.tokens.spell-tokens.burst",
+    "parent": "types.tokens.spell-tokens",
+    "order": 7,
+    "text": "A spell token with Burst is cast together with every other spell token of the same name that its controller has in that region. They are still separate spells.",
+    "examples": [
+      {
+        "text": "Burst casts all of a player's tokens of that name and leaves their other burst tokens alone.",
+        "test": "69-damage-batch.test.ts::R81: Burst casts all your tokens OF THAT NAME"
+      }
+    ],
+    "see": [
+      "803",
+      "702"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.15",
+          "quote": "same name at once."
+        },
+        {
+          "ref": "Manual p.15",
+          "quote": "Multiple spell tokens played with burst are still individual spells, but they"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R81 (its group-by-name half)",
+          "quote": "Burst groups by NAME"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "69-damage-batch.test.ts",
+        "417-cr-card-types.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Pointer to Burst (803) and casting (702). \"In that region\" follows from 304.11a.",
+    "sourceHashes": {
+      "R81": "11be923f9b9cb025471dd6b9ccf67720706f58d6e1d114080eb916572bb3293f"
+    }
+  },
+  {
+    "key": "types.tokens.spell-tokens.not-units",
+    "parent": "types.tokens.spell-tokens",
+    "order": 8,
+    "text": "A spell token is not a unit and has no stats. An ability that refers to a unit token does not apply to a spell token.",
+    "examples": [
+      {
+        "text": "The World Shepherd watches for unit tokens being created; a spell token being created does not trigger it.",
+        "test": "119-play-and-token-events.test.ts::The World Shepherd: a SPELL token is not a UNIT token"
+      }
+    ],
+    "see": [
+      "types.general.nouns.unit"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R129",
+          "quote": "A Poison is not a body; it has no stats"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "119-play-and-token-events.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R129": "630060703c282d6843d3b9b11d74e161010ed2a31ab72a6810a6cb921e78a8e9"
+    }
+  },
+  {
+    "key": "types.tokens.spell-tokens.moving",
+    "parent": "304",
+    "order": 12,
+    "text": "A spell token cannot move to another region on its own. Its controller may bring it into the enemy region with an attack, but only together with at least one attacking unit, and the move cannot be undone.",
+    "examples": [
+      {
+        "text": "Spell tokens travel only with units, and only from the region they stand in.",
+        "test": "78-round17-core.test.ts::R87: spell tokens still travel only with units, and only from the region they stand in"
+      },
+      {
+        "text": "A Fireball rides into the enemy region with an attacking The Foretold and stays there after the Foretold dies; with no attacking unit it stays home.",
+        "test": "417-cr-card-types.test.ts::cr:types.tokens.spell-tokens.moving — a spell token rides into the enemy region only with an attacking unit, and stays there"
+      }
+    ],
+    "see": [
+      "604"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.15",
+          "quote": "During the attack step, spell tokens can be brought"
+        },
+        {
+          "ref": "Manual p.15",
+          "quote": "so on their own, however and must follow at least one"
+        },
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "attack step if they have units to guide them. This move is irreversible though, so plan carefully where you want to direct your"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "78-round17-core.test.ts",
+        "417-cr-card-types.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Attacking is 604.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "types.tokens.spell-tokens.moving.counterattack",
+    "parent": "types.tokens.spell-tokens.moving",
+    "order": 1,
+    "text": "A counterattack may bring spell tokens the same way: spell tokens that stand in the region the counterattacking units leave from may go with them.",
+    "examples": [
+      {
+        "text": "A counterattacking player sends spell tokens along with their counterattacking units.",
+        "test": "78-round17-core.test.ts::R87: declareBlocks takes spellTokens"
+      }
+    ],
+    "see": [
+      "610"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R87",
+          "quote": "Spell tokens travel with a formation, in either direction, and they need a unit"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "78-round17-core.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R87 quotes players (lofavreel, tecera, _passer) for the counterattack and Caleb only for the attack: D-U06-6.",
+    "sourceHashes": {
+      "R87": "9dd306a3fefd3160b14fb625d78d25dd99cf9fe6c645d47a05920706c2a44214"
+    }
+  },
+  {
+    "key": "types.tokens.spell-tokens.moving.created-there",
+    "parent": "types.tokens.spell-tokens.moving",
+    "order": 2,
+    "text": "A spell token created in an enemy region during combat can be cast there at once.",
+    "examples": [
+      {
+        "text": "A Fireball created for the attacker in the enemy region during combat is castable there at once.",
+        "test": "417-cr-card-types.test.ts::cr:types.tokens.spell-tokens.moving.created-there — a Fireball created for the attacker in the enemy region during combat is castable there at once"
+      }
+    ],
+    "see": [
+      "types.tokens.spell-tokens.region"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.15",
+          "quote": "Spell tokens spawned in enemy regions during combat can be used"
+        },
+        {
+          "ref": "Manual p.15",
+          "quote": "there immediately."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "417-cr-card-types.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "types.tokens.spell-tokens.regroup",
+    "parent": "304",
+    "order": 13,
+    "text": "During regroup, every spell token still in play is erased, including unused spell tokens in their controller's own region.",
+    "examples": [
+      {
+        "text": "With no Harbinger of Immolation anywhere, spell tokens are erased at regroup.",
+        "test": "12-fire-a.test.ts::regroup default is unchanged: with no Harbinger anywhere, spell tokens are erased"
+      },
+      {
+        "text": "With Harbinger of Immolation in play, its controller's spell tokens stay through regroup.",
+        "test": "12-fire-a.test.ts::Harbinger of Immolation: in play as a UNIT, your spell tokens stay through regroup"
+      }
+    ],
+    "see": [
+      "506",
+      "types.tokens.unit-tokens.regroup"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.15",
+          "quote": "any remaining spell tokens in play are erased from the"
+        },
+        {
+          "ref": "Manual p.15",
+          "quote": "game after battle during regroup. This includes unused"
+        },
+        {
+          "ref": "Manual p.15",
+          "quote": "spell tokens in a player’s own region as well."
+        },
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "The magic captured in a spell token is limited, and any remaining spell tokens are erased from the game during regroup, so be sure to use them before they go away!"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "12-fire-a.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The order of regroup is 506. A card can change this: Harbinger of Immolation (\"Your spell tokens stay through regroup\").",
+    "sourceHashes": {}
+  },
+  {
+    "key": "types.tokens.unique",
+    "parent": "304",
+    "order": 14,
+    "text": "When an effect refers to each unique token (Automaton of Abundance), two tokens are the same unique token only if they have both the same name and the same X.",
+    "examples": [
+      {
+        "text": "Manufacture creates a Robot 3, a Robot 2 and a Robot 1: three unique tokens.",
+        "test": "136-triggers-and-modes.test.ts::R157 §24: end to end"
+      },
+      {
+        "text": "Three Robot 2s are one unique token.",
+        "test": "136-triggers-and-modes.test.ts::R157 §24: three IDENTICAL Robot 2s"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 §24",
+          "quote": "'Unique' means unique (name, X) pair — you get two extras."
+        },
+        {
+          "ref": "R161",
+          "quote": "this is one card's word, not a redefinition."
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R104",
+          "relation": "partly reversed by R157 §24: R104 counted unique tokens by name alone"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "136-triggers-and-modes.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R161 says the answer is about Automaton of Abundance's wording and redefines nothing else.",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
+      "R161": "65276815ee877bd9e2976a66608a7c4105a3b44fd4aded63f8cad52dc6c88006"
+    }
+  },
+  {
+    "key": "types.tokens.creating-not-playing",
+    "parent": "304",
+    "order": 15,
+    "text": "Creating a token is not playing it. A unit token that an effect created was not played.",
+    "examples": [
+      {
+        "text": "Manufacture creating Robot tokens is not playing them (Bloomcaster, Stalwart Sentinel silent).",
+        "test": "417-cr-card-types.test.ts::cr:types.tokens.creating-not-playing — Manufacture creating Robot tokens is not playing them (Bloomcaster, Stalwart Sentinel silent)"
+      }
+    ],
+    "see": [
+      "701",
+      "types.tokens.spell-tokens.played"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R26",
+          "quote": "\"Play\" excludes token creation"
+        },
+        {
+          "ref": "R342",
+          "quote": "an effect-created unit token was not played at"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "417-cr-card-types.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Playing is 701; casting a spell token later IS playing it (304.11b).",
+    "sourceHashes": {
+      "R26": "c585e34093f645364fef28ec578e449c666c73c8dfc1fd86fa020475c10c5cd9",
+      "R342": "d40ffb96e31fbdf6aa3cac68ee0921ffeeccc03bf47fa883e587063d06209598"
+    }
+  },
+  {
+    "key": "types.mods.what",
+    "parent": "305",
+    "order": 1,
+    "text": "A modification (mod) is a card that is applied to another card instead of being played. A modified card is treated as a single card with all of the text its mods add, except that a spell or a spell token that is modified gains only the mod's attributes (721). The two kinds of modification are augment and graft.",
+    "examples": [
+      {
+        "text": "An augment that grants only text gives a spell token nothing.",
+        "test": "78-round17-core.test.ts::R89: a text-only augment on a token grants nothing"
+      },
+      {
+        "text": "Curio Drifter augmented onto a Good Whale is not played and gives the Whale Evasive; Biotoxicity is grafted; a Fireball augmented with Bloomcaster does not create 1/1s.",
+        "test": "417-cr-card-types.test.ts::cr:types.mods.what — an augment is applied not played and makes one card; a graft is the other kind; a text-only augment gives a spell token nothing"
+      }
+    ],
+    "see": [
+      "720",
+      "721",
+      "722",
+      "723",
+      "724"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.32",
+          "quote": "TWO TYPES OF MODIFICATIONS"
+        },
+        {
+          "ref": "Manual p.32",
+          "quote": "Some cards have one of two modification (or mod) symbols,"
+        },
+        {
+          "ref": "Manual p.32",
+          "quote": "When a card is augmented, it is treated as if it were a single"
+        },
+        {
+          "ref": "Rulebook 2023 p.15",
+          "quote": "When a card is modified, it is simply treated as if it"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1537748882501668934#0",
+          "quote": "They are Applied."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R89",
+          "quote": "you can only do this with attributes."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "78-round17-core.test.ts",
+        "417-cr-card-types.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Overview only: modifications are 720, augment 721, graft 722, virus 723, modular 724. The spell exception is Caleb's 2025-03-06 answer quoted in R89 (\"you can only do this with attributes\"), which narrows the printed \"treated as a single card\": D-U06-11. RAQ 1537748882501668934 is not in this unit's pack (it is assigned to 701/720); added here.",
+    "sourceHashes": {
+      "R89": "784373f2e8f5ed90bf2121ff1bb5e8a44b216abda1116a8cc197df53973fcf90",
+      "RAQ 1537748882501668934#0": "a4e3cf36e2dcb6ca0c4c40c54631a21f25f4a2e6a393898ca0e58814e6a0516d"
+    }
+  },
+  {
+    "key": "types.mods.applied-not-played",
+    "parent": "305",
+    "order": 2,
+    "text": "Applying a mod is not playing a card, so an ability that triggers on playing a unit or a spell does not trigger on it.",
+    "examples": [
+      {
+        "text": "Applying a Virus during battle fires neither the \"spell played\" nor the \"card played\" event.",
+        "test": "119-play-and-token-events.test.ts::R37 holds: applying a VIRUS fires neither event"
+      }
+    ],
+    "see": [
+      "701",
+      "720"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1537748882501668934#0",
+          "quote": "Mods are not considered 'played', so they wouldn't trigger any"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "119-play-and-token-events.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "Added source: RAQ 1537748882501668934 (not in the U06 pack).",
+    "sourceHashes": {
+      "RAQ 1537748882501668934#0": "a4e3cf36e2dcb6ca0c4c40c54631a21f25f4a2e6a393898ca0e58814e6a0516d"
+    }
+  },
+  {
+    "key": "types.mods.when",
+    "parent": "305",
+    "order": 3,
+    "text": "Modifying is done during the deployment phase. A Virus can also be applied from the hand during battle.",
+    "examples": [
+      {
+        "text": "A non-Virus augment cannot be applied from hand during battle, but can in deployment.",
+        "test": "417-cr-card-types.test.ts::cr:types.mods.when — a non-Virus augment cannot be applied from hand during battle, but can in deployment"
+      }
+    ],
+    "see": [
+      "507",
+      "723"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.32",
+          "quote": "players can perform during the deployment phase."
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "Virus cards can"
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "hand during battle."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "417-cr-card-types.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Details and exceptions (Slurpr, Rook) are 720 and 723.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "types.mods.text-live",
+    "parent": "305",
+    "order": 4,
+    "text": "A card's augment and graft text works when the card is played normally, not only when it is applied as a mod.",
+    "examples": [
+      {
+        "text": "A card played normally still reads its own [Augment] text.",
+        "test": "248-augment-box-scope.test.ts::§5 PIN: a card played normally still reads its own [Augment] box"
+      }
+    ],
+    "see": [
+      "721",
+      "722"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.35",
+          "quote": "Cards with the augment and graft abilities still function as written, even"
+        },
+        {
+          "ref": "Manual p.43",
+          "quote": "A: Yes, the text is active on cards played normally."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "248-augment-box-scope.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "types.mods.spells",
+    "parent": "305",
+    "order": 5,
+    "text": "A spell or spell unit with a graft symbol resolves normally when it is played, and can later be applied as a graft from the bin.",
+    "examples": [
+      {
+        "text": "Spawntender, a spell unit with a graft icon, resolves normally when played: it creates its 8/8 and its own body spawns.",
+        "test": "15-water-b.test.ts::Spawntender: creates an 8/8, then its own 2/2 body spawns"
+      },
+      {
+        "text": "A dead Leaping Lillik in the bin can be applied as a graft.",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 point 4: a dead Leaping Lillik is a graft from the bin"
+      }
+    ],
+    "see": [
+      "722"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#3",
+          "quote": "4. Spells or Spell-Units with Graft icon … later can be used as Graft from Bin … If LL unit dies, you can use him during Deployment as Graft"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts",
+        "15-water-b.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1355115946032889914#3": "ba6dbebc80ea4d405c4c6c5f8070e1e04370fd6898df4a7c6fa8a5d4065aba0b"
+    }
+  },
+  {
+    "key": "types.mods.spell-token-host",
+    "parent": "305",
+    "order": 6,
+    "text": "During deployment, a spell token in play may be augmented, with any augment and not only a Virus. The spell token gains only the mod's attributes, not its text.",
+    "examples": [
+      {
+        "text": "A spell token is offered as an augment host during deployment.",
+        "test": "78-round17-core.test.ts::R89: a spell token is a legal augment host during deployment"
+      },
+      {
+        "text": "A Fireball augmented with a mod granting {Powerful} deals double damage when cast.",
+        "test": "78-round17-core.test.ts::R89: only ATTRIBUTES transfer"
+      },
+      {
+        "text": "An augment that grants only text gives a spell token nothing.",
+        "test": "78-round17-core.test.ts::R89: a text-only augment on a token grants nothing"
+      },
+      {
+        "text": "Carapace Devourer, an augment that is not a Virus, may augment a spell token during deployment. (illustrative)",
+        "test": "417-cr-card-types.test.ts::cr:types.mods.spell-token-host — a non-Virus augment (Carapace Devourer) may augment a spell token in deployment"
+      }
+    ],
+    "see": [
+      "721"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R89",
+          "quote": "R79's missing half: a SPELL TOKEN may be augmented during DEPLOYMENT"
+        },
+        {
+          "ref": "R89",
+          "quote": "you can only do this with attributes."
+        },
+        {
+          "ref": "R89",
+          "quote": "It is NOT restricted to Virus cards"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "78-round17-core.test.ts",
+        "417-cr-card-types.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R89 quotes Caleb (rules-questions 2025-03-06, not a RAQ thread) for \"possible with spell tokens\" and \"only with attributes\"; the \"any augment\" reading is sourced to a player: D-U06-7. Whether a Virus may be applied to a spell token in play during battle is unruled: D-U06-9. The bound test uses a Virus (Chitin Shredder); the verifier's probe showed a non-Virus augment (Carapace Devourer) is accepted, which is the illustrative example.",
+    "sourceHashes": {
+      "R89": "784373f2e8f5ed90bf2121ff1bb5e8a44b216abda1116a8cc197df53973fcf90"
+    }
+  }
+]

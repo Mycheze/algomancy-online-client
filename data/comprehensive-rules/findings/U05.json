@@ -1,0 +1,34 @@
+[
+  {
+    "id": "F-U05-1",
+    "rule": "card.stats.units",
+    "title": "Spells carry power and toughness values in printed.json that the cards do not print",
+    "summary": "Spells print no stats (stats mark a unit, Rulebook 2023 p.3), but the oracle transcription has power and toughness fields on spell rows and the extractor copies them: 91 of 138 spells in printed.json have non-zero values (Arc Lightning 1/3, Spectrogenesis 4/5, Interdiction Rift 4/3 in the oracle). Suspected harmless; check that no engine or UI path reads a spell's power or toughness (an \"Everything is Deadly\" reach onto spells, a copy of a spell, Unaware reading printed stats, a card-stats or search surface). If none does, zero them at extraction so nothing can start to.",
+    "evidence": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "quote": "\"name\": \"Arc Lightning\", \"factions\": [ \"fire\" ], \"cost\": \"rr\", \"mana\": 4, \"power\": 1, \"toughness\": 3,"
+      },
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "quote": "\"name\": \"Interdiction Rift\", \"power\": \"4\", \"toughness\": \"3\","
+      }
+    ]
+  },
+  {
+    "id": "F-U05-2",
+    "rule": "card.augment-box.copy",
+    "title": "393-raq-mods Borrower/Reconfigure test is vacuous: Reconfigure is never castable in its setup",
+    "summary": "The test guards the RAQ answer that a Borrower of Forms that copied an [Augment] unit is not a first target of Reconfigure, but wraps every assertion in `if (legalActions(...) offers Reconfigure)`. The verifier measured that branch as never taken with the test own setup (no real [Augment] unit is available as a first target, so Reconfigure is not castable), so the test asserts nothing. Add a real [Augment] unit to the setup and drop the `if`, so the play is required and the refusal is asserted; the verifier probe in data/comprehensive-rules/build/probes/U05/u05-verify-probes.test.ts does exactly that and passes.",
+    "evidence": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "quote": "  if (legalActions(h.state, A).some(a => a.type === 'playCard' && a.handIndex === rc)) {"
+      },
+      {
+        "file": "data/comprehensive-rules/build/harness/U05/feedback-r1.json",
+        "quote": "measured with the test's own setup, Reconfigure castable = false, so the `if (legalActions…)` branch is skipped and nothing is asserted."
+      }
+    ]
+  }
+]

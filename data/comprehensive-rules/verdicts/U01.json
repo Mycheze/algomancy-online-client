@@ -1,0 +1,2264 @@
+[
+  {
+    "key": "concepts.ending.concede",
+    "textHash": "77fef9d41ae8a163",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.concede",
+        "agrees": true,
+        "note": "sets winner = other seat, phase gameover, same event and GameEnded as loseLife"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/58-playtest-round9.test.ts",
+        "pattern": "R65: conceding ends the game the way a lethal blow does",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R65 (concede half)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "reaches the result record exactly as a lethal blow does. It is the one action"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "this.ev('gameOver', `*** ${this.pname(other(seat))} wins — ${this.pname(seat)} conceded. ***`,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.ending.concede.any-time",
+    "textHash": "d72c0fac488c6abc",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:apply (decision gate)",
+        "agrees": true,
+        "note": "concede is exempt from the decision gate; no timing check"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/58-playtest-round9.test.ts",
+        "pattern": "R65: you may concede even while a decision is pending against you",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/130-seat-aware-gate.test.ts",
+        "pattern": "R154 §4: concede is always reachable",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R65 (concede half)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "with no timing, no priority and no phase, and the one thing you may do while a"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (decisionBlocks(e.s, action.seat) && action.type !== 'decide' && action.type !== 'concede') {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.ending.continues",
+    "textHash": "2cf97556febd45db",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": null,
+        "note": "not implemented: the engine builds 1v1 games only (two seats, two regions); nothing to check"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.19",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.8",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "neighboring regions move next to each other and the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Multiplayer only; the engine cannot show it."
+  },
+  {
+    "key": "concepts.ending.continues.pack",
+    "textHash": "6a85691b41e2dfb2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": null,
+        "note": "not implemented: the engine builds 1v1 games only (two seats, two regions); nothing to check"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.16",
+        "supports": "yes",
+        "note": "literal"
+      },
+      {
+        "ref": "Rulebook 2023 p.6",
+        "supports": "yes",
+        "note": "adds \"in a random order\", which the rule omits"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "When a player is eliminated, their pack is recycled (put on the bottom"
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "the bottom of the deck in a random order)."
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Multiplayer-only; engine cannot show it. Could add the Rulebook's \"in a random order\"."
+  },
+  {
+    "key": "concepts.ending.elimination",
+    "textHash": "652daeefbf6f152a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:loseLife",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/46-hybrids-ld-c.test.ts",
+        "pattern": "Haunting Memories: empty bins set the target to 0",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/02-combat.test.ts",
+        "pattern": "win condition",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.1",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "opponents by bringing their life to 0."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (p.life <= 0 && this.s.winner === null) {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.ending.elimination.immediate",
+    "textHash": "5b28ff3442debc33",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U01-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:loseLife",
+        "agrees": true,
+        "note": "sets winner and gameover and throws GameEnded the moment life <= 0. Every life-cost payment routes through loseLife (engine.ts 1309/8476/9127, apply.ts 1374). Exception: a Suspend life-lock (R104) stops the change itself"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:canPayLife",
+        "agrees": true,
+        "note": "life > n, so a life cost that would leave 0 is not payable"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/37-attrs-wight.test.ts",
+        "pattern": "without the attribute the same shot is lethal",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/47-costs-events.test.ts",
+        "pattern": "cannot SURVIVE",
+        "passed": true,
+        "asserts_claim": "yes, for the life-cost sentence"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U01/u01-r2-verify-probes.test.ts",
+        "title": "concepts.ending.elimination.immediate: life reaching 0 ends the game inside the effect — the rest of the effect never runs",
+        "passed": true,
+        "demonstrates": "yes: GameEnded thrown mid-effect, second half not run, winner set"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R49 (its life-cost half)",
+        "supports": "yes",
+        "note": "an engine ruling: no life cost you cannot survive; loseLife ends the game"
+      },
+      {
+        "ref": "R197 (its §1)",
+        "supports": "yes",
+        "note": "'E.loseLife ends the game the moment a total reaches 0'"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "⚠ **May a life cost be paid if it would kill you? No.** You may pay N life only"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "The floor is 0 and that is **not** a narrowing: `E.loseLife` ends the game the"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "    return n <= 0 || this.player(seat).life > n;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Basis is an owner/engine ruling with no designer statement (R49 says so). 'Even while paying a cost' holds structurally: costs go through loseLife, so a life-loss multiplier could end the game mid-payment. No test shows that case."
+  },
+  {
+    "key": "concepts.ending.no-deck-out",
+    "textHash": "419b6a8474f4a422",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:E.draw",
+        "agrees": true,
+        "note": "loop breaks when takeFromDeck returns undefined; no loss check"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:refillFromRecycled",
+        "agrees": true,
+        "note": "R296: an empty deck first reshuffles the recycle pile in"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/300-recycle-mark.test.ts",
+        "pattern": "R296 §4 an empty deck AND an empty pile draws fewer",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R296",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**No deck-out loss.** A player whose deck *and* pile are both empty simply draws"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (c === undefined) break;"
+      },
+      {
+        "file": "client/engine/test/300-recycle-mark.test.ts",
+        "text": "assert.equal(h.state.winner, null, 'and running out of cards does not end the game');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Wording nit, not an error: \"draw from an empty deck\" should say the deck AND the recycle pile are empty (R296 reshuffles the pile in first); \"as many as there are\" is right."
+  },
+  {
+    "key": "concepts.ending.win",
+    "textHash": "6df9386fd2038e79",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:loseLife",
+        "agrees": true,
+        "note": "winner = other(seat)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/02-combat.test.ts",
+        "pattern": "win condition",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.1",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.6",
+        "supports": "partly",
+        "note": "FFA line only"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (p.life <= 0 && this.s.winner === null) {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.ending.win.teams",
+    "textHash": "c195fe830e56d51a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": null,
+        "note": "not implemented: the engine builds 1v1 games only (two seats, two regions); nothing to check"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.1",
+        "supports": "yes",
+        "note": "literal, including its typo \"elimiate\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "games, you must elimiate the entire opposing team."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.general.digital-scope",
+    "textHash": "6ca60f34a281fb88",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U01-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": true,
+        "note": "names: [string,string]; players, regions, packs are all length 2; modes are draft, constructed, and the test-only 'shared'"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/20-draft.test.ts",
+        "pattern": "createGame draft: 6-card hands",
+        "passed": true,
+        "asserts_claim": "yes: loops seats [0,1]"
+      },
+      {
+        "file": "client/engine/test/34-constructed.test.ts",
+        "pattern": "createGame constructed: per-seat decks",
+        "passed": true,
+        "asserts_claim": "yes: one deck per seat for two seats"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U01/u01-r2-verify-probes.test.ts",
+        "title": "concepts.general.digital-scope: every game the engine creates has exactly two seats and two regions",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R27 (Project decisions block)",
+        "supports": "yes",
+        "note": "'v1 formats: 1v1 live draft + 1v1 constructed'. The citation honestly says this is a project decision, not a ruling"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **v1 formats**: 1v1 live draft + 1v1 constructed. **All five elements are valid** — a live"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Single Card Duel and Learn to Play are variants inside constructed, and 'shared' is a test-only mode. None of them is a third format."
+  },
+  {
+    "key": "concepts.general.formats",
+    "textHash": "0aa1f2fdb1b89a54",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": null,
+        "note": "the digital client offers only 1v1 (see digital-scope)"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.1",
+        "supports": "yes",
+        "note": "literal"
+      },
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "You can pair any of the game modes with any of the"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "1v1: The recommended starting setup."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.general.goal",
+    "textHash": "87308cee2961e93e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:loseLife",
+        "agrees": true,
+        "note": "life <= 0 sets the other seat as winner"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.1",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "opponents by bringing their life to 0."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.general.turns",
+    "textHash": "274ae7872c75978e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:startTurn",
+        "agrees": true,
+        "note": "one global turn counter; every seat refreshed per turn"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": "literal"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "The game unfolds in a series of global turns, each"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.golden.as-much-as-possible",
+    "textHash": "06387336ed5fd394",
+    "verdict": "confirmed",
+    "round": 3,
+    "verifier": "U01-r3",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-water-b.ts:Recall (recallSpellEffect)",
+        "agrees": true,
+        "note": "life loss runs with no unit to recall"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-earth-a.ts:Fight (fightEffect)",
+        "agrees": true,
+        "note": "a Fight that lost one target leaves the stack and does nothing to the survivor"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/179-empty-collection-branches.test.ts",
+        "pattern": "Recall — the life loss happens, the recall does not",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "pattern": "RAQ Amphivore with Ralph grafted",
+        "passed": true,
+        "asserts_claim": "yes: host given away once, 1/1s once, Flame Juggle still ran three times"
+      },
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "pattern": "RAQ fizzles: Fight that loses one of its two targets",
+        "passed": true,
+        "asserts_claim": "yes: the fight/exchange clause"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.43",
+        "supports": "partly",
+        "note": "printed scope is narrower: 'as best as it can' is said of a spell that lost SOME targets; the fight/exchange exception is printed verbatim. The general 'part of an effect' wording rests on the designer and R30."
+      },
+      {
+        "ref": "RAQ 1353859961855148103#3",
+        "supports": "yes",
+        "note": "'You just can't give Ralph, but that's okay - rest of graft still happens.'"
+      },
+      {
+        "ref": "R30 (provisional)",
+        "supports": "yes",
+        "note": "'Do as much as you can; the two clauses are not linked'"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "spell will attempt to resolve as best as it can. For"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "if one of the targets for a fight or an exchange is removed, the effect will not be able to happen (it takes"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "recall still loses 2. (Do as much as you can; the two clauses are not linked"
+      },
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "text": "assert.equal(ent(h, mine)!.damage, 0, 'and the survivor took nothing: no fight with nobody');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None material. Note: the printed Manual p.43 passage is about removed TARGETS; the broader generalisation is designer + R30 (basis 'mixed' is honest). R30 is marked provisional (⚠)."
+  },
+  {
+    "key": "concepts.golden.as-much-as-possible.costs",
+    "textHash": "c7686a4915904f2b",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U01-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:castCost / engine.ts multiplied-graft cost",
+        "agrees": true,
+        "note": "an unpayable cast cost makes the cast illegal (R35/R49). A multiplied graft cost that cannot be paid in full pays nothing and skips the effect (log: 'must be paid 2 times and cannot be')"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/17-earth-b.test.ts",
+        "pattern": "all or nothing",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353859961855148103#5",
+        "supports": "yes",
+        "note": "_passer: 'No Sacrifice at all and you don't get the effect.' (about a sacrifice cost; the example generalises it to discard)"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "No Sacrifice at all and you don't get the effect."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.golden.as-much-as-possible.if-you-do",
+    "textHash": "2894a1711d739b51",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards (Shoreline Specter)",
+        "agrees": true,
+        "note": "drain gated on the recall"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/182-correctness-sample.test.ts",
+        "pattern": "Shoreline Specter: DECLINE the recall and the 2-life drain does not happen",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Shoreline Specter",
+        "supports": "yes",
+        "note": "oracle text matches"
+      },
+      {
+        "ref": "R30",
+        "supports": "yes",
+        "note": "fragment, but the R30 sentence is exactly this distinction"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "by \"if you do\".)"
+      },
+      {
+        "file": "client/engine/test/182-correctness-sample.test.ts",
+        "text": "'\"IF YOU DO, each opponent loses 2 life\" — no recall, no drain');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.golden.designer-intent",
+    "textHash": "bc4d14d8f39caf4f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:abilityTax",
+        "agrees": true,
+        "note": "Crevice Lurker tax applied to the Resonant attribute trigger (R315)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "pattern": "RAQ trigger-like attributes: Crevice Lurker taxes Resonant",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1366446116274442291#1",
+        "supports": "yes",
+        "note": "calebgannon, verbatim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Containment Protocol\" — *\"my intent is for it to stop those from triggering\"*:"
+      },
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "text": "// trigger'. So as written it wouldn't work but my intent is for it to stop those from triggering"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "The general principle rests on one designer statement plus the RAQ-authority stance (see raq-over-rulings). The example quotes the oracle with a single space; the oracle has \"Abilities cost  [one] more\"."
+  },
+  {
+    "key": "concepts.golden.permissive",
+    "textHash": "6028c12133bd076f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": null,
+        "note": "an interpretive steer, not engine behaviour"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R157 (standing steer)",
+        "supports": "yes",
+        "note": "both quotes verbatim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "and neither is absurd, take the one that lets more things happen."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> Algomancy is meant to be a highly exploratory and synergistic game where"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.golden.printed-text-wins",
+    "textHash": "ac20539994fb36d5",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U01-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:cacheUnit",
+        "agrees": true,
+        "note": "takes an explicit `to`; Grob passes the controller. Since R262 the default is the controller too, so Grob no longer exercises a printed-vs-default conflict"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/135-exchange-and-zones.test.ts",
+        "pattern": "Grob caches a STOLEN unit",
+        "passed": true,
+        "asserts_claim": "yes: a stolen unit goes to the controller's cache, as printed"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R157 (its standing steer)",
+        "supports": "yes",
+        "note": "the owner says 'Printed text always wins.'"
+      },
+      {
+        "ref": "R157 (its §27)",
+        "supports": "yes",
+        "note": "§27 heading: 'Printed text beats the owner/controller default'"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "and, on Grob: **\"Printed text always wins.\"** When two readings are available"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "### 27. Printed text beats the owner/controller default"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Supported, with one weakness. Since R262 moved cacheUnit's default to the controller, the Grob example no longer shows printed text overriding a default: the default and the printed text now agree. The test's comment ('the only state where the printed text and the engine default disagree') is out of date. A better example is one where an explicit printed destination differs from the default, such as R262 §2's explicit `to` override."
+  },
+  {
+    "key": "concepts.golden.raq-over-rulings",
+    "textHash": "5af3277a59527f4a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": null,
+        "note": "policy, not engine behaviour"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R340",
+        "supports": "yes",
+        "note": "owner's words, quoted there and in R315"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "\"Trust the RAQ over our rulings.\""
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.golden.regions",
+    "textHash": "e16a9e332f157fcf",
+    "verdict": "confirmed",
+    "round": 3,
+    "verifier": "U01-r3",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:pushUnitTargets/unitsIn, fireEvent, staticsFor",
+        "agrees": true,
+        "note": "units, targets, statics and listeners are region-scoped (R265 measured 0 leaks)"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-water-a.ts:Cosmic Reversal",
+        "agrees": false,
+        "note": "engineDiffers is REAL: the board half is unitsIn(ctx.region) but the stack half iterates the whole g.s.stack, so a spell in another region is recalled. Same for Molten Riftbreaker / Frosted Denial (R265 'documented non-exceptions'). The stack, bins and cache are global by owner ruling."
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/229-cosmic-and-control.test.ts",
+        "pattern": "R250 \\+ R243: the board half is scoped to the region",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/243-ally-and-enemy-scope.test.ts",
+        "pattern": "§3a no ally or enemy slot",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U01/u01-r3-verify-probes.test.ts",
+        "title": "concepts.golden.regions: the stack is global — Cosmic Reversal resolving in a home region recalls a spell on the stack in the battle region",
+        "passed": true,
+        "demonstrates": "yes: the divergence is real (itemRegion=0, effectRegion=1, the Luminous Arc left the stack for its controller's hand). Effect run directly in the home region, so a synthetic placement"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U01/u01-r2-verify-probes.test.ts",
+        "title": "concepts.golden.regions: the stack is global — Molten Riftbreaker's despawn text ... negates its controller's spell on the stack in another region",
+        "passed": true,
+        "demonstrates": "yes: re-run this round — the Luminous Arc in region 1 was negated by an effect resolving in region 0"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.8",
+        "supports": "yes",
+        "note": "'single most important rule ... Every single effect is specific to its region' and 'Destroy all units means ... in this region'"
+      },
+      {
+        "ref": "Manual p.19",
+        "supports": "yes",
+        "note": "'will never impact anything in any other region'"
+      },
+      {
+        "ref": "Manual p.42",
+        "supports": "yes",
+        "note": "'region treats the players and cards in other regions as if they don't exist'"
+      },
+      {
+        "ref": "RAQ 1454169054402314362#0",
+        "supports": "yes",
+        "note": "calebgannon: everything is region specific; add 'in this region' to every card"
+      },
+      {
+        "ref": "R243",
+        "supports": "yes",
+        "note": "'all' is 'all in this region' — but R243 scopes effects, not information, and R250 leaves the stack global"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "This is perhaps the single most important rule of Algomancy: Every single effect is specific to its region."
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Every single effect is specific to the region it takes"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Yes everything in the game is region specific. Just add 'in this region' to every card if it helps."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "The STACK is not regional and is deliberately left global; narrowing"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "So Frosted Denial's *\"target enemy effect\"*, Woodland Warding and Molten Riftbreaker do reach across regions, by ruling and not by defect."
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Ruling confirmed; the flagged engine divergence is real (stack, bins and cache are global in the engine; Cosmic Reversal / Molten Riftbreaker / Frosted Denial reach a stack item in another region). Minor: the text omits the printed exception for the attack step (units entering a neighbouring region to battle); presumably covered by 601."
+  },
+  {
+    "key": "concepts.golden.regions.information",
+    "textHash": "1bdcdbc3c9d1942e",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U01-r2",
+    "engine": [
+      {
+        "loc": "client/server/view.ts:visibleToSeat",
+        "agrees": true,
+        "note": "gates only on data.privateTo, never on region"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/219-region-scoped-all.test.ts",
+        "pattern": "§2b an event from a region you are not in",
+        "passed": true,
+        "asserts_claim": "yes (a synthetic event with region 3 is visible to both seats); run by the U01 promoter, passed"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U01/u01-r2-verify-probes.test.ts",
+        "title": "concepts.golden.regions.information: an event from a region a seat is not in is still delivered to that seat",
+        "passed": true,
+        "demonstrates": "yes: real Recall events resolved in A's home region, with D absent, are all visible to D"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R243",
+        "supports": "yes",
+        "note": "'Regions do NOT scope information'"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> \"Regions do NOT scope information, but they do scope 'global' things (every"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "effect may COUNT is narrowed; what a player may READ is not.**"
+      },
+      {
+        "file": "client/server/view.ts",
+        "text": "  return typeof to !== 'number' || to === seat;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "A digital owner ruling that departs from Manual p.19 ('zero information or interaction between regions'). The rule rightly scopes it to 'the digital client'."
+  },
+  {
+    "key": "concepts.players.ally",
+    "textHash": "d56f97a453190d4b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:targetCandidates / pushUnitTargets",
+        "agrees": true,
+        "note": "ally = u.controller === ally seat within unitsIn(region)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/243-ally-and-enemy-scope.test.ts",
+        "pattern": "R265 §4c ally is measured from the EFFECT controller",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R265",
+        "supports": "yes",
+        "note": "definition verbatim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "* **Ally** = every unit under your control **in the region the effect is happening in** — the source included."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.players.ally.control",
+    "textHash": "0860577fd9dc204e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:targetCandidates",
+        "agrees": true,
+        "note": "ally test is controller, not owner"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U01/u01-verify-probes.test.ts",
+        "title": "concepts.players.ally.control: a unit you have taken control of is on your ally menu and off its owner ally menu",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R265",
+        "supports": "yes",
+        "note": "verbatim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "* \"Your control\", not your ownership: a unit you have taken control of is your ally and its owner's enemy, in that region, for as long as you hold it."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.players.ally.self",
+    "textHash": "c85bd72f11f1a187",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:pushUnitTargets",
+        "agrees": true,
+        "note": "no self-exclusion in the ally family; Riftwalker excludes source via its own restriction"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/243-ally-and-enemy-scope.test.ts",
+        "pattern": "R265 §1c an ally target offers the source",
+        "passed": true,
+        "asserts_claim": "yes (pool-wide: 17 of 18 slots, Shoreline Specter among them)"
+      },
+      {
+        "file": "client/ui/test/243-ally-and-enemy-scope.test.ts",
+        "pattern": "R265 §2b the ANOTHER side",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Riftwalker",
+        "supports": "yes",
+        "note": "oracle text matches"
+      },
+      {
+        "ref": "R265",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> Yes, an ally includes itself. Otherwise it'd say \"Another target ally\". Ally = all units under your control in the current region. Enemy = all units not under your control in the current region."
+      },
+      {
+        "file": "client/ui/test/243-ally-and-enemy-scope.test.ts",
+        "text": "assert.equal(m.includes(unitKey(me)), false, '\"another\" takes the source off its own menu');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "R265 itself notes \"another\" excludes whatever the sentence's other noun is; it removes the source only when that noun is the source. The rule's \"Only the word another leaves the source out\" is right for ally sets."
+  },
+  {
+    "key": "concepts.players.controller",
+    "textHash": "53c286d080382792",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:giveControl",
+        "agrees": true,
+        "note": "controller changes, owner does not"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/93-engine-defects.test.ts",
+        "pattern": "Uglk hands an opponent CONTROL of a unit without handing over the card",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Uglk",
+        "supports": "yes",
+        "note": "oracle text matches"
+      },
+      {
+        "ref": "R107",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "OWNER is not CONTROLLER, and putting a card into play never transfers it"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.players.controller.from-other-zone",
+    "textHash": "17827a700aa5dc26",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:spawnUnit",
+        "agrees": true,
+        "note": "Wake the Dead passes owner = the bin's seat, controller = caster"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/93-engine-defects.test.ts",
+        "pattern": "Wake the Dead raising a unit from the ENEMY bin gives the caster control, not ownership",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Wake the Dead",
+        "supports": "yes",
+        "note": "oracle text matches"
+      },
+      {
+        "ref": "R107",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "piles are public.\"* Putting a card into play out of a zone you do not own does not"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.players.each-opponent",
+    "textHash": "e39d4f36724a7f00",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:seatsHere",
+        "agrees": true,
+        "note": "present seats of the region; each-opponent loops read it"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U01/u01-verify-probes.test.ts",
+        "title": "concepts.players.each-opponent: Bloated Manablub with the opponent present in the region takes 3 from that opponent only",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.42",
+        "supports": "yes",
+        "note": "literal Q&A"
+      },
+      {
+        "ref": "R187",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "refers to each opponent in your current region."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "CARD-TODO #70. R25 scopes an effect to its region, and \"each opponent\" is read"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "return [this.initiative, this.nit].filter(s => present.includes(s));"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.players.each-opponent.none",
+    "textHash": "1aa2e674da22858c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:seatsHere",
+        "agrees": true,
+        "note": "a home region out of battle lists only its owner"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/158-silent-region-branches.test.ts",
+        "pattern": "Bloated Manablub — \"Each opponent loses 3 life\"",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.42",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R187",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "it would not hit any other players."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "lists only its owner, so the loop runs **zero times** — a real, ordinary,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.players.each-player",
+    "textHash": "6e6f570d92209cb3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:seatsHere",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/15-water-b.test.ts",
+        "pattern": "Recall: each player recalls a unit and loses 2 life",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U01/u01-verify-probes.test.ts",
+        "title": "concepts.players.each-player: Recall resolved in a region holding only its caster touches only the caster",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.19",
+        "supports": "yes",
+        "note": "literal: \"Each player in this region\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "rifices two units” means “Each player in this region"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "The bound test has both seats present, so it shows nothing about exclusion. The probe adds the exclusion case."
+  },
+  {
+    "key": "concepts.players.enemy",
+    "textHash": "582cd1e706015210",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:pushUnitTargets",
+        "agrees": true,
+        "note": "enemy = not under the asking seat's control, same region"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/243-ally-and-enemy-scope.test.ts",
+        "pattern": "R265 §1d the enemy target is the mirror",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U01/u01-verify-probes.test.ts",
+        "title": "concepts.players.ally.control: a unit you have taken control of is on your ally menu and off its owner ally menu",
+        "passed": true,
+        "demonstrates": "yes (also: on its owner's enemy menu)"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R265",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "* **Enemy** = every unit **not** under your control in that same region."
+      }
+    ],
+    "basis_ok": true,
+    "problem": "There is no bound example; I ran §1d and the ally.control probe as support."
+  },
+  {
+    "key": "concepts.players.owner",
+    "textHash": "d6516539e3423a59",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U01-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:recall",
+        "agrees": true,
+        "note": "R262: the destination follows the controller, and u.owner and the leftPlayFacts event still report the owner"
+      },
+      {
+        "loc": "client/engine/src/types.ts:PlayerState.hand",
+        "agrees": false,
+        "note": "hands and bins hold bare CardNames, so ownership is not carried through a zone. A stolen card recalled to the thief's hand and played again is a NEW entity owned by the thief (probe). This is the engineDiffers divergence, and it is real"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/246-zones-follow-control.test.ts",
+        "pattern": "ownership does NOT move",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/246-zones-follow-control.test.ts",
+        "pattern": "a stolen unit recalled goes to the THIEF hand",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U01/u01-r2-verify-probes.test.ts",
+        "title": "concepts.players.owner: a stolen card recalled to the thief and replayed from the thief hand — the engine records the thief as owner",
+        "passed": true,
+        "demonstrates": "yes (divergence): replayed owner=thief, original owner lost"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R250 (its §4)",
+        "supports": "yes",
+        "note": "'whose card is this? | its OWNER's, always, forever'"
+      },
+      {
+        "ref": "R262",
+        "supports": "yes",
+        "note": "'Ownership does not move. Only the destination does.' and in constructed the owner is always whoever brought the card"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "| whose card is this? | its OWNER's, always, forever |"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**2. Ownership does not move. Only the destination does.**"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "The ruling is confirmed and the engine divergence is real. Ownership survives while the card is in play, but not a trip through a hand or bin, because those zones store only card names. A card that is recalled or binned and then played again gets the player who played it as its new owner."
+  },
+  {
+    "key": "concepts.players.owner.token",
+    "textHash": "8d54578d69f9fede",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:spawnUnit",
+        "agrees": true,
+        "note": "owner defaults to the spawning (creating) seat; token sites pass the effect controller"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-metal-a.ts:Download",
+        "agrees": true,
+        "note": "giveControl changes controller only"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U01/u01-verify-probes.test.ts",
+        "title": "concepts.players.owner.token: a token is owned by the player whose effect created it, and a control change does not move that",
+        "passed": true,
+        "demonstrates": "yes: Accelerated Germination tokens owned by caster; Arcane Echo copy of an ENEMY token owned by the copier; Download leaves owner with creator"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R107 (owner-is-not-controller half)",
+        "supports": "yes",
+        "note": "states it outright for every token site"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "a creation is owned by its creator."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const owner = opts.owner ?? seat;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.players.region-and-life",
+    "textHash": "54aaacba57a359ff",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": true,
+        "note": "one region per seat, one life total per seat"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.19",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.6",
+        "supports": "partly",
+        "note": "gives the 30 life, implying a total each"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "regions: [0, 1].map(owner => ({ owner, presentSeats: [owner] })),"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.players.you",
+    "textHash": "a53c2579e79d4716",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-dark-b.ts:Legion of the Depths",
+        "agrees": true,
+        "note": "g.gainRot(ctx.controller, 2)"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R157 §9",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> refers to YOU, the controller/caster of the effect.\"*"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.players.you.mod",
+    "textHash": "cf07d4b31202267e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:attachMod",
+        "agrees": true,
+        "note": "mod controller = host.controller; giveControl moves the mods' controller too"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/43-dark-c.test.ts",
+        "pattern": "Cthyrian Rector: Virus-donated",
+        "passed": true,
+        "asserts_claim": "yes: \"you\" on a Virus on an enemy host is the host's controller"
+      },
+      {
+        "file": "client/engine/test/17-earth-b.test.ts",
+        "pattern": "Oorblak: as a Virus, \"me\" is the HOST",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.34",
+        "supports": "yes",
+        "note": "literal Pathogenic Enclave example"
+      },
+      {
+        "ref": "R157 §6",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "will control the augment and its new ability. For exam-"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "card: name, owner: byPlayer, controller: host.controller, kind: 'mod',"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "The bound example has test null (illustrative); support comes from the extra tests above."
+  },
+  {
+    "key": "concepts.players.you.pays",
+    "textHash": "bbaa96ad87174203",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:abilityTax / payOrDecline",
+        "agrees": true,
+        "note": "the trigger controller is asked; declining prevents it"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/16-earth-a.test.ts",
+        "pattern": "Crevice Lurker: R121 — a taxed trigger ASKS its controller",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/16-earth-a.test.ts",
+        "pattern": "Crevice Lurker: R121 — declining prevents the trigger",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355103348378042515#4",
+        "supports": "yes",
+        "note": "_passer, verbatim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/16-earth-a.test.ts",
+        "text": "'the trigger controller is asked to pay — the engine never decides for the player');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.players.you.the-deck",
+    "textHash": "9bdf697786cd4614",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:deckOf",
+        "agrees": true,
+        "note": "shared deck except in constructed, where it is the seat's own"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R157 §18",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> 'The deck' always refers to the deck of the effect's controller. The targeted"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (this.s.mode === 'constructed') return this.s.decks![seat]!;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.starting.constructed",
+    "textHash": "8781a1040900339c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": true,
+        "note": "constructed: sharedDeck empty, packs empty, per-seat decks"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/34-constructed.test.ts",
+        "pattern": "createGame constructed: per-seat decks",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.10",
+        "supports": "yes",
+        "note": "literal; Manual p.16 also says \"there are no packs or shared deck\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "In constructed formats, there will be no shared deck and players’ individual decks will go in the location of their “pack”."
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "In this mode, there are no packs or shared deck. During"
+      },
+      {
+        "file": "client/engine/test/34-constructed.test.ts",
+        "text": "assert.deepEqual(h.state.sharedDeck, [], 'no communal deck');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.starting.constructed.first-draw",
+    "textHash": "e58115dd764e3005",
+    "verdict": "confirmed",
+    "round": 3,
+    "verifier": "U01-r3",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": true,
+        "note": "constructed deals 4, then startTurn runs the turn-1 draw phase"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:startConstructedDraw",
+        "agrees": true,
+        "note": "draws 4 per seat and sets bottomDone pending; bottomCards requires exactly 2"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/34-constructed.test.ts",
+        "pattern": "createGame constructed: per-seat decks, opening 4 \\+ draw 4",
+        "passed": true,
+        "asserts_claim": "yes: 8 in hand, deck 22, bottomDone [false,false]"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U01/u01-r3-verify-probes.test.ts",
+        "title": "concepts.starting.constructed.opening-hand / first-draw: 4 dealt, then turn 1 draws 4 and holds the phase open for exactly 2 back",
+        "passed": true,
+        "demonstrates": "yes: the only draw events are 'draws 4' per seat on turn 1; hand 8, deck 22, bottomDone open"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.6",
+        "supports": "yes",
+        "note": "gives the draw-4/bottom-2 draw phase; it does not say turn 1 has one, which the text honestly flags as the client's convention. Note Rulebook p.6 also says draws happen 'on every turn after the first', a sentence some could read as excluding turn 1 — unaddressed but the text's disclaimer covers it"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "the draw phase in constructed, players draw 4 cards, then select 2 cards from their hand and put them on the bottom of the"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "for (const seat of [0, 1]) e.draw(seat, 4, true);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None. The turn-1 draw phase is honestly labelled a client convention."
+  },
+  {
+    "key": "concepts.starting.constructed.opening-hand",
+    "textHash": "6396e00a53b2c211",
+    "verdict": "confirmed",
+    "round": 3,
+    "verifier": "U01-r3",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": true,
+        "note": "'opening hand 4 (like draft)' — e.draw(seat, 4, true) per seat"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/34-constructed.test.ts",
+        "pattern": "createGame constructed: per-seat decks, opening 4 \\+ draw 4",
+        "passed": true,
+        "asserts_claim": "yes (8 = 4 + 4; the 4 is inferred from the total, confirmed by the probe's draw events)"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U01/u01-r3-verify-probes.test.ts",
+        "title": "concepts.starting.constructed.opening-hand / first-draw: 4 dealt, then turn 1 draws 4 and holds the phase open for exactly 2 back",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "(none cited)",
+        "supports": "partly",
+        "note": "correct that no printed source gives a constructed opening hand; Manual p.11's '4 for their starting hand' is the live-draft setup only. basis 'engine' is honest"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "// opening hand 4 (like draft); turn 1's draw phase (draw 4, bottom 2)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None."
+  },
+  {
+    "key": "concepts.starting.live-draft",
+    "textHash": "20fcfad09d6600fd",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": true,
+        "note": "shuffle, initiative roll, prismites, then deal"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.11",
+        "supports": "yes",
+        "note": "the steps, in this order"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Randomly assign a player The Initiative. Give this"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.starting.live-draft.deal",
+    "textHash": "46e4ba2d29579dd3",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U01-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": true,
+        "note": "draft: e.draw(seat, openingHand ?? 6) in dealOrder, then e.dealPacks() (10 each); turn 1 adds no draw (startTurn: draft draws only when turn > 1)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/20-draft.test.ts",
+        "pattern": "createGame draft: 6-card hands",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U01/u01-r2-verify-probes.test.ts",
+        "title": "concepts.starting.live-draft.deal: 16 cards per seat from the shared deck — 6 in hand (4 + 2) and a pack of 10",
+        "passed": true,
+        "demonstrates": "yes: 6 in hand, 10 in pack, deck 177-32"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.11",
+        "supports": "yes",
+        "note": "4 starting hand, 10 pack, 2 first draw step"
+      },
+      {
+        "ref": "R292",
+        "supports": "yes",
+        "note": "standard opening hand 6 = 4 plus turn 1's 2 (it says 'Manual p.16's 4'; the 4 is on p.11)"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Deal each player 16 cards: 4 for their starting hand,"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "10 for their pack and 2 for their first draw step of the"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **Opening hand** (1–15, standard 6: Manual p.16's 4 plus turn 1's 2), **draws"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.starting.live-draft.deck",
+    "textHash": "568d55d3ddf24681",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:createGame / draftPool",
+        "agrees": true,
+        "note": "every card whose factions lie within the trio, one copy each, shuffled"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/20-draft.test.ts",
+        "pattern": "draft deck: the fire+water+earth trio is Manual-exact",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.11",
+        "supports": "yes",
+        "note": "and its diagram shows 54 per element plus 15 hybrids"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "to form the deck, including the hybrid cards for the"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "// (54 per element + 5 per hybrid pair = 177 for a trio), less whatever a"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.starting.live-draft.elements",
+    "textHash": "cdc388386a7f8ed9",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U01-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": true,
+        "note": "elementCount = draftDeal?.elements ?? 3; sanitizeTrio picks the chosen elements or defaultElements(3). A BL-43 custom deal may choose 2-7 (R292), a deliberate custom-rules option"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U01/u01-r2-verify-probes.test.ts",
+        "title": "concepts.starting.live-draft.elements: a standard 1v1 live draft is built from exactly 3 elements",
+        "passed": true,
+        "demonstrates": "yes: default draft has 3 elements; a chosen trio is used as given"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.11",
+        "supports": "yes",
+        "note": "'For 2-3 players, use 3 elements.' 'Games begin by selecting the elements to build the deck.'"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "use 3 elements. For 4-6 players use 4 elements."
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "  const elementCount = draftDeal?.elements ?? 3;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "No example and no test cited. The probe covers it. Custom rules (R292) allow 2-7 elements, which a later rule should mention."
+  },
+  {
+    "key": "concepts.starting.live-draft.initiative",
+    "textHash": "71809c6ecafc8e82",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": true,
+        "note": "seeded RNG roll picks seat 0 or 1"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.11",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.2",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "initiative: lesson?.initiative ?? (initRoll < 0.5 ? 0 : 1), winner: null, nextId: 1,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.starting.live-draft.life",
+    "textHash": "d26f8dd5d13b11af",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": true,
+        "note": "life 30 unless a custom deal or lesson overrides"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.2",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R292",
+        "supports": "partly",
+        "note": "custom-rule default, quote is a fragment"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Each player begins with 30 life. Eliminate all of your"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "seat, name, life: lesson?.startingLife[seat] ?? draftDeal?.startingLife ?? 30, hand: [], bin: [],"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.starting.live-draft.prismites",
+    "textHash": "f765c8c767df2106",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U01-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": true,
+        "note": "two prismites, state dormant, every mode outside a lesson"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/01-planning.test.ts",
+        "pattern": "setup & planning",
+        "passed": true,
+        "asserts_claim": "yes (in the default shared test mode; createGame's prismite line is mode-independent)"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.11",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.18",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R17",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Deal 2 prismites to each player face down (dormant)."
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "resources: Array.from({ length: lesson?.prismites[seat] ?? 2 }, () => ({ kind: 'prismite' as const, state: 'dormant' as const })),"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "concepts.starting.no-first-draw",
+    "textHash": "c2f3e3e1c83ca140",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U01-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:startTurn",
+        "agrees": true,
+        "note": "draft draws only `if (this.s.mode === 'draft' && this.s.turn > 1)`; the 6-card deal covers turn 1"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/20-draft.test.ts",
+        "pattern": "createGame draft: 6-card hands",
+        "passed": true,
+        "asserts_claim": "yes: turn 1, 6 in hand, draft step open (draftDone [false,false])"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U01/u01-r2-verify-probes.test.ts",
+        "title": "concepts.starting.no-first-draw: a new live-draft game is on turn 1 with the 6 dealt cards and no draw events",
+        "passed": true,
+        "demonstrates": "partly: hand is 6 on turn 1. The zero draw-event count does not tell the two cases apart, because the setup deal also emits no 'draw' event"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.16",
+        "supports": "yes",
+        "note": "verbatim"
+      },
+      {
+        "ref": "Rulebook 2023 p.6",
+        "supports": "yes",
+        "note": "'every turn after the first'"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "their opening hand, in which case they should not draw"
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "Players draw 2 cards during the draw step on every turn after the first."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "    if (this.s.mode === 'draft' && this.s.turn > 1) {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  }
+]

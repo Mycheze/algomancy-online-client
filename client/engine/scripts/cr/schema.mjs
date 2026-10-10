@@ -158,6 +158,8 @@ export function validateRecord(r) {
   if (r.notes !== undefined && !isStr(r.notes)) P('notes must be a string');
   if (r.engineDiffers !== undefined && (!Array.isArray(r.engineDiffers) || !r.engineDiffers.every((f) => FINDING_ID_RE.test(f)))) P('engineDiffers must be an array of finding ids (F-U<nn>-<n>)');
   if (r.untested !== undefined && typeof r.untested !== 'boolean') P('untested must be a boolean');
+  // a rule with nothing to execute says why, so the document can print "not executable: <reason>"
+  if (r.untestableReason !== undefined && (!nonEmpty(r.untestableReason) || /[\r\n]/.test(r.untestableReason))) P('untestableReason must be a one-line non-empty string');
   if (!isObj(r.sourceHashes)) P('sourceHashes must be an object ({"R114": bodyHash, "RAQ <id>#<i>": textHash})');
   else for (const [k, v] of Object.entries(r.sourceHashes)) {
     if (!(parseRulingCite(k)?.scope === '' || /^RAQ \d+#\d+$/.test(k))) P(`sourceHashes key ${JSON.stringify(k)} is not "R<n>" or "RAQ <id>#<i>"`);

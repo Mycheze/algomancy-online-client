@@ -1,0 +1,62 @@
+[
+  {
+    "id": "F-U09-1",
+    "rule": "turn.deploy.stack",
+    "title": "35-rot test title asserts that deployment has no priority, which R286 amended",
+    "summary": "The test is named 'deployment opens no priority window' and asserts priority === null, which is R38's clause. R286 gives each seat priority over its own deployment stack, so the test pins the unbuilt state (CT-185) under a title that reads as current law. The rot half (rot cannot be responded to) is still right. Retitle it to the rot claim, or tie it to CT-185 so it flips when the deployment stop is built.",
+    "evidence": [
+      {
+        "file": "client/engine/test/35-rot-debt-trash.test.ts",
+        "quote": "test('R38: rot damage cannot be responded to — deployment opens no priority window', () => {"
+      },
+      {
+        "file": "client/engine/test/35-rot-debt-trash.test.ts",
+        "quote": "assert.equal(h.state.priority, null, 'nobody holds priority during deployment');"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "2. **That stack belongs to one seat**, and so does the priority over it. The"
+      }
+    ]
+  },
+  {
+    "id": "F-U09-2",
+    "rule": "turn.regroup.sequence",
+    "title": "The R11 regroup test claims an exact sequence but asserts only the end state",
+    "summary": "05-rulings 'R11: regroup runs its exact sequence' checks that each of the five regroup effects happened, after regroup. It never observes their order, so a reordering of startRegroup would stay green. Either drop 'exact sequence' from the title, or add an observation that can tell the orders apart, such as a trigger that reads damage or formation membership mid-regroup.",
+    "evidence": [
+      {
+        "file": "client/engine/test/05-rulings.test.ts",
+        "quote": "test('R11: regroup runs its exact sequence (return → damage → temp → formation, tokens erased)', () => {"
+      },
+      {
+        "file": "client/engine/test/05-rulings.test.ts",
+        "quote": "assert.equal(h.state.battle, null, '(4) formations gone');"
+      }
+    ]
+  },
+  {
+    "id": "F-U09-3",
+    "rule": "turn.deploy.order",
+    "title": "Deployment is simultaneous in the engine; the printed rules have the initiative team deploy first",
+    "summary": "The printed rule (Manual p.38, Rulebook 2023 p.5) has the initiative team deploy first and the non-initiative team after it. Measured: at the start of deployment, before the initiative player is done, the non-initiative player is offered playCard and doneDeploying, and the play is accepted. This is the deliberate house rule (simultaneous hidden deployment) recorded as D-U09-1; filed so the owner decides which side is law, not as a request to change the engine.",
+    "evidence": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U09/u09-tester-probes.out.txt",
+        "quote": "# NIT offered before IT done: [\"doneDeploying\",\"playCard\"]"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U09/u09-tester-probes.out.txt",
+        "quote": "error: 'the non-initiative player is offered no play while the initiative player deploys'"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "quote": "if (e.deploying(seat)) return legalDeployActions(e, seat);"
+      },
+      {
+        "file": "client/engine/src/types.ts",
+        "quote": "/** deployment is SIMULTANEOUS (house rule; regions can't interact anyway):"
+      }
+    ]
+  }
+]

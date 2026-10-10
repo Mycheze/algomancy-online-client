@@ -1,0 +1,2573 @@
+[
+  {
+    "key": "turn.draw.constructed",
+    "textHash": "eea5d978dc65a28c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:startConstructedDraw",
+        "agrees": true,
+        "note": "draw 4 then bottomCards 2; Worldbender replaces the step"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "34-constructed.test.ts",
+        "pattern": "turn 2 reopens the draw phase: 4 more cards, bottoming pending again",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "28-metal-c.test.ts",
+        "pattern": "Worldbender in constructed: no draw-4-put-2-back — the hand gains 3 and 3 life is paid",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.16",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.6",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1451507918171013252#1",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "two steps by drawing 4 cards, then recycling 2."
+      },
+      {
+        "file": "data/corpus/algomancy_corpus.jsonl",
+        "text": "you're only drawing 4 and recycling 2."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.draw.constructed.choice",
+    "textHash": "29781b74fd8f3c50",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doBottomCards",
+        "agrees": true,
+        "note": "exactly 2 (fewer only if the hand is shorter), player's choice and order"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:doRecycle/doActivateResource/doDonePlanning",
+        "agrees": true,
+        "note": "need(!bottomPending(seat))"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "34-constructed.test.ts",
+        "pattern": "nothing moves until the 2 cards go back; bottoming keeps the given order",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.6",
+        "supports": "yes",
+        "note": "select 2 and put on the bottom; the 'no other action until' half is the engine's gate, not printed"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "the draw phase in constructed, players draw 4 cards, then select 2 cards from their hand and put them on the bottom of the"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(!e.bottomPending(seat), 'finish your draw phase first');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "'Until they have, they can take no other planning action' is an engine sequencing choice; no printed source states it."
+  },
+  {
+    "key": "turn.draw.constructed.first-turn",
+    "textHash": "eeaf8d48d2a09163",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U08-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:startTurn / constructed draw phase",
+        "agrees": true,
+        "note": "turn 1 constructed deals the opening 4 then runs draw(seat, 4) with bottomDone false."
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "34-constructed.test.ts",
+        "pattern": "createGame constructed: per-seat decks",
+        "passed": true,
+        "asserts_claim": "yes - 8 in hand, deck 22, bottomDone [false,false]"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U08/u08-r2-probes.test.ts",
+        "title": "turn.draw.constructed-packs: the 4 cards are DRAWN first and the 2 recycled after (no recycle-then-draw)",
+        "passed": true,
+        "demonstrates": "yes - on turn 1 the 4 are drawn and 2 owed"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.16",
+        "supports": "partly",
+        "note": "'draw 2 cards during the draw step on every turn' and the constructed step 'takes place immediately after the draw step'; no explicit turn-1 constructed sentence. Rulebook 2023 p.6 (not cited) says 'every turn after the first', an older text superseded by the Manual's dealt-with-opening-hand wording."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "two steps by drawing 4 cards, then recycling 2."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "this.draw(seat, 4);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Sourced by inference from 'every turn'; no printed sentence names turn 1 of constructed."
+  },
+  {
+    "key": "turn.draw.draft",
+    "textHash": "2aa4927c795522b7",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doDraftCommit",
+        "agrees": true,
+        "note": "pile = hand.concat(pack); chosen indices return to the pack; the rest is the hand"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "20-draft.test.ts",
+        "pattern": "a real merge: swapped cards land where chosen, hand size is conserved",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.16",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "to freely select which cards from the resulting pile they"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "const pile = [...p.hand, ...pack];"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.draw.draft.free",
+    "textHash": "8111c021c4d1df63",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doDraftCommit",
+        "agrees": true,
+        "note": "any distinct set of pile indices of pack size is accepted (legalActions offers only no-op + single swaps, but apply accepts every merge)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "20-draft.test.ts",
+        "pattern": "no-op commit preserves hand and pack exactly; both commits pass the packs",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U08/u08-turn-probes.test.ts",
+        "title": "turn.draw.draft.free: a player may exchange their WHOLE hand for pack cards",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.6",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "change your entire hand for a completely new set of cards, or anything in-between!"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Note: legalActions offers only the no-op plus every single swap (20-draft 'legalActions during the draft step'); larger merges are legal in apply() but not enumerated."
+  },
+  {
+    "key": "turn.draw.draft.pass",
+    "textHash": "4da14b862a6d3713",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doDraftCommit",
+        "agrees": true,
+        "note": "marks draftDone[seat]; when every seat is done calls passPacks"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:passPacks",
+        "agrees": true,
+        "note": "packs[seat] = old[(seat-1+n)%n] — clockwise; in 1v1 a swap; draftDone nulled (step complete)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "20-draft.test.ts",
+        "pattern": "no-op commit preserves hand and pack exactly; both commits pass the packs",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.16",
+        "supports": "yes",
+        "note": "pass clockwise when finished; step complete once all have passed"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "sure the pack contains 10 cards and pass it clockwise"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Once all players have passed their pack, the draft step"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (e.s.draftDone.every(Boolean)) e.passPacks();"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.draw.draft.skip",
+    "textHash": "31d3aee7a6fbb3ab",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:startDraftStep / replaceCardStep",
+        "agrees": true,
+        "note": "a replaced seat is marked done before acting; pack still passes"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "28-metal-c.test.ts",
+        "pattern": "Worldbender in a live draft: the pack is never offered, the hand gains 3, and life is untouched",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Worldbender",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (this.replaceCardStep(seat)) done[seat] = true;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.draw.draft.ten",
+    "textHash": "5d981e7616d8f842",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doDraftCommit",
+        "agrees": true,
+        "note": "packIndices.length must equal pack.length (10); hand = pile minus those, so hand size is conserved"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "20-draft.test.ts",
+        "pattern": "bad commits are rejected: wrong count, duplicates, out of range, wrong mode",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "20-draft.test.ts",
+        "pattern": "a real merge: swapped cards land where chosen, hand size is conserved",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.16",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "10 cards in the pack at the end of this step, so they will"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "`you must leave exactly ${pack.length} cards in the pack`);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.draw.draw",
+    "textHash": "2eb805e88fd13cf6",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:startTurn",
+        "agrees": true,
+        "note": "draft mode turn > 1 draws 2 (custom deal may change it)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "20-draft.test.ts",
+        "pattern": "turns 2-3 draw 2 and re-open the draft step; packs refresh on turn 4 (N+1 cycle)",
+        "passed": true,
+        "asserts_claim": "yes — 'drew 2 on turn 2' (6→8)"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.16",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.6",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "Players draw 2 cards during the draw step on every turn after the first."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.draw.draw.first-turn",
+    "textHash": "e848434671ef92a5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:createGame (draft)",
+        "agrees": true,
+        "note": "deals opening 6 = 4 + the turn-1 draws"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:startTurn",
+        "agrees": true,
+        "note": "if (mode === 'draft' && turn > 1) draws — no draw on turn 1"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "20-draft.test.ts",
+        "pattern": "createGame draft: 6-card hands (opening 4 + turn-1 draws), 10-card packs, draft step open",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.16",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.6",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1451507918171013252#0",
+        "supports": "partly",
+        "note": "Caleb says '16 card draft'; the 6+10 split is our arithmetic"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "their opening hand, in which case they should not draw"
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "Players draw 2 cards during the draw step on every turn after the first."
+      },
+      {
+        "file": "data/corpus/algomancy_corpus.jsonl",
+        "text": "But I promise the 16 card draft becomes fairly easy to navigate"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.draw.draw.order",
+    "textHash": "54359cd38bd88d1f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:startTurn",
+        "agrees": true,
+        "note": "draft-mode turn draws: for (const seat of this.dealOrder()) this.draw(seat, n)"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:dealOrder",
+        "agrees": true,
+        "note": "clockwise from the initiative player"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U08/u08-turn-probes.test.ts",
+        "title": "turn.draw.draw.order: turn draws come off the shared deck clockwise from the initiative player",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.16",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "shared deck clockwise starting with the initiative"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "/** clockwise from the initiative player — draw/pack deal order */"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "No test cited; probe demonstrates it."
+  },
+  {
+    "key": "turn.draw.refresh",
+    "textHash": "f17f65d14e623a66",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U08-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:startDraftStep",
+        "agrees": true,
+        "note": "turn > 1 && packCycle(turn, n).index === 0 recycles every pack and deals new ones."
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "20-draft.test.ts",
+        "pattern": "turns 2-3 draw 2 and re-open the draft step",
+        "passed": true,
+        "asserts_claim": "yes - no refresh before turn 4, refresh on turn 4, 10-card packs"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.16",
+        "supports": "yes",
+        "note": "N+1 cycle, packs recycled, new 10-card pack."
+      },
+      {
+        "ref": "Rulebook 2023 p.6",
+        "supports": "yes",
+        "note": "1v1: after the third turn, before the fourth draft."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Additionally, after each cycle of N+1 turns, where N"
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "For 1v1, this happens after the third turn, right before the fourth draft."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (this.s.turn > 1 && packCycle(this.s.turn, n).index === 0) {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None. (Engine sends old pack cards to the shared recycle pile per R296; still 'recycled'.)"
+  },
+  {
+    "key": "turn.draw.refresh.second-look",
+    "textHash": "8db721e25f98bc6c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:packCycle",
+        "agrees": true,
+        "note": "1v1: you, opponent, you again, then recycled"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "20-draft.test.ts",
+        "pattern": "\"comes back to you\" (turn 1) is true: your own pack returns on turn 3",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.16",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "player will draft a second time from the pack they were"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.draw.state-checks",
+    "textHash": "5437194dbcc63f0d",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U08-r2",
+    "engine": [
+      {
+        "loc": "apply.ts:stateBasedBackstop",
+        "agrees": true,
+        "note": "after every completed action, a lethal unit triggers a full settle(); E.isLethal skips a seat with bottomPending (constructed sub-rule)."
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "380-no-action-ends-dead.test.ts",
+        "pattern": "turn draw that takes Dreadspawn Horror",
+        "passed": true,
+        "asserts_claim": "yes - the turn-2 draw to 5 cards kills the Horror at the turn flip"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U08/u08-turn-probes.test.ts",
+        "title": "turn.draw.state-checks: in a live draft the turn draw that zeroes a Dreadspawn Horror kills it before the draft",
+        "passed": true,
+        "demonstrates": "yes - dead while the draft step is still open"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R313",
+        "supports": "yes",
+        "note": "owner call, current; basis 'owner' is honest."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "point. So no action — a draw, a draft, a recycle, a resource activation — may"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None."
+  },
+  {
+    "key": "turn.draw.state-checks.constructed",
+    "textHash": "94dc8039fba454f2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:isLethal",
+        "agrees": true,
+        "note": "if (this.bottomPending(u.controller)) return false"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "380-no-action-ends-dead.test.ts",
+        "pattern": "R313 constructed: drawing 4 does not kill before the 2 go back — 1 card in hand ends a 4/2",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "380-no-action-ends-dead.test.ts",
+        "pattern": "R313 constructed: 3 cards in hand nets to 5 — it dies once its controller has bottomed",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R313",
+        "supports": "yes",
+        "note": "owner call 2026-10-06"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **Constructed's draw phase is one step.** Draw 4 and put 2 back are two"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (this.bottomPending(u.controller)) return false;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.draw.state-checks.draft-pile",
+    "textHash": "076b1dec55f150f8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doDraftCommit + stateBasedBackstop",
+        "agrees": true,
+        "note": "the merge is one action; the death check runs after it on the kept hand only"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "380-no-action-ends-dead.test.ts",
+        "pattern": "R313 draft: 1 card in hand, then the turn draw and the draft — a 4/2 that lives",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R313",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "the hand↔pack merge is a single action that never shows its 13-card middle."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.general.global",
+    "textHash": "fbfad70f61057878",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U08-r2",
+    "engine": [
+      {
+        "loc": "apply.ts:doExchangePrismite/doDonePlanning (need !draftPending(seat) per seat)",
+        "agrees": false,
+        "note": "engineDiffers is real: the gates are per seat, so a seat that has drafted may act in the resource step while the other is still drafting - no sync at the end of the draft step (probe)."
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U08/u08-turn-probes.test.ts",
+        "title": "turn.planning.order.sync (measured): a seat that has drafted may act in the resource step while the other still drafts",
+        "passed": true,
+        "demonstrates": "yes - the divergence is real"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.5",
+        "supports": "yes",
+        "note": "verbatim."
+      },
+      {
+        "ref": "Manual p.7",
+        "supports": "partly",
+        "note": "'global turn system' only."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "Turns in Algomancy are global, meaning all players share the same phases, and sync up at the end of each step."
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None; divergence F-U08-4 is real."
+  },
+  {
+    "key": "turn.general.initiative",
+    "textHash": "0c2119ca0f24dc99",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U08-r2",
+    "engine": [
+      {
+        "loc": "apply.ts planning gates",
+        "agrees": false,
+        "note": "divergence F-U08-1 real: in planning the reducer does not make IT act first (probe)."
+      },
+      {
+        "loc": "engine.ts battle/deploy",
+        "agrees": true,
+        "note": "battle phase 1 opens with the IT attack; deployPlayer starts at initiative."
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U08/u08-turn-probes.test.ts",
+        "title": "turn.planning.order (measured): the non-initiative seat may act first in the resource and haste steps",
+        "passed": true,
+        "demonstrates": "yes - divergence real"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": "IT must make all their plays first; 1v1 players are their own teams."
+      },
+      {
+        "ref": "Rulebook 2023 p.5",
+        "supports": "yes",
+        "note": "required to act first in all situations."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "plays first, allowing the Non-initiative-Team (NIT) to act"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None."
+  },
+  {
+    "key": "turn.general.initiative.not-token",
+    "textHash": "7c8e738a31afbcb9",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/types.ts:GameState.initiative",
+        "agrees": true,
+        "note": "a seat number, not an entity"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353864175910387742#7",
+        "supports": "yes",
+        "note": "_passer: '8. Initiative ❌' in the list of what is a token"
+      },
+      {
+        "ref": "Manual p.11",
+        "supports": "partly",
+        "note": "only shows the physical Initiative Token marks the holder"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/corpus/algomancy_corpus.jsonl",
+        "text": "7. Copy of a spell resulting from Maelstrom Charger ❌\\n8. Initiative ❌"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Randomly assign a player The Initiative. Give this"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.general.interactive",
+    "textHash": "c9a59e74257d7730",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:hiddenSegment",
+        "agrees": true,
+        "note": "planning/haste/deploy have no priority windows; priority exists only in battle"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U08/u08-turn-probes.test.ts",
+        "title": "turn.haste.immediate / turn.planning.no-interaction: a haste play leaves no stack and gives no priority",
+        "passed": true,
+        "demonstrates": "partly — planning half only"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.7",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Battle Phase: The sole interactive phase of the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.general.next-turn",
+    "textHash": "3ab7777a8e685e08",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:finishTurnEnd",
+        "agrees": true,
+        "note": "initiative = nit, then startTurn (planning)"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:passPacks",
+        "agrees": true,
+        "note": "packs move clockwise at the end of the draft step rather than at end of turn — equivalent holder on the next turn"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "20-draft.test.ts",
+        "pattern": "turns 2-3 draw 2 and re-open the draft step; packs refresh on turn 4 (N+1 cycle)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U08/u08-turn-probes.test.ts",
+        "title": "turn.general.next-turn: the initiative passes to the other player at the turn flip",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.26",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "After the deployment and end of turn, the turn is over."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "this.s.initiative = this.nit;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Engine passes packs when the draft step completes, not at end of turn; the holder at the next draft is the same."
+  },
+  {
+    "key": "turn.general.phases",
+    "textHash": "4c390e961815e957",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/types.ts:Phase",
+        "agrees": true,
+        "note": "'planning' | 'battle' | 'regroup' | 'deploy'"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:finishHasteEnd / regroup / startDeployment",
+        "agrees": true,
+        "note": "planning → battle → regroup → deploy"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "20-draft.test.ts",
+        "pattern": "haste step still works after a draft turn (gates compose)",
+        "passed": true,
+        "asserts_claim": "partly: shows draft → planning → haste → battle only"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.7",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Battle Phase: The sole interactive phase of the"
+      },
+      {
+        "file": "client/engine/src/types.ts",
+        "text": "export type Phase = 'planning' | 'battle' | 'regroup' | 'deploy' | 'gameover';"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.haste.always",
+    "textHash": "d2cd193c869bfa4e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:startHasteStep",
+        "agrees": true,
+        "note": "unconditional; hasteDone = all false"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "08-cards2.test.ts",
+        "pattern": "the haste step opens even when nobody has a legal haste play (R228)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R224",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R228",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R18 history",
+        "supports": "yes",
+        "note": "skip half reversed"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "## R228 — the haste step opens unconditionally, and the predicate that used to decide is DELETED rather than fixed"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "this.s.hasteDone = this.s.players.map(() => false);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.haste.always.no-auto-done",
+    "textHash": "b7aecd64d82d8041",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:startHasteStep",
+        "agrees": true,
+        "note": "no seat pre-marked done (R228)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "200-haste-step-is-unconditional.test.ts",
+        "pattern": "R228 §5: a bluff is a real move — you may sit in the step holding nothing",
+        "passed": false,
+        "asserts_claim": "NOT RUN (client/server test); read: asserts the empty seat is offered only doneHaste and hasteDone stays false"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U08/u08-turn-probes.test.ts",
+        "title": "turn.haste.always.no-auto-done: a seat holding nothing playable is not marked done and may stay",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R228",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R18 history",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "outright when it said no for everybody, and **mark any other seat done before it"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "// R228: unconditional. No seat is pre-marked done, because \"done\" is a"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.haste.end-event",
+    "textHash": "acaf40ce1d274420",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:startBattlePhase",
+        "agrees": true,
+        "note": "fires 'endOfHaste' inside a settle window before hasteDone is nulled; the step always opens (R228) so it fires every turn"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "38-light-a.test.ts",
+        "pattern": "Keeper of Tithes: at the end of [Haste] it creates an X/X for your expended resources",
+        "passed": true,
+        "asserts_claim": "yes — and nothing was played in that haste step (skipHasteStep)"
+      },
+      {
+        "file": "200-haste-step-is-unconditional.test.ts",
+        "pattern": "R228 §5: the step still ENDS properly — endOfHaste fires exactly once",
+        "passed": false,
+        "asserts_claim": "NOT RUN: client/server test (brief forbids); read only — it asserts exactly one endOfHaste"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U08/u08-turn-probes.test.ts",
+        "title": "turn.haste.end-event: endOfHaste fires exactly once, before battle, in a step where nothing was played",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Keeper of Tithes",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Debt Plant",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R50",
+        "supports": "yes",
+        "note": "its 'skipped outright' wording is stale since R228, the substance stands"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "fires even when R18 **skipped** the step outright — the haste step is part of"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const ev = this.ev('endOfHaste', 'The haste step ends.', { turn: this.s.turn });"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "The second example's bound test lives in client/server/test and was not run; the probe measures the same claim in the engine."
+  },
+  {
+    "key": "turn.haste.end-event.during",
+    "textHash": "bc419eb4ce561fb0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:startBattlePhase (endOfHaste window)",
+        "agrees": true,
+        "note": "Prediction Prophet's prediction is a number decision raised in the endOfHaste window"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "40-light-c.test.ts",
+        "pattern": "Prediction Prophet: the [Haste] prediction is a real decision, and matching it creates a 5/5 (R90)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Prediction Prophet",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R90",
+        "supports": "yes",
+        "note": "end-of-step timing half stands; menu cap superseded by R197"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "## R90 — A park note is a CLAIM: Prediction Prophet needed no new primitive (its menu cap replaced by R197)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.haste.ends",
+    "textHash": "3dccebc9d1cc4fbe",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doDoneHaste",
+        "agrees": true,
+        "note": "startBattlePhase only when every hasteDone is true"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "200-haste-step-is-unconditional.test.ts",
+        "pattern": "R228 §5: no seat is auto-done, and BOTH have to close the step",
+        "passed": false,
+        "asserts_claim": "NOT RUN (client/server test); read: asserts one done leaves phase 'planning', second ends it"
+      },
+      {
+        "file": "08-cards2.test.ts",
+        "pattern": "the haste step opens even when nobody has a legal haste play (R228)",
+        "passed": true,
+        "asserts_claim": "partly"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U08/u08-turn-probes.test.ts",
+        "title": "turn.haste.ends: one player finishing does not end the haste step; both must",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.18",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "the haste cards they wanted to play (which can be none)."
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (e.s.hasteDone!.every(Boolean)) e.startBattlePhase();"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.haste.grants",
+    "textHash": "4aa3c991b703e11f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:hastePlayAllowance / binHasteGrantorIndex",
+        "agrees": true,
+        "note": "timing permission only"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:playAtTiming",
+        "agrees": true,
+        "note": "granted play resolves immediately; unit gains no Haste attribute"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "26-metal-a.test.ts",
+        "pattern": "Dispatch Courier: \"play a unit during the mana step as if it had [Haste]\"",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "42-dark-b.test.ts",
+        "pattern": "Writhing Host (R123): a deploy unit in hand is offered at haste timing, and playing it erases the Host from the bin",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Dispatch Courier",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Writhing Host",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R123",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "it had [Haste]\" is TIMING ONLY — the played unit never carries the attribute."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.haste.grants.each-turn",
+    "textHash": "89d0dfa560e8802b",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U08-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:hastePlayAllowance",
+        "agrees": true,
+        "note": "SUMS playAtHaste over every anchored grantor; mayPlayAtHaste compares against hastePlaysUsed."
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "26-metal-a.test.ts",
+        "pattern": "Dispatch Courier: the \"Each turn\" allowance is one",
+        "passed": true,
+        "asserts_claim": "yes - one Courier, second vanilla unit not offered and refused"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U08/u08-turn-probes.test.ts",
+        "title": "turn.haste.grants.each-turn: TWO Dispatch Couriers fund TWO haste-step plays (measured)",
+        "passed": true,
+        "demonstrates": "yes - two Couriers, two plays accepted, third refused"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Dispatch Courier",
+        "supports": "partly",
+        "note": "prints 'Each turn, you may play a unit' (one per card); stacking is R97's reading."
+      },
+      {
+        "ref": "R97",
+        "supports": "yes",
+        "note": "'two Couriers each print ... and two of them are two plays'."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "\"text\": \"[Augment] Each turn, you may play a unit during the mana step as if it had [Haste].\","
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "twice as permissive, but two Couriers each print \"Each turn, you may play a unit\" and two of"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "total += p.playAtHaste?.(this, anchor, ctx) ?? 0;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None."
+  },
+  {
+    "key": "turn.haste.immediate",
+    "textHash": "1300532b98102999",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:playAtTiming (planning branch)",
+        "agrees": true,
+        "note": "haste step plays commit with 'resolve' immediately; no stack item, priority stays null"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "15-water-b.test.ts",
+        "pattern": "Tidal Menace: {Haste} 7/2 — playable in the haste step, resolves immediately (R18)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U08/u08-turn-probes.test.ts",
+        "title": "turn.haste.immediate / turn.planning.no-interaction: a haste play leaves no stack and gives no priority",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.7",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R18",
+        "supports": "yes",
+        "note": "its immediate-resolution half stands"
+      },
+      {
+        "ref": "R97",
+        "supports": "partly",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "finish planning: each haste play **resolves immediately** (planning is not interactive —"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.haste.mods",
+    "textHash": "a8a836bad282eea3",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U08-r2",
+    "engine": [
+      {
+        "loc": "apply.ts:doAugment",
+        "agrees": true,
+        "note": "non-deployment, non-battle-Virus, non-haste-grant branch is illegal('modding is a deployment action (or a battle Virus)')."
+      },
+      {
+        "loc": "apply.ts:doGraft",
+        "agrees": true,
+        "note": "e.deploying(seat) || hasteModAllowed(...) else 'grafting is a deployment action'."
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 point 1",
+        "passed": true,
+        "asserts_claim": "yes - Haste graft (Molten Upheaval) offered in deployment, not in haste step or battle"
+      },
+      {
+        "file": "40-light-c.test.ts",
+        "pattern": "without a Slurpr the \\[Haste\\] refusal is unchanged",
+        "passed": true,
+        "asserts_claim": "yes - no mod offered, augment and graft refused in the haste step"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U08/u08-turn-probes.test.ts",
+        "title": "turn.haste.mods: a [Haste] card with [Augment] may be PLAYED in the haste step but not APPLIED as a mod there",
+        "passed": true,
+        "demonstrates": "yes - The Everywhere (Haste, Augment) is playable but not augmentable in the haste step"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U08/u08-turn-probes.test.ts",
+        "title": "turn.haste.mods (control): the same [Haste] augment IS offered as a mod in deployment",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.26",
+        "supports": "partly",
+        "note": "deployment is where cards are modified with graft and augment; does not itself forbid the haste step."
+      },
+      {
+        "ref": "RAQ 1355115946032889914#0",
+        "supports": "partly",
+        "note": "designer-side statement is about GRAFTS only ('Always in deployment. No matter what cards speed is'); the augment half rests on R95 and the engine."
+      },
+      {
+        "ref": "R95 (its Slurpr haste-sibling half)",
+        "supports": "yes",
+        "note": "names the refusal and the Slurpr exception."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "playing cards, activating abilities and modifying cards"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.illegal('modding is a deployment action (or a battle Virus)');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Designer citation covers grafts only; augments are by printed deployment wording + R95. Not wrong."
+  },
+  {
+    "key": "turn.haste.mods.slurpr",
+    "textHash": "6e94a6958edb2b7c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:mayApplyModAtHaste / apply.ts doAugment, doGraft",
+        "agrees": true,
+        "note": "augments and grafts allowed in the haste step under Slurpr"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "40-light-c.test.ts",
+        "pattern": "Slurpr: mods may be applied during [Haste] as if it was deployment",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Slurpr",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R95",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**\"Other mods\" is augments AND grafts** — R37's word for both — which is why `ctx.kind` is"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.haste.plays",
+    "textHash": "9ea3692363b8470e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:playAtTiming (planning branch)",
+        "agrees": true,
+        "note": "'only haste cards during the haste step' unless an R97/R123 grant applies"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "08-cards2.test.ts",
+        "pattern": "Molten Upheaval + the haste step: haste cards play between planning and battle (R18)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.18",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "haste cards (with the     symbol). This step ends when all players have played all"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "'only haste cards during the haste step');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Exceptions are grants (turn.haste.grants) and Slurpr mods (turn.haste.mods.slurpr)."
+  },
+  {
+    "key": "turn.haste.plays.battle-stays",
+    "textHash": "07bc8a03eb6f5b39",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:hastePlayAllowance",
+        "agrees": true,
+        "note": "returns 0 for timing==='battle' whatever the grantors say"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:playAtTiming (planning branch)",
+        "agrees": true,
+        "note": "need(timing==='haste' || granted || binErase) — a battle card has no grant"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:binHasteGrantorIndex",
+        "agrees": true,
+        "note": "Writhing Host route restates the same battle refusal"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "26-metal-a.test.ts",
+        "pattern": "Dispatch Courier: a {Battle} unit stays a battle card even with the grant",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "RAQ Dispatch Courier: a Battle spell unit is not playable in the haste step either",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1465292396664193171#0",
+        "supports": "yes",
+        "note": "_passer write-up: No, despite gaining haste"
+      },
+      {
+        "ref": "RAQ 1465292396664193171#1",
+        "supports": "yes",
+        "note": "spell units too"
+      },
+      {
+        "ref": "RAQ 1464899726796390433#0",
+        "supports": "yes",
+        "note": "calebgannon 2026-01-25 reversal; the 2025-03 opposite claim (#1) is outdated"
+      },
+      {
+        "ref": "R97",
+        "supports": "yes",
+        "note": "quotes the RAQ"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> A: **No, despite gaining {Haste} they can still only be played during {Battle}.**"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (ctx.card.timing === 'battle') return 0;  // RAQ: a battle card stays one"
+      },
+      {
+        "file": "data/corpus/algomancy_corpus.jsonl",
+        "text": "battle cards are designed to be played in battle only. Not all of them will cause problems"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.haste.prophesy",
+    "textHash": "f8de3b846fca5543",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doProphesy window",
+        "agrees": true,
+        "note": "a banner whose condition ends in [Haste] is offered/accepted in the haste step; unmarked refused; marker never widens outside the haste step"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "257-prophecy-release-timing.test.ts",
+        "pattern": "R277: a banner marked [Haste] may be prophesied during the haste step",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "257-prophecy-release-timing.test.ts",
+        "pattern": "R277: an UNMARKED banner is still deployment-only — the haste step refuses it",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R277",
+        "supports": "yes",
+        "note": "point 2, an owner call"
+      },
+      {
+        "ref": "R277 history",
+        "supports": "yes",
+        "note": "R301 supersedes only the no-affinity aside"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "2. **A trailing `[Haste]` in the printed CONDITION widens the PROPHESY"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.haste.prophesy.release",
+    "textHash": "98abf3c724fe549e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:cachedTiming / apply.ts playCached",
+        "agrees": true,
+        "note": "a fulfilled release keeps the printed timing; a {Battle} release is refused in the haste step and offered at battle windows"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "257-prophecy-release-timing.test.ts",
+        "pattern": "R277: the marker does not move a fulfilled release out of battle and into the haste step",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "257-prophecy-release-timing.test.ts",
+        "pattern": "R277: a fulfilled prophecy on a battle card is offered at a BATTLE window",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R277",
+        "supports": "yes",
+        "note": "point 1: the release is always at the card's printed timing; owner/engine ruling restating R42 (designer-backed per history)"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "1. **The RELEASE is always at the card's printed timing.** R42 governs, without"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "basis 'owner' is acceptable; R277 point 1 restates R42 (Caleb-backed). Wording 'played from the cache only at its printed timing' is right."
+  },
+  {
+    "key": "turn.haste.what",
+    "textHash": "2c303ae019dfc786",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doDonePlanning → startHasteStep",
+        "agrees": true,
+        "note": "the haste step opens inside phase 'planning' after both finish the resource step"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "08-cards2.test.ts",
+        "pattern": "Molten Upheaval + the haste step: haste cards play between planning and battle (R18)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.18",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R97",
+        "supports": "partly",
+        "note": "the cited sentence is an engine-branch description, merely on-topic"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "After the resource step is the very short haste step, where players can only play"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.planning.no-interaction",
+    "textHash": "6bc801cf8823e091",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:playAtTiming (planning branch)",
+        "agrees": true,
+        "note": "haste plays resolve immediately; no stack, priority stays null"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:legalActions",
+        "agrees": true,
+        "note": "planning/haste branches never offer passPriority"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "08-cards2.test.ts",
+        "pattern": "Molten Upheaval + the haste step: haste cards play between planning and battle (R18)",
+        "passed": true,
+        "asserts_claim": "partly: shows immediate resolution, not the absence of priority"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U08/u08-turn-probes.test.ts",
+        "title": "turn.haste.immediate / turn.planning.no-interaction: a haste play leaves no stack and gives no priority",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.7",
+        "supports": "yes",
+        "note": "said of the mana step (resource+haste)"
+      },
+      {
+        "ref": "R97",
+        "supports": "partly",
+        "note": "the cited sentence is about the mana step"
+      },
+      {
+        "ref": "Manual p.7",
+        "supports": "yes",
+        "note": "battle is 'the sole interactive phase' (not cited here but supports)"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "ting it on the bottom of the deck). There is no player interaction during this step."
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Battle Phase: The sole interactive phase of the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.planning.order",
+    "textHash": "06bad9a0719e19b9",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U08-r2",
+    "engine": [
+      {
+        "loc": "apply.ts:doDonePlanning / legalActions planning branch",
+        "agrees": false,
+        "note": "engineDiffers is real: the reducer lets either seat act in the resource and haste steps in any order; NIT may activate, finish and play a haste card before IT has done anything (probe). R18 models the steps as a hidden simultaneous segment instead of IT-first."
+      },
+      {
+        "loc": "engine.ts:startTurn",
+        "agrees": true,
+        "note": "refresh, draws and draft step happen for both seats at the turn flip (simultaneous)."
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U08/u08-turn-probes.test.ts",
+        "title": "turn.planning.order (measured): the non-initiative seat may act first in the resource and haste steps",
+        "passed": true,
+        "demonstrates": "yes - the engine divergence is real (NIT acts first)"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.27",
+        "supports": "yes",
+        "note": "the TEAMS/1V1 chart (checked on the rendered page) marks steps 1-3 SIMULTANEOUSLY and 4 (gather/activate resources) and 5 (play) IT FIRST, THEN NIT. The cited text is only the legend label; the colour coding carries the claim."
+      },
+      {
+        "ref": "Rulebook 2023 p.5",
+        "supports": "yes",
+        "note": "'during the mana and main phases, the initiative team must make all of their plays first'; the mana step = resource + haste (Rulebook p.7)."
+      },
+      {
+        "ref": "Manual p.20",
+        "supports": "partly",
+        "note": "general IT-first statement; does not name the planning steps."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "IT FIRST, THEN NIT"
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "phases, the initiative team must make all of their"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "4. Gather and activate resources"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None in the ruling. The engine divergence (F-U08-1) is real and openly flagged."
+  },
+  {
+    "key": "turn.planning.order.sync",
+    "textHash": "f285015e7db51a47",
+    "verdict": "contradicted",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doActivateResource / doRecycle / doDonePlanning",
+        "agrees": false,
+        "note": "gated on draftPending(seat) — the acting seat only; a seat that has drafted starts (and can finish) its resource step while the other still drafts"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "20-draft.test.ts",
+        "pattern": "planning is gated until you commit; open again after (opponent still drafting)",
+        "passed": true,
+        "asserts_claim": "no — asserts the opposite: seat 0 activates and recycles while seat 1 is still drafting"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U08/u08-turn-probes.test.ts",
+        "title": "turn.planning.order.sync (measured): a seat that has drafted may act in the resource step while the other still drafts",
+        "passed": true,
+        "demonstrates": "yes — demonstrates the engine does the opposite"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.5",
+        "supports": "yes",
+        "note": "printed 'sync up at the end of each step' supports the text"
+      },
+      {
+        "ref": "Manual p.16",
+        "supports": "partly",
+        "note": "only that the draft step completes when all have passed"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "Turns in Algomancy are global, meaning all players share the same phases, and sync up at the end of each step. This process"
+      },
+      {
+        "file": "client/engine/test/20-draft.test.ts",
+        "text": "// committed seat may proceed simultaneously while the opponent drafts"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "The text matches print but the engine does not hold the resource step for the draft (nor for constructed bottoming); it is unflagged. Either mark engineDiffers (the server's hidden 'plan' segment hides the early start) or restate as the engine behaves."
+  },
+  {
+    "key": "turn.planning.steps",
+    "textHash": "735cbeb0c078e45a",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U08-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:startTurn",
+        "agrees": true,
+        "note": "refresh expended resources, draws, then startDraftStep (or constructed draw phase); resource actions gated on !draftPending/!bottomPending; haste step after donePlanning."
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "20-draft.test.ts",
+        "pattern": "haste step still works after a draft turn",
+        "passed": true,
+        "asserts_claim": "partly - draft then resource then haste then battle"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.27",
+        "supports": "yes",
+        "note": "the five numbered planning steps."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "3. Draft (Draw 2 recycle 2 in constructed)"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (this.s.mode === 'draft') this.startDraftStep();"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None."
+  },
+  {
+    "key": "turn.planning.steps.draft",
+    "textHash": "b675ebbab02806d4",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.27",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "3. Draft (Draw 2 recycle 2 in constructed)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.planning.steps.draw",
+    "textHash": "4a0b34dc3916f5d0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.27",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "2. Draw 2 cards"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.planning.steps.haste",
+    "textHash": "92d0912780305213",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.18",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "the haste cards they wanted to play (which can be none)."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.planning.steps.refresh",
+    "textHash": "d17b4c0287011851",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:startTurn",
+        "agrees": true,
+        "note": "expended → open for every player"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "R39: partial payment is fine and the remainder carries to the next turn",
+        "passed": true,
+        "asserts_claim": "yes — 'the expended resource refreshed'"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.27",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.14",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Expended resources refresh at the beginning of a turn."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "for (const r of p.resources) if (r.state === 'expended') r.state = 'open';"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.planning.steps.resource",
+    "textHash": "2a06b710fc9682a7",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.27",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "4. Gather and activate resources"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.planning.what",
+    "textHash": "843873bf414b40cf",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.7",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Planning Phase: Players prepare for the turn ahead"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "by curating their hands and preparing their resourc-"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.resource.actions",
+    "textHash": "54988c2eec2ef9c7",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:legalPlanningActions",
+        "agrees": true,
+        "note": "recycleForResource, activateResource, exchangePrismite, donePlanning"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.18",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "maximum of two resources per turn by turning them face up. There is no limit to"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.resource.actions.activate",
+    "textHash": "0d5101c8a6779105",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doActivateResource",
+        "agrees": true,
+        "note": "dormant → open; activationsLeft > 0 required"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:ACTIVATIONS_PER_TURN",
+        "agrees": true,
+        "note": "= 2, reset in startTurn"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "01-planning.test.ts",
+        "pattern": "setup & planning",
+        "passed": true,
+        "asserts_claim": "yes — third activation throws 'max 2 activations per turn'"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.18",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "maximum of two resources per turn by turning them face up. There is no limit to"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "export const ACTIVATIONS_PER_TURN = 2;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.resource.actions.create",
+    "textHash": "2856513afd01b5bc",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doRecycle",
+        "agrees": true,
+        "note": "recycles the hand card, pushes a dormant resource; no count limit"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "01-planning.test.ts",
+        "pattern": "setup & planning",
+        "passed": true,
+        "asserts_claim": "yes — card to the recycle pile, resource dormant"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U08/u08-turn-probes.test.ts",
+        "title": "turn.resource.actions.create: there is no limit on resources created in one resource step",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.18",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "maximum of two resources per turn by turning them face up. There is no limit to"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.player(seat).resources.push({ kind: element, state: 'dormant' });"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.resource.actions.exchange",
+    "textHash": "7c2aa17dd05df44b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doExchangePrismite",
+        "agrees": true,
+        "note": "element must be one of the game's elements; dormant refused; new resource keeps state"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "01-planning.test.ts",
+        "pattern": "R17/prismites: dormant start, no affinity, planning exchange into any element",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.18",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R17",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "typically receive the two activations for the first turn. Active Prismites may be"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(r.state !== 'dormant', 'a dormant prismite cannot be exchanged');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.resource.debt",
+    "textHash": "e984073b6a91ab6c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doDonePlanning → E.payDebt",
+        "agrees": true,
+        "note": "automatic, 1 mana per debt, partial allowed"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "R39: debt is paid automatically when the resource step ends — 1 mana per debt",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R39",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "must pay 1 mana per debt, each mana removing one debt. Partial payment is"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "penalty for being unable to pay. It is not a choice and needs no action —"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "turn.resource.debt.last",
+    "textHash": "04915c575c9be873",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U08-r2",
+    "engine": [
+      {
+        "loc": "apply.ts:doDonePlanning + engine.ts:payDebt",
+        "agrees": true,
+        "note": "planningDone set before payDebt, so every resource action is gated off; payMana expends the mana."
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "debt-paid mana is genuinely gone",
+        "passed": true,
+        "asserts_claim": "yes - 3 open, 2 debt -> 1 open; no resource action offered; [3] unit not offered/refused in deployment"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R39",
+        "supports": "yes",
+        "note": "current; designer-backed via owner (Caleb 2024-09-10)."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "it is deliberately the LAST thing in the resource step so that no further"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "mana can be activated afterwards, and the mana spent is unavailable for"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.s.planningDone[seat] = true;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None. (R39 is labelled designer-backed; basis 'owner' undersells it but is not wrong.)"
+  },
+  {
+    "key": "turn.resource.ends",
+    "textHash": "6a3b275779c0f442",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U08-r2",
+    "engine": [
+      {
+        "loc": "apply.ts:doDonePlanning",
+        "agrees": true,
+        "note": "each seat declares donePlanning; startHasteStep only when planningDone.every(Boolean)."
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U08/u08-r2-probes.test.ts",
+        "title": "turn.resource.ends: one player finishing the resource step does not end it; the haste step opens only when every player is done",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.18",
+        "supports": "yes",
+        "note": "printed says 'The planning phase ends when...'; the rule reads it as the resource step, consistent with Manual p.18's next paragraph ('After the resource step is the very short haste step') and p.27 where Play is step 5 of planning. A fair reading, but the word changed."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "The planning phase ends when all players have created and activated their de-"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (e.s.planningDone.every(Boolean)) e.startHasteStep();"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Minor: printed literally says 'planning phase'; the rule's 'resource step' is the reconciled reading, not a quotation."
+  },
+  {
+    "key": "turn.resource.what",
+    "textHash": "5f6ebaee47b27d69",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U08-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doRecycle / doActivateResource / doExchangePrismite",
+        "agrees": true,
+        "note": "planning-phase resource actions"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.18",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "The resource step of the planning phase is when players have the ability to cre-"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  }
+]
