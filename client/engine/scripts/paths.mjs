@@ -130,6 +130,19 @@ export const CR_DOC_TXT = join(CR_DIR, 'Algomancy-Comprehensive-Rules.txt');
 /** Annex D, the conventions only the digital client has (clocks, undo,
  *  auto-passing). ⚠ Generated — never hand-edit */
 export const CR_ANNEX_D = join(CR_DIR, 'Annex-D-Digital-Conventions.md');
+/** the discrepancy report, discrepancies.json triaged into four tiers for a
+ *  human. ⚠ Generated — never hand-edit */
+export const CR_DISCREPANCIES_MD = join(CR_DIR, 'discrepancies.md');
+/** what each edition added, removed or renamed, keyed by rule key; derived
+ *  from the ledger. ⚠ Generated — never hand-edit */
+export const CR_CHANGELOG = join(CR_DIR, 'changelog.md');
+/** the document's skeleton: chapters, sections and their titles, the annexes,
+ *  and the edition stamp. Committed reviewed state — hand-edited with care:
+ *  a section number, once rendered, is held by the ledger */
+export const CR_OUTLINE = join(CR_DIR, 'outline.json');
+/** the hand-written introduction (the UNOFFICIAL notice, how to read the
+ *  provenance); the renderer fills in the edition. Hand-written, versioned */
+export const CR_FRONT_MATTER = join(CR_DIR, 'front-matter.md');
 
 /* ── THE BROWSER CLIENT'S OWN FILES ──────────────────────────────────────
  *

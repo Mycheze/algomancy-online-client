@@ -30,6 +30,12 @@ export const CR_DOC: string;
 export const CR_DOC_HTML: string;
 export const CR_DOC_TXT: string;
 export const CR_ANNEX_D: string;
+/** generated — never hand-edit */
+export const CR_DISCREPANCIES_MD: string;
+export const CR_CHANGELOG: string;
+/** committed reviewed state (outline) and hand-written front matter */
+export const CR_OUTLINE: string;
+export const CR_FRONT_MATTER: string;
 /** the whole browser client — the game server resolves this for itself too */
 export const UI_DIR: string;
 /** the sound cues, one .ogg per ui/sfx.ts Cue; provenance in sfx/NOTICE.md */
