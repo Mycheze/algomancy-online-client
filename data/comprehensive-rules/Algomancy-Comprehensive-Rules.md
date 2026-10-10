@@ -11459,6 +11459,7 @@ R5, R47, R92, R191, R207, R212
 - R260: `partial` IS NOT `live`, AND FOLDING THEM MADE A GUARD PUSH FOR THE BUG IT EXISTS TO CATCH
 - R275: a recovery command names its paths from the constants, or it rots
 - R285: a verdict is a report, and it gets the same lock
+- R343: the comprehensive rules export is generated and unofficial, and its numbers, evidence and classification are held by a gate
 
 ## Glossary
 

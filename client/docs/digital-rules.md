@@ -27170,3 +27170,165 @@ all (R263 §7 is untouched).
   `hand` is a list of card names.
 - Guards: `engine/test/408-raq-new-threads.test.ts` "RAQ Spell Tokens vs Hand:"
   (Dreadspawn Horror, Astral Tidewraith, Stalwart Sentinel, Proph).
+
+## R343 — The comprehensive rules export: what it is and what keeps it honest
+
+*(Owner, 2026-10-10: the comprehensive-rules project, with all six of its
+recommendations accepted. A process ruling: it says how the register is turned
+into a numbered rules document, not how a game is played.)*
+
+### What the document is
+
+`data/comprehensive-rules/` holds a numbered rules document in the MTG style:
+`Algomancy-Comprehensive-Rules.md`, the same document as `.html` and `.txt`, and
+`Annex-D-Digital-Conventions.md` for the conventions only a digital table has.
+
+- It is **generated.** `client/engine/scripts/cr/*.mjs` render it from the rule
+  records in `rules/*.json`. A wrong sentence is fixed in its record,
+  re-verified and re-rendered; the output files are never edited by hand.
+- It is **UNOFFICIAL.** It says what this client enforces and why. It is not
+  Caleb Gannon's rulebook and does not speak for the game: where it and the
+  published Manual disagree, the Manual is the game. The card and rules text it
+  quotes is his, used on the terms in `data/NOTICE.md`.
+- This register stays the engine's spec. The document is built from it, from
+  the printed text, from the designer's RAQ answers and from the tests; it sits
+  beside the register and does not stand in for it.
+
+### The authority order
+
+From strongest to weakest:
+
+1. A RAQ `[Solved]` write-up by `_passer`, or `calebgannon`'s own words.
+2. Printed text, read literally. Where Caleb states an intent that differs from
+   print, follow Caleb.
+3. Our R-rulings.
+4. Owner calls with no designer source. They are still the engine's law, with
+   basis `owner`.
+
+Other players are not authority, and a thread that is still open is not a
+ruling. `ui/glossary.ts` is our own text: a record may quote it under `ours`,
+and it never counts as a source. When two readings are equally available, the
+document takes the permissive one.
+
+### The anti-hallucination contract
+
+Every rule in the document was drafted, verified and checked under these terms.
+
+1. **No claim without checkable evidence.** Every record carries a verbatim
+   quote (at most 200 characters, from one line) from a printed, designer or
+   ruling source, or an engine code quote plus an executed test that asserts the
+   claim. An Annex D rule may take its code quote from `client/ui/` or
+   `client/server/` source; a game rule's must come from the engine.
+2. **Behaviour is demonstrated.** A rule about how play proceeds needs an
+   executed test that asserts it: an existing guard, or a CR example test
+   (`engine/test/412-cr-general.test.ts` to `engine/test/435-cr-digital-2.test.ts`).
+   A rule with neither ships marked `untested`.
+3. **Separation.** The drafter reads rulings, RAQ claims, printed text and test
+   titles, and never `client/engine/src`. The verifier gets the records with
+   the drafter's notes and confidence stripped, reads the engine and runs the
+   tests. The verifier is the only path from code into the document.
+4. **Mutants.** `scripts/cr/harness.mjs` plants falsified rules in every verify
+   batch: two or three replaced rules in round 1, one or two decoys in later
+   rounds. A batch that confirms any of them is discarded whole and re-run by a
+   fresh verifier.
+5. **Quotes are checked by script** (a whitespace-normalised substring match),
+   and test titles are resolved by a real JS string-literal parser, never by a
+   regex.
+6. **At most three draft/verify rounds.** What is left ships marked `partial`,
+   with the verifier's note, and goes into the discrepancy report.
+7. **Second opinion.** A different model re-verifies a random sample of the
+   confirmed rules, and its disagreement rate is published as the measured
+   false-confirm rate. For the first edition: 510 rules audited, 508 agreed, 0
+   disagreed, 2 unsure.
+8. **Engine-only rules** (no printed, designer or ruling source) are marked as
+   such, listed in Annex P, and wait for the owner's sign-off.
+
+### The ledger: numbers are never moved, never reused
+
+`ledger.json` maps each rule's permanent dotted key to its number. Numbers have
+three levels (section `608`, rule `608.2`, subrule `608.2b`), and subrule
+letters skip `l` and `o`.
+
+- **A number is allocated once**, by `cr:render`, never by hand. A new rule goes
+  at the end of its parent.
+- **Never renumber.** A published number is a citation someone may hold, so it
+  never moves, even when a rule is inserted "between" two others.
+- **Never reuse.** A number is never handed to a second key.
+- **Tombstones.** A rule taken out of the document becomes a tombstone
+  (`ledger.mjs remove <key> "<reason>" [newKey]`). The tombstone keeps the
+  number, says why, and names the rule that took its place, if any. A key that
+  changes its name goes through `ledger.mjs alias` and keeps its number.
+- `802.N` follows the engine's `Attr` order. The turn structure is read from
+  the runtime arrays in `types.ts` (`PHASES`, `BATTLE_STEPS`, `DAMAGE_SUBSTEPS`,
+  `DECISION_KINDS`, `ZONES`), which `410-enum-exports` holds equal to their
+  unions.
+
+### When a ruling and the engine disagree (owner decision 2)
+
+The rule states the **ruling**, meaning the current law under the authority
+order, with an inline marker "engine differs, see F-<unit>-<n>". The divergence
+is a finding in `findings/<unit>.json`, filed as a CT ticket in
+`client/ledgers/card-todo.ts` (the first edition filed CT-226 to CT-263). The
+export does not change the engine to match.
+
+### A new ruling is red until it is classified (owner decision 4)
+
+Every `## R<n>` heading needs a row in `classification.json`: its status, its
+scope (`game`, `digital` or `process`), its outline sections and its drafting
+units. A heading without one turns `409-comprehensive-rules` red and names it.
+This is the contract `386-raq-register` already holds for RAQ threads. The same
+gate also asks that:
+
+- every supersession candidate the extractor proposes from a new heading or body
+  is decided in `supersession.json`;
+- every RAQ claim, RAQ thread and printed page is assigned in
+  `source-classification.json`;
+- no record rests on a ruling whose text changed after the record was drafted
+  (the stale count is pinned at 0).
+
+So writing a ruling means classifying it, deciding its candidate edges, and
+redrafting any rule that quoted text the ruling changed, all before the gate is
+green. This ruling is classified `process`, with no sections.
+
+### What 409 asserts
+
+`engine/test/409-comprehensive-rules.test.ts` runs over the committed state:
+
+- **(1)** A fresh render gives the committed files byte for byte: the document
+  in three editions, Annex D, `discrepancies.md`, `owner-questions.md` and
+  `changelog.md`. No number is born, and a second render is identical.
+- **(2)** The ledger is append-only against `HEAD`: no number moved, dropped or
+  reused.
+- **(3)** `check.mjs` finds no problem: every quote verbatim, every source and
+  test title found, every cited ruling current (a partly superseded one cited
+  with its scope), every engine symbol declared, every basis consistent with its
+  sources, every rule with evidence, every cross-reference and every rule key
+  named in prose resolved to a live rule.
+- **(4)** Every supersession candidate is decided; the rows held as `uncertain`
+  for the owner are pinned (0).
+- **(5)** Every ruling is classified, and the reviewed state is sound: every
+  accepted edge's quote verbatim, every status agreeing with its edges, every
+  unit real, and every RAQ claim, RAQ thread and printed page assigned exactly
+  once.
+- **(6)** The stale count is pinned (0).
+
+A check that passes on everything proves nothing, so the file also proves each
+check can go red: §7 unit-tests the ledger; §8 plants one defect per check in a
+fixture and requires each to fail by name; §9 renders fixtures (slots,
+tombstones, markers, an empty rules directory); §10 tests the harness's plant,
+judge, feedback, finalize and stamp; §11 requires that no rule key is printed
+raw in the document's prose.
+
+### How it is encoded
+
+- Scripts in `client/engine/scripts/cr/`: `extract`, `pack`, `harness`,
+  `schema`, `ledger`, `render`, `check`, and `extract-printed-pages` (run by hand
+  once per new PDF). From `client/`: `npm run cr:extract`, `cr:render` and
+  `cr:check`. The recipe is `data/comprehensive-rules/README.md`.
+- Every location is a `CR_*` name in `client/engine/scripts/paths.mjs`;
+  `bot/paths.py` names the directory and the document.
+- Guards: `engine/test/409-comprehensive-rules.test.ts` (the gate),
+  `engine/test/411-cr-extract.test.ts` (the extractor and its supersession
+  candidates), `engine/test/410-enum-exports.test.ts`, and the CR example tests
+  `engine/test/412-cr-general.test.ts` to `engine/test/435-cr-digital-2.test.ts`
+  (`412` to `435`, one per drafting unit, named `4NN-cr-<unit>`).

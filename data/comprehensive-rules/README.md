@@ -186,22 +186,91 @@ verdict: the rule it points at carries those.
 
 ## How to regenerate
 
-Placeholders until the scripts land (Stage A2/A3); each later stage fills its
-own line in.
+Run from the repo root. Every step is deterministic except the agent roles in
+step 3. The gate (step 4) runs inside `npm --prefix client run check`.
+
+### 1. Extract the sources
 
 ```bash
-node client/engine/scripts/cr/extract.mjs      # TODO(A2): sources -> build/
-node client/engine/scripts/cr/supersede.mjs    # TODO(A2): propose supersession edges
-npm --prefix client run cr:render   # number unseen keys (ledger.json), write the document, Annex D,
-                                    # discrepancies.md, owner-questions.md and changelog.md
-npm --prefix client run cr:check    # the mechanical checks; exits 1 on any problem
-node client/engine/scripts/cr/ledger.mjs remove <key> "<reason>" [replacedByKey]   # tombstone a rule
-node client/engine/scripts/cr/ledger.mjs alias <oldKey> <newKey>                  # rename a key
-node client/engine/scripts/cr/check.mjs --unit U12   # one unit's problems only (unnumbered is a note)
-node --test client/engine/test/409-comprehensive-rules.test.ts   # the gate
+npm --prefix client run cr:extract      # -> build/extract.json: rulings, supersession
+                                        #    CANDIDATES, RAQ claims, glossary, cards,
+                                        #    printed pages, enums, test titles, engine symbols
+node client/engine/scripts/cr/extract-printed-pages.mjs
+                                        # ONLY for a new Manual/Rulebook PDF: rewrites
+                                        # sources/printed-pages.json (needs poppler-utils)
 ```
 
-### The draft/verify loop, per unit (`client/engine/scripts/cr/harness.mjs`)
+The supersession candidates come out of the extract (there is no separate
+script). They are proposals: each is decided by hand in `supersession.json`.
+Every ruling gets a row in `classification.json`, and every RAQ claim, RAQ
+thread and printed page a row in `source-classification.json`. The gate is red
+until all three are complete.
+
+### 2. Pack a drafting unit
+
+```bash
+node client/engine/scripts/cr/pack.mjs U12            # -> build/packs/U12/
+node client/engine/scripts/cr/pack.mjs all            # every unit in units.json
+node client/engine/scripts/cr/pack.mjs U12 --seed <dir>   # also copy a pilot's records into seed/
+```
+
+A pack holds everything the drafter of one unit may read: its current
+rulings, the history of the superseded ones, its RAQ claims, its printed
+pages, its keyword cards, our glossary rows (marked as not authority) and its
+test titles. It never includes engine source.
+
+### 3. Draft, verify and revise: the wave workflow
+
+The units (`units.json`, U01–U24) are drafted in waves. Each unit runs this
+loop, using the harness commands below:
+
+1. **draft**: write `rules/<unit>.json` from the pack; `stamp`; `check --unit`.
+2. **mutate**: choose the round's mutants (round 1) or decoys (rounds 2–3).
+   Then `plant`.
+3. **verify**: a fresh agent, which never sees the drafter's notes, writes
+   `build/verdicts/<unit>-rK.json`. Then `judge`. If the batch is invalid, a new
+   verifier runs the next attempt.
+4. **revise**: work from `feedback`, list the changed keys, then `stamp` and
+   `check --unit`. Back to mutate, up to three rounds in all.
+5. **finalize**, then **test** (a tester turns each `untested` rule into a probe)
+   and **promote** (probes become `engine/test/4NN-cr-<unit>.test.ts`, 412–435).
+6. **wave end**: one agent runs `cr:render`, `cr:check` and 409, and commits
+   the wave. Units never commit.
+
+**The role briefs are not in git.** Each role above has a brief: `C-draft`,
+`C-mutate`, `C-verify`, `C-revise`, `C-test`, `C-promote` and `C-waveend`,
+plus the Stage A, B and D briefs. They live in the orchestrating Claude Code
+session's scratchpad,
+`/tmp/claude-1000/-home-bena-Documents-Algomancy/<session>/scratchpad/cr/briefs/*.md`.
+The workflow scripts that ran the waves are in
+`~/.claude/projects/<project>/<session>/workflows/scripts/cr-stage-*.js`, and
+the control file with every stage's decisions is in the same scratchpad
+(`cr/CONTROL.md`). `/tmp` does not survive a reboot. Treat that copy as
+disposable: the contract the briefs implement is the one written out in this
+file and in ruling R343 of `client/docs/digital-rules.md`.
+
+### 4. Render and check
+
+```bash
+npm --prefix client run cr:render   # number unseen keys (ledger.json), write the document,
+                                    # Annex D, discrepancies.md, owner-questions.md, changelog.md
+npm --prefix client run cr:check    # the mechanical checks; exits 1 on any problem
+node client/engine/scripts/cr/check.mjs --unit U12   # one unit's problems only (unnumbered is a note)
+(cd client/engine && node --test test/409-comprehensive-rules.test.ts)   # the gate
+npm --prefix client run check       # everything, the CR tests included (about 5 minutes, background it)
+```
+
+The changelog is rendered from the ledger's `since` stamps. In the first
+edition every key is new.
+
+### 5. Retire or rename a rule
+
+```bash
+node client/engine/scripts/cr/ledger.mjs remove <key> "<reason>" [replacedByKey]   # tombstone a rule
+node client/engine/scripts/cr/ledger.mjs alias <oldKey> <newKey>                  # rename a key
+```
+
+### The harness commands, for step 3 (`client/engine/scripts/cr/harness.mjs`)
 
 Each subcommand prints one JSON object. U = unit, K = round, A = attempt.
 
@@ -228,6 +297,32 @@ under a fresh key in its area. A decoy lives only in the verifier input and the
 hidden truth, never in rules/, verdicts/, findings/ or the feedback, so no
 real rule goes unverified in its round. A batch that misses any mutant or
 decoy is discarded whole; a fresh verifier re-runs it as the next attempt.
+
+
+## How to answer the owner questions
+
+`owner-questions.md` lists the tier-1 discrepancies. In each of them, the
+strongest source's own words support two readings, and no higher source
+decides. Each question gives its readings (A, B, …) with what each means at the
+table, the reading the document follows today, and a recommendation.
+
+1. **Answer outside the generated file.** Reply with one line per question
+   (for example "2: A"). `owner-questions.md` is regenerated, so anything
+   written in it is lost.
+2. **Record the answer as a ruling.** Add a new `## R<n>` to
+   `client/docs/digital-rules.md` (basis owner, unless a RAQ thread or Caleb
+   decides it). Classify it in `classification.json` and decide any candidate
+   edges in `supersession.json`. 409 stays red until both are done.
+3. **Close the discrepancy.** In `discrepancies/<unit>.json`, drop the row's
+   `question`, move it to tier 2 (or 4), and write a `resolution` that names the
+   ruling.
+4. **Redraft the rules it names** (the row's `rule` and its `seeAlso`). Cite the
+   new ruling and run `harness.mjs stamp --unit <unit>`. If the engine does
+   otherwise, add `engineDiffers`, a finding and a CT ticket. If the answer
+   makes a filed CT ticket moot, close that ticket.
+5. **Re-verify.** A record whose text changed renders as "not verified (the
+   text changed after verification)" until a verify round confirms it again.
+6. **Then** `cr:render`, `cr:check` and 409.
 
 ---
 
