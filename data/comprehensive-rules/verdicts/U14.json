@@ -1,0 +1,4596 @@
+[
+  {
+    "key": "effects.casting.brackets",
+    "textHash": "9e8ac790ce860ec7",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:collectModes / collectCastCosts",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "97-mode-conformance.test.ts",
+        "pattern": "(whole file)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R284",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R284",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> on cast. Not on resolution or any other time. […] All modal/additional costs"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.brackets.unbracketed-payment",
+    "textHash": "a5b12c545132ac58",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:resolveItem (ctx.choose)",
+        "agrees": true,
+        "note": "Abduct-style payments asked of the named player during resolution"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "05-rulings.test.ts",
+        "pattern": "R6: \"unless its controller pays\" is part of resolution",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R284",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R6",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "| R6's unbracketed *\"unless its controller pays\"* (Abduct) | the opponent | resolution |"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.costs",
+    "textHash": "78c768ed527cad53",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:collectTargets / playAtTiming",
+        "agrees": true,
+        "note": "all costs collected before commitItem pushes; decisions block the other seat"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "47-costs-events.test.ts",
+        "pattern": "R35/R49: a refused cast pays nothing",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355115946032889914#12",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R67",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "payment happens on the spot (not respondable), and responses see the fixed"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.costs.mid-resolution",
+    "textHash": "1e7c46f20dda61f9",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:collectInlineCastCosts",
+        "agrees": true,
+        "note": "pushInlinePlay runs the cast window collector"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "404-raq-fix-tides.test.ts",
+        "pattern": "R338: a unit played by Hooba-Pon pays its additional cost",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R338",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "exactly as if it were cast from a hand: chosen and paid as it is played,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.costs.no-refund",
+    "textHash": "5688b8bfef050648",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:negate",
+        "agrees": true,
+        "note": "no refund path"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "32-cast-costs.test.ts",
+        "pattern": "cast cost stays paid when the spell is negated",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R35 (its spell-cost half)",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Negation does not refund a paid cast cost. The payment receipt is"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.costs.not-yet-in-play",
+    "textHash": "1bfa7b5952831da8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:collectInlineCastCosts",
+        "agrees": true,
+        "note": "sacrifice options are units in play only"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "RAQ Tides 5:",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355115946032889914#12",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R338",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "not in play, so it cannot pay that cost. A card whose additional cost cannot"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.costs.sacrifice-gone",
+    "textHash": "4bf0a1df87e460cc",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:collectCastCosts",
+        "agrees": true,
+        "note": "sacrifice paid in the cast window before commitItem fires the play event"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ cost vs trigger: a unit sacrificed to pay a spell cost never sees that spell played",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "the control, a Fireslinger that was NOT the sacrifice",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1460212274936414381#0",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "text": "RAQ cost vs trigger"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.costs.unpayable",
+    "textHash": "7607d67f409167b0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-water-a.ts:inlineCostPayable / client/engine/src/apply.ts:castable",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "404-raq-fix-tides.test.ts",
+        "pattern": "R338: with nothing to sacrifice, Tides does not offer Volatile Toxicity",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "47-costs-events.test.ts",
+        "pattern": "R35/R49: a refused cast pays nothing",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R35 (its spell-cost half)",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R49 (its cost-gating half)",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "than the smallest legal X (\"X can't be zero\" → 1) — the cast is ILLEGAL."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.other-zones",
+    "textHash": "bac66d8bb6bca906",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doPlayFrom",
+        "agrees": true,
+        "note": "one play path for hand and cache; discard-me stays hand-only"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "370-cached-virus-in-battle.test.ts",
+        "pattern": "R311: a glimpsed Virus in the cache goes onto an ENEMY unit in battle",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R311",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "functions 100% like the hand* except *for the fact that it's not considered your"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.other-zones.cache-widening",
+    "textHash": "8d67669ed6c1ebc2",
+    "verdict": "partial",
+    "round": 3,
+    "verifier": "U14-r3-a2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:battleAugmentAllowed",
+        "agrees": true,
+        "note": "A printed {Virus} from hand or cache may be augmented in battle."
+      },
+      {
+        "loc": "client/engine/src/apply.ts:doPlayFrom / handLikeSources",
+        "agrees": true,
+        "note": "Ambush and eraseGrant modes ride playCached; R97 grant applies through mayPlayAtHaste with from='cache'."
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/369-cache-is-the-hand.test.ts",
+        "pattern": "the sweep is not vacuous",
+        "passed": false,
+        "asserts_claim": "[run alone this test FAILS; only with the whole file (fails in isolation: its census is filled by the preceding sweep test)] partly — its Virus assertion is about augments onto the SPELL ON THE STACK (census.virusInBattle counts augment:stack only), not onto a unit as the example says; unit augments are covered only by the sweep's hand==cache equality"
+      },
+      {
+        "file": "client/engine/test/369-cache-is-the-hand.test.ts",
+        "pattern": "(whole file)",
+        "passed": true,
+        "asserts_claim": "yes, collectively"
+      },
+      {
+        "file": "client/engine/test/370-cached-virus-in-battle.test.ts",
+        "pattern": "(whole file)",
+        "passed": true,
+        "asserts_claim": "yes — 'a glimpsed Virus in the cache goes onto an ENEMY unit in battle' is the exact example"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U14/u14-r3-a2-probes.test.ts",
+        "title": "effects.casting.other-zones.cache-widening: a glimpsed Virus in the cache augments onto a unit in a battle window",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R311",
+        "supports": "yes",
+        "note": "Lists R97/R123 haste grants, the battle {Virus} window, Ambush."
+      },
+      {
+        "ref": "R97",
+        "supports": "partly",
+        "note": "Defines the haste grant; says nothing about the cache by itself."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "own widening rules apply: R97/R123 haste grants, the battle {Virus} window,"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (c.virus && (from === 'hand' || from === 'cache')) return true;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Rule text is right. The example's bound test does not assert the example: it is order-dependent (fails when run alone) and its Virus check is onto a spell on the stack, not a unit. Rebind to 370-cached-virus-in-battle.test.ts::'R311: a glimpsed Virus in the cache goes onto an ENEMY unit in battle, ignoring affinity'."
+  },
+  {
+    "key": "effects.casting.other-zones.hand-restriction",
+    "textHash": "cd71c8b771d34f1a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doPlayFrom",
+        "agrees": true,
+        "note": "noPlayFromHand refuses the hand only"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "40-light-c.test.ts",
+        "pattern": "is enforced, and not just un-offered",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Calming Force",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R100",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "⚠ **The line names one zone and one verb, so that is all it takes away.** Calming Force is"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.other-zones.haste-grant",
+    "textHash": "09fb9e06a8a92704",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:hastePlayAllowance",
+        "agrees": true,
+        "note": "refuses {Battle} cards above every grantor"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "RAQ Dispatch Courier: a Battle spell unit is not playable in the haste step either",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1465292396664193171#0",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R97",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> A: **No, despite gaining {Haste} they can still only be played during {Battle}.**"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.other-zones.timing",
+    "textHash": "3d088aada840391f",
+    "verdict": "confirmed",
+    "round": 3,
+    "verifier": "U14-r3-a2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doPlayFrom",
+        "agrees": true,
+        "note": "Cache releases pass the printed c.timing to playAtTiming."
+      },
+      {
+        "loc": "client/engine/src/apply.ts:doPlayFromBin",
+        "agrees": true,
+        "note": "Bin plays (R96 grant, Spell Excavation, Trench Stalker) pass the printed c.timing to playAtTiming."
+      },
+      {
+        "loc": "client/engine/src/apply.ts:playAtTiming",
+        "agrees": true,
+        "note": "Haste-step widening only via mayPlayAtHaste grants or the bin-erase grant."
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "pattern": "Tides 2",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U14/u14-r3-a2-probes.test.ts",
+        "title": "effects.casting.other-zones.timing: a glimpsed deploy-timing unit in the cache is not playable in battle",
+        "passed": true,
+        "demonstrates": "yes — not offered, refused if forced, despite a live glimpse permission"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U14/u14-r3-a2-probes.test.ts",
+        "title": "effects.casting.other-zones.timing: under Abyssal Evocation a deploy-timing spell in the bin is not playable in battle",
+        "passed": true,
+        "demonstrates": "yes — battle spell offered from the bin, deploy spell not offered and refused"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "RAQ 1396955380000755795#1",
+        "supports": "yes",
+        "note": "Tides ignores timing; Tides prints 'You may play them now'."
+      },
+      {
+        "ref": "R157 §12",
+        "supports": "yes",
+        "note": "'A bin-play grant does NOT waive printed timing' + the 'play them now' test."
+      },
+      {
+        "ref": "R311",
+        "supports": "yes",
+        "note": "Cache: printed timing on both routes, only the hand's widening rules apply."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "2. Tides allows you to ignore timing of played cards."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "### 12. A bin-play grant does NOT waive printed timing"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> *\"Cards that let you ignore timing say something like 'You may play them"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Timing is the card's printed timing on both routes (R42/R45). A cached unit"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "playAtTiming(e, seat, c, c.timing,   // = E.cachedTiming for a cache entry: printed, always"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.procedure",
+    "textHash": "747bcfe7a77f754a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:collectTargets",
+        "agrees": true,
+        "note": "the step order matches; everything is declared and paid before commitItem"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355115946032889914#12",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R198",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R178 (its §3, as-you-play)",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Everything about the play that has to be DECLARED is declared before the item"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.procedure.as-you-play",
+    "textHash": "4305513ad61d827a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:collectAsYouPlay",
+        "agrees": true,
+        "note": "runs last in collectTargets; nothing reaches the stack"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "151-copy-and-moved-mods.test.ts",
+        "pattern": "R178 Maelstrom Charger: the option is asked in the cast window and never reaches the stack",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1379132904931594372#0",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R178 (its §3, as-you-play)",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "    // R178: LAST — \"As you play a nonunit spell, you may sacrifice me…\""
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.procedure.fixed-costs",
+    "textHash": "edadf7292f37d098",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:collectTargets",
+        "agrees": true,
+        "note": "payActivationCost, collectItemCosts, collectCastCosts('fixed') after spot"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R64 (its cost half)",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R338",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "effects\"*). Fixed costs stay where R57 put them, **after** targets — R57 is"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.procedure.modes",
+    "textHash": "baeea4925f960c2f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:collectModes",
+        "agrees": true,
+        "note": "owner declares the mode in the cast window"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "97-mode-conformance.test.ts",
+        "pattern": "R57: Wither and Bloom declares which half before anyone may respond",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R284",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> B]. […] The owner of the effect chooses the mode or pays the additional cost"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.procedure.modular",
+    "textHash": "fb30963f292ea35d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:collectModular",
+        "agrees": true,
+        "note": "after X/variable cost, before targets"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R57 (its fixed-cost order)",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Every cast-time *question* is asked in this order: **X → {Modular} mods →"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.procedure.spot",
+    "textHash": "3894f572fd20aa92",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:collectTargets",
+        "agrees": true,
+        "note": "collectFormationSpot runs after collectModes and before the costs"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R29 (its cast-time spot half)",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "    this.collectFormationSpot(item, then, moreItems);   // R29: \"play me into a spot\""
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.procedure.stack",
+    "textHash": "2830108e03713292",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:castChain / commitItem",
+        "agrees": true,
+        "note": "after collectTargets, commitItem pushes the item (battle/deploy); in the haste step it resolves without a stack"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.28",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "Manual p.28",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "the stack as an “effect”."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.procedure.targets",
+    "textHash": "c67440bb6caa0db8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:collectTargets",
+        "agrees": true,
+        "note": "collectPartTargets after collectModular, before modes"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "68-target-conformance.test.ts",
+        "pattern": "(whole file)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R67",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "must be selected as the card is being played."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.procedure.x",
+    "textHash": "9c38db8ab4d32874",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:collectTargets",
+        "agrees": true,
+        "note": "collectX then collectCastCosts('variable') first; flat mana paid by playAtTiming's payAll before castChain"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "13-fire-b.test.ts",
+        "pattern": "Wildfire: X is chosen and paid AT CAST",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R64 (its cost half)",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R57 (its fixed-cost order)",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "still pays its flat printed mana up front in `playAtTiming` — mana is fungible"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "    this.collectCastCosts(item, then, moreItems, 'variable');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.requirements",
+    "textHash": "f61cd0a4c8aa6040",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:castable / playAtTiming",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "must meet the affinity requirement of the card they"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "additional actions that are paid as a cost or modes"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.requirements.affinity",
+    "textHash": "6306fabff5aea82a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:castable",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "RAQ Tides 1: a free play ignores affinity",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "RAQ 1396955380000755795#0",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "must meet the affinity requirement of the card they"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.requirements.mana",
+    "textHash": "92a11b1e829f17c2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:payCard",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "number of un-expended resources equal to the card"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.requirements.timing",
+    "textHash": "c2f2d0e6be7014ea",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:playAtTiming",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Cards with no icon can only be played during deployment."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.spell-tokens",
+    "textHash": "c5d8b27d0d428f7e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doCastSpellToken",
+        "agrees": true,
+        "note": "need(tok.region === battle region): castable only in its region"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.4",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "Rulebook 2023 p.4",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "only cast spell tokens in the region the token is in."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.spell-tokens.burst",
+    "textHash": "c48f23b598d6d133",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U14-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:spellTokenGroup",
+        "agrees": true,
+        "note": "tokensOf(seat, tok.region) filtered to the same name"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/69-damage-batch.test.ts",
+        "pattern": "R81: Burst casts all your tokens OF THAT NAME",
+        "passed": true,
+        "asserts_claim": "yes for same name (not region)"
+      },
+      {
+        "file": "client/engine/test/03-stack.test.ts",
+        "pattern": "Burst casts them all at once",
+        "passed": true,
+        "asserts_claim": "yes: two Fireballs, two stack items"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U14/u14-r2-probes.test.ts",
+        "title": "effects.casting.spell-tokens.burst: a same-name token in ANOTHER region is not cast with the group",
+        "passed": true,
+        "demonstrates": "yes: two battle-region Fireballs cast, the one in another region stays in play"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.4 (Burst)",
+        "supports": "yes",
+        "note": "same name, same time, still unique spells"
+      },
+      {
+        "ref": "Rulebook 2023 p.4 (region)",
+        "supports": "yes",
+        "note": "tokens are cast only in their own region — the region limit is derived from this"
+      },
+      {
+        "ref": "R309",
+        "supports": "yes",
+        "note": "\"every Fireball you control in that region\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "to cast all of your tokens with the same name at the same"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Fireball casts every Fireball you control in that region, and your opponent"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.spell-tokens.taxed",
+    "textHash": "ef97ec9e6526bea9",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:spellTokenBill",
+        "agrees": true,
+        "note": "priced by manaToPlay purpose 'play'"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "337-spell-tokens-are-played.test.ts",
+        "pattern": "R305: Tranquility taxes a spell token [1] in battle",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R305",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "to play\" modifier, and it counts toward \"spells played this battle\". R59's"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.targets-required",
+    "textHash": "fa504d43d2f4f816",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:requiredSlotsFillable",
+        "agrees": true,
+        "note": "castable() searches all required slots with distinct legal targets"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ target requirements: Fight cannot be played without an ally and another unit in the region",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ target requirements: Tidal Reversion is not playable while one player has no unit to recall",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "401-raq-fix-stack.test.ts",
+        "pattern": "R323",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1410252965276684418#0",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "RAQ 1410252965276684418#1",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "RAQ 1410252965276684418#3",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R323",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A spell or ability that needs targets can be played only when **every required"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.targets-required.graft-trigger",
+    "textHash": "c83b476f432e4f09",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:resolveItem",
+        "agrees": false,
+        "note": "engineDiffers is real: the composite is stacked and then fizzles under R86 rather than being refused"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ target requirements: a graft trigger with a required target and none available makes nothing at all",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1410252965276684418#2",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "text": "a graft trigger with a required target and none available makes nothing at all"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.targets-required.untargeted",
+    "textHash": "1243bb421d75702c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:castable",
+        "agrees": true,
+        "note": "no spec, no requirement"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "Rebalance is playable with no unit of your own",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1454169054402314362#1",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "text": "Rebalance is playable with no unit of your own"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.x",
+    "textHash": "4daccca8b61765e0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:collectX",
+        "agrees": true,
+        "note": "X asked from affordable values in the cast window before push"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "13-fire-b.test.ts",
+        "pattern": "Wildfire: X is chosen and paid AT CAST",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R35 (its spell-cost half)",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "affordable values are offered) BEFORE the spell reaches the stack, the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.x.free",
+    "textHash": "6fa99fe0daaeaadf",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U14-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:playAtTiming (fixedX) / baseItem",
+        "agrees": true,
+        "note": "a free prophecy release fixes item.x = 0; collectX asks nothing"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/36-cache-prophecy.test.ts",
+        "pattern": "R111: a fulfilled prophecy releases an X spell for X = 0",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R111",
+        "supports": "yes",
+        "note": "both sentences"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "an X spell works like magic, forced to cast it for 0 (unless its X is an"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "different X — a COST, not the mana — and is still collected as before. Test:"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Sentence 2 has no test, and no card in the pool has both a mana X and a variable bracketed cost, so it is currently untestable on real cards."
+  },
+  {
+    "key": "effects.casting.x.minimum",
+    "textHash": "5226b0c499639887",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:collectX (xMin)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "32-cast-costs.test.ts",
+        "pattern": "Frosted Denial: xMin 1",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R35 (its spell-cost half)",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "than the smallest legal X (\"X can't be zero\" → 1) — the cast is ILLEGAL."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.casting.x.variable-cost",
+    "textHash": "5a6a0847a03d4a0b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:collectCastCosts('variable')",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R64 (its cost half)",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A **variable** cost is where X comes from. You pay one unit of it at a time"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.general.cast-is-play",
+    "textHash": "287821ce39f2fe45",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:spellTokenItem / commitItem",
+        "agrees": true,
+        "note": "a token cast fires 'spellPlayed' and is taxed as a play (R305)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "337-spell-tokens-are-played.test.ts",
+        "pattern": "(whole file)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.13",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "Manual p.30",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R305",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R263",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Casting a spell token **is** playing a spell. It pays every \"spells cost more"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.general.effect",
+    "textHash": "3c1217e64f363479",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:targetCandidates (stackEffect)",
+        "agrees": true,
+        "note": "plain \"target effect\" takes every stack item including a unit"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "118-stack-effect.test.ts",
+        "pattern": "R128: a unit on the stack is a legal \"target effect\" (Dematerialize)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.28",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "Manual p.28",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R128",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "an effect, including units and spell units. Units aren't spells, so if they say"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "the stack as an “effect”."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.general.effect.nonspell-effect",
+    "textHash": "43608484b148429b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:targetCandidates (stackEffect / Nothyr restrict)",
+        "agrees": true,
+        "note": "Nothyr restrict is the complement of spell/spellUnit/spellToken/ambush, so triggered, activated, virus and unit items qualify"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "118-stack-effect.test.ts",
+        "pattern": "Nothyr's \"target nonspell effect\" reaches a unit on the stack",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R128",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**\"Target NONSPELL effect\" is the complement, so it GAINS the plain unit.**"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.general.effect.spell-effect",
+    "textHash": "6c20194240856831",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:targetCandidates (stackSpell)",
+        "agrees": true,
+        "note": "spell/spellUnit/spellToken/ambush only"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "118-stack-effect.test.ts",
+        "pattern": "\"target spell effect\" refuses a plain unit but takes a spell unit",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R128",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R128",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "spell token / ambush. A plain unit is not a spell, so the three cards that print"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.general.interaction",
+    "textHash": "35c7a59b1cfe31d8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:pushItem",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.14",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "All interaction in Algomancy uses the stack"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.playing.applying",
+    "textHash": "cbd7e898ee5fffd8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doAugment",
+        "agrees": true,
+        "note": "mods go through doAugment, never a play event"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.32",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "RAQ 1537748882501668934#0",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R37",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Modification is a special action that"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Applying a modification — attaching a Virus, graft, or augment,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.playing.applying.cost",
+    "textHash": "433d26741274834c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:manaToPlay (purpose)",
+        "agrees": true,
+        "note": "mods price with purpose 'mod', so 'to play' cost modifiers do not apply"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "408-raq-new-threads.test.ts",
+        "pattern": "RAQ Mods are NOT Played: a Virus in battle needs its affinity and pays its cost",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.32",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R59 (its play-versus-apply half)",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R60 (its life-tax half)",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "not tax an augment, a graft or a battle Virus — those price with"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "To apply an augment, the player must first meet its affinity"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.playing.applying.no-play-triggers",
+    "textHash": "e4790237abaea0cb",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doAugment",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "105-semantics-playwatch.test.ts",
+        "pattern": "Ravenous Fireslinger: R37",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "119-play-and-token-events.test.ts",
+        "pattern": "R37 holds: applying a VIRUS fires neither event",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1537748882501668934#0",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R37",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "unit/spell/card\" do NOT trigger when a mod is applied, even a mod applied"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.playing.applying.tides",
+    "textHash": "a231dc1297d5cf96",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-water-a.ts:inlineModes / playInlineMode",
+        "agrees": true,
+        "note": "Tides offers Virus/Ambush/Prophecy modes; graft and non-virus augments are not offered"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "404-raq-fix-tides.test.ts",
+        "pattern": "R337: a Virus card played by Tides as a Virus augments a unit and never enters play",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "RAQ Tides 3:",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "RAQ Tides 4:",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1537748882501668934#2",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "RAQ 1396955380000755795#2",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "RAQ 1396955380000755795#3",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "RAQ 1357483405276614856#1",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R337",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A card Tides of the Cosmos plays for free may be played in any alternative"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.playing.copy-not-played",
+    "textHash": "4c64d27bee098086",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:pushSpellCopy",
+        "agrees": true,
+        "note": "copy:true items fire no play event"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "138-spell-copy.test.ts",
+        "pattern": "a copy is not PLAYED, so it fires no play event",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355613076506017894#1",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R164",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**A copy is NOT PLAYED**, and this is the half the inventory got wrong. It"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.playing.mid-resolution",
+    "textHash": "898ef34b7790c694",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-water-a.ts:inlinePlayGoesToStack",
+        "agrees": true,
+        "note": "battle pushes"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-dark-a.ts:Wake the Dead",
+        "agrees": false,
+        "note": "engineDiffers is real: Wake the Dead/Bonesculptor spawn played units inline, no stack"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "RAQ Tides 7: a free play is a play",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U14/u14-probes.test.ts",
+        "title": "effects.priority.mid-resolution: a unit Wake the Dead plays in battle waits on the stack and can be answered",
+        "passed": false,
+        "demonstrates": "yes: confirms the flagged divergence"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "RAQ 1396955380000755795#8",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R198",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**Playing a card during a resolution is playing a card.** It goes on the stack;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.playing.mid-resolution.zone",
+    "textHash": "275df4fa95c45517",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-water-a.ts:playInline / pushInlinePlay (opts.from)",
+        "agrees": true,
+        "note": "Hooba-Pon/Insidious Invitation stamp 'hand', Tides 'deck'"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "241-played-from-zone.test.ts",
+        "pattern": "R263 §5: Tides of the Cosmos plays off the top of the deck",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "241-played-from-zone.test.ts",
+        "pattern": "R263 §3: Hooba-Pon plays from the hand",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R263",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R263",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> come from. If the card originates in the hand, it's played from the hand. If"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.playing.put-into-play",
+    "textHash": "f05213989f42a12d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:spawnUnit (asPlay)",
+        "agrees": true,
+        "note": "only print-\"play\" cards pass asPlay"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.43",
+        "supports": "partly",
+        "note": "on-topic: says a spell unit put into play without being played makes no spell effect; does not state the general verb rule"
+      },
+      {
+        "ref": "R165",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**The ruling: the printed verb decides.** `E.spawnUnit` takes `asPlay`, which"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.playing.put-into-play.spell-unit",
+    "textHash": "d7b20a7710e5846d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:spawnUnit",
+        "agrees": true,
+        "note": "spawnUnit runs no spellEffect"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.43",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "Manual p.43",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "spell effects only happen when the card is"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.playing.what-is-played",
+    "textHash": "a3cc591de513eed6",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:commitItem",
+        "agrees": true,
+        "note": "'cardPlayed' only for CARD_PLAY_KINDS; doAugment fires no play"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1537748882501668934#0",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R37",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Only units and spells are \"played\" (from whatever zone — hand, bin, or"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.playing.what-is-played.includes-itself",
+    "textHash": "89c0227fc9eead2e",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U14-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-fire-wood.ts:Bloomcaster augmentText trigger",
+        "agrees": false,
+        "note": "listens on cardPlayed, which fires at commit while Bloomcaster is still on the stack and not a listener; the comment claims \"playing Bloomcaster itself still makes a 1/1\" but it does not"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U14/u14-r2-probes.test.ts",
+        "title": "effects.playing.what-is-played.includes-itself: Bloomcaster played from hand makes a 1/1 for its own play",
+        "passed": false,
+        "demonstrates": "yes (divergence): measured 0 1/1s"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R26",
+        "supports": "yes",
+        "note": "states the self-trigger; marked ⚠ (2026-07-16, before the cardPlayed/stack model). The designer's Bloomcaster RAQ (trigger made while the played unit is on the stack) makes R26 worth re-asking"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "(no \"another\") **fires on its own"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-fire-wood.ts",
+        "text": "// Bloomcaster itself still makes a 1/1. Region auto-scoped (R12)."
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Ruling confirmed against R26; the flagged divergence is real (probe: 0 tokens). R26 is a ⚠ engine-era call and the stack model the designer describes would not fire it; worth an owner check."
+  },
+  {
+    "key": "effects.playing.what-is-played.spell-token",
+    "textHash": "5afa9d696c4a3fe7",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:spellTokenItem",
+        "agrees": true,
+        "note": "stamps from: 'play'"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "408-raq-new-threads.test.ts",
+        "pattern": "casting a Fireball token triggers Stalwart Sentinel",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "408-raq-new-threads.test.ts",
+        "pattern": "Proph",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355689559609839787#2",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R342",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R305",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A spell token is never in a hand. Anything that counts the cards in a hand"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.playing.what-is-played.spell-unit",
+    "textHash": "8f0f4d6020637636",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:commitItem",
+        "agrees": true,
+        "note": "spellUnit is a played spell kind (isPlayedSpellKind)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "RAQ Hooba-Pon spell unit: it counts as playing a spell",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1461450216874967235#2",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "text": "RAQ Hooba-Pon spell unit: it counts as playing a spell"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.playing.what-is-played.token-creation",
+    "textHash": "a92b16ff5a53e4bd",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:commitItem / createToken",
+        "agrees": true,
+        "note": "a created token fires no 'cardPlayed' (R129); Bloomcaster test asserts a created 1/1 does not re-trigger"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "11-fire-wood.test.ts",
+        "pattern": "Bloomcaster: PLAYING a unit makes a 1/1",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R26",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "arrival** when played normally. \"Play\" excludes token creation — that non-token"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.playing.what-is-played.token-not-card",
+    "textHash": "d24ba464647d8322",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:manaToPlay (CARD_PLAY_KINDS guard)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "337-spell-tokens-are-played.test.ts",
+        "pattern": "R305: Arbiter of Armistice prints Cards, so a token cast pays no life",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R305",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R305",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R305",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**A token is still not a CARD.** R133's first half stands: *\"Everything is a"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.priority.deployment",
+    "textHash": "0c31386254c766af",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:playAtTiming (deploy branch)",
+        "agrees": true,
+        "note": "castChain(..., 'push') onto the seat-isolated deployment stack (E.deployIsolate / settleDeploySeat)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "138-spell-copy.test.ts",
+        "pattern": "R286/CT-176: a deploy-timing play names a REAL stack item",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R286",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R286",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "2. **That stack belongs to one seat**, and so does the priority over it. The"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.priority.haste-step",
+    "textHash": "5f11a6f500316aca",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:playAtTiming (planning branch)",
+        "agrees": true,
+        "note": "haste-step plays castChain(..., 'resolve'): no stack push and priority stays null"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "partly",
+        "note": "says haste cards may be played in the haste step; says nothing about priority there"
+      },
+      {
+        "ref": "R97",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> **calebgannon:** \"There is no priority during the mana step, but you can play haste cards"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Haste cards can also"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.priority.mid-resolution",
+    "textHash": "2d6926e3e8973def",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U14-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-water-a.ts:inlinePlayGoesToStack / pushInlinePlay",
+        "agrees": true,
+        "note": "Tides, Insidious Invitation, Hooba-Pon push the played card; priority after the outer resolution (finishResolutionTail)"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-dark-a.ts:Wake the Dead spellEffect",
+        "agrees": false,
+        "note": "units are spawned in place (spawnUnit asPlay) with no stack item — no response window"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-earth-c.ts:The Bonesculptor",
+        "agrees": false,
+        "note": "plays the bin unit by spawnUnit in place, no stack item"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-water-a.ts:playInline (in-place branch)",
+        "agrees": false,
+        "note": "outside a battle priority window a mid-resolution play resolves in place (latent: no current caller reaches it, per 169 §6b)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/169-mid-resolution-window.test.ts",
+        "pattern": "a free play is still a play",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U14/u14-r2-probes.test.ts",
+        "title": "effects.priority.mid-resolution: a unit Wake the Dead plays waits on the stack until Wake has resolved",
+        "passed": false,
+        "demonstrates": "yes (divergence): onStack=false, inPlay=true — Wake the Dead's played unit never reaches the stack"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "RAQ 1396955380000755795#4",
+        "supports": "yes",
+        "note": "once Tides resolves the played cards are separate effects on the stack"
+      },
+      {
+        "ref": "R198",
+        "supports": "yes",
+        "note": "goes on the stack; resolution finishes; then priority"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "5. Once Cosmos resolves, played cards are 2 separate effects put on the stack at the same time and you get to decide the order."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "the resolution that played it finishes; then priority is handed out with the"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-dark-a.ts",
+        "text": "// spell's own resolution — the units arrive with no stack item of their own,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Ruling confirmed. The flagged divergence is real: Wake the Dead (probe) and The Bonesculptor put the played unit into play inside the resolution with no stack item; playInline's in-place branch is a further latent case."
+  },
+  {
+    "key": "effects.priority.priority",
+    "textHash": "136eda839483314d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:passPriority / apply",
+        "agrees": true,
+        "note": "actions gated on priority"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.30",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "Manual p.30",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "things, while players without priority do not."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.priority.priority.hold",
+    "textHash": "dfaa4f72fa5fb736",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:pushItem",
+        "agrees": false,
+        "note": "engineDiffers is real: pushItem sets priority = other(item.controller), so the caster cannot keep priority (Burst groups excepted)"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U14/u14-probes.test.ts",
+        "title": "effects.priority.priority.hold: after a battle cast the caster keeps priority (printed)",
+        "passed": false,
+        "demonstrates": "yes: the divergence — after the cast, priority is measured on the other seat"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.30",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "Manual p.30",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "they may maintain their priority to continue taking"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "the stack as effects, they do not happen immediately."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "    if (this.s.priority !== null) this.s.priority = other(item.controller);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.priority.priority.no-response-to-pass",
+    "textHash": "221eb34a554ec9f1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:passPriority",
+        "agrees": true,
+        "note": "a pass only increments passes; two passes resolve or advance"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.13",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "Notice how you cannot respond to an opponent passing priority"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.priority.priority.pass",
+    "textHash": "d2ca59a77041403f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:pushItem / passPriority",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.30",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "Manual p.30",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Once a player passes priority after taking one or more"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.priority.priority.teams",
+    "textHash": "ffe2ed0145412606",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:passPriority",
+        "agrees": null,
+        "note": "engine is two-seat only; no teams to test"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.30",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "Manual p.30",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "priority and receive priority collectively."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.priority.resolving",
+    "textHash": "c1a2be8dcda44fdf",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:resolveTop",
+        "agrees": true,
+        "note": "resolving item is held in GameState.resolving, not s.stack, so no target/negate/augment reaches it"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R78",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R79 (its stack-virus half)",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "you cannot virus a spell that is RESOLVING.** `doAugment` looks the host up in"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.priority.simultaneous",
+    "textHash": "0cff560c92d9a6e2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:queued trigger ordering",
+        "agrees": true,
+        "note": "initiative pushes first"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "239-damage-triggers-after-combat.test.ts",
+        "pattern": "R261 RAQ STACK ORDER",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.43",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "Manual p.43",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "RAQ 1540678747953569832#1",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R2",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Each player decides the order their effects go on"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.priority.simultaneous.burst",
+    "textHash": "57a8ac9838a4c184",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U14-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:burstStep / castChain",
+        "agrees": true,
+        "note": "with ordered:true each pick is aimed in turn and committed reversed so the first pick is on top; priority after the whole group (legacy entity-id order without ordered)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/358-burst-order.test.ts",
+        "pattern": "R309: the caster picks each Fireball in RESOLVE order",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R309",
+        "supports": "yes",
+        "note": "all at once, caster orders, first pick resolves first"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A {Burst} group still goes on the stack all at once (R16, R81): casting one"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "What is new is the ORDER. The caster picks the token that resolves first and"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.priority.simultaneous.same-effect",
+    "textHash": "39d2316be077cbc3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-water-a.ts:pushInlinePlay",
+        "agrees": true,
+        "note": "each Tides pick is committed to the stack as it is made, so pick order is the chosen order"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "169-mid-resolution-window.test.ts",
+        "pattern": "(whole file)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1396955380000755795#4",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "separate effects put on the stack at the same time … Any additional [cost] of"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.priority.stack",
+    "textHash": "222796ed89dd1704",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:resolveTop",
+        "agrees": true,
+        "note": "pops the top (last pushed) item"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "RAQ Bloomcaster: its 1/1 resolves before the Mycelial Mentor it was played with arrives",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.14",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "Rulebook 2023 p.14",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "Whatever spell or effect happened last will resolve first."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.priority.stack.add-while-resolving",
+    "textHash": "554a90d3478e5add",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:finishResolutionTail",
+        "agrees": true,
+        "note": "a window reopens after each resolution"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.14",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "Manual p.28",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "New spells can be added on top of an active"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.priority.stack.not-immediate",
+    "textHash": "b4aa989c5e020d7d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:pushItem",
+        "agrees": true,
+        "note": "push hands priority to the other seat before anything resolves"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.28",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "Manual p.28",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "This means it does not"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "giving other players in"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.priority.stack.triggers-respondable",
+    "textHash": "36d343a2eb2a0972",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:pushItem",
+        "agrees": true,
+        "note": "triggers are pushed in battle and priority is handed out before they resolve"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ Xenopod: negated on the stack, it never asks for the [1]",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "229-cosmic-and-control.test.ts",
+        "pattern": "R250: a trigger fired OUTSIDE the damage step reaches the stack and IS respondable",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.28",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "RAQ 1397189214352703590#1",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R250 (the owner's §3 statement that all triggers are respondable)",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "text": "negated on the stack, it never asks for the [1]"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.priority.window",
+    "textHash": "11dcc7991540684f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:openPriority / passPriority",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.30",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "Manual p.30",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "A priority window is a sequence where players or teams"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.priority.window.order",
+    "textHash": "e6a965daee66f1cb",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:openPriority",
+        "agrees": true,
+        "note": "initiative first (two-seat engine)"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.30",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "Manual p.30",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "Manual p.30",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "priority begins with the player nearest to the initiative player,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.priority.window.resolve",
+    "textHash": "032ddc253190eb69",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:passPriority / finishResolutionTail",
+        "agrees": true,
+        "note": "two passes resolve the top; the window restarts from initiative; two passes on an empty stack advance the step"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.30",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "Manual p.30",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "Rulebook 2023 p.13",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "an empty stack, which will move them to the next step"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.priority.window.steps",
+    "textHash": "ce0547fae7bc6cc2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:advanceBattleStep / subStepsWithStrikes",
+        "agrees": true,
+        "note": "damageWindow only when two or more sub-steps strike"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "297-damage-substeps-are-steps.test.ts",
+        "pattern": "R295 §2",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "297-damage-substeps-are-steps.test.ts",
+        "pattern": "R295 §3",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.30",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "RAQ 1363298910528864318#0",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "followed by a priority window inside of each region:"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.resolution.destination",
+    "textHash": "5e6732b11a45c190",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dischargeItem",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R250 (§4, zones follow control)",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "placed in the bin when they resolve, spell units spawn"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.resolution.destination.copy",
+    "textHash": "e9c41b1142c43605",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dischargeItem (hasCard=false for copies)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "138-spell-copy.test.ts",
+        "pattern": "a resolved copy bins nothing",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R164",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**A copy has NO CARD.** `item.card` on a copy names what it is a copy *of*, and"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.resolution.destination.not-trashed",
+    "textHash": "fea9b22ff23816d0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dischargeItem",
+        "agrees": true,
+        "note": "bins from the stack fire no 'trashed' event"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R68 (its removal-and-destination half)",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "  R40: it comes **from the stack**, so this is *not* a trash, and no `trashed`"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.resolution.destination.token",
+    "textHash": "eeab295611d9a519",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dischargeItem / negate",
+        "agrees": true,
+        "note": "spellToken items are erased"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "61-negation.test.ts",
+        "pattern": "(whole file)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.4",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "Rulebook 2023 p.4",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R68 (its removal-and-destination half)",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "hand or discard, they are erased from the game and returned to"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.resolution.destination.unstable",
+    "textHash": "92fc06ac31b30153",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dischargeItem",
+        "agrees": true,
+        "note": "one exit for resolve, fizzle and negate; an Unstable stamp or stack augments erase instead of binning"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "12-fire-a.test.ts",
+        "pattern": "Abyssal Evocation: a bin-played spell is {Unstable}",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R79 (its stack-virus half)",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R96",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> and the spell gets erased on resolution**. You can augment spells during"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "resolution, an R5 fizzle, and a negation all funnel through the one method. The"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.resolution.fizzle",
+    "textHash": "5a899fe05fad3d1f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:resolveItem",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.43",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "RAQ 1354013430805434389#0",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R86",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "## R86 — An effect fizzles when it loses ALL its targets, and takes its untargeted parts with it"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.resolution.fizzle.ambush",
+    "textHash": "5ad43cca5eaa80e6",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dischargeItem",
+        "agrees": true,
+        "note": "ambush item with lost target fizzles to the bin"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.40",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "Manual p.40",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "is a targeted effect, meaning if the target is removed"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.resolution.fizzle.never-had-target",
+    "textHash": "5d6745ed88f168dc",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U14-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:resolveItem (partAlive)",
+        "agrees": true,
+        "note": "a targets spec with min>=1 and nothing declared does not keep the item alive; declaredTargets is true from the spec, so the item fizzles"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/78-round17-core.test.ts",
+        "pattern": "R86: a required target with no legal candidate at cast still fizzles",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R86",
+        "supports": "yes",
+        "note": "the table row states it"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "| a **required** target the item never had a legal candidate for | fizzles | fizzles — it wanted a target and has none |"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.resolution.fizzle.pair",
+    "textHash": "af6d0ceeb4414e39",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards (Fight/Battle/Organic Exchange run)",
+        "agrees": true,
+        "note": "each two-target card checks both targets by hand in run (allOrNothing is enforced per card)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ fizzles: Fight that loses one of its two targets does nothing to the survivor",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.43",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "RAQ 1354013430805434389#1",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "text": "It won't fizzle, but will do nothing"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.resolution.fizzle.partial",
+    "textHash": "319e06a03d2d9297",
+    "verdict": "confirmed",
+    "round": 3,
+    "verifier": "U14-r3-a2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:resolveItem (partAlive)",
+        "agrees": true,
+        "note": "Item fizzles only when no targeted part keeps a live target; untargeted parts do not vote but still resolve."
+      },
+      {
+        "loc": "client/engine/src/engine.ts:resolveParts",
+        "agrees": true,
+        "note": "Lost targets are filtered per part; a part with no live target is skipped ('a part fizzles'), the rest run."
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "pattern": "Tidal Reversion still recalls the other unit",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/78-round17-core.test.ts",
+        "pattern": "one surviving target carries the untargeted grafts through",
+        "passed": true,
+        "asserts_claim": "partly — asserts the example as worded (one declared target, nothing lost, all four Poisons), but no target is lost in it, so it does not exercise 'lost some but not all'"
+      },
+      {
+        "file": "client/engine/test/78-round17-core.test.ts",
+        "pattern": "loses its ONLY target",
+        "passed": true,
+        "asserts_claim": "context: the all-lost contrast case"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U14/u14-r3-a2-probes.test.ts",
+        "title": "effects.resolution.fizzle.partial: Twin Flame with one of two targets gone still damages the other",
+        "passed": true,
+        "demonstrates": "yes — the remaining target takes 2 (the Manual's own example)"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U14/u14-r3-a2-probes.test.ts",
+        "title": "effects.resolution.fizzle.partial: a composite with two targets losing one still runs its untargeted part",
+        "passed": true,
+        "demonstrates": "yes — two targeted grafts, one target destroyed, Biotoxicity's three Poisons and the printed Poison X still made (the illustrative example's shape)"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.43",
+        "supports": "yes",
+        "note": "'spell will attempt to resolve as best as it can' with the Twin Flame example."
+      },
+      {
+        "ref": "RAQ 1410252965276684418#4",
+        "supports": "yes",
+        "note": "calebgannon on Tidal Reversion."
+      },
+      {
+        "ref": "RAQ 1354013430805434389#0",
+        "supports": "yes",
+        "note": "'at least 1 target must remain for whole effect to be carried out' — covers the untargeted-parts clause."
+      },
+      {
+        "ref": "R86",
+        "supports": "yes",
+        "note": "Our ruling built from the same thread."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "spell will attempt to resolve as best as it can. For"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "but it will still resolve if one of the selected targets is removed"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "currently atleast 1 target must remain for whole effect to be carried out"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (!def.targets) return false;   // R86: untargeted parts do not vote"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None in the rule. Note: the third example's bound test has no lost target; the a2 composite probe is a better binding for the 'untargeted parts included' clause."
+  },
+  {
+    "key": "effects.resolution.fizzle.untargeted",
+    "textHash": "bef46bedd1706e28",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U14-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:resolveItem (partAlive)",
+        "agrees": true,
+        "note": "no targets spec anywhere → not \"targeted\", never fizzles; min-0 part with nothing declared returns alive"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:resolveParts",
+        "agrees": true,
+        "note": "a min-0 part with no targets still runs with empty ctx.targets"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/78-round17-core.test.ts",
+        "pattern": "R86: an item that declares NO target anywhere never fizzles",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/38-light-a.test.ts",
+        "pattern": "Penance: with no targets declared (min 0) the draw still happens",
+        "passed": true,
+        "asserts_claim": "yes for sentence 2"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R86",
+        "supports": "yes",
+        "note": "table rows for both cases"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "| no targeting **anywhere** (Ignis Sprite's spawn trigger) | resolves | resolves — it has nothing to lose |"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "declaring no target was a legal choice, and the unconditional half must happen"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.resolution.fizzle.virus",
+    "textHash": "223b7f5da71ac420",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dischargeItem",
+        "agrees": true,
+        "note": "a virus item whose host left fizzles to the bin"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.34",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "Manual p.34",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "its target becomes invalid, it is placed into the bin, and cannot be used"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.resolution.fizzle.whole",
+    "textHash": "7dc8533555894e1b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:resolveItem",
+        "agrees": true,
+        "note": "untargeted parts do not vote (R86); a targeted item with no live target fizzles whole"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "78-round17-core.test.ts",
+        "pattern": "R86: a graft composite that loses its ONLY target fizzles whole",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1354013430805434389#0",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R86",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Read that parenthesis twice. The two \"draw a card\" grafts were **never"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.resolution.negation",
+    "textHash": "09c8c6187f5ef531",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:negate / removeFromStack",
+        "agrees": true,
+        "note": "splices at negation time"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "61-negation.test.ts",
+        "pattern": "R68: a mass negate empties the stack of its victims AT ONCE",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R68 (its removal-and-destination half)",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**The rule.** A negated item leaves the stack the instant the negation"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.resolution.negation.destination",
+    "textHash": "72c884fb695b2867",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:negate / dischargeItem",
+        "agrees": true,
+        "note": "NEGATE_BINS includes unit; tokens erased; abilities just leave"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "61-negation.test.ts",
+        "pattern": "R68: a negated spell TOKEN is erased, never binned",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.34",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "Manual p.34",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R68 (its removal-and-destination half)",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R68 (its removal-and-destination half)",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **spell / spellUnit / unit / virus / ambush** — to its controller's **bin**."
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "its target becomes invalid, it is placed into the bin, and cannot be used"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.resolution.negation.no-arrival",
+    "textHash": "5e793bfb66168cfa",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:negate",
+        "agrees": true,
+        "note": "spawnUnit never called for a negated unit/spell unit"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "118-stack-effect.test.ts",
+        "pattern": "R128: negating a unit on the stack",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "negated, the unit does not enter play",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1461450216874967235#1",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R128",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **the unit never arrives** — `resolveItem`'s `spawnUnit` call is never made;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.resolution.order",
+    "textHash": "b42c90ec3dcf6f1f",
+    "verdict": "partial",
+    "round": 3,
+    "verifier": "U14-r3-a2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:resolveParts",
+        "agrees": true,
+        "note": "Parts run top to bottom; each part's targets are resolved live, so it sees earlier parts' results."
+      },
+      {
+        "loc": "client/engine/src/engine.ts:markIllegalTargets",
+        "agrees": true,
+        "note": "Called once in resolveItem before resolveParts; part.invalid is fixed and not recomputed. A target that LEFT play due to an earlier part is still lost (R5), which the text's 'illegal' wording leaves untouched."
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/61-negation.test.ts",
+        "pattern": "Finality erases the very cards it just negated",
+        "passed": true,
+        "asserts_claim": "yes as behaviour — but the test itself says 'THIS NEEDS A HUMAN RULING — the test pins what is implemented, not what is necessarily right'"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R68 (Finality ordering note)",
+        "supports": "partly",
+        "note": "Describes the implemented in-order reading, under the heading '⚠ Ordering inside one resolution — needs a ruling' and ends 'Bena to rule.' It is an open question, not a ruling."
+      },
+      {
+        "ref": "R324",
+        "supports": "yes",
+        "note": "The exception: judged once, an earlier part cannot make a later part's target illegal."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "resolve in order, and by the second one the cards are in bins — and"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "clause just filled. **Bena to rule.** If the answer is \"no, a card negated by"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "the same item therefore cannot make a later part's target illegal"
+      },
+      {
+        "file": "client/engine/test/61-negation.test.ts",
+        "text": "// THIS NEEDS A HUMAN RULING — the test pins what is implemented, not what is"
+      }
+    ],
+    "basis_ok": false,
+    "problem": "The first sentence ('a later instruction sees the results of an earlier one') and the Finality example are engine behaviour only: the cited R68 note explicitly flags the Finality ordering as needing an owner ruling and the bound test says it pins the implementation, not necessarily the rule. No designer/printed source. Basis should be 'engine' and the text should flag the Finality case as unruled. The R324 exception is confirmed."
+  },
+  {
+    "key": "effects.resolution.order.choices",
+    "textHash": "46d15f298cd7d4df",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:collectTargets",
+        "agrees": true,
+        "note": "cast window collects X, costs, modular, targets, subjects, modes, spot only; non-target choices are ctx.choose inside resolveItem"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ Xenopod: the trigger goes on the stack with no payment asked",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1397189214352703590#0",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R67",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "fixed. Choices that are *not* targets stay where they are — which pile to cache,"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "it on the stack) are all still mid-resolution `ctx.choose`."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.resolution.order.no-window",
+    "textHash": "ba1422353f92d5ae",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:resolveItem (ctx.choose suspension)",
+        "agrees": true,
+        "note": "decision blocks every other action"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R6",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "decline, mid-resolution. No priority window around the payment. (Bena 2026-07-16.)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.resolution.recheck",
+    "textHash": "e06137baa345bfb3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:markIllegalTargets",
+        "agrees": true,
+        "note": "runs once as the item begins to resolve, judging slot family, restriction, region and distinctness"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ valid targets: an Ambush whose ally changed sides before it resolves recalls nothing",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355466429788328066#1",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "RAQ 1355466429788328066#2",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R324",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R324",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R56",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "When an item begins to resolve, every target it declared is judged again by the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.resolution.recheck.once",
+    "textHash": "af12beffeadde60f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:markIllegalTargets",
+        "agrees": true,
+        "note": "records EffectPart.invalid once before the fizzle vote"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R324",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "  so a suspended resolution replays the same verdict (R85). An earlier part of"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.resolution.recheck.retarget",
+    "textHash": "4b27981554b464c1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards (Gravitational Correction / Enigmatic Warder)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "12-fire-a.test.ts",
+        "pattern": "Gravitational Correction: retargets the effect unless its controller pays",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1354013430805434389#2",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/12-fire-a.test.ts",
+        "text": "Gravitational Correction: retargets the effect unless its controller pays [x]"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.resolution.recheck.same-object",
+    "textHash": "e7cee79d18a3e562",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:targetStillLegal",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "Organic Exchange may target two of your own units",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.40",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "RAQ 1454169054402314362#2",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "save it. The spell will not change targets to the new"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.resolution.recheck.shared-target",
+    "textHash": "d44b0555b3e20b1f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:targetCandidates",
+        "agrees": true,
+        "note": "no cross-item exclusion; a removed target is lost by targetStillLegal"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "37-attrs-wight.test.ts",
+        "pattern": "R144(b): three Wraith triggers may all aim at one 1/1",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R144 (its half (b))",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R144 (its half (b))",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> stack simultaneously and be allowed to target the same unit, even exceeding"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.resolution.source-gone",
+    "textHash": "ceeb460d1a91da74",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:resolveItem",
+        "agrees": true,
+        "note": "item stays on the stack and resolves against last-known state"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ dead unit: an effect stays on the stack when its unit dies and still resolves",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353895783266516992#0",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R325",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A unit's effect stays on the stack when the unit dies and still tries to"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.resolution.source-gone.last-known",
+    "textHash": "2919c71193c5c289",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:resolveItem",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ dead unit: Bellowing Boulder dead with its ping on the stack still pings with Deadly, its last state",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353895783266516992#6",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R325",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "formation it stood in), it reads the source's **last-known state**: what the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.resolution.source-gone.needs-body",
+    "textHash": "0af03ff659f127bb",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:resolveItem",
+        "agrees": true,
+        "note": "self-acting effects with no body do nothing; Hooba-Nan/Rousing Spirit tests pass"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ dead unit: Hooba-Nan gone with its trigger on the stack makes nothing",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "Rousing Spirit gone",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353895783266516992#1",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R325",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "An effect that **acts on the source itself** still needs the body: putting"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.resolution.spell-unit",
+    "textHash": "6d9b01393741a962",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U14-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:resolveItem",
+        "agrees": true,
+        "note": "spell part runs, then spawnUnit; fizzle/negation skip the spawn"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "RAQ Hooba-Pon spell unit: the spell part happens, then the unit spawns into the formation",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "RAQ 1461450216874967235#1",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      },
+      {
+        "ref": "R97",
+        "supports": "yes",
+        "note": "quote verified verbatim in source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "invalid, the unit will not spawn and will enter the bin."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  }
+]

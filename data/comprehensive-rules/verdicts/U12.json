@@ -1,0 +1,2835 @@
+[
+  {
+    "key": "combat.damage.amount",
+    "textHash": "26312b7cb2da7b0f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealtColPower",
+        "agrees": true,
+        "note": "colPower (with 608.5c counting) x Powerful, computed when the sub-step strikes"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.23",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.10",
+        "supports": "partly",
+        "note": "defines power generally"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Each column of attacking and defending units in a"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "return this.colPower(ids, collapsed) * (attrs.has('Powerful') ? 2 : 1);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.amount.counting",
+    "textHash": "8e3355922ff90c06",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:colPower",
+        "agrees": true,
+        "note": "Math.max(0, p) per unit; collapsed (Unaware) exchanges read printedStats"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "05-rulings.test.ts",
+        "pattern": "R10/R106: an Unaware blocker and what it blocks BOTH read at printed",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U12/u12-probes.test.ts",
+        "title": "combat.damage.amount.counting: a negative-power unit counts as 0 and does not reduce its column",
+        "passed": true,
+        "demonstrates": "yes: Lithoghul + a -2/3 token unblocked deal 4, not 2 (the illustrative example)"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.42",
+        "supports": "yes",
+        "note": "negative power deals 0"
+      },
+      {
+        "ref": "R106",
+        "supports": "yes",
+        "note": "Unaware reads printed"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "return s + Math.max(0, p);"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const [p] = collapsed ? this.printedStats(u) : this.effStats(u);"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "A: It deals 0 damage."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.amount.modifier-order",
+    "textHash": "17f0b697ae3445ac",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealtColPower/commitUnitDamage",
+        "agrees": true,
+        "note": "Powerful x2 at source before assignment; Vulnerable x2 on receipt"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "09-attrs.test.ts",
+        "pattern": "Powerful: Chitin Shredder deals double combat damage to a player",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1362838395298119912#2",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1372451771632320512#3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R23",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**Powerful** doubles the source's total damage once, **before** assignment/overflow (a"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "return this.colPower(ids, collapsed) * (attrs.has('Powerful') ? 2 : 1);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.amount.zero-power",
+    "textHash": "41c509c16bbd4b60",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:colPower/dealersIn",
+        "agrees": true,
+        "note": "0-power unit contributes 0; dealers are units with power > 0"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "134-column-and-substep.test.ts",
+        "pattern": "R157 §4 — Zephyrzoa: a 0-power anchor in a POWERED column still fires",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "134-column-and-substep.test.ts",
+        "pattern": "R157 §4 — Zephyrzoa: alone in a 0-POWER column it hears nothing",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R157 §4",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> *\"Only if the other unit in the column has a positive power. 0 power units do"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.assignment",
+    "textHash": "cf4ca6d6bfd5b2f0",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U12-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:electionWalk / assignColumnDamage",
+        "agrees": true,
+        "note": "victims walked front-to-back; lethal to the front before anything goes behind"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/100-elective-assign.test.ts",
+        "pattern": "R120 \\(a\\)",
+        "passed": true,
+        "asserts_claim": "yes: pool over front then back"
+      },
+      {
+        "file": "client/engine/test/100-elective-assign.test.ts",
+        "pattern": "R120 \\(c\\)",
+        "passed": true,
+        "asserts_claim": "yes: nothing below front lethal is offered"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U12/u12-probes.test.ts",
+        "title": "combat.damage.pairing.blocked: the Manual p.23 example — Living Forge + A Pile of Rubbish vs Tiderunner Initiate",
+        "passed": true,
+        "demonstrates": "yes: 2 to the front unit, none to the back"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.23",
+        "supports": "yes",
+        "note": "receive damage from front to back"
+      },
+      {
+        "ref": "RAQ 1353888077625561108#2",
+        "supports": "yes",
+        "note": "lethal to the front before the back"
+      },
+      {
+        "ref": "R114",
+        "supports": "yes",
+        "note": "elective split, dealt in full"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "receive damage from front to back"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "(units in front must be assigned lethal before any goes behind them)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.assignment.chooser",
+    "textHash": "abc9f3cc864aca01",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U12-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:electionWalk (via collectAssignPlans)",
+        "agrees": true,
+        "note": "the assignDamage decision goes to the seat dealing the strike: attacker for an attacking column, defender for a blocking column"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/100-elective-assign.test.ts",
+        "pattern": "R120 \\(a\\)",
+        "passed": true,
+        "asserts_claim": "yes: dec.seat === A over a 4-power column into two 1/1s"
+      },
+      {
+        "file": "client/engine/test/100-elective-assign.test.ts",
+        "pattern": "R120 \\(h\\)",
+        "passed": true,
+        "asserts_claim": "yes: dec.seat === D, all 7 on the front attacker"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.43",
+        "supports": "partly",
+        "note": "\"the player dealing damage may choose\" — said of over-assignment, implies the dealer assigns"
+      },
+      {
+        "ref": "R7",
+        "supports": "yes",
+        "note": "controller of the damage-dealing unit decides"
+      },
+      {
+        "ref": "R120",
+        "supports": "yes",
+        "note": "attacker over the blocking column, defender over the attacking"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Yes, the player dealing damage may choose to"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "The **controller of the damage-dealing unit** decides how damage splits (including"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**dealing** the column's damage — the attacker over the blocking column, the defender over"
+      },
+      {
+        "file": "client/engine/test/100-elective-assign.test.ts",
+        "text": "'the side DEALING the damage assigns — the attacker over its blockers'"
+      },
+      {
+        "file": "client/engine/test/100-elective-assign.test.ts",
+        "text": "'the DEFENDER assigns its blocking column"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.assignment.dealt-in-full",
+    "textHash": "38ad4218be3aeedc",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:defaultSplitAmounts/assignColumnDamage",
+        "agrees": true,
+        "note": "non-Piercing leftover lands on the back-most living unit"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "05-rulings.test.ts",
+        "pattern": "R114: without Piercing the excess is not lost, it lands on the unit",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "17-earth-b.test.ts",
+        "pattern": "Mirage Scuttler: an overkill combat hit marks the WHOLE amount",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.23",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1353888077625561108#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R114",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (!piercing && remaining > 0 && out.length) out[out.length - 1]! += remaining;"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "beyond the health of the back row unit does not carry"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> \"ALL damage is dealt to units, even if it surpasses its defense. The only exception is"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.assignment.lethal-defined",
+    "textHash": "f4932988c4d5a1be",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U12-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:victimShare",
+        "agrees": true,
+        "note": "recvCap = defense - marked damage; ceil(/2) if Vulnerable and not Pure; 1 if Deadly; printedStats when collapsed (Unaware)"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:exchangeAt",
+        "agrees": true,
+        "note": "Pure empties both sides' attribute sets, so Deadly is off; victimShare drops Vulnerable's mult under pure"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/100-elective-assign.test.ts",
+        "pattern": "R120 \\(e\\)",
+        "passed": true,
+        "asserts_claim": "yes: options [1,2], the Deadly floor is 1"
+      },
+      {
+        "file": "client/engine/test/387-raq-combat.test.ts",
+        "pattern": "RAQ Vulnerable: a 10-power Piercing",
+        "passed": true,
+        "asserts_claim": "yes: Ancient dies and the player loses 6 (default = lethal 4 to the unit)"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U12/u12-probes.test.ts",
+        "title": "combat.damage.assignment.lethal-defined: a Vulnerable 3/7 needs 4 assigned (half rounded UP), not 3",
+        "passed": true,
+        "demonstrates": "yes: round-up"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U12/u12-r2-probes.test.ts",
+        "title": "combat.damage.assignment.lethal-defined: in a Pure exchange a Deadly column is priced at full defense, not 1",
+        "passed": true,
+        "demonstrates": "yes"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U12/u12-r2-probes.test.ts",
+        "title": "combat.damage.assignment.lethal-defined: in a Pure exchange a Vulnerable blocker is priced at full defense, not half",
+        "passed": true,
+        "demonstrates": "yes"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U12/u12-r2-probes.test.ts",
+        "title": "combat.damage.assignment.lethal-defined: with marked damage, lethal is the remaining defense",
+        "passed": true,
+        "demonstrates": "yes"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U12/u12-r2-probes.test.ts",
+        "title": "combat.damage.assignment.lethal-defined: in an Unaware exchange the front blocker is priced at its PRINTED defense, less marked damage",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353888077625561108#3",
+        "supports": "yes",
+        "note": "Deadly: at least 1 to the front unit"
+      },
+      {
+        "ref": "RAQ 1372451771632320512#3",
+        "supports": "yes",
+        "note": "Vulnerable 3/8: at least 4"
+      },
+      {
+        "ref": "R120",
+        "supports": "yes",
+        "note": "rounded up / 1 under Deadly / printed defense under Unaware"
+      },
+      {
+        "ref": "R61",
+        "supports": "yes",
+        "note": "Pure: the victim's Vulnerable is off too"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "rounded up under {Vulnerable}, 1 under {Deadly}, printed defense in an {Unaware}"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Afflicting or Thieving, and the victim's Vulnerable is off too."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const mult = (!pure && this.effAttrs(u).has('Vulnerable')) ? 2 : 1;"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const [, t] = collapsed ? this.printedStats(u) : this.effStats(u);"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (deadly && recvCap > 0) poolNeed = 1;"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const attrsOf = (ids: EntityId[]) => pure ? new Set<string>() : this.colAttrs(ids);"
+      },
+      {
+        "file": "client/engine/test/100-elective-assign.test.ts",
+        "text": "assert.deepEqual(nums, [1, 2], 'the {Deadly} floor is 1, not the 5 the stats would price');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.assignment.lethal-first",
+    "textHash": "8df15d53f5935090",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:electionWalk/victimShare",
+        "agrees": true,
+        "note": "options offered are [share..remaining]; below-lethal never offered while damage could go behind"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "100-elective-assign.test.ts",
+        "pattern": "R120 (c): amounts below the front unit",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.23",
+        "supports": "partly",
+        "note": "describes default overflow, not the elective constraint"
+      },
+      {
+        "ref": "RAQ 1353888077625561108#2",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R114",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "before you can start assigning the damage to the back unit, you have to assign damage which would be required to kill unit in the front"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "enough to kill them both. The only rule is that the front unit must be assigned lethal"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.assignment.lone-unit",
+    "textHash": "595f65a5b4b82391",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:electionWalk",
+        "agrees": true,
+        "note": "non-Piercing lone victim: silent, all to it; Piercing: last victim is a question, unassigned remainder to the controller"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "399-raq-fix-combat.test.ts",
+        "pattern": "R319: a Piercing attacker may put all 10 into a lone Vulnerable 3/8",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353888077625561108#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1372451771632320512#4",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R319",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "all combat damage MUST be assigned to this unit"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "You could assign all 10 damage to Crumbling, which would then get doubled to 20, but then all that 20 damage sinks into Crumbling Ancient and nothing goes to opponent face."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.assignment.overkill",
+    "textHash": "2a964f5fbd7a99b3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:electionWalk",
+        "agrees": true,
+        "note": "option 'remaining' = all to the front"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "100-elective-assign.test.ts",
+        "pattern": "R120 (a): the ATTACKER is asked",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.43",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1353888077625561108#1",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R114",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "assign additional damage beyond lethal to a unit"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "You can even decide to deal all damage to the front and 0 to the back."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.assignment.shields-ignored",
+    "textHash": "b4974ba7032f5bbb",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:victimShare",
+        "agrees": true,
+        "note": "priced on toughness; prevention only at commit (preventUnitDamage)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Excessive: a shielded Awoken Tomb in front must still be assigned its 5",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353888077625561108#8",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R98",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "You must assign atleast 5 damage to Awoken"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "floor: those are planned against the unit's real toughness as if it were unprotected. The"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.assignment.timing",
+    "textHash": "55b6e6b4d4cb74b2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:combatSubStep",
+        "agrees": true,
+        "note": "collectAssignPlans before the ledger and any event"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R120",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "this.collectAssignPlans(b, sub);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "No bound example test; supported by engine reading and R120."
+  },
+  {
+    "key": "combat.damage.dealing",
+    "textHash": "710d7845e8d35367",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:commitUnitDamage",
+        "agrees": true,
+        "note": "one ledger per sub-step; Vulnerable doubles received; Poisonous marks -1/-1 counters"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "09-attrs.test.ts",
+        "pattern": "Vulnerable: Crumbling Ancient marks double the combat damage it receives",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.23",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Blightmound",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1372451771632320512#4",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R237",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const mult = (!hit.pure && this.effAttrs(u).has('Vulnerable')) ? 2 : 1;"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (hit.poisonous) this.addCounters(u, -received);   // permanent"
+      },
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "Poisonous sources damage units in the form of -1/-1 counters."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.dealing.deaths",
+    "textHash": "173a1b80bd98c774",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:pumpCombatDamage/combatSubStep",
+        "agrees": true,
+        "note": "sweepDeadly + checkDeaths after each sub-step, before the next"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "02-combat.test.ts",
+        "pattern": "R3/Swift: swift column deals damage first",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R21",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R300",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R3",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "this.checkDeaths();   // deaths + promotion between sub-steps, no priority (R3)"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> Damage happens in the combat damage step, then state based actions are checked and units"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.dealing.prevention",
+    "textHash": "1c953517319323be",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U12-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:commitUnitDamage",
+        "agrees": true,
+        "note": "preventUnitDamage applied at commit; received<=0 -> shielded, no damage event, no mark, no Poisonous counters"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:sweepDeadly",
+        "agrees": true,
+        "note": "skips shielded units"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/387-raq-combat.test.ts",
+        "pattern": "RAQ Excessive: a shielded Awoken Tomb",
+        "passed": true,
+        "asserts_claim": "yes: damage 0, +5 counters, no 5/5 made (trigger did not fire)"
+      },
+      {
+        "file": "client/engine/test/24-wood-b.test.ts",
+        "pattern": "Deadly\\} cannot kill through",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "client/engine/test/24-wood-b.test.ts",
+        "pattern": "prevented damage is NOT dealt",
+        "passed": true,
+        "asserts_claim": "yes: no damage event"
+      },
+      {
+        "file": "client/engine/test/24-wood-b.test.ts",
+        "pattern": "Poisonous does not bypass",
+        "passed": true,
+        "asserts_claim": "yes: no -1/-1 counters"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U12/u12-probes.test.ts",
+        "title": "combat.damage.dealing.prevention: a shielded blocker dealt COMBAT damage gets no damage event and no Deadly kill",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "RAQ 1354148437355925554#1",
+        "supports": "yes",
+        "note": "Jollyglop does not trigger, no -2/-2 from Poisonous"
+      },
+      {
+        "ref": "R98",
+        "supports": "yes",
+        "note": "a fully prevented hit produces no damage event"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "So a fully prevented hit produces **no `damage` event** (\"whenever I am dealt damage\" stays"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (received <= 0) { shielded.add(id); continue; }"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (shielded.has(id)) continue;   // R98: no damage dealt, nothing to kill through"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.dealing.regroup",
+    "textHash": "04f5c858c9059c65",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:startRegroup",
+        "agrees": true,
+        "note": "all unit damage set to 0 in regroup"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.11",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.27",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "for (const e of Object.values(this.s.entities)) if (e.kind === 'unit') e.damage = 0;"
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "All damage on units goes away during the regroup step."
+      }
+    ],
+    "basis_ok": true,
+    "problem": "No bound test; cited test file 05-rulings.test.ts not tied to a specific case. Supported by printed text + engine reading."
+  },
+  {
+    "key": "combat.damage.overview",
+    "textHash": "6a67628ab16d89c4",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:advanceBattleStep",
+        "agrees": true,
+        "note": "blockWindow passes -> combatDamage; after -> afterWindow"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.11",
+        "supports": "partly",
+        "note": "fragment \"passed priority, we move to the\""
+      },
+      {
+        "ref": "Manual p.27",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "this.ev('combatDamage', 'Combat damage (simultaneous):', { region: b.region });"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "6. After combat priority window"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.overview.column-source",
+    "textHash": "25010668318b19da",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:assignCombatDamage",
+        "agrees": true,
+        "note": "one strike per column side; one Thieving draw per column"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "388-raq-blocks-and-windows.test.ts",
+        "pattern": "RAQ Thieving: two Thieving units in one column draw ONE card",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.23",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Blightsea Polyp",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1460213341011050536#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R320",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "The source of combat damage is column"
+      },
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "Columns deal combat damage to players as 1 rot."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.overview.per-region",
+    "textHash": "b831aa0cf547b8ce",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doDeclareAttack",
+        "agrees": true,
+        "note": "no columns -> endBattleRound, no damage step; each battle carries one region"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": "both quotes"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "did not get attacked, in which case combat and after"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (!columns.length) {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.overview.simultaneous",
+    "textHash": "70d6f77998997fe6",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:pumpCombatDamage",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.23",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Rime Wraith",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "processes happen simultaneously, unless modified by"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Every damage exchange happens at the same time"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.pairing",
+    "textHash": "b681607aeb6a78a2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:assignCombatDamage",
+        "agrees": true,
+        "note": "unblocked -> toPlayer=pow; blocked -> assignColumnDamage to blk; blk strikes atk only with atk present; Piercing leftovers to player"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.11",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.11 (Similarly...)",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.23",
+        "supports": "yes",
+        "note": "once placed, the column is blocked"
+      },
+      {
+        "ref": "R322",
+        "supports": "yes",
+        "note": "late blockers"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "Unblocked attacking damage is dealt to the defending player’s life"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Once a defending unit has been placed in front of an at-"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const blockedEver = b.blocks[ci] !== undefined;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.pairing.attackers-gone",
+    "textHash": "ebdf6d6b7494b9f2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:assignCombatDamage",
+        "agrees": true,
+        "note": "blocker side with !atk.length deals nothing (logs no attackers left), Piercing included"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "64-formation-collapse.test.ts",
+        "pattern": "R72 (ruling): a hole deals and takes no damage — Piercing included",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1365594171867664445#3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R72",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (!atk.length) {"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**A blocking column whose attackers are all dead deals nothing, Piercing"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "as defender you can only deal combat damage to opponents face if your blocking columns has piercing AND there is enemy unit in front of them"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.pairing.blocked",
+    "textHash": "f69098a184aeb03b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:assignCombatDamage",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U12/u12-probes.test.ts",
+        "title": "combat.damage.pairing.blocked: the Manual p.23 example — Living Forge + A Pile of Rubbish vs Tiderunner Initiate",
+        "passed": true,
+        "demonstrates": "yes: 3 to the Tiderunner, 2 back all to Living Forge, none to Rubbish or the player"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.23",
+        "supports": "yes",
+        "note": "all three quotes"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "all dealt to Living Forge because it is in the front."
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Blocked units do not deal combat damage to you."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.pairing.late-blocker",
+    "textHash": "8c07409e3afc5b5d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:assignCombatDamage",
+        "agrees": true,
+        "note": "blocks[ci] set by a late placement makes blockedEver true"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "400-raq-fix-blocks.test.ts",
+        "pattern": "R322 a Tiderunner put in front of an unblocked attacker fights it",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1366447016653361192#1",
+        "supports": "yes",
+        "note": "both quotes"
+      },
+      {
+        "ref": "R322",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "I think it would be considered blocked even against an empty column."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "defender may start a formation this way even having declared no blockers."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.pairing.side-block",
+    "textHash": "d4f5fcce793dcb15",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:subStepsWithStrikes",
+        "agrees": true,
+        "note": "blk side counts only with atk present"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:assignCombatDamage",
+        "agrees": true,
+        "note": "blk with no atk deals nothing"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "400-raq-fix-blocks.test.ts",
+        "pattern": "R321 a Piercing side-blocker deals no combat damage to the attacking player",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.23",
+        "supports": "partly",
+        "note": "defines side-blocks only"
+      },
+      {
+        "ref": "RAQ 1365594171867664445#2",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R321",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "|| (x.blk.length > 0 && x.atk.length > 0 && this.strikes(b, 'blk', ci, x.blk, sub, x.pure));"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "They wouldn't attack at all since they don't have any attacking enemy units in front of them."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- A side-block deals **no combat damage**, Piercing included — _passer:"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.pairing.stays-blocked",
+    "textHash": "04355216d5cd0d5b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:assignCombatDamage",
+        "agrees": true,
+        "note": "blockedEver with no blockers: Piercing -> all to player, else nothing"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "157-blocked-stays-blocked.test.ts",
+        "pattern": "R185: a blocker that is RECALLED leaves the column blocked",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Piercing: a Piercing column whose blocker died before damage puts its full power into the player",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Piercing: a blocked NON-Piercing column whose blocker died deals nothing to the player",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.23",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.11",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1365594171867664445#1",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R185",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R13",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "} else if (blockedEver) {"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (atkAttrs.has('Piercing')) toPlayer = pow;"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "The column is considered blocked even if the defending unit is removed"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "BUT because it's attacking formation and that unit/column has Piercing, then full damage will go to face."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.pairing.unblocked",
+    "textHash": "c289927fe47f9fd4",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:assignCombatDamage",
+        "agrees": true,
+        "note": "never blocked -> toPlayer = pow"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "09-attrs.test.ts",
+        "pattern": "Thieving: Slink draws when its column deals combat damage to a player",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.23",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.20",
+        "supports": "partly",
+        "note": "general statement that units attack players"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "toPlayer = pow;"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Unblocked units deal combat damage to the defend-"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.player",
+    "textHash": "f90542c7957b0d22",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:assignCombatDamage",
+        "agrees": true,
+        "note": "player hits: unblocked toPlayer, attacker Piercing leftover, blocker Piercing leftover only with atk present"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Piercing: an unblocked Piercing column hits the player",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Piercing: a defending Piercing column with an attacker in front of it carries its excess to the attacker",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Adversary of the Deep",
+        "supports": "yes",
+        "note": "reminder: damage causes life loss"
+      },
+      {
+        "ref": "Manual p.23",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1365594171867664445#3",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (blkAttrs.has('Piercing') && left > 0) {"
+      },
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "Damage causes life loss."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.player.not-combat",
+    "textHash": "e499201ff4d64327",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:queueResonant",
+        "agrees": true,
+        "note": "Resonant rider is a trigger dealing effect damage, not combat damage"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Resonant: the extra damage is not combat damage",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1362838395298119912#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R315",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "extra damage from Resonant effect wouldn't be considered as 'combat damage'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.player.redirect",
+    "textHash": "a3e21ad5e0e11e68",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:commitPlayerDamage (Oorblak replacement)",
+        "agrees": true,
+        "note": "tests: Piercing remainder past Oorblak lethal reaches player; non-Piercing absorbed"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Oorblak: 10 Piercing combat damage redirected into a 2/4 Oorblak",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "17-earth-b.test.ts",
+        "pattern": "Oorblak: a NON-Piercing overkill is absorbed whole",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Oorblak",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1397188292239163454#0",
+        "supports": "yes",
+        "note": "both quotes"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "If combat damage would be dealt to you, that damage is dealt to me instead."
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "he takes 4 damage which is enough to kill him and leftover 6 damage is still Piercing so it goes to players face"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "replacement effects only apply once in an effect Unless a new trigger occurs"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.player.replaced-still-dealt",
+    "textHash": "c2941771c9ed5a5b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:commitPlayerDamage",
+        "agrees": true,
+        "note": "combatFaceDamage carries the damage dealt; R238 test pays out n though life unchanged"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "207-replaced-hit-was-dealt.test.ts",
+        "pattern": "R238: the payout is the DAMAGE DEALT, not the life lost",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R238",
+        "supports": "yes",
+        "note": "owner ruling"
+      },
+      {
+        "ref": "R195",
+        "supports": "partly",
+        "note": "per-column attribution; its life-lost reading amended by R238"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> **\"Yes, blightsea pollup says it deals damage as, so its still damage. Just"
+      },
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "Columns deal combat damage to players as 1 rot."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.split",
+    "textHash": "c301c10674f73973",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:subStepsWithStrikes",
+        "agrees": true,
+        "note": "damageSubs = sub-steps with a scheduled striker at step open; split iff 2+"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:scheduled",
+        "agrees": true,
+        "note": "only Swift/Sluggish move a column off normal"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1363298910528864318#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1540678747953569832#2",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R295",
+        "supports": "yes",
+        "note": "Split = two or more sub-steps have a column striking"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "b.damageSubs = this.subStepsWithStrikes(b);"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **Split** (two or more sub-steps have a column striking in them): each is a real"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Those windows are only present if there are any Swift/Sluggish units"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.split.boundary-window",
+    "textHash": "34edbb990e3d5c4d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:pumpCombatDamage",
+        "agrees": true,
+        "note": "checkDeaths runs before the window; window opens after a scheduled sub-step with a later one scheduled"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:advanceBattleStep",
+        "agrees": true,
+        "note": "resumes pendingSub only after two passes with an empty stack"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "297-damage-substeps-are-steps.test.ts",
+        "pattern": "R295 §1 the report",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "297-damage-substeps-are-steps.test.ts",
+        "pattern": "R295 §2 the boundary is a real priority window",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1540678747953569832#2",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1363298910528864318#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R295",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "this.checkDeaths();   // deaths + promotion between sub-steps, no priority (R3)"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const next = b.pendingSub ?? 'after';"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "state-based and still immediate — the promotion has already happened when the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.split.empty-substep",
+    "textHash": "3b80eab157db3c2e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:pumpCombatDamage",
+        "agrees": true,
+        "note": "struckNow reads the fixed schedule, not live strikes; moreLater false after last scheduled -> no window, later live strike runs on"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "297-damage-substeps-are-steps.test.ts",
+        "pattern": "R295 §3b an EMPTY sub-step opens no window",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U12/u12-probes.test.ts",
+        "title": "combat.damage.split.empty-substep: a column that gains Sluggish after the last scheduled sub-step strikes with no window before it",
+        "passed": true,
+        "demonstrates": "yes: illustrative example measured: no second window, 2+1+2 dealt, straight to afterWindow"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U12/u12-probes.test.ts",
+        "title": "combat.damage.split.empty-substep: a scheduled sub-step keeps its window though every striker scheduled for it died",
+        "passed": true,
+        "demonstrates": "yes: normal sub-step with its only striker dead still opens a window (pendingSub Sluggish)"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R295",
+        "supports": "partly",
+        "note": "says a window opens when the sub-step \"struck\"; the engine (and this rule) read \"scheduled\", which R295's fixed-once clause supports"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const struckNow = subs.includes(sub);"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const moreLater = subs.some(s => ORDER.indexOf(s) > ORDER.indexOf(sub));"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A window opens after a sub-step only when that sub-step **struck** and a **later"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.split.schedule-fixed",
+    "textHash": "fac52a1dbca406ca",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:advanceBattleStep",
+        "agrees": true,
+        "note": "damageSubs set once at blockWindow -> damage"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "297-damage-substeps-are-steps.test.ts",
+        "pattern": "R295 §4 damageSubs is fixed when the step opens",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R295",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "b.damageSubs = this.subStepsWithStrikes(b);"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "`battle.damageSubs` — which sub-steps have a column striking — is **fixed once**,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.split.state-between",
+    "textHash": "0f71b68e3ac6b871",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:pumpCombatDamage",
+        "agrees": true,
+        "note": "checkDeaths (deaths+promotion) before the window; colAttrs live"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "05-rulings.test.ts",
+        "pattern": "R3 + R295: formation recalc between damage sub-steps is immediate",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "64-formation-collapse.test.ts",
+        "pattern": "R72 (ruling): a hole deals nothing in a LATER sub-step either",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.22",
+        "supports": "yes",
+        "note": "both quotes"
+      },
+      {
+        "ref": "Manual p.24",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R295",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R300",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R72",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "If a unit is removed from a formation, any units behind it move to the front row and take its place."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "state-based and still immediate — the promotion has already happened when the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.split.unsplit",
+    "textHash": "abf4bc4244b17d2b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:pumpCombatDamage",
+        "agrees": true,
+        "note": "damageSubs [normal]: no window, straight to after"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "297-damage-substeps-are-steps.test.ts",
+        "pattern": "R295 §3 the control: with no {Swift} and no {Sluggish} anywhere",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1363298910528864318#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1540678747953569832#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R295",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R300",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R261",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **Unsplit** (nothing Swift and nothing Sluggish strikes): R261 exactly as"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.substeps",
+    "textHash": "c2f9b56d7d740d4e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:pumpCombatDamage",
+        "agrees": true,
+        "note": "Swift -> normal -> Sluggish -> after"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:strikes",
+        "agrees": true,
+        "note": "keyed per side `atk:${ci}`/`blk:${ci}`: halves scheduled separately"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.43",
+        "supports": "yes",
+        "note": "first and last, normal in between"
+      },
+      {
+        "ref": "RAQ 1540678747953569832#2",
+        "supports": "yes",
+        "note": "swift->normal->sluggish"
+      },
+      {
+        "ref": "R320",
+        "supports": "yes",
+        "note": "halves remembered separately"
+      },
+      {
+        "ref": "R295",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "b.damageStep = 'Swift';"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "presence of Swift or/and Sluggish opens new stacks which must be resolved before you move to next combat damage step (swift->normal->sluggish)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.substeps.column-attributes",
+    "textHash": "550ed3586276bac5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:colAttrs",
+        "agrees": true,
+        "note": "computed live from the units currently in the column"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U12/u12-probes.test.ts",
+        "title": "combat.damage.substeps.column-attributes: a unit leaving a column takes the Swift it shared with it",
+        "passed": true,
+        "demonstrates": "yes: Lithoghul is Swift beside Dune Drifter and normal at once after the Drifter is recalled"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.24",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.12",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Combat attributes (denoted in gold text) are shared by"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "all other units in its column immediately lose access to"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.substeps.live-attributes",
+    "textHash": "5e557f9160d0f32c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:strikes/colAttrs",
+        "agrees": true,
+        "note": "read live as each sub-step runs"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "388-raq-blocks-and-windows.test.ts",
+        "pattern": "RAQ Swift: a Swift column that gains Sluggish strikes again in the Sluggish sub-step",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.24",
+        "supports": "partly",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1363298910528864318#2",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R3",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "it will deal damage during sluggish-combat-damage (for effective doublestrike)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.substeps.pure",
+    "textHash": "c6435ccda0b73055",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:exchangeAt/scheduled",
+        "agrees": true,
+        "note": "pure(atk,blk) suppresses attrs for the pairing; scheduled(...,suppressed) -> normal"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "53-playtest-round7.test.ts",
+        "pattern": "R117 threads {Pure}: a printed {Swift} column blocked by a Pure unit strikes in the NORMAL sub-step",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Just a Unit",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R61",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R117",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const pure = this.pure(atk, blk);"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const attrs = suppressed ? new Set<string>() : this.colAttrs(colIds);"
+      },
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "Pure cards and cards they are interacting with ignore all other attributes."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.substeps.schedule",
+    "textHash": "d4dafe944aec8bb2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:scheduled",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "02-combat.test.ts",
+        "pattern": "R3/Swift: swift column deals damage first",
+        "passed": true,
+        "asserts_claim": "yes (blocker dead, attackers untouched); the amount 6 is not measured"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Rime Wraith",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.25",
+        "supports": "partly",
+        "note": "Swift reminder flavour"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (sub === 'Swift') return attrs.has('Swift');"
+      },
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "Swift units deal combat damage first."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.substeps.struck-mark",
+    "textHash": "536c04a035ccc40d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:strikes/markStruck",
+        "agrees": true,
+        "note": "struck keyed per column side; Swift mark bars normal, normal mark bars Sluggish; rekeyed with columns"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "388-raq-blocks-and-windows.test.ts",
+        "pattern": "RAQ Swift: a column that dealt Swift damage deals no normal damage",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "388-raq-blocks-and-windows.test.ts",
+        "pattern": "RAQ Swift: a Tiderunner played into an emptied Swift column deals no normal damage",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "400-raq-fix-blocks.test.ts",
+        "pattern": "R320 a struck mark moves with its column when a new column opens on the left",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1363298910528864318#1",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1363298910528864318#3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1363298910528864318#4",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R320",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (sub === 'normal' && done.includes('Swift')) return false;"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (sub === 'Sluggish' && done.includes('normal')) return false;"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "it's marked with 'I did Swift damage', which means it won't be able to deal regular-combat-damage; even if original Swift unit is removed from that column"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.substeps.swift-and-sluggish",
+    "textHash": "02238b98e4fc38c1",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U12-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:combatSubStepsOf",
+        "agrees": true,
+        "note": "filters ['Swift','normal','Sluggish'] through strikes(); a Swift+Sluggish column is scheduled in Swift and Sluggish only (R61 Pure collapses an exchange to normal — the attributes are then off)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/134-column-and-substep.test.ts",
+        "pattern": "R157 §5",
+        "passed": true,
+        "asserts_claim": "yes (indirect): combatSubStepsOf = [Swift, Sluggish]; Vroot pays back 6 twice, net 0 from 12 dealt"
+      },
+      {
+        "file": "client/engine/test/297-damage-substeps-are-steps.test.ts",
+        "pattern": "R295 §5",
+        "passed": true,
+        "asserts_claim": "yes: damageSubs [Swift, Sluggish]; 2 then 2 more; the normal sub-step has nothing in it"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U12/u12-probes.test.ts",
+        "title": "combat.damage.substeps.swift-and-sluggish: a Swift+Sluggish column strikes in Swift and Sluggish, NOT in normal",
+        "passed": true,
+        "demonstrates": "yes: with a normal 1/1 beside it, only the 1/1 strikes in normal"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.43",
+        "supports": "yes",
+        "note": "twice, first and last, with normal damage from other units in between"
+      },
+      {
+        "ref": "RAQ 1363298910528864318#2",
+        "supports": "partly",
+        "note": "about a Swift column that GAINS Sluggish — effective double strike; on-topic, not the printed Swift+Sluggish unit"
+      },
+      {
+        "ref": "R157",
+        "supports": "yes",
+        "note": "§5 both apply"
+      },
+      {
+        "ref": "R320",
+        "supports": "partly",
+        "note": "strike memory; quoted span repeats the RAQ double-strike line"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "It deals combat damage twice, going first and last,"
+      },
+      {
+        "file": "client/engine/test/297-damage-substeps-are-steps.test.ts",
+        "text": "'the pump resumes into the normal sub-step, which has nothing in it and falls through'"
+      },
+      {
+        "file": "client/engine/test/297-damage-substeps-are-steps.test.ts",
+        "text": "assert.equal(h.state.players[D]!.life, life0 - 4, 'and then it does — 2 + 2 across two steps');"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": ".filter(sub => this.strikes(b, side, at, mine!, sub, pure));"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Minor: in a Pure exchange the column strikes once, in the normal sub-step (R61); the rule is silent on that, which is acceptable since Pure switches the attributes off."
+  },
+  {
+    "key": "combat.damage.triggers",
+    "textHash": "414602eb6999b2f0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:pumpCombatDamage/settle",
+        "agrees": true,
+        "note": "triggers fire at event time; queue held, built/aimed when drained"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "239-damage-triggers-after-combat.test.ts",
+        "pattern": "R261: a combat-damage trigger is announced INSIDE the damage step",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1540678747953569832#0",
+        "supports": "partly",
+        "note": "same-stack ordering, not the fire-vs-push timing"
+      },
+      {
+        "ref": "R261",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R300",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**The trigger still FIRES during the damage step**, and that is not a detail — it is what"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.triggers.bin-cards",
+    "textHash": "f18f223939e0b40e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:combatSubStep",
+        "agrees": true,
+        "note": "face damage committed before checkDeaths; earlier sub-step deaths are binned"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "310-zone-abilities.test.ts",
+        "pattern": "§3 Cinder Scuttler does NOT recall off the damage step it died in",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "310-zone-abilities.test.ts",
+        "pattern": "§4 but a Swift unit bins it BEFORE the normal step",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Cinder Scuttler",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R300",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> then it's impossible for Cinder Scuttler to die to combat damage and be returned at the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.triggers.my-column",
+    "textHash": "d7e677d2f938739c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:combatSubStepsOf/dealersIn",
+        "agrees": true,
+        "note": "own-column gate per sub-step; COLUMN is the dealer"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "134-column-and-substep.test.ts",
+        "pattern": "R157 §5 — a {Swift}{Sluggish} column strikes twice",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "166-face-damage-attribution.test.ts",
+        "pattern": "R195 — Vroot: \"[Augment] When my column deals combat damage, each opponent gains that much life\"",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R117",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R157 §4",
+        "supports": "yes",
+        "note": "0-power unit fires when the column has positive power"
+      },
+      {
+        "ref": "R157 §5",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R195",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> *\"Only if the other unit in the column has a positive power. 0 power units do"
+      },
+      {
+        "file": "client/engine/test/134-column-and-substep.test.ts",
+        "text": "assert.equal(h.log.filter(l => l.includes('gains 6 life')).length, 2,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.triggers.split",
+    "textHash": "aa814986a105bffe",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:pumpCombatDamage",
+        "agrees": true,
+        "note": "struckNow && moreLater opens damageWindow, draining held triggers on the stack; last scheduled sub-step hands to after"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "239-damage-triggers-after-combat.test.ts",
+        "pattern": "R295: in a SPLIT damage step a death trigger resolves at the boundary",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "408-raq-new-threads.test.ts",
+        "pattern": "RAQ Combat Damage & After Combat: with Sluggish last",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1540678747953569832#2",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1540678747953569832#3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R295",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "this.openPriority('damageWindow');"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "but the last one which happens is then directly connected with"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.triggers.tax",
+    "textHash": "dce483de0e91aa65",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:processTriggerQueue (battleMode)",
+        "agrees": true,
+        "note": "held damage triggers pass the R121 pay gate when drained"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "239-damage-triggers-after-combat.test.ts",
+        "pattern": "R121 WIDENED BY R261",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Crevice Lurker",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R261",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "more to activate or trigger during battle."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**[R121] is widened, and the widening is the printed text.** Crevice Lurker prints"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.damage.triggers.unsplit",
+    "textHash": "7a966cbd379d01a5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U12-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:pumpCombatDamage",
+        "agrees": true,
+        "note": "unsplit: held trigger queue drains in the 'after' branch with afterCombat triggers in one batch"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "239-damage-triggers-after-combat.test.ts",
+        "pattern": "R261 THE RAQ BATCH",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "239-damage-triggers-after-combat.test.ts",
+        "pattern": "R261 RAQ STACK ORDER",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1540678747953569832#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1540678747953569832#1",
+        "supports": "yes",
+        "note": "IT first, NIT on top"
+      },
+      {
+        "ref": "R261",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R295",
+        "supports": "yes",
+        "note": "unsplit case"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Since all those effects are put on the same stack at the same time, each player can decide the order of their effects."
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Initiative (IT) player put all of his effects on the stack first, then non-Initiative (NIT) player puts his."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const ev = this.ev('afterCombat', 'After-combat step.', { region: b.region });"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  }
+]

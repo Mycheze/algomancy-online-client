@@ -1,0 +1,264 @@
+[
+ {
+  "id": "D-U14-1",
+  "kind": "a-sources-disagree",
+  "rule": "effects.priority.window.steps",
+  "tier": 4,
+  "summary": "The Rulebook 2023 gives the combat damage step a priority window. The Manual lists only the attack, block and after combat steps, and the designer says the damage step has windows only between its sub-steps, when Swift or Sluggish units are present.",
+  "sides": [
+   {
+    "source": "Rulebook 2023 p.13",
+    "quote": "block, damage and after combat steps all have a priority"
+   },
+   {
+    "source": "Manual p.30",
+    "quote": "followed by a priority window inside of each region:"
+   },
+   {
+    "source": "RAQ 1363298910528864318#0",
+    "quote": "Those windows are only present if there are any Swift/Sluggish units"
+   }
+  ],
+  "resolution": "Follow the designer (authority order). The rule states the Manual's three steps plus the sub-step windows of a split damage step; the Rulebook 2023 wording is recorded here."
+ },
+ {
+  "id": "D-U14-2",
+  "kind": "a-sources-disagree",
+  "rule": "effects.resolution.fizzle.pair",
+  "tier": 2,
+  "summary": "R5 says an effect whose every target is required (a fight) fizzles when it loses one. The designer says such an effect does not fizzle but does nothing.",
+  "sides": [
+   {
+    "source": "R5",
+    "quote": "make sense (e.g. Battle/fight effects needing both units), the whole effect **fizzles**;"
+   },
+   {
+    "source": "RAQ 1354013430805434389#1",
+    "quote": "It won't fizzle, but will do nothing."
+   },
+   {
+    "source": "Manual p.43",
+    "quote": "if one of the targets for a fight or an exchange is removed, the effect will not be able to happen (it takes"
+   }
+  ],
+  "resolution": "Follow the designer (authority order): the rule says the effect does nothing and does not fizzle. R5's word \"fizzles\" should be marked as amended by the RAQ in the register."
+ },
+ {
+  "id": "D-U14-3",
+  "kind": "a-sources-disagree",
+  "rule": "effects.casting.targets-required.graft-trigger",
+  "tier": 2,
+  "summary": "The designer says a graft trigger whose required target has no legal candidate cannot be put on the stack. R102 says a trigger with no legal target is not a cast, so the cast-illegal rule does not apply and the part is skipped; R86 has such an item fizzle.",
+  "sides": [
+   {
+    "source": "RAQ 1410252965276684418#2",
+    "quote": "can't be put on the stack unless you target such unit in your bin."
+   },
+   {
+    "source": "R102",
+    "quote": "does not apply, because this is not a cast. In practice it is unreachable:"
+   },
+   {
+    "source": "R86",
+    "quote": "| a **required** target the item never had a legal candidate for | fizzles | fizzles — it wanted a target and has none |"
+   }
+  ],
+  "resolution": "Follow the designer for a graft composite (the case the designer answered). Whether the same holds for every triggered ability with a required target is not stated by the designer; R102 and R86 should be marked where they conflict. Filed as F-U14-1."
+ },
+ {
+  "id": "D-U14-4",
+  "kind": "f-register-chain-wrong",
+  "rule": "effects.resolution.recheck",
+  "tier": 2,
+  "summary": "R88 and R144 still say that a target restriction is asked at cast and never re-asked at resolution. R324 re-checks every target against its restriction as the effect begins to resolve. The register marks R64 and R256 as amended by R324 for the same sentence, but not R88 or R144.",
+  "sides": [
+   {
+    "source": "R88",
+    "quote": "cast and is never re-asked (R5/R56), so the world may legally stop satisfying"
+   },
+   {
+    "source": "R144",
+    "quote": "re-asked at resolution**, and a card that needs it re-checked does so in its"
+   },
+   {
+    "source": "R324",
+    "quote": "When an item begins to resolve, every target it declared is judged again by the"
+   }
+  ],
+  "resolution": "R324 is later and is designer-backed. Add amended-by-R324 marks to R88 and R144 for that sentence."
+ },
+ {
+  "id": "D-U14-5",
+  "kind": "f-register-chain-wrong",
+  "rule": "effects.priority.mid-resolution",
+  "tier": 2,
+  "summary": "R198 explains its in-place gate by saying that between combat sub-steps triggers are special actions and nobody gets priority. R261 moved combat-damage triggers to the stack after combat, and R295 opened priority windows at sub-step boundaries of a split damage step. R198 is still classified current with no mark on that sentence.",
+  "sides": [
+   {
+    "source": "R198",
+    "quote": "sub-steps triggers are special actions and R3 says nobody gets priority. And"
+   },
+   {
+    "source": "R261",
+    "quote": "Combat-damage triggers resolve AFTER combat, on the stack, respondable"
+   }
+  ],
+  "resolution": "Mark that sentence of R198 as overtaken by R261 and R295. The rule text does not rely on it."
+ },
+ {
+  "id": "D-U14-6",
+  "kind": "c-owner-call-only",
+  "rule": "effects.resolution.order",
+  "tier": 3,
+  "summary": "R68 implements the straightforward reading for Finality (its second sentence erases the cards its first sentence just negated) and asks the owner to rule, because the reading increases the card's power. No designer source.",
+  "sides": [
+   {
+    "source": "R68",
+    "quote": "The straightforward reading of the printed text is implemented — the sentences"
+   },
+   {
+    "source": "R68",
+    "quote": "clause just filled. **Bena to rule.** If the answer is \"no, a card negated by"
+   }
+  ],
+  "resolution": "The rule states the straightforward reading, which R68 implements. Question for the owner only if Finality is not meant to erase the cards it has just negated."
+ },
+ {
+  "id": "D-U14-7",
+  "kind": "a-sources-disagree",
+  "rule": "effects.playing.what-is-played.token-not-card",
+  "tier": 1,
+  "summary": "The Rulebook 2023 calls tokens \"temporary cards\" and spell tokens \"cards\" that are cast from play. The owner ruled that tokens are not cards, and R305 makes \"card\" costs and watchers ignore a spell token cast.",
+  "sides": [
+   {
+    "source": "Rulebook 2023 p.4",
+    "quote": "Tokens are temporary cards that are created directly into play"
+   },
+   {
+    "source": "Rulebook 2023 p.4",
+    "quote": "only cards currently that are “cast” from play, which functions the same way as if they were cast from your hand, but you may"
+   },
+   {
+    "source": "R305",
+    "quote": "**A token is still not a CARD.**"
+   }
+  ],
+  "resolution": "Question for the owner. The printed words support two readings: (1) \"cards\" in the Rulebook is loose description, so a token is not a \"card\" for card text (R133/R305, which the rule follows); (2) a token is a card, so \"Cards played during battle\" (Arbiter of Armistice) and Vengeance would tax a spell token. Printed text outranks an R-ruling, so the rule as written stands only if reading (1) is right."
+ },
+ {
+  "id": "D-U14-8",
+  "kind": "a-sources-disagree",
+  "rule": "effects.priority.window.order",
+  "tier": 4,
+  "summary": "For a region with three players, the Manual p.36 says the player closest to the initiative player clockwise gains priority first. The Manual p.30 says the initiative player receives priority first, and the nearest player clockwise only when the initiative player is absent.",
+  "sides": [
+   {
+    "source": "Manual p.36",
+    "quote": "of back and forth. The player closest to the initiative"
+   },
+   {
+    "source": "Manual p.36",
+    "quote": "player in a clockwise direction gains priority first and"
+   },
+   {
+    "source": "Manual p.30",
+    "quote": "Within a priority window, first the initiative player will receive"
+   }
+  ],
+  "resolution": "The rule follows p.30, which addresses the order directly. Question for the owner only if a three-player region is ever supported: p.36 can be read as the initiative player first (being closest to themselves) or as the next player clockwise first. The engine is two-player only (R197 §3)."
+ },
+ {
+  "id": "D-U14-9",
+  "kind": "g-other",
+  "rule": "effects.priority.stack",
+  "tier": 4,
+  "summary": "Sources silent on whether each region has its own stack. The Manual places priority windows inside each region and lets the other players in the region respond; R250 notes that the engine keeps one stack for the whole game.",
+  "sides": [
+   {
+    "source": "Manual p.30",
+    "quote": "followed by a priority window inside of each region:"
+   },
+   {
+    "source": "R250",
+    "quote": "The STACK is not regional and is deliberately left global; narrowing"
+   }
+  ],
+  "resolution": "No rule states either way. In two-player play only one battle region is open at a time, so it rarely matters. Recorded, not resolved."
+ },
+ {
+  "id": "D-U14-10",
+  "kind": "b-engine-only",
+  "rule": "effects.resolution.order",
+  "tier": 3,
+  "summary": "No printed, designer or owner source states that an effect's instructions are carried out in printed order with each later one seeing the earlier results. The engine does so; R68 records it only as the implemented reading for Finality and asks for a ruling.",
+  "sides": [
+   {
+    "source": "R68",
+    "quote": "The straightforward reading of the printed text is implemented — the sentences"
+   },
+   {
+    "source": "R68",
+    "quote": "clause just filled. **Bena to rule.** If the answer is \"no, a card negated by"
+   }
+  ],
+  "resolution": "The rule states the engine behaviour with basis engine. Question for the owner only if a later instruction is ever meant not to see an earlier one (Finality is D-U14-6)."
+ },
+ {
+  "id": "D-U14-11",
+  "kind": "g-other",
+  "rule": "effects.playing.what-is-played.includes-itself",
+  "tier": 1,
+  "summary": "R26 says Bloomcaster's trigger fires on its own play and dates itself to the 2026-07-16 engine. The current engine hears plays only from cards in play, and a played card is on the stack, not in play, when its play fires; the designer write-up describes that state for Mycelial Mentor. The engine now makes no 1/1 for Bloomcaster's own play (F-U14-5).",
+  "sides": [
+   {
+    "source": "R26",
+    "quote": "Bloomcaster's \"[Augment] Whenever you play a unit\" (no \"another\") **fires on its own"
+   },
+   {
+    "source": "RAQ 1353862592661164152#0",
+    "quote": "He goes on the stack (but is not Spawned / In play yet)"
+   },
+   {
+    "source": "card: Bloomcaster",
+    "quote": "Whenever you play a unit"
+   }
+  ],
+  "resolution": "Question for the owner. The printed words \"Whenever you play a unit\" support two readings: (1) the card's own play counts, as R26 rules; (2) only units played while Bloomcaster is already in play count, which is what the engine now does and fits the RAQ stack model. The rule states R26 (current) and is marked engine-differs until the owner confirms or supersedes it."
+ },
+ {
+  "id": "D-U14-12",
+  "kind": "g-other",
+  "rule": "effects.casting.other-zones.cache-widening",
+  "tier": 2,
+  "summary": "R311 says the hand's timing-widening rules (R97/R123 haste grants, the battle {Virus} window, Ambush) apply to cached cards. The sources are silent on whether they also apply to a card played from a bin under a permission.",
+  "sides": [
+   {
+    "source": "R311",
+    "quote": "own widening rules apply: R97/R123 haste grants, the battle {Virus} window,"
+   },
+   {
+    "source": "R311",
+    "quote": "Timing is the card's printed timing on both routes (R42/R45). A cached unit"
+   }
+  ],
+  "resolution": "Sources silent on bin plays. The rule states the cache case only. Question for the owner only if a bin-play permission and a timing grant ever meet on one card."
+ },
+ {
+  "id": "D-U14-13",
+  "kind": "b-engine-only",
+  "rule": "effects.resolution.order",
+  "tier": 3,
+  "summary": "R324 fixes target legality once, as an item begins to resolve, so an earlier part cannot make a later part's target illegal. R56 says only to re-validate at resolution. No printed, designer or owner source says whether a target that an earlier instruction removes from play is lost to a later instruction of the same effect; the verifier reports the engine loses it.",
+  "sides": [
+   {
+    "source": "R324",
+    "quote": "the same item therefore cannot make a later part's target illegal"
+   },
+   {
+    "source": "R56",
+    "quote": "never what will still be true later. Redirection, death, region changes and"
+   }
+  ],
+  "resolution": "Engine decides. The rule states only R324's legality exception; the leaving-play case is left to the engine until a source speaks."
+ }
+]

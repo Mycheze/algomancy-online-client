@@ -1,0 +1,178 @@
+[
+  {
+    "id": "F-U14-1",
+    "rule": "effects.casting.targets-required.graft-trigger",
+    "title": "A graft trigger with no legal target goes on the stack and fizzles instead of not being put on the stack",
+    "summary": "The designer says a graft composite whose targeted part has no legal target cannot be put on the stack. The RAQ register's own note says the engine reaches the same visible result (no Poison) by putting the item on the stack and fizzling it under R86. Then the opponent gets a priority window, and the item can be taxed or negated, though it should never exist. Suspected; not checked against the engine.",
+    "evidence": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "quote": "the engine gets there by R86 fizzle rather than by refusing to stack it."
+      }
+    ]
+  },
+  {
+    "id": "F-U14-2",
+    "rule": "effects.priority.priority.hold",
+    "title": "The engine appears to pass priority to the other player after every action, so a player cannot hold priority",
+    "summary": "The Manual says a player who acts may keep priority and take further actions before passing. R250 and R198 describe the engine handing priority to the other seat whenever an item is pushed. If so, a player can never stack two of their own actions before the opponent may respond (the Manual names Burst as the usual exception, and Burst is handled separately). Suspected from ruling text only; Annex D may record a digital convention that settles it. Measured by the U14 tester: after a battle cast of Luminous Arc, priority is on the other seat, not the caster (pushItem hands it to other(controller)).",
+    "evidence": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "count to zero and hands priority to whoever did not act, so the item sits on the"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "responder.** `pushItem` hands priority to `other(controller)`, but"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U14/u14-tester-probes.out.txt",
+        "quote": "printed: the caster may keep priority (measured priority = seat 1, caster = 0)"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "quote": "if (this.s.priority !== null) this.s.priority = other(item.controller);"
+      }
+    ]
+  },
+  {
+    "id": "F-U14-3",
+    "rule": "effects.playing.mid-resolution",
+    "title": "Units played by Wake the Dead and The Bonesculptor spawn in place, never on the stack, and a spell unit they play skips its spell",
+    "summary": "R198 rules that a card played during a resolution is played and goes on the stack, where it can be responded to. R207 records that the spawn route used for cards that print \"play\" (Wake the Dead, The Bonesculptor) predates R198 and still spawns the unit in place, so nobody can answer it. R165 records that a spell unit raised by Wake the Dead does not cast its spell, though a played spell unit's spell part should happen (RAQ, Hooba-Pon). Suspected still open. Verifier probe (U14 round 1): a unit Wake the Dead plays in battle is in play at once and never on the stack. Affects effects.priority.mid-resolution too. Round 2 probe: onStack=false, inPlay=true; the Wake the Dead comment calls this \"the standing playInline approximation\", but playInline itself now pushes in battle.",
+    "evidence": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "spawn path predates R198 and still spawns in place, so a unit played out of a"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "'playing a spell' for some triggers? A: Yes.\"* Wake the Dead spawns the body"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U14/u14-probes.test.ts",
+        "quote": "effects.priority.mid-resolution: a unit Wake the Dead plays in battle waits on the stack and can be answered"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-dark-a.ts",
+        "quote": "// spell's own resolution — the units arrive with no stack item of their own,"
+      }
+    ]
+  },
+  {
+    "id": "F-U14-4",
+    "rule": "effects.casting.other-zones.timing",
+    "title": "A test title still marks as OPEN whether a bin-played card obeys its printed timing",
+    "summary": "R96 shipped the restrictive answer (printed timing applies) and flagged the question OPEN. R157 §12 later answered it the same way (\"Already correct — Abyssal Evocation\"). The test title and R96 heading still present it as open.",
+    "evidence": [
+      {
+        "file": "client/engine/test/12-fire-a.test.ts",
+        "quote": "Abyssal Evocation: ⚠ OPEN — a bin-played card obeys its PRINTED timing"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "Already correct — Abyssal Evocation, Writhing Host."
+      }
+    ]
+  },
+  {
+    "id": "F-U14-5",
+    "rule": "effects.playing.what-is-played.includes-itself",
+    "title": "Bloomcaster does not hear its own play",
+    "summary": "R26 (current) says Bloomcaster's \"Whenever you play a unit\" fires on its own arrival when played normally. The verifier measured no 1/1 when Bloomcaster is played from hand: the card listens on cardPlayed from holders in play, and Bloomcaster is on the stack when its own play fires. Either the engine regressed when Bloomcaster moved to cardPlayed (R129/R165), or R26 is stale and should be superseded (D-U14-11).",
+    "evidence": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "Bloomcaster's \"[Augment] Whenever you play a unit\" (no \"another\") **fires on its own"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-fire-wood.ts",
+        "quote": "    type: 'triggered', events: ['cardPlayed'],"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U14/u14-probes.test.ts",
+        "quote": "effects.playing.what-is-played.includes-itself: Bloomcaster played from hand makes a 1/1 for its own play"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-fire-wood.ts",
+        "quote": "// Bloomcaster itself still makes a 1/1. Region auto-scoped (R12)."
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U14/u14-tester-probes.out.txt",
+        "quote": "rule: its own play triggers it (measured 0 1/1s)"
+      }
+    ]
+  },
+  {
+    "id": "F-U14-6",
+    "title": "Wake the Dead / The Bonesculptor plays never reach the stack",
+    "summary": "R198 rules that a card played mid-resolution is played and goes on the stack, respondable. Wake the Dead ({Battle}, \"Play up to two units ... now\") spawns its units with spawnUnit(asPlay) inside its own resolution: no stack item, no window, not negatable (probe: unit in play immediately).",
+    "evidence": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "**Playing a card during a resolution is playing a card.** It goes on the stack;"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-dark-a.ts",
+        "quote": "          { owner: c.seat, from: 'bin', asPlay: true });"
+      }
+    ],
+    "rule": "effects.priority.mid-resolution"
+  },
+  {
+    "id": "F-U14-7",
+    "title": "Wake the Dead and The Bonesculptor play units mid-resolution with no stack item",
+    "summary": "R198 (and the designer on Tides) says a card played during a resolution goes on the stack and is respondable once the resolution finishes. Wake the Dead and The Bonesculptor still spawn the played unit in place (spawnUnit asPlay), so nobody can respond to or negate it. Probe: onStack=false, inPlay=true. The Wake the Dead comment calls this \"the standing playInline approximation\", but playInline itself now pushes in battle.",
+    "evidence": [
+      {
+        "file": "client/engine/src/cards/sets/batch-dark-a.ts",
+        "quote": "// spell's own resolution — the units arrive with no stack item of their own,"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "the resolution that played it finishes; then priority is handed out with the"
+      }
+    ],
+    "rule": "effects.priority.mid-resolution"
+  },
+  {
+    "id": "F-U14-8",
+    "title": "Bloomcaster does not trigger on its own play (contradicts R26)",
+    "summary": "R26 says Bloomcaster's \"Whenever you play a unit\" fires on its own arrival. The trigger listens on cardPlayed, which fires at commit while Bloomcaster is on the stack, so it never hears itself. Probe measured 0 tokens. The card file comment still claims \"playing Bloomcaster itself still makes a 1/1\".",
+    "evidence": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "(no \"another\") **fires on its own"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-fire-wood.ts",
+        "quote": "// Bloomcaster itself still makes a 1/1. Region auto-scoped (R12)."
+      }
+    ],
+    "rule": "effects.playing.what-is-played.includes-itself"
+  },
+  {
+    "id": "F-U14-9",
+    "rule": "effects.resolution.recheck.once",
+    "title": "Cards that re-check their target restriction by hand let an earlier part make a later part’s target illegal mid-resolution",
+    "summary": "The rule (R324’s encoding) says target legality is judged once, as the item begins to resolve, so an earlier part of the same item cannot make a later part’s target illegal. markIllegalTargets does judge once, but Minor Kraken (and, by the same pattern, Throw off a Cliff and Leave None Pure) re-checks its printed restriction inside its own run. Measured by the U14 tester: a composite whose first part puts 11 +1/+1 counters on a 0/2 and whose second part is Minor Kraken’s recall does not recall it (control without the counters: recalled).",
+    "evidence": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U14/u14-tester-probes.out.txt",
+        "quote": "rule: judged once, so +11 counters from an earlier part cannot stop the recall (measured recalled=false)"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-water-a.ts",
+        "quote": "if (def <= 5) g.recall(t);"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-earth-c.ts",
+        "quote": "if (g.effStats(u)[1] >= 4) g.destroy(u, 'is deleted');"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "the same item therefore cannot make a later part's target illegal"
+      }
+    ]
+  }
+]

@@ -1,0 +1,4319 @@
+[
+  {
+    "key": "effects.general.effect",
+    "parent": "700",
+    "order": 1,
+    "text": "An effect is anything on the stack. Whenever a card is played, or an ability is activated or triggered, it is added to the stack as an effect. A unit or spell unit on the stack is an effect too.",
+    "examples": [
+      {
+        "text": "Example: a {Battle} unit being played sits on the stack and can be chosen by an effect that says \"target effect\" (Dematerialize).",
+        "test": "118-stack-effect.test.ts::R128: a unit on the stack is a legal \"target effect\" (Dematerialize)"
+      }
+    ],
+    "see": [
+      "703"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.28",
+          "quote": "triggered, it is added to"
+        },
+        {
+          "ref": "Manual p.28",
+          "quote": "the stack as an “effect”."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R128",
+          "quote": "an effect, including units and spell units. Units aren't spells, so if they say"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R60",
+          "relation": "its sentence that a unit on the stack is not an effect was reversed by R128"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "118-stack-effect.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Manual p.28 defines the effect; R128 (owner, reversing R60) adds units and spell units on the stack.",
+    "sourceHashes": {
+      "R128": "3eb5fb10d68f22510867c410a45e9bd1c43bd44b62800921895a6b3b38ef8f46"
+    }
+  },
+  {
+    "key": "effects.general.effect.spell-effect",
+    "parent": "effects.general.effect",
+    "order": 1,
+    "text": "A spell effect is an effect that is a spell: a spell, a spell unit or a spell token on the stack, or an ambush. A unit on the stack is an effect but not a spell effect, so a card that says \"spell effect\" cannot affect it.",
+    "examples": [
+      {
+        "text": "Example: Null Drone (\"target spell effect\") cannot choose a plain unit on the stack, but can choose a spell unit.",
+        "test": "118-stack-effect.test.ts::\"target spell effect\" refuses a plain unit but takes a spell unit"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R128",
+          "quote": "spell token / ambush. A plain unit is not a spell, so the three cards that print"
+        },
+        {
+          "ref": "R128",
+          "quote": "an effect, including units and spell units. Units aren't spells, so if they say"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "118-stack-effect.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "The spell / spell unit / spell token / ambush list is R128 restating R60's target kind; that an ambush is a spell effect is sourced only from that list (R22 is not in the pack).",
+    "sourceHashes": {
+      "R128": "3eb5fb10d68f22510867c410a45e9bd1c43bd44b62800921895a6b3b38ef8f46"
+    }
+  },
+  {
+    "key": "effects.general.effect.nonspell-effect",
+    "parent": "effects.general.effect",
+    "order": 2,
+    "text": "A nonspell effect is any effect that is not a spell effect: a triggered ability, an activated ability, a Virus being applied, or a unit on the stack.",
+    "examples": [
+      {
+        "text": "Example: Nothyr (\"negate up to one target nonspell effect\") can choose a {Battle} unit on the stack.",
+        "test": "118-stack-effect.test.ts::Nothyr's \"target nonspell effect\" reaches a unit on the stack"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R128",
+          "quote": "**\"Target NONSPELL effect\" is the complement, so it GAINS the plain unit.**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "118-stack-effect.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R128": "3eb5fb10d68f22510867c410a45e9bd1c43bd44b62800921895a6b3b38ef8f46"
+    }
+  },
+  {
+    "key": "effects.general.cast-is-play",
+    "parent": "700",
+    "order": 2,
+    "text": "Casting a spell is playing it. The printed rules use \"cast\" and \"play\" for the same act, and casting a spell token is playing a spell.",
+    "examples": [],
+    "see": [
+      "701"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.13",
+          "quote": "perform game actions such as casting spells or activating abilities"
+        },
+        {
+          "ref": "Manual p.30",
+          "quote": "perform game actions such as playing cards or activating"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R305",
+          "quote": "Casting a spell token **is** playing a spell."
+        },
+        {
+          "ref": "R263",
+          "quote": "Those cards are still cast."
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R59",
+          "relation": "its carve-out that a spell token is cast from play rather than played was amended by R305"
+        }
+      ],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "The two printed priority definitions are word-for-word parallel except \"casting spells\" (Rulebook 2023) for \"playing cards\" (Manual); R305 and R263 state the equivalence outright.",
+    "sourceHashes": {
+      "R263": "be0e39f8d855e871f137cc7bcc78363790b292063c77aa9530b9e102070144ef",
+      "R305": "88a482701a5f378703d6d18e30d8a3b943798c47e43ee19572963aef6c8e2da6"
+    }
+  },
+  {
+    "key": "effects.general.interaction",
+    "parent": "700",
+    "order": 3,
+    "text": "Players interact by playing cards and activating abilities in response to one another. All interaction uses the stack (rule 703).",
+    "examples": [
+      {
+        "text": "Example: in a battle, a spell, a {Battle} unit, a Virus and an activated ability are each put on the stack as they are played or activated.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.general.interaction — a spell, a battle unit, a virus and an activated ability played in battle all go on the stack"
+      }
+    ],
+    "see": [
+      "703"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.14",
+          "quote": "All interaction in Algomancy uses the stack"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The Manual p.28 says \"during the battle phase\"; the Rulebook 2023 says all interaction. R286 puts deployment plays on a per-player stack too (703.7).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.playing.what-is-played",
+    "parent": "701",
+    "order": 1,
+    "text": "Only units and spells are played, whatever zone they are played from. Applying a modification is not playing a card (701.2).",
+    "examples": [
+      {
+        "text": "Example: Godray and Monke played from hand, and Trench Stalker played from the bin, are plays; a Virus applied to the attacker is not.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.playing.what-is-played — a unit and a spell played from hand and a unit played from the bin are plays; a virus applied is not"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1537748882501668934#0",
+          "quote": "Mods are not considered 'played'"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R37",
+          "quote": "Only units and spells are \"played\" (from whatever zone — hand, bin, or"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "105-semantics-playwatch.test.ts",
+        "119-play-and-token-events.test.ts",
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R37": "faaf2c88301c46bb9da7780190591e57d72f3e51150aded7cdd007fc33ed29a3",
+      "RAQ 1537748882501668934#0": "a4e3cf36e2dcb6ca0c4c40c54631a21f25f4a2e6a393898ca0e58814e6a0516d"
+    }
+  },
+  {
+    "key": "effects.playing.what-is-played.spell-unit",
+    "parent": "effects.playing.what-is-played",
+    "order": 1,
+    "text": "Playing a spell unit is playing a spell.",
+    "examples": [
+      {
+        "text": "Example: a spell unit played through Hooba-Pon counts as a spell played.",
+        "test": "396-raq-timing.test.ts::RAQ Hooba-Pon spell unit: it counts as playing a spell"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1461450216874967235#2",
+          "quote": "Q: Does that count as 'playing a spell' for some triggers? A: Yes."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1461450216874967235#2": "883faf2775536cafa63ccea3b54aa28069fbe296a8933da998cdffd6b3917190"
+    }
+  },
+  {
+    "key": "effects.playing.what-is-played.spell-token",
+    "parent": "effects.playing.what-is-played",
+    "order": 2,
+    "text": "Casting a spell token is playing a spell. A spell token is never in a hand; it is cast from play, so it is played from somewhere other than the hand.",
+    "examples": [
+      {
+        "text": "Example: casting a Fireball token triggers Stalwart Sentinel (\"when you play a card from anywhere other than your hand\").",
+        "test": "408-raq-new-threads.test.ts::casting a Fireball token triggers Stalwart Sentinel"
+      }
+    ],
+    "see": [
+      "effects.casting.spell-tokens"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355689559609839787#2",
+          "quote": "Playing spell token like Fireball will trigger Stalwart Sentinel."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R342",
+          "quote": "A spell token is never in a hand."
+        },
+        {
+          "ref": "R305",
+          "quote": "Casting a spell token **is** playing a spell."
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R59",
+          "relation": "its carve-out \"a spell token is cast from play, not played\" was amended by R305"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "408-raq-new-threads.test.ts",
+        "337-spell-tokens-are-played.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R305": "88a482701a5f378703d6d18e30d8a3b943798c47e43ee19572963aef6c8e2da6",
+      "R342": "d40ffb96e31fbdf6aa3cac68ee0921ffeeccc03bf47fa883e587063d06209598",
+      "RAQ 1355689559609839787#2": "9c76b60c85d3c9f2a35adeb8e2e628e36abc6d98658ab643da695d1b4dec6d2b"
+    }
+  },
+  {
+    "key": "effects.playing.what-is-played.token-not-card",
+    "parent": "effects.playing.what-is-played",
+    "order": 3,
+    "text": "A token is not a card. An ability or cost modifier that refers to a \"card\" being played does not apply to a spell token being cast; one that refers to a \"spell\" does; one that refers to a \"nontoken spell\" does not.",
+    "examples": [
+      {
+        "text": "Example: Arbiter of Armistice (\"Cards played during battle gain [Pay 2 life]\") does not make a spell token cost life.",
+        "test": "337-spell-tokens-are-played.test.ts::R305: Arbiter of Armistice prints Cards, so a token cast pays no life"
+      }
+    ],
+    "see": [
+      "108"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R305",
+          "quote": "**A token is still not a CARD.**"
+        },
+        {
+          "ref": "R305",
+          "quote": "- **\"spell(s)\"**: a token counts."
+        },
+        {
+          "ref": "R305",
+          "quote": "- **\"card(s)\"**: a token does not."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "337-spell-tokens-are-played.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Owner rulings only (R305, citing R133). The Rulebook 2023 calls tokens \"temporary cards\": see D-U14-7.",
+    "sourceHashes": {
+      "R305": "88a482701a5f378703d6d18e30d8a3b943798c47e43ee19572963aef6c8e2da6"
+    }
+  },
+  {
+    "key": "effects.playing.what-is-played.token-creation",
+    "parent": "effects.playing.what-is-played",
+    "order": 4,
+    "text": "Creating a token is not playing it.",
+    "examples": [],
+    "see": [
+      "304"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R26",
+          "quote": "\"Play\" excludes token creation"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "119-play-and-token-events.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R26": "c585e34093f645364fef28ec578e449c666c73c8dfc1fd86fa020475c10c5cd9"
+    }
+  },
+  {
+    "key": "effects.playing.what-is-played.includes-itself",
+    "parent": "effects.playing.what-is-played",
+    "order": 5,
+    "text": "An ability that triggers whenever its controller plays a unit, and that does not say \"another\", triggers when its own card is played.",
+    "examples": [
+      {
+        "text": "Example: Bloomcaster is played from hand; its \"Whenever you play a unit\" sees its own play and makes a 1/1 (illustrative; the engine makes none, see F-U14-5).",
+        "test": null
+      }
+    ],
+    "see": [
+      "706"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R26",
+          "quote": "(no \"another\") **fires on its own"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "confidence": "low",
+    "notes": "R26 (owner, Bloomcaster). Belongs with 706 as well. R26 dates itself to the 2026-07-16 engine; the verifier measured that the current engine makes no 1/1 for Bloomcaster's own play (F-U14-5). Whether R26 still stands is D-U14-11. engine differs: F-U14-5 (re-measured by the U14 tester: 0 1/1s).",
+    "sourceHashes": {
+      "R26": "c585e34093f645364fef28ec578e449c666c73c8dfc1fd86fa020475c10c5cd9"
+    },
+    "engineDiffers": [
+      "F-U14-5"
+    ],
+    "untested": true
+  },
+  {
+    "key": "effects.playing.applying",
+    "parent": "701",
+    "order": 2,
+    "text": "Applying a modification (an augment, a graft, or a Virus) is not playing a card. A modification is applied, whether it comes from a hand, a bin, a cache or elsewhere. Applying a modification is a special action.",
+    "examples": [
+      {
+        "text": "Example: a graft applied from hand and a Virus applied from the cache are not plays.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.playing.applying — a graft from hand and a virus from the cache are applied, never played"
+      }
+    ],
+    "see": [
+      "720"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.32",
+          "quote": "Modification is a special action that"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1537748882501668934#0",
+          "quote": "They are Applied."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R37",
+          "quote": "Applying a modification — attaching a Virus, graft, or augment,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "105-semantics-playwatch.test.ts",
+        "119-play-and-token-events.test.ts",
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R37": "faaf2c88301c46bb9da7780190591e57d72f3e51150aded7cdd007fc33ed29a3",
+      "RAQ 1537748882501668934#0": "a4e3cf36e2dcb6ca0c4c40c54631a21f25f4a2e6a393898ca0e58814e6a0516d"
+    }
+  },
+  {
+    "key": "effects.playing.applying.no-play-triggers",
+    "parent": "effects.playing.applying",
+    "order": 1,
+    "text": "An ability that triggers when a player plays a unit, a spell or a card does not trigger when a modification is applied, including one applied from the bin.",
+    "examples": [
+      {
+        "text": "Example: Ravenous Fireslinger does not trigger when its controller applies an augment, and does trigger on a real spell.",
+        "test": "105-semantics-playwatch.test.ts::Ravenous Fireslinger: R37"
+      },
+      {
+        "text": "Example: a Virus applied during battle fires no play event, and Void Mandible does not react to it.",
+        "test": "119-play-and-token-events.test.ts::R37 holds: applying a VIRUS fires neither event"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1537748882501668934#0",
+          "quote": "Mods are not considered 'played', so they wouldn't trigger any"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R37",
+          "quote": "unit/spell/card\" do NOT trigger when a mod is applied, even a mod applied"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "105-semantics-playwatch.test.ts",
+        "119-play-and-token-events.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R37": "faaf2c88301c46bb9da7780190591e57d72f3e51150aded7cdd007fc33ed29a3",
+      "RAQ 1537748882501668934#0": "a4e3cf36e2dcb6ca0c4c40c54631a21f25f4a2e6a393898ca0e58814e6a0516d"
+    }
+  },
+  {
+    "key": "effects.playing.applying.cost",
+    "parent": "effects.playing.applying",
+    "order": 2,
+    "text": "A modifier to the cost of playing cards does not change the cost of applying a modification. A modification still needs its own affinity and its own mana cost to be applied.",
+    "examples": [
+      {
+        "text": "Example: a Virus applied in battle needs its affinity and pays its cost.",
+        "test": "408-raq-new-threads.test.ts::RAQ Mods are NOT Played: a Virus in battle needs its affinity and pays its cost"
+      }
+    ],
+    "see": [
+      "111"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.32",
+          "quote": "To apply an augment, the player must first meet its affinity"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R59 (its play-versus-apply half)",
+          "quote": "separates **playing** a card from **applying** it as a mod. Applying"
+        },
+        {
+          "ref": "R60 (its life-tax half)",
+          "quote": "*played*, so applying a mod is exempt (R37); *during battle*, so the haste step"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "408-raq-new-threads.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R59": "7f89b32a05732b517862f5baf2c840d3e9a45e15d93db23a0c5cacca8fdd08f9",
+      "R60": "13e67e160262f26c2fd6c9f2e6fa780621f9730be8f2f0bffee89c960ef6918e"
+    }
+  },
+  {
+    "key": "effects.playing.applying.tides",
+    "parent": "effects.playing.applying",
+    "order": 3,
+    "text": "Tides of the Cosmos is the one exception. Although it says \"play\", it may put a Virus card onto a unit as a Virus, and it may play a card as an Ambush or a Prophecy. It cannot graft a card or apply a non-Virus augment.",
+    "examples": [
+      {
+        "text": "Example: a Virus card that Tides of the Cosmos plays as a Virus is attached to a unit and never enters play.",
+        "test": "404-raq-fix-tides.test.ts::R337: a Virus card played by Tides as a Virus augments a unit and never enters play"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1537748882501668934#2",
+          "quote": "The only exceptions to this is Tides of Cosmos which allow you to use Viruses"
+        },
+        {
+          "ref": "RAQ 1396955380000755795#2",
+          "quote": "3. Tides allows you to play Viruses/Ambushes/Prophecy"
+        },
+        {
+          "ref": "RAQ 1396955380000755795#3",
+          "quote": "So no Grafting or non-virus augments."
+        },
+        {
+          "ref": "RAQ 1357483405276614856#1",
+          "quote": "No because augment in general is a special action"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R337",
+          "quote": "A card Tides of the Cosmos plays for free may be played in any alternative"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "404-raq-fix-tides.test.ts",
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "Card-specific, but the designer names it as the only exception to 701.2.",
+    "sourceHashes": {
+      "R337": "9da68a070fcb1c43960dfb88272b30cdb15057ba2e0c9cf826221d506335c6cf",
+      "RAQ 1357483405276614856#1": "6596eb521f6e565e13e38310b494ea231a98a3f040a434a97e8646b90b63f1b4",
+      "RAQ 1396955380000755795#2": "77de5a844f35441967e41307ee3973785fb17ed41d274524ef807b1a94bb45de",
+      "RAQ 1396955380000755795#3": "03340644aaa8569500998dccb31c10ba56d4e70ad629c4c3acb533a0b4c485fb",
+      "RAQ 1537748882501668934#2": "1fd1e7b02083233cc1970fdb0f2fe6be108e789c03e043b2d7717258f46a9293"
+    }
+  },
+  {
+    "key": "effects.playing.put-into-play",
+    "parent": "701",
+    "order": 3,
+    "text": "Putting a card into play is not playing it. Whether an effect plays a card or puts it into play is decided by the verb the effect prints.",
+    "examples": [
+      {
+        "text": "Example: Covenant of the Damned puts a unit from the bin into play; only Covenant itself was played.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.playing.put-into-play — a unit put into play by Covenant of the Damned is not played"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.43",
+          "quote": "A: No, spell effects only happen when the card is"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R165",
+          "quote": "**The ruling: the printed verb decides.**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R165": "3f61e5ab4e91ee143485df7a7a5a76e059453f2d23a3f4503a7a024564b6de6d"
+    }
+  },
+  {
+    "key": "effects.playing.put-into-play.spell-unit",
+    "parent": "effects.playing.put-into-play",
+    "order": 1,
+    "text": "A spell unit that enters play without being played (for example, one put into play from a bin) does not produce its spell effect.",
+    "examples": [
+      {
+        "text": "Example: Covenant of the Damned puts Lonely Forager into play from the bin; Forager does not draw a card.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.playing.put-into-play.spell-unit — Lonely Forager put into play from the bin by Covenant of the Damned draws no card"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.43",
+          "quote": "Q: If a spell unit spawns but was not played (e.g. if it was"
+        },
+        {
+          "ref": "Manual p.43",
+          "quote": "A: No, spell effects only happen when the card is"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.playing.mid-resolution",
+    "parent": "701",
+    "order": 4,
+    "text": "A card played during the resolution of another effect is played. During battle it is put on the stack and can be responded to (rule 703.5), and abilities that trigger on a play see it.",
+    "examples": [
+      {
+        "text": "Example: Bloomcaster hears a unit that Tides of the Cosmos plays.",
+        "test": "396-raq-timing.test.ts::RAQ Tides 7: a free play is a play"
+      }
+    ],
+    "see": [
+      "effects.priority.mid-resolution"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1396955380000755795#8",
+          "quote": "Played units/spells will trigger things with wording 'when you play ...'"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R198",
+          "quote": "**Playing a card during a resolution is playing a card.**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "169-mid-resolution-window.test.ts",
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "Engine differs for plays made through a spawn (\"asPlay\": Wake the Dead, The Bonesculptor), per R207 and R165: see F-U14-3.",
+    "sourceHashes": {
+      "R198": "3110251ddd8334b7b94ff317f5aadcf2e30d6c2cd5ccbb0b784937d9c530af9c",
+      "RAQ 1396955380000755795#8": "d7b245a4138b1fec7dc7f5e7d5e771ae4a62619ada3cebcf03ccd74ef2540a75"
+    },
+    "engineDiffers": [
+      "F-U14-3"
+    ]
+  },
+  {
+    "key": "effects.playing.mid-resolution.zone",
+    "parent": "effects.playing.mid-resolution",
+    "order": 1,
+    "text": "A card played by an effect is played from the zone it came out of. If it came out of a hand, it is played from the hand. If it came out of the cache, a bin, the deck or anywhere else, it is not played from the hand.",
+    "examples": [
+      {
+        "text": "Example: Tides of the Cosmos plays a card off the top of the deck, so Proph and Stalwart Sentinel see a play from somewhere other than the hand.",
+        "test": "241-played-from-zone.test.ts::R263 §5: Tides of the Cosmos plays off the top of the deck"
+      },
+      {
+        "text": "Example: Hooba-Pon plays a unit from its controller's hand, so neither watcher fires.",
+        "test": "241-played-from-zone.test.ts::R263 §3: Hooba-Pon plays from the hand"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R263",
+          "quote": "come from. If the card originates in the hand, it's played from the hand. If"
+        },
+        {
+          "ref": "R263",
+          "quote": "it originates from the cache or bin or somewhere else, it's not played from"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "241-played-from-zone.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "The owner's words name the cache and the bin; \"the deck\" is R263's own application to Tides of the Cosmos.",
+    "sourceHashes": {
+      "R263": "be0e39f8d855e871f137cc7bcc78363790b292063c77aa9530b9e102070144ef"
+    }
+  },
+  {
+    "key": "effects.playing.copy-not-played",
+    "parent": "701",
+    "order": 5,
+    "text": "A copy of a spell is not played. It does not trigger abilities that trigger on playing, and it is not counted as a played spell.",
+    "examples": [
+      {
+        "text": "Example: Earthbound Replicator does not copy its own copy.",
+        "test": "138-spell-copy.test.ts::a copy is not PLAYED, so it fires no play event"
+      }
+    ],
+    "see": [
+      "710"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355613076506017894#1",
+          "quote": "since 1st copy wasn't 'played'."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R164",
+          "quote": "**A copy is NOT PLAYED**, and this is the half the inventory got wrong. It"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "138-spell-copy.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R164": "24f4b987dd356a0bf52f1ad4d26d58e24421434d2253752fd40d056683bc8514",
+      "RAQ 1355613076506017894#1": "81d6330d66159898ded34693d319f9af3371ea4d987d2450e794e97795d9c7fe"
+    }
+  },
+  {
+    "key": "effects.casting.requirements",
+    "parent": "702",
+    "order": 1,
+    "text": "To play a card, a player must meet its affinity requirement, pay its mana cost, select its targets as it is played, and resolve whatever is inside its brackets (an additional cost to pay or a mode to choose).",
+    "examples": [
+      {
+        "text": "Example: Arc Lightning (rr, cost 4) cannot be played with four water resources (no affinity) or with only two fire resources (not enough mana); with two fire and two water it can.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.casting.requirements — Arc Lightning is not playable without its affinity, nor without its mana, and is with both"
+      }
+    ],
+    "see": [
+      "105",
+      "110",
+      "111"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "Affinity: To have the ability to play a card, a player"
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "Mana cost: To play a card, a player must expend a"
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "must be selected as the card is being played."
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "must be resolved in order to play a card. This can be"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.casting.requirements.affinity",
+    "parent": "effects.casting.requirements",
+    "order": 1,
+    "text": "A player must meet a card's affinity requirement to be able to play it, unless an effect lets it be played ignoring affinity.",
+    "examples": [
+      {
+        "text": "Example: Tides of the Cosmos plays a fire unit for a player who has only water resources.",
+        "test": "396-raq-timing.test.ts::RAQ Tides 1: a free play ignores affinity"
+      }
+    ],
+    "see": [
+      "105"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "must meet the affinity requirement of the card they"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1396955380000755795#0",
+          "quote": "1. Tides allows you to ignore affinity of played cards."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The exception is sourced by the Tides write-up; prophecy releases are covered in 803.",
+    "sourceHashes": {
+      "RAQ 1396955380000755795#0": "441f37f387a60ae94e99e404eceaadc1c3e235575211f8d0d5c20985a4204820"
+    }
+  },
+  {
+    "key": "effects.casting.requirements.mana",
+    "parent": "effects.casting.requirements",
+    "order": 2,
+    "text": "To pay a card's mana cost, the player expends a number of unexpended resources equal to that cost.",
+    "examples": [
+      {
+        "text": "Example: playing Arc Lightning, cost 4, expends four of the player’s unexpended resources.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.casting.requirements.mana — playing Arc Lightning (cost 4) expends four unexpended resources"
+      }
+    ],
+    "see": [
+      "106"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "Mana cost: To play a card, a player must expend a"
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "number of un-expended resources equal to the card’s"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.casting.requirements.timing",
+    "parent": "effects.casting.requirements",
+    "order": 3,
+    "text": "A card can be played only when its timing allows (rule 207). A card with no timing icon can be played only during deployment.",
+    "examples": [
+      {
+        "text": "Example: Lonely Forager has no timing icon: it is offered in deployment and refused in battle.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.casting.requirements.timing — a card with no timing icon is playable in deployment and not in battle"
+      }
+    ],
+    "see": [
+      "207",
+      "504"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "Cards with no icon can only be played during deployment."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.casting.other-zones",
+    "parent": "702",
+    "order": 2,
+    "text": "A card in the cache under a live permission may be played in every way it could be played from the hand. It is still not in the hand.",
+    "examples": [
+      {
+        "text": "Example: a glimpsed Virus in the cache can be applied onto an enemy unit in battle.",
+        "test": "370-cached-virus-in-battle.test.ts::R311: a glimpsed Virus in the cache goes onto an ENEMY unit in battle"
+      }
+    ],
+    "see": [
+      "403"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R311",
+          "quote": "functions 100% like the hand* except *for the fact that it's not considered your"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "369-cache-is-the-hand.test.ts",
+        "370-cached-virus-in-battle.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Primary home is 403 (U07).",
+    "sourceHashes": {
+      "R311": "dff09246da3a81a8b90c1f386c3bdd5a463e44e7086278b0d4116e6bfd877122"
+    }
+  },
+  {
+    "key": "effects.casting.other-zones.timing",
+    "parent": "effects.casting.other-zones",
+    "order": 1,
+    "text": "A card played from the cache or a bin under a permission still obeys its own printed timing; the permission itself never waives timing. Apart from the timing grants that also work from the cache (rule effects.casting.other-zones.cache-widening), only an effect that says the card may be played now, such as Tides of the Cosmos, lets it ignore its timing.",
+    "examples": [
+      {
+        "text": "Example: Tides of the Cosmos plays a deploy-timing unit in battle.",
+        "test": "396-raq-timing.test.ts::RAQ Tides 2: a free play ignores timing"
+      }
+    ],
+    "see": [
+      "207",
+      "405"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1396955380000755795#1",
+          "quote": "2. Tides allows you to ignore timing of played cards."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 (its §12)",
+          "quote": "Cards that let you ignore timing say something like 'You may play them"
+        },
+        {
+          "ref": "R311",
+          "quote": "Timing is the card's printed timing on both routes (R42/R45)."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts",
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R157 §12 is read from digital-rules.md (not in the pack). R96 still carries an \"OPEN\" marker on this question: see F-U14-4. Round 2: the verifier pointed out that R311 keeps the hand's own timing-widening rules for the cache; they are now a separate rule, effects.casting.other-zones.cache-widening.",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
+      "R311": "dff09246da3a81a8b90c1f386c3bdd5a463e44e7086278b0d4116e6bfd877122",
+      "RAQ 1396955380000755795#1": "becd35d97e6be38ebf3c81a4e882413087cc02c661005dfa1e8ae83fecad0380"
+    }
+  },
+  {
+    "key": "effects.casting.other-zones.hand-restriction",
+    "parent": "effects.casting.other-zones",
+    "order": 2,
+    "text": "A card that says it can't be played from your hand is restricted from that zone only. It may still be played from another zone that allows it.",
+    "examples": [],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Calming Force",
+          "quote": "I can't be played from your hand."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R100",
+          "quote": "**The line names one zone and one verb, so that is all it takes away.**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "40-light-c.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R100": "906f73a1833772f0be7fab01302639ab8d587239f61784e1436e4460914492b7"
+    }
+  },
+  {
+    "key": "effects.casting.other-zones.haste-grant",
+    "parent": "effects.casting.other-zones",
+    "order": 3,
+    "text": "Permission to play a card \"as if it had [Haste]\" does not let a {Battle} card be played outside battle.",
+    "examples": [
+      {
+        "text": "Example: Dispatch Courier cannot let a {Battle} spell unit be played in the haste step.",
+        "test": "396-raq-timing.test.ts::RAQ Dispatch Courier: a Battle spell unit is not playable in the haste step either"
+      }
+    ],
+    "see": [
+      "504"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1465292396664193171#0",
+          "quote": "they can still only be played during :battle:."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R97",
+          "quote": "> A: **No, despite gaining {Haste} they can still only be played during {Battle}.**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "The RAQ thread 1465292396664193171 is read from client/ledgers/raq.ts (not in the pack).",
+    "sourceHashes": {
+      "R97": "85b25c9bc3cbe10d572a877ca22452c29e74fb0333d60ff88d3a690d1c3d98d6",
+      "RAQ 1465292396664193171#0": "b9818845b89b995e2deb3a2c33684e65ecbf762c87aec010da8a4401369be1b9"
+    }
+  },
+  {
+    "key": "effects.casting.other-zones.cache-widening",
+    "parent": "effects.casting.other-zones",
+    "order": 4,
+    "text": "The rules that widen a card's timing when it is played from hand also widen it when it is played from the cache: a haste grant such as Dispatch Courier's, the erase-funded haste play of Writhing Host, Ambush, and the battle {Virus} augment window.",
+    "examples": [
+      {
+        "text": "Example: a glimpsed {Virus} card in the cache can be augmented onto a unit in a battle window, as it could from hand.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.casting.other-zones.cache-widening — a glimpsed Virus in the cache augments onto a unit in a battle window"
+      }
+    ],
+    "see": [
+      "504",
+      "effects.casting.other-zones.haste-grant"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R311",
+          "quote": "own widening rules apply: R97/R123 haste grants, the battle {Virus} window,"
+        },
+        {
+          "ref": "R97",
+          "quote": "A card may be granted permission to be PLAYED at a timing its printed line refuses"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "369-cache-is-the-hand.test.ts",
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Added in round 2 from verifier feedback on effects.casting.other-zones.timing. R311 speaks of the cache only; whether these grants reach a card played from a bin is D-U14-12. The verifier reports the engine lets an R97 or R123 grant play a card from hand or cache at a timing its printed line refuses.",
+    "sourceHashes": {
+      "R311": "dff09246da3a81a8b90c1f386c3bdd5a463e44e7086278b0d4116e6bfd877122",
+      "R97": "85b25c9bc3cbe10d572a877ca22452c29e74fb0333d60ff88d3a690d1c3d98d6"
+    }
+  },
+  {
+    "key": "effects.casting.procedure",
+    "parent": "702",
+    "order": 3,
+    "text": "Playing a card follows the steps below, in order. Everything the play needs is declared and paid before the card is put on the stack, so no player can respond to an undeclared or unpaid play.",
+    "examples": [
+      {
+        "text": "Example: while Sacrificial Burst’s target and sacrifice are being chosen, nothing is on the stack and the opponent has no action; it reaches the stack only once both are done.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.casting.procedure — while Sacrificial Burst is being declared and paid it is not on the stack and the opponent cannot act"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#12",
+          "quote": "This Additional cost must be paid instantly in order for Effect to go on stack"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R198",
+          "quote": "Everything about the play that has to be DECLARED is declared before the item"
+        },
+        {
+          "ref": "R178 (its §3, as-you-play)",
+          "quote": "`E.collectAsYouPlay` runs **last** in `collectTargets` — after X, {Modular}"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R57",
+          "relation": "its order \"X → {Modular} mods → targets → costs\" stands for fixed costs; R64 moved variable costs up beside X"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "The order is assembled from R57 (as narrowed by R64), R64, R284, R29, R178 and R338. The position of modes and the formation spot between targets and fixed costs is read off R178 §3's list, which names them in that order.",
+    "sourceHashes": {
+      "R178": "92613172ef363565035f3346c813b8e4fdf7cbf5ff2a45ae1543bf273254e204",
+      "R198": "3110251ddd8334b7b94ff317f5aadcf2e30d6c2cd5ccbb0b784937d9c530af9c",
+      "RAQ 1355115946032889914#12": "56640f1cc69f429df0aabe8a1988a0f16a646a596cc37162b8c55144564ff72c"
+    }
+  },
+  {
+    "key": "effects.casting.procedure.x",
+    "parent": "effects.casting.procedure",
+    "order": 1,
+    "text": "Step 1: if the card has an X, the player chooses X. A variable additional cost (one whose amount is X) is paid at this step, and the amount paid is X. The card's mana cost is paid at the start of the play.",
+    "examples": [],
+    "see": [
+      "107"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R64 (its cost half)",
+          "quote": "Ordering follows from that. A variable cost is collected **with the mana X, at"
+        },
+        {
+          "ref": "R57 (its fixed-cost order)",
+          "quote": "still pays its flat printed mana up front in `playAtTiming` — mana is fungible"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Mana up front: R57's own sentence for a played card. An X spell's whole mana bill is settled when X is chosen (R158 §3, not cited: partly superseded on another point).",
+    "sourceHashes": {
+      "R57": "d8d1bc665f473e3e0fb2f87660c6589fbb4a5c2bafed95cf7c802d38a76df78f",
+      "R64": "1f75a48297b01fef7baed699c56aa4421738f1e70ca0aa68072458dbaf91b09b"
+    }
+  },
+  {
+    "key": "effects.casting.procedure.modular",
+    "parent": "effects.casting.procedure",
+    "order": 2,
+    "text": "Step 2: the player chooses any {Modular} modifications for the card.",
+    "examples": [
+      {
+        "text": "Example: Spellbind asks for its {Modular} mods as it is played; the chosen mod is on the stack item with it.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.casting.procedure.modular — Spellbind asks for its Modular mods as it is played, and the chosen mod rides onto the stack with it"
+      }
+    ],
+    "see": [
+      "724"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R57 (its fixed-cost order)",
+          "quote": "Every cast-time *question* is asked in this order: **X → {Modular} mods →"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "",
+    "sourceHashes": {
+      "R57": "d8d1bc665f473e3e0fb2f87660c6589fbb4a5c2bafed95cf7c802d38a76df78f"
+    }
+  },
+  {
+    "key": "effects.casting.procedure.targets",
+    "parent": "effects.casting.procedure",
+    "order": 3,
+    "text": "Step 3: the player declares every target the card's text names (rule 110).",
+    "examples": [],
+    "see": [
+      "110"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "must be selected as the card is being played."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R67",
+          "quote": "**The rule.** If a card prints \"target\", the effect declares a `TargetSpec` and"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "68-target-conformance.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R67": "4668406f8842ecc2cba8813e5abfecd927864ad9a6bde08c8a56525f270a4880"
+    }
+  },
+  {
+    "key": "effects.casting.procedure.modes",
+    "parent": "effects.casting.procedure",
+    "order": 4,
+    "text": "Step 4: if a bracket in the card's text offers a choice of modes, the owner of the effect chooses one.",
+    "examples": [
+      {
+        "text": "Example: Wither and Bloom declares which half it is before anyone may respond.",
+        "test": "97-mode-conformance.test.ts::R57: Wither and Bloom declares which half before anyone may respond"
+      }
+    ],
+    "see": [
+      "effects.casting.brackets"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R284",
+          "quote": "B]. […] The owner of the effect chooses the mode or pays the additional cost"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "97-mode-conformance.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R284": "df3133daddea821f11261091b347598f8bca431d9ca1bbbceede4a387fc15fb7"
+    }
+  },
+  {
+    "key": "effects.casting.procedure.spot",
+    "parent": "effects.casting.procedure",
+    "order": 5,
+    "text": "Step 5: a card that may be played into a formation has its place in the formation chosen.",
+    "examples": [
+      {
+        "text": "Example: Tiderunner Initiate’s place in the formation is chosen as it is played, before it is on the stack.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.casting.procedure.spot — Tiderunner Initiate has its formation spot chosen as it is played, and the spot rides on the stack"
+      }
+    ],
+    "see": [
+      "602"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R29 (its cast-time spot half)",
+          "quote": "**And it is a PLAY, so the spot is chosen at CAST.**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R29": "d80d45629dc82b6c2e648a2fa8f082e38fa5d359b0b395ac4139ced7bd98a582"
+    }
+  },
+  {
+    "key": "effects.casting.procedure.fixed-costs",
+    "parent": "effects.casting.procedure",
+    "order": 6,
+    "text": "Step 6: the player pays the card's fixed additional costs, after everything else has been declared.",
+    "examples": [
+      {
+        "text": "Example: Sacrificial Burst asks for its target before its sacrifice; Trench Stalker asks for its formation spot before its two discards.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.casting.procedure.fixed-costs — Sacrificial Burst asks for its target before its sacrifice, and Trench Stalker for its spot before its discards"
+      }
+    ],
+    "see": [
+      "111"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R64 (its cost half)",
+          "quote": "effects\"*). Fixed costs stay where R57 put them, **after** targets — R57 is"
+        },
+        {
+          "ref": "R338",
+          "quote": "Order, as in `collectTargets`: a VARIABLE cost before the target (it sizes"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R338": "2650c840de470c863a3e4d54cbf74deafac1a65e9295271794424f36f6541483",
+      "R64": "1f75a48297b01fef7baed699c56aa4421738f1e70ca0aa68072458dbaf91b09b"
+    }
+  },
+  {
+    "key": "effects.casting.procedure.as-you-play",
+    "parent": "effects.casting.procedure",
+    "order": 7,
+    "text": "Step 7: options that a card offers \"as you play\" a spell (Maelstrom Charger) are taken. Such an option is not an effect: it never goes on the stack and cannot be responded to.",
+    "examples": [
+      {
+        "text": "Example: the Maelstrom Charger option is asked while the spell is played and never reaches the stack.",
+        "test": "151-copy-and-moved-mods.test.ts::R178 Maelstrom Charger: the option is asked in the cast window and never reaches the stack"
+      }
+    ],
+    "see": [
+      "710"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1379132904931594372#0",
+          "quote": "Meal copying is not an effect on the stack so enemy cannot interact with it."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R178 (its §3, as-you-play)",
+          "quote": "`E.collectAsYouPlay` runs **last** in `collectTargets` — after X, {Modular}"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "151-copy-and-moved-mods.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R178": "92613172ef363565035f3346c813b8e4fdf7cbf5ff2a45ae1543bf273254e204",
+      "RAQ 1379132904931594372#0": "2489487aa78cede9d246f72cbe06a1c3b09758133ee0236ea6286d0992027c07"
+    }
+  },
+  {
+    "key": "effects.casting.procedure.stack",
+    "parent": "effects.casting.procedure",
+    "order": 8,
+    "text": "Step 8: the card is put on the stack as an effect (rule 703).",
+    "examples": [
+      {
+        "text": "Example: once Arc Lightning has been declared and paid, it is on the stack as a spell effect controlled by its player, and no longer in hand.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.casting.procedure.stack — once declared and paid, Arc Lightning is on the stack as a spell effect, out of the hand"
+      }
+    ],
+    "see": [
+      "703"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.28",
+          "quote": "triggered, it is added to"
+        },
+        {
+          "ref": "Manual p.28",
+          "quote": "the stack as an “effect”."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.casting.costs",
+    "parent": "702",
+    "order": 4,
+    "text": "Every cost of playing a card is paid before the card is put on the stack. No player can respond to the payment, or between a cost and the effect it pays for.",
+    "examples": [],
+    "see": [
+      "111"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#12",
+          "quote": "meaning the opponent cannot interact with you paying the cost"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R67",
+          "quote": "Same for when you need to pay an additional cost. That cost is paid as it's"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R67": "4668406f8842ecc2cba8813e5abfecd927864ad9a6bde08c8a56525f270a4880",
+      "RAQ 1355115946032889914#12": "56640f1cc69f429df0aabe8a1988a0f16a646a596cc37162b8c55144564ff72c"
+    }
+  },
+  {
+    "key": "effects.casting.costs.unpayable",
+    "parent": "effects.casting.costs",
+    "order": 1,
+    "text": "A card whose costs cannot all be paid cannot be played.",
+    "examples": [
+      {
+        "text": "Example: with nothing to sacrifice, Tides of the Cosmos does not offer Volatile Toxicity.",
+        "test": "404-raq-fix-tides.test.ts::R338: with nothing to sacrifice, Tides does not offer Volatile Toxicity"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R35 (its spell-cost half)",
+          "quote": "than the smallest legal X (\"X can't be zero\" → 1) — the cast is ILLEGAL."
+        },
+        {
+          "ref": "R49 (its cost-gating half)",
+          "quote": "an unpayable cost makes the cast or activation ILLEGAL (R35), `legalActions`"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "404-raq-fix-tides.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R35": "40f8296cef3d2d2b3c5f150d75c557b79b8a2bdc9584690fe1752de259650f84",
+      "R49": "5d3c2bff8c7d58ca657dffa7259041cc8de3a1b62ca85d59e81fcdb127319364"
+    }
+  },
+  {
+    "key": "effects.casting.costs.no-refund",
+    "parent": "effects.casting.costs",
+    "order": 2,
+    "text": "Negating a card does not refund the costs paid to play it.",
+    "examples": [],
+    "see": [
+      "effects.resolution.negation"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R35 (its spell-cost half)",
+          "quote": "Negation does not refund a paid cast cost."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R35": "40f8296cef3d2d2b3c5f150d75c557b79b8a2bdc9584690fe1752de259650f84"
+    }
+  },
+  {
+    "key": "effects.casting.costs.sacrifice-gone",
+    "parent": "effects.casting.costs",
+    "order": 3,
+    "text": "A unit sacrificed to pay a cost is gone before the card is played, so it does not see that card being played.",
+    "examples": [
+      {
+        "text": "Example: Ravenous Fireslinger sacrificed to pay for Sacrificial Burst does not trigger on it.",
+        "test": "390-raq-stack.test.ts::RAQ cost vs trigger: a unit sacrificed to pay a spell cost never sees that spell played"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1460212274936414381#0",
+          "quote": "Cost has to be paid before spell is actually played, so Fireslinger is gone before he can see Sac Burst being played."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1460212274936414381#0": "c05391adbf79ee6d8d31a0707df6e361772cc71b4001f12d11536ab5c98c556c"
+    }
+  },
+  {
+    "key": "effects.casting.costs.not-yet-in-play",
+    "parent": "effects.casting.costs",
+    "order": 4,
+    "text": "A cost cannot be paid with something that does not exist yet: not with units the effect itself would create, and not with a unit played by the same effect, which is on the stack and not in play.",
+    "examples": [
+      {
+        "text": "Example: Volatile Toxicity played by Tides of the Cosmos cannot sacrifice a Towering Colossus played by the same Tides.",
+        "test": "396-raq-timing.test.ts::RAQ Tides 5:"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#12",
+          "quote": "you cannot sacrifice units which would be created as resolution of the effect itself"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R338",
+          "quote": "not in play, so it cannot pay that cost. A card whose additional cost cannot"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R338": "2650c840de470c863a3e4d54cbf74deafac1a65e9295271794424f36f6541483",
+      "RAQ 1355115946032889914#12": "56640f1cc69f429df0aabe8a1988a0f16a646a596cc37162b8c55144564ff72c"
+    }
+  },
+  {
+    "key": "effects.casting.costs.mid-resolution",
+    "parent": "effects.casting.costs",
+    "order": 5,
+    "text": "A card played during another effect's resolution pays its bracketed additional cost exactly as if it were played from a hand.",
+    "examples": [
+      {
+        "text": "Example: a Trench Stalker played through Hooba-Pon discards two cards.",
+        "test": "404-raq-fix-tides.test.ts::R338: a unit played by Hooba-Pon pays its additional cost"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R338",
+          "quote": "exactly as if it were cast from a hand: chosen and paid as it is played,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "404-raq-fix-tides.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R338 quotes the Tides write-up (point 5) for this; the pack's RAQ claim for point 5 covers only the stack order, so the basis is the ruling.",
+    "sourceHashes": {
+      "R338": "2650c840de470c863a3e4d54cbf74deafac1a65e9295271794424f36f6541483"
+    }
+  },
+  {
+    "key": "effects.casting.brackets",
+    "parent": "702",
+    "order": 5,
+    "text": "A printed square bracket in a card's text is either an additional cost or a choice of modes. The owner of the effect pays that cost or chooses that mode, when the effect is played or put on the stack, and at no other time.",
+    "examples": [],
+    "see": [
+      "205",
+      "111"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "additional actions that are paid as a cost or modes"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R284",
+          "quote": "B]. […] The owner of the effect chooses the mode or pays the additional cost"
+        },
+        {
+          "ref": "R284",
+          "quote": "> on cast. Not on resolution or any other time. […] All modal/additional costs"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R284": "df3133daddea821f11261091b347598f8bca431d9ca1bbbceede4a387fc15fb7"
+    }
+  },
+  {
+    "key": "effects.casting.brackets.unbracketed-payment",
+    "parent": "effects.casting.brackets",
+    "order": 1,
+    "text": "A payment an effect's text asks for without brackets, such as \"unless its controller pays [x]\", is not a cost of playing. It is made while the effect resolves, by the player the text names (rule 704.1).",
+    "examples": [],
+    "see": [
+      "effects.resolution.order"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R284",
+          "quote": "| R6's unbracketed *\"unless its controller pays\"* (Abduct) | the opponent | resolution |"
+        },
+        {
+          "ref": "R6",
+          "quote": "Payment is **part of spell resolution**: the paying player gets a dialogue to pay X or"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R284": "df3133daddea821f11261091b347598f8bca431d9ca1bbbceede4a387fc15fb7",
+      "R6": "5fd48d6da6d8214d005aacf6d7daa0ff574edb010a514dd4b63899feb1f4a62e"
+    }
+  },
+  {
+    "key": "effects.casting.x",
+    "parent": "702",
+    "order": 6,
+    "text": "X is chosen when the card is played, before it is put on the stack. Only values the player can pay may be chosen, and responses see the X already fixed.",
+    "examples": [],
+    "see": [
+      "107"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R35 (its spell-cost half)",
+          "quote": "affordable values are offered) BEFORE the spell reaches the stack, the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R35": "40f8296cef3d2d2b3c5f150d75c557b79b8a2bdc9584690fe1752de259650f84"
+    }
+  },
+  {
+    "key": "effects.casting.x.minimum",
+    "parent": "effects.casting.x",
+    "order": 1,
+    "text": "If a card says X can't be zero, X must be at least 1. A player with less open mana than the smallest legal X cannot play the card.",
+    "examples": [],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R35 (its spell-cost half)",
+          "quote": "than the smallest legal X (\"X can't be zero\" → 1) — the cast is ILLEGAL."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R35": "40f8296cef3d2d2b3c5f150d75c557b79b8a2bdc9584690fe1752de259650f84"
+    }
+  },
+  {
+    "key": "effects.casting.x.variable-cost",
+    "parent": "effects.casting.x",
+    "order": 2,
+    "text": "A variable additional cost sets X. The player pays it one unit at a time until they stop, and the amount paid is X.",
+    "examples": [
+      {
+        "text": "Example: Discharge (\"[Remove X +1/+1 counters from allies]: I deal X damage to target unit\") deals as much damage as the counters removed (illustrative).",
+        "test": null
+      },
+      {
+        "text": "Example: a player removes two +1/+1 counters for Discharge, one at a time, then stops; X is 2 and Discharge deals 2 damage.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.casting.x.variable-cost — Discharge with two counters removed one at a time has X = 2 and deals 2"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R64 (its cost half)",
+          "quote": "A **variable** cost is where X comes from. You pay one unit of it at a time"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R64": "1f75a48297b01fef7baed699c56aa4421738f1e70ca0aa68072458dbaf91b09b"
+    }
+  },
+  {
+    "key": "effects.casting.x.free",
+    "parent": "effects.casting.x",
+    "order": 3,
+    "text": "An X spell released for free by a fulfilled prophecy is cast with X = 0. A variable bracketed cost on it is still collected.",
+    "examples": [
+      {
+        "text": "Example: a fulfilled prophecy releases an X spell; no X is asked, X is 0 and no mana is paid.",
+        "test": "36-cache-prophecy.test.ts::R111: a fulfilled prophecy releases an X spell for X = 0"
+      }
+    ],
+    "see": [
+      "803"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R111",
+          "quote": "an X spell works like magic, forced to cast it for 0 (unless its X is an"
+        },
+        {
+          "ref": "R111",
+          "quote": "different X — a COST, not the mana — and is still collected as before. Test:"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "36-cache-prophecy.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R111": "a7665555ec1f0c5f66748e40b653f50067e928f541bb660389587bb9a487747b"
+    }
+  },
+  {
+    "key": "effects.casting.spell-tokens",
+    "parent": "702",
+    "order": 7,
+    "text": "A spell token is cast from play, and only in the region the token is in. Otherwise it is cast the same way as a spell from the hand.",
+    "examples": [
+      {
+        "text": "Example: a Fireball in the battle region is cast with a target and goes on the stack like a spell from hand; a Fireball in another region cannot be cast.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.casting.spell-tokens — casting a spell token asks for its target and puts it on the stack, as a spell from hand would"
+      }
+    ],
+    "see": [
+      "304"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "only cards currently that are “cast” from play, which functions the same way as if they were cast from your hand, but you may"
+        },
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "only cast spell tokens in the region the token is in."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.casting.spell-tokens.taxed",
+    "parent": "effects.casting.spell-tokens",
+    "order": 1,
+    "text": "A modifier to the cost of playing spells applies to casting a spell token, and a spell token cast counts as a spell played.",
+    "examples": [
+      {
+        "text": "Example: Tranquility makes a spell token cost [1] more in battle.",
+        "test": "337-spell-tokens-are-played.test.ts::R305: Tranquility taxes a spell token [1] in battle"
+      }
+    ],
+    "see": [
+      "111"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R305",
+          "quote": "to play\" modifier, and it counts toward \"spells played this battle\". R59's"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R59",
+          "relation": "its carve-out that a token is not played was amended by R305"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "337-spell-tokens-are-played.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R305": "88a482701a5f378703d6d18e30d8a3b943798c47e43ee19572963aef6c8e2da6"
+    }
+  },
+  {
+    "key": "effects.casting.spell-tokens.burst",
+    "parent": "effects.casting.spell-tokens",
+    "order": 2,
+    "text": "A spell token with Burst is cast together with all of its controller's spell tokens of the same name in the same region as it. They are still separate spells.",
+    "examples": [
+      {
+        "text": "Example: a player with two Fireballs in the battle region casts one; both go on the stack. A Fireball the same player has in another region is not cast (illustrative).",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.casting.spell-tokens.burst — both battle-region Fireballs are cast together and one in another region is not"
+      }
+    ],
+    "see": [
+      "803",
+      "effects.priority.simultaneous"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "▪ Spell tokens have an attribute, Burst (6), which requires you"
+        },
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "time. They are still unique spells, but they are cast together."
+        },
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "only cast spell tokens in the region the token is in"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R309",
+          "quote": "Fireball casts every Fireball you control in that region, and your opponent"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Ordering of the group on the stack: 703.4b. The region scope follows from the Rulebook p.4 limit on where a token may be cast, and R309 states it for Burst.",
+    "sourceHashes": {
+      "R309": "e49e87895134f608900e0c840a7d68bcdb1cd0ba07dfc2b9e8b67e7123c8c06f"
+    }
+  },
+  {
+    "key": "effects.casting.targets-required",
+    "parent": "702",
+    "order": 8,
+    "text": "A card or ability that needs targets can be played only if every target it requires can be chosen at the same time, each one legal and different from the others.",
+    "examples": [
+      {
+        "text": "Example: Fight cannot be played unless the region holds an ally and another unit.",
+        "test": "390-raq-stack.test.ts::RAQ target requirements: Fight cannot be played without an ally and another unit in the region"
+      },
+      {
+        "text": "Example: Tidal Reversion cannot be played while one player has no unit to recall.",
+        "test": "390-raq-stack.test.ts::RAQ target requirements: Tidal Reversion is not playable while one player has no unit to recall"
+      }
+    ],
+    "see": [
+      "110"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1410252965276684418#0",
+          "quote": "You cannot play Resurrect if there aren't any 2 mana units in your bin."
+        },
+        {
+          "ref": "RAQ 1410252965276684418#1",
+          "quote": "You cannot play Fight if there isn't 2 units in the region (one of which must be an allied unit)."
+        },
+        {
+          "ref": "RAQ 1410252965276684418#3",
+          "quote": "You can't play it if one player doesn't have a valid target"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R323",
+          "quote": "A spell or ability that needs targets can be played only when **every required"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts",
+        "401-raq-fix-stack.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R323": "eebc0fd562917e4f3459b8765407b3e60a1e40e93507075b6f34c154697e926b",
+      "RAQ 1410252965276684418#0": "ba1407e8e0f304aa35e09368684382ac118a561eaf5895d4c5b21ff2d1bc14d3",
+      "RAQ 1410252965276684418#1": "e360e6a86909cef31daa2244e8da43a0e668b372e706c45aba749e3728522bea",
+      "RAQ 1410252965276684418#3": "48823ced5db3d11f9c3a6b9b07be03c60a2c297d718d8be9f3ddc96dcab3101e"
+    }
+  },
+  {
+    "key": "effects.casting.targets-required.untargeted",
+    "parent": "effects.casting.targets-required",
+    "order": 1,
+    "text": "A card that targets nothing has no target requirement.",
+    "examples": [
+      {
+        "text": "Example: Rebalance can be played by a player with no unit.",
+        "test": "396-raq-timing.test.ts::Rebalance is playable with no unit of your own"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1454169054402314362#1",
+          "quote": "it doesn't target anything so there are no requirements for you having a unit"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1454169054402314362#1": "e3eaa692bd1e8228402516f598571780911a7bff2101b2445bcf4ac14055a0a1"
+    }
+  },
+  {
+    "key": "effects.casting.targets-required.graft-trigger",
+    "parent": "effects.casting.targets-required",
+    "order": 2,
+    "text": "A triggered graft composite whose targeted part has no legal target is not put on the stack at all, and its untargeted parts do not happen either.",
+    "examples": [
+      {
+        "text": "Example: Megadeath grafted with Resurrect, and no unit of cost 2 or less in the bin: no Poison 5 is made.",
+        "test": "390-raq-stack.test.ts::RAQ target requirements: a graft trigger with a required target and none available makes nothing at all"
+      }
+    ],
+    "see": [
+      "722",
+      "706"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1410252965276684418#2",
+          "quote": "can't be put on the stack unless you target such unit in your bin."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "medium",
+    "notes": "Engine differs: by the RAQ register's own note the engine puts it on the stack and fizzles it (F-U14-1). R102 and R86 say otherwise for triggers in general (D-U14-3).",
+    "sourceHashes": {
+      "RAQ 1410252965276684418#2": "db27f57d93e2c1e65f0238cbb4d49645cdd87eb58adcf9d058fa1a7dc8b0e104"
+    },
+    "engineDiffers": [
+      "F-U14-1"
+    ]
+  },
+  {
+    "key": "effects.priority.stack",
+    "parent": "703",
+    "order": 1,
+    "text": "The stack is \"first in, last out\". A new effect is put on top of the effects already there. When it is time to resolve, the top effect resolves first, so the effect put on last resolves first.",
+    "examples": [
+      {
+        "text": "Example: Mycelial Mentor is played with Bloomcaster out. Bloomcaster's trigger goes on the stack above the Mentor, so its 1/1 is made before the Mentor arrives and the Mentor never sees it.",
+        "test": "396-raq-timing.test.ts::RAQ Bloomcaster: its 1/1 resolves before the Mycelial Mentor it was played with arrives"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.14",
+          "quote": "placing any new effects on top of any other existing effects on the stack."
+        },
+        {
+          "ref": "Rulebook 2023 p.14",
+          "quote": "in order from top to bottom. Whatever spell or effect happened last will resolve first."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.priority.stack.not-immediate",
+    "parent": "effects.priority.stack",
+    "order": 1,
+    "text": "An effect put on the stack does not resolve immediately. This gives the other players in the region a chance to respond to it.",
+    "examples": [
+      {
+        "text": "Example: Luminous Arc is cast at a unit; the unit is undamaged while the Arc waits on the stack, and the other player may respond.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.priority.stack.not-immediate — a cast Luminous Arc waits on the stack, its target untouched, while the other player may respond"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.28",
+          "quote": "This means it does not"
+        },
+        {
+          "ref": "Manual p.28",
+          "quote": "giving other players in"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.priority.stack.add-while-resolving",
+    "parent": "effects.priority.stack",
+    "order": 2,
+    "text": "New effects can be added on top of the stack after it has started resolving, between the resolutions of the effects on it.",
+    "examples": [
+      {
+        "text": "Example: two Luminous Arcs are on the stack; after the top one resolves, a third Arc is cast and resolves before the one still waiting.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.priority.stack.add-while-resolving — after the top of a two-item stack resolves, a new spell goes on above the remaining item and resolves first"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.14",
+          "quote": "New spells can be added on top of an active"
+        },
+        {
+          "ref": "Manual p.28",
+          "quote": "New spells can be added on top"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.priority.stack.triggers-respondable",
+    "parent": "effects.priority.stack",
+    "order": 3,
+    "text": "A triggered ability put on the stack can be responded to like any other effect.",
+    "examples": [
+      {
+        "text": "Example: Xenopod Progenitor's trigger is negated on the stack, and its controller is never asked to pay its [1].",
+        "test": "390-raq-stack.test.ts::RAQ Xenopod: negated on the stack, it never asks for the [1]"
+      }
+    ],
+    "see": [
+      "706"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.28",
+          "quote": "triggered, it is added to"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1397189214352703590#1",
+          "quote": "When enemy gets his priority window, he has a chance to negate it."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R250 (the owner's §3 statement that all triggers are respondable)",
+          "quote": "> \"Yes, all triggers are respondable. And at this moment, she had priority and"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R250",
+          "relation": "its §3 conclusion that combat-damage triggers are not respondable was reversed by R261; its deployment half was amended by R286"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "229-cosmic-and-control.test.ts",
+        "390-raq-stack.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R250": "85f8949b08f8ce75cfdb86bf8e04db453b4f36aa27bd63c5b44ca693e61ffc53",
+      "RAQ 1397189214352703590#1": "110f51cab36083be3dd36a15a568a2af440729341c27b68bc294ebce378d4e6a"
+    }
+  },
+  {
+    "key": "effects.priority.priority",
+    "parent": "703",
+    "order": 2,
+    "text": "Priority is the ability to take game actions such as playing cards or activating abilities. A player with priority can take such actions; a player without priority cannot.",
+    "examples": [
+      {
+        "text": "Example: in the attack window only the initiative player, who holds priority, is offered a card; the other player’s play is refused.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.priority.priority — only the player with priority may play a card"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.30",
+          "quote": "The term priority denotes the ability of a player to perform game actions such as playing cards or activating"
+        },
+        {
+          "ref": "Manual p.30",
+          "quote": "things, while players without priority do not."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.priority.priority.hold",
+    "parent": "effects.priority.priority",
+    "order": 1,
+    "text": "A player who uses priority to take an action may keep priority and take further actions. Each action goes on the stack as an effect; none of them happens immediately.",
+    "examples": [],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.30",
+          "quote": "they may maintain their priority to continue taking"
+        },
+        {
+          "ref": "Manual p.30",
+          "quote": "the stack as effects, they do not happen immediately."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Engine suspected to hand priority to the other player after every push (R250 §3, R198): F-U14-2. Annex D may hold a digital convention for this. engine differs: F-U14-2 (measured: priority goes to the other seat after a battle cast).",
+    "sourceHashes": {},
+    "engineDiffers": [
+      "F-U14-2"
+    ],
+    "untested": true
+  },
+  {
+    "key": "effects.priority.priority.pass",
+    "parent": "effects.priority.priority",
+    "order": 2,
+    "text": "When a player passes priority after taking one or more actions, each other player receives priority, so that they can respond. This continues until all players pass priority in succession.",
+    "examples": [
+      {
+        "text": "Example: after a cast the other player receives priority and responds; the first player then receives priority again, and the top item resolves only after both pass in succession.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.priority.priority.pass — after an action the other player receives priority, and the item resolves only once both pass in succession"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.30",
+          "quote": "Once a player passes priority after taking one or more"
+        },
+        {
+          "ref": "Manual p.30",
+          "quote": "chance to respond to their actions. This process continues until all players pass priority."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.priority.priority.no-response-to-pass",
+    "parent": "effects.priority.priority",
+    "order": 3,
+    "text": "A player cannot respond to another player passing priority. A player who passes may not get another chance to act.",
+    "examples": [
+      {
+        "text": "Example: the defender passes on an Arc and the attacker passes; the Arc resolves at once, with no further chance for the defender.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.priority.priority.no-response-to-pass — after one player passes, the other passing resolves the item with no further chance for the first"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.13",
+          "quote": "Notice how you cannot respond to an opponent passing priority. Once you pass, you may not get another chance to act."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.priority.priority.teams",
+    "parent": "effects.priority.priority",
+    "order": 4,
+    "text": "All players on a team share priority and can act in whichever order they choose among themselves. Teams pass and receive priority as one.",
+    "examples": [],
+    "see": [
+      "904"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.30",
+          "quote": "on a team share priority and can take actions in whichever order they choose amongst themselves. Teams pass"
+        },
+        {
+          "ref": "Manual p.30",
+          "quote": "priority and receive priority collectively."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "the engine is two-seat only; there are no teams to share priority"
+  },
+  {
+    "key": "effects.priority.window",
+    "parent": "703",
+    "order": 3,
+    "text": "A priority window is a sequence in which the players (or teams) each receive priority in order.",
+    "examples": [
+      {
+        "text": "Example: in an empty attack window the initiative player receives priority, then the other player; when both have passed the step ends.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.priority.window — in an empty attack window each player receives priority in turn, initiative first, and then the step moves on"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.30",
+          "quote": "A priority window is a sequence where players or teams"
+        },
+        {
+          "ref": "Manual p.30",
+          "quote": "each receive priority in order."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.priority.window.order",
+    "parent": "effects.priority.window",
+    "order": 1,
+    "text": "In a priority window the initiative player receives priority first. If they decline to act, priority passes clockwise to the next non-initiative player in the region. If the initiative player is not in the region, priority begins with the player nearest to the initiative player, clockwise.",
+    "examples": [
+      {
+        "text": "Example: the defender casts a spell, which resolves; the new window opens with the initiative player, not the caster.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.priority.window.order — a new window opens with the initiative player even when the other player cast the item that just resolved"
+      }
+    ],
+    "see": [
+      "508",
+      "903"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.30",
+          "quote": "Within a priority window, first the initiative player will receive"
+        },
+        {
+          "ref": "Manual p.30",
+          "quote": "passed clockwise to the next non-initiative player in the"
+        },
+        {
+          "ref": "Manual p.30",
+          "quote": "priority begins with the player nearest to the initiative player,"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.36 words the multiplayer case differently: D-U14-8. Only the two-seat clauses are executable; the clause for an initiative player absent from the region needs three or more players, which the engine does not support.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.priority.window.steps",
+    "parent": "effects.priority.window",
+    "order": 2,
+    "text": "In each region, the attack step, the block step and the after combat step each have a priority window. The combat damage step has a priority window only between its sub-steps, and only when Swift or Sluggish units split it (rule 608).",
+    "examples": [],
+    "see": [
+      "604",
+      "605",
+      "607",
+      "608",
+      "609"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.30",
+          "quote": "followed by a priority window inside of each region:"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1363298910528864318#0",
+          "quote": "Those windows are only present if there are any Swift/Sluggish units"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "297-damage-substeps-are-steps.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The Rulebook 2023 also lists the damage step: D-U14-1.",
+    "sourceHashes": {
+      "RAQ 1363298910528864318#0": "3bfd6b42b0de5ecc8690c43b87713aece9c7627312eeed9ca7313163b2b4dac2"
+    }
+  },
+  {
+    "key": "effects.priority.window.resolve",
+    "parent": "effects.priority.window",
+    "order": 3,
+    "text": "When all players pass priority in succession with an effect on the stack, the top effect resolves. All players then receive priority in order again, which is a new priority window. When all players pass priority with the stack empty, the game moves to the next step.",
+    "examples": [
+      {
+        "text": "Example: two passes resolve Luminous Arc; a new window opens in the same step with the initiative player; two passes on the empty stack end the step.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.priority.window.resolve — two passes resolve the top item, a new window opens, and two passes on the empty stack end the step"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.30",
+          "quote": "the stack (which was played last) will resolve immediately. Then all players gain priority in order again. This"
+        },
+        {
+          "ref": "Manual p.30",
+          "quote": "an empty stack, which will move them to the next step"
+        },
+        {
+          "ref": "Rulebook 2023 p.13",
+          "quote": "with eachother. The resolution of an effect, such as a"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.priority.simultaneous",
+    "parent": "703",
+    "order": 4,
+    "text": "When several effects are put on the stack at the same time, each player chooses the order of their own. The initiative player puts all of theirs on first, then the non-initiative player, so the non-initiative player's effects resolve first.",
+    "examples": [
+      {
+        "text": "Example: with one trigger per player, the initiative player's trigger is at the bottom of the stack.",
+        "test": "239-damage-triggers-after-combat.test.ts::R261 RAQ STACK ORDER"
+      }
+    ],
+    "see": [
+      "706"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.43",
+          "quote": "A: Each player decides the order their effects go on"
+        },
+        {
+          "ref": "Manual p.43",
+          "quote": "the stack. NIT effects will enter the stack last and"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1540678747953569832#1",
+          "quote": "Initiative (IT) player put all of his effects on the stack first, then non-Initiative (NIT) player puts his."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R2",
+          "quote": "All simultaneous triggers are ordered **by their owner, however they choose**; then all go"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "239-damage-triggers-after-combat.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R2": "d70a36c8b83a36f5395c670a59121d87a6722fe6c2c39a4acd7e556f5b3813d9",
+      "RAQ 1540678747953569832#1": "ce36c3bfc3d1d8aba0f94ddfc9de4ab45798548219bbceaf78a06074b7d3d5c6"
+    }
+  },
+  {
+    "key": "effects.priority.simultaneous.same-effect",
+    "parent": "effects.priority.simultaneous",
+    "order": 1,
+    "text": "Cards played by one effect at the same time are separate effects, put on the stack at the same time in an order their controller chooses.",
+    "examples": [],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1396955380000755795#4",
+          "quote": "played cards are 2 separate effects put on the stack at the same time and you get to decide the order."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "169-mid-resolution-window.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1396955380000755795#4": "325946fed1e92195a657d5818c9119358e7f48caa519f336bef429f13636c8e0"
+    }
+  },
+  {
+    "key": "effects.priority.simultaneous.burst",
+    "parent": "effects.priority.simultaneous",
+    "order": 2,
+    "text": "A Burst group of spell tokens goes on the stack all at once. Its caster chooses the order, one token at a time, and aims each; the token chosen first resolves first. The other players receive priority only when the whole group is on the stack.",
+    "examples": [
+      {
+        "text": "Example: the first Fireball picked ends on top of the stack.",
+        "test": "358-burst-order.test.ts::R309: the caster picks each Fireball in RESOLVE order and aims it"
+      }
+    ],
+    "see": [
+      "803"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R309",
+          "quote": "A {Burst} group still goes on the stack all at once (R16, R81): casting one"
+        },
+        {
+          "ref": "R309",
+          "quote": "What is new is the ORDER. The caster picks the token that resolves first and"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "358-burst-order.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R309": "e49e87895134f608900e0c840a7d68bcdb1cd0ba07dfc2b9e8b67e7123c8c06f"
+    }
+  },
+  {
+    "key": "effects.priority.mid-resolution",
+    "parent": "703",
+    "order": 5,
+    "text": "A card played during another effect's resolution waits on the stack until that resolution has finished. Only then do players receive priority, and they may respond to the played card before it resolves.",
+    "examples": [
+      {
+        "text": "Example: a card Tides of the Cosmos plays for free can be answered on the stack.",
+        "test": "169-mid-resolution-window.test.ts::a free play is still a play, so it can be answered on the stack"
+      }
+    ],
+    "see": [
+      "effects.playing.mid-resolution"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1396955380000755795#4",
+          "quote": "5. Once Cosmos resolves, played cards are 2 separate effects put on the stack at the same time"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R198",
+          "quote": "the resolution that played it finishes; then priority is handed out with the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "169-mid-resolution-window.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "Engine differs for plays made through a spawn (\"asPlay\": Wake the Dead, The Bonesculptor): the unit is put into play inside the resolution and never waits on the stack. See F-U14-3.",
+    "sourceHashes": {
+      "R198": "3110251ddd8334b7b94ff317f5aadcf2e30d6c2cd5ccbb0b784937d9c530af9c",
+      "RAQ 1396955380000755795#4": "325946fed1e92195a657d5818c9119358e7f48caa519f336bef429f13636c8e0"
+    },
+    "engineDiffers": [
+      "F-U14-3"
+    ]
+  },
+  {
+    "key": "effects.priority.resolving",
+    "parent": "703",
+    "order": 6,
+    "text": "Once an effect has begun to resolve, no player can respond to it. It can no longer be targeted, negated or augmented.",
+    "examples": [
+      {
+        "text": "Example: while Premonition is resolving, the other player is offered nothing, it is not a legal target, and a negation or a Virus aimed at it is refused.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.priority.resolving — while Premonition is resolving it cannot be targeted, negated, augmented or responded to"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R78",
+          "quote": "The last response window closed when both players passed; a resolving item is"
+        },
+        {
+          "ref": "R79 (its stack-virus half)",
+          "quote": "you cannot virus a spell that is RESOLVING.**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R78": "d2630a4f6400d2df4daef0df97a2ce3c2a55a56143bba36c96675646a3f70eae",
+      "R79": "277d0cf45026e900543e1fb8289130794a9da06a12d6c29e967b7ba613b96f5d"
+    }
+  },
+  {
+    "key": "effects.priority.deployment",
+    "parent": "703",
+    "order": 7,
+    "text": "Deployment uses the stack, but each player has a stack of their own there. Only that player sees it and holds priority over it; no other player can respond to it or is made to wait on it.",
+    "examples": [
+      {
+        "text": "Example: a deploy-timing spell played in deployment is a real stack item, so Earthbound Replicator can copy it.",
+        "test": "138-spell-copy.test.ts::R286/CT-176: a deploy-timing play names a REAL stack item"
+      }
+    ],
+    "see": [
+      "507"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R286",
+          "quote": "> \"It does get the stack. But it's an isolated stack just for the person in that"
+        },
+        {
+          "ref": "R286",
+          "quote": "2. **That stack belongs to one seat**, and so does the priority over it. The"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R144",
+          "relation": "its half (a) (deployment triggers on one shared stack) was amended by R286"
+        },
+        {
+          "ruling": "R250",
+          "relation": "its §3 deployment half (no priority in deployment) was amended by R286"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "138-spell-copy.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R286": "ccded1b908b0ddb26c645c806165abd912a5b55685059eeb46802063912b1c03"
+    }
+  },
+  {
+    "key": "effects.priority.haste-step",
+    "parent": "703",
+    "order": 8,
+    "text": "There is no priority in the haste step. Haste cards are played there as special actions.",
+    "examples": [
+      {
+        "text": "Example: Molten Upheaval played in the haste step makes its Fireball at once; no one has priority and nothing waits on a stack.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.priority.haste-step — in the haste step nobody has priority and a haste card resolves at once with no stack"
+      }
+    ],
+    "see": [
+      "504"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "Haste cards can also"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R97",
+          "quote": "> **calebgannon:** \"There is no priority during the mana step, but you can play haste cards"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "Caleb's words are quoted in R97 without an RAQ id (\"mana step\" = haste step, per R97). Primary home is 504.",
+    "sourceHashes": {
+      "R97": "85b25c9bc3cbe10d572a877ca22452c29e74fb0333d60ff88d3a690d1c3d98d6"
+    }
+  },
+  {
+    "key": "effects.resolution.order",
+    "parent": "704",
+    "order": 1,
+    "text": "When an effect resolves, its instructions are carried out in the order printed, and a later instruction sees the results of an earlier one. The exception is target legality: it is judged once, as the effect begins to resolve (effects.resolution.recheck), so an earlier instruction cannot make a later instruction's target illegal.",
+    "examples": [
+      {
+        "text": "Example: Finality (\"Negate all other effects. Erase all cards in bins.\") erases the cards it has just negated, because they are in bins by its second sentence.",
+        "test": "61-negation.test.ts::Finality erases the very cards it just negated"
+      }
+    ],
+    "see": [
+      "effects.resolution.recheck"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R68 (its Finality ordering note)",
+          "quote": "The straightforward reading of the printed text is implemented — the sentences"
+        },
+        {
+          "ref": "R324",
+          "quote": "the same item therefore cannot make a later part's target illegal"
+        }
+      ],
+      "history": [],
+      "engine": [
+        "markIllegalTargets"
+      ],
+      "tests": [
+        "61-negation.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "The general order has no printed, designer or owner source: that half is engine only (D-U14-10). The legality exception is R324 (designer-backed). R68's Finality note describes the implemented reading and asks for a ruling (\"Bena to rule\"), so the Finality example awaits the owner (D-U14-6). Whether a target that leaves play during the resolution is lost to a later instruction is D-U14-13. markIllegalTargets is named by R324's own text.",
+    "sourceHashes": {
+      "R324": "44be5fd7d7c93923d37764c5ab876f263fdb2cab0e12fc7278a80b694c4dd4fa",
+      "R68": "3ef015e7c78a67ac12901c7269323850cb775c714f6ecdd26a8fa5f476a97488"
+    }
+  },
+  {
+    "key": "effects.resolution.order.choices",
+    "parent": "effects.resolution.order",
+    "order": 1,
+    "text": "Choices an effect makes that are not targets (how to divide damage among a player's units, which card to discard, whether to pay an optional amount inside the effect) are made while it resolves.",
+    "examples": [
+      {
+        "text": "Example: Xenopod Progenitor's trigger goes on the stack with no payment asked; its [1] is asked as it resolves.",
+        "test": "390-raq-stack.test.ts::RAQ Xenopod: the trigger goes on the stack with no payment asked"
+      }
+    ],
+    "see": [
+      "effects.casting.brackets"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1397189214352703590#0",
+          "quote": "when effect is being resolved you can choose to pay 1"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R67",
+          "quote": "fixed. Choices that are *not* targets stay where they are — which pile to cache,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R67": "4668406f8842ecc2cba8813e5abfecd927864ad9a6bde08c8a56525f270a4880",
+      "RAQ 1397189214352703590#0": "322053f615f494f295f4e62e5f3a5afbf5e1d293dde906ba99911c8d479439df"
+    }
+  },
+  {
+    "key": "effects.resolution.order.no-window",
+    "parent": "effects.resolution.order",
+    "order": 2,
+    "text": "No priority window opens around a payment or choice made while an effect resolves.",
+    "examples": [
+      {
+        "text": "Example: while Premonition asks its controller which card to cache, the other player has no action; the choice made, Premonition finishes without any pass.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.resolution.order.no-window — the choice Premonition asks while resolving opens no priority window, and the item finishes as soon as it is made"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R6",
+          "quote": "decline, mid-resolution. No priority window around the payment."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R6": "5fd48d6da6d8214d005aacf6d7daa0ff574edb010a514dd4b63899feb1f4a62e"
+    }
+  },
+  {
+    "key": "effects.resolution.destination",
+    "parent": "704",
+    "order": 2,
+    "text": "When a spell resolves it goes to its controller's bin. When a spell unit resolves it enters play as a unit instead.",
+    "examples": [
+      {
+        "text": "Example: a resolved Luminous Arc is in its controller’s bin; a resolved Jelly is in play as a unit.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.resolution.destination — a resolved spell goes to its controller bin, and a resolved spell unit enters play"
+      }
+    ],
+    "see": [
+      "405"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "When a spell resolves, it goes directly to the player’s"
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "placed in the bin when they resolve, spell units spawn"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R250 (§4, zones follow control)",
+          "quote": "\"**Zones ALWAYS follow control. One rule, no split.** Whoever CONTROLLED the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The Manual says \"the player’s\" bin; \"controller\" is R250 §4.",
+    "sourceHashes": {
+      "R250": "85f8949b08f8ce75cfdb86bf8e04db453b4f36aa27bd63c5b44ca693e61ffc53"
+    }
+  },
+  {
+    "key": "effects.resolution.destination.not-trashed",
+    "parent": "effects.resolution.destination",
+    "order": 1,
+    "text": "A card that goes to a bin from the stack is not trashed.",
+    "examples": [
+      {
+        "text": "Example: two Luminous Arcs reach the bin from the stack, one resolved and one fizzled; neither is trashed.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.resolution.destination.not-trashed — a spell that resolves into the bin and one that fizzles into it fire no trashed event"
+      }
+    ],
+    "see": [
+      "801"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R68 (its removal-and-destination half)",
+          "quote": "R40: it comes **from the stack**, so this is *not* a trash, and no `trashed`"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R68": "3ef015e7c78a67ac12901c7269323850cb775c714f6ecdd26a8fa5f476a97488"
+    }
+  },
+  {
+    "key": "effects.resolution.destination.token",
+    "parent": "effects.resolution.destination",
+    "order": 2,
+    "text": "A spell token never goes to a bin; it is erased.",
+    "examples": [],
+    "see": [
+      "304"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "during the game. If they leave play or enter a zone such as a"
+        },
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "hand or discard, they are erased from the game and returned to"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R68 (its removal-and-destination half)",
+          "quote": "- **spellToken** — erased. A token never reaches a bin (R40)."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "61-negation.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R68": "3ef015e7c78a67ac12901c7269323850cb775c714f6ecdd26a8fa5f476a97488"
+    }
+  },
+  {
+    "key": "effects.resolution.destination.unstable",
+    "parent": "effects.resolution.destination",
+    "order": 3,
+    "text": "A spell that is Unstable, or that carries a Virus applied to it on the stack, is erased instead of going to a bin, whether it resolves, fizzles or is negated.",
+    "examples": [
+      {
+        "text": "Example: a spell played from the bin under Abyssal Evocation is Unstable, so it is erased and not put back in the bin.",
+        "test": "12-fire-a.test.ts::Abyssal Evocation: a bin-played spell is {Unstable}"
+      },
+      {
+        "text": "Example: a spell played from the bin under Abyssal Evocation that fizzles is erased too.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.resolution.destination.unstable — a spell played from the bin under Abyssal Evocation that fizzles is erased, not binned"
+      }
+    ],
+    "see": [
+      "723"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R79 (its stack-virus half)",
+          "quote": "> and the spell gets erased on resolution**. You can augment spells during"
+        },
+        {
+          "ref": "R96",
+          "quote": "`dischargeItem` is the one an ordinary bin-played spell hits, and it is the single choke"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R68",
+          "relation": "its bin destination for a negated card is narrowed by R79: an Unstable one is erased"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "12-fire-a.test.ts",
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Caleb 2025-03-06 (\"the spell gets erased on resolution\") is quoted inside R79 with no RAQ id.",
+    "sourceHashes": {
+      "R79": "277d0cf45026e900543e1fb8289130794a9da06a12d6c29e967b7ba613b96f5d",
+      "R96": "27ccfc58d69e2c67a5b067a922938f11a666274460cf1630ddcc1ad44c171f5a"
+    }
+  },
+  {
+    "key": "effects.resolution.destination.copy",
+    "parent": "effects.resolution.destination",
+    "order": 4,
+    "text": "A copy of a spell has no card. When it resolves or leaves the stack, nothing goes to a bin.",
+    "examples": [
+      {
+        "text": "Example: a resolved copy of Suspend bins nothing, and its \"Erase me.\" erases nothing.",
+        "test": "138-spell-copy.test.ts::a resolved copy bins nothing"
+      }
+    ],
+    "see": [
+      "710"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R164",
+          "quote": "**A copy has NO CARD.** `item.card` on a copy names what it is a copy *of*, and"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "138-spell-copy.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R164": "24f4b987dd356a0bf52f1ad4d26d58e24421434d2253752fd40d056683bc8514"
+    }
+  },
+  {
+    "key": "effects.resolution.spell-unit",
+    "parent": "704",
+    "order": 3,
+    "text": "A spell unit's spell effect happens first; if it resolves, the unit then enters play. If the spell unit is prevented from resolving (negated, or with its targets made invalid), the unit does not enter play and the card goes to the bin.",
+    "examples": [
+      {
+        "text": "Example: a spell unit played through Hooba-Pon has its spell part happen, then spawns into the formation.",
+        "test": "396-raq-timing.test.ts::RAQ Hooba-Pon spell unit: the spell part happens, then the unit spawns into the formation"
+      }
+    ],
+    "see": [
+      "303"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "invalid, the unit will not spawn and will enter the bin."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1461450216874967235#1",
+          "quote": "As always - if the spell is negated, then unit doesn't enter play."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R97",
+          "quote": "part happens and if it resolves, the unit will spawn into formation\"*, and *\"Q: Does that"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R97": "85b25c9bc3cbe10d572a877ca22452c29e74fb0333d60ff88d3a690d1c3d98d6",
+      "RAQ 1461450216874967235#1": "1afad7ef4c9e3ea98f6bf01bcd70ecf19a028cb13e5ef3149dfe04aa2e07d0f1"
+    }
+  },
+  {
+    "key": "effects.resolution.negation",
+    "parent": "704",
+    "order": 4,
+    "text": "A negated effect is removed from the stack at once, when the effect that negates it resolves. It does not resolve.",
+    "examples": [
+      {
+        "text": "Example: one mass negate removes all its victims from the stack together, with no extra priority rounds.",
+        "test": "61-negation.test.ts::R68: a mass negate empties the stack of its victims AT ONCE"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R68 (its removal-and-destination half)",
+          "quote": "**The rule.** A negated item leaves the stack the instant the negation"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "61-negation.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R68": "3ef015e7c78a67ac12901c7269323850cb775c714f6ecdd26a8fa5f476a97488"
+    }
+  },
+  {
+    "key": "effects.resolution.negation.destination",
+    "parent": "effects.resolution.negation",
+    "order": 1,
+    "text": "A negated spell, spell unit, unit, ambush or Virus goes to its controller's bin, and a negated Virus cannot be used as a Virus again. A negated spell token is erased. A negated triggered or activated ability just leaves the stack, because it has no card of its own.",
+    "examples": [
+      {
+        "text": "Example: a negated spell token is erased, never binned.",
+        "test": "61-negation.test.ts::R68: a negated spell TOKEN is erased, never binned"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.34",
+          "quote": "effect, so it can be interacted with and negated. If a virus is negated or"
+        },
+        {
+          "ref": "Manual p.34",
+          "quote": "its target becomes invalid, it is placed into the bin, and cannot be used"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R68 (its removal-and-destination half)",
+          "quote": "- **spell / spellUnit / unit / virus / ambush** — to its controller's **bin**."
+        },
+        {
+          "ref": "R68 (its removal-and-destination half)",
+          "quote": "- **triggered / activated** — nothing. The ability has no card of its own; the"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R68",
+          "relation": "narrowed by R79: a negated card that is Unstable is erased instead of binned"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "61-negation.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Unstable carriers are erased instead (704.2c).",
+    "sourceHashes": {
+      "R68": "3ef015e7c78a67ac12901c7269323850cb775c714f6ecdd26a8fa5f476a97488"
+    }
+  },
+  {
+    "key": "effects.resolution.negation.no-arrival",
+    "parent": "effects.resolution.negation",
+    "order": 2,
+    "text": "A negated unit or spell unit never enters play.",
+    "examples": [
+      {
+        "text": "Example: negating a unit on the stack: it never arrives, and its card goes to the bin.",
+        "test": "118-stack-effect.test.ts::R128: negating a unit on the stack"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1461450216874967235#1",
+          "quote": "As always - if the spell is negated, then unit doesn't enter play."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R128",
+          "quote": "**the unit never arrives** — `resolveItem`'s `spawnUnit` call is never made;"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "118-stack-effect.test.ts",
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R128": "3eb5fb10d68f22510867c410a45e9bd1c43bd44b62800921895a6b3b38ef8f46",
+      "RAQ 1461450216874967235#1": "1afad7ef4c9e3ea98f6bf01bcd70ecf19a028cb13e5ef3149dfe04aa2e07d0f1"
+    }
+  },
+  {
+    "key": "effects.resolution.recheck",
+    "parent": "704",
+    "order": 5,
+    "text": "As an effect begins to resolve, each target it declared is checked again by the rule it was chosen under: its kind, its printed restriction, its region, and being different from the other targets. A target that fails the check is lost, exactly like a target that has left play.",
+    "examples": [
+      {
+        "text": "Example: an Ambush whose ally was stolen in response recalls nothing.",
+        "test": "390-raq-stack.test.ts::RAQ valid targets: an Ambush whose ally changed sides before it resolves recalls nothing"
+      }
+    ],
+    "see": [
+      "110"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355466429788328066#1",
+          "quote": "If you did target something which was valid, but became invalid target then effect will fizzle on resolution."
+        },
+        {
+          "ref": "RAQ 1355466429788328066#2",
+          "quote": "Ambush won't resolve as it's effect 'Recall target ALLY' and that unit is no longer ally of your opponent"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R324",
+          "quote": "When an item begins to resolve, every target it declared is judged again by the"
+        },
+        {
+          "ref": "R324",
+          "quote": "slot's printed restriction, the region, and distinct from the slots before it."
+        },
+        {
+          "ref": "R56",
+          "quote": "never what will still be true later. Redirection, death, region changes and"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R64",
+          "relation": "its statement that a printed restriction is not re-asked at resolution was amended by R324"
+        },
+        {
+          "ruling": "R256",
+          "relation": "its remark that a restriction is never re-asked was amended by R324"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "R88 and R144 still say a restriction is never re-asked at resolution: D-U14-4.",
+    "sourceHashes": {
+      "R324": "44be5fd7d7c93923d37764c5ab876f263fdb2cab0e12fc7278a80b694c4dd4fa",
+      "R56": "c2b7c013cbc35d9307446198c36f0568df160b22f11812e1b32c704e67c45e93",
+      "RAQ 1355466429788328066#1": "f53ca9b5d71cf73d523e142fa4e28c792a1389664583fec5c7076d2cc4039b9d",
+      "RAQ 1355466429788328066#2": "b9dc6c179ca7f7dde9e8d6da8311051efd7aefbceb51e702076e7dd0f181715f"
+    }
+  },
+  {
+    "key": "effects.resolution.recheck.once",
+    "parent": "effects.resolution.recheck",
+    "order": 1,
+    "text": "The check is made once, as the effect begins to resolve. An earlier part of the effect cannot make a later part's target illegal in the middle of its resolution.",
+    "examples": [],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R324",
+          "quote": "the same item therefore cannot make a later part's target illegal"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Stated in R324's encoding section, not in a designer source. engine differs: F-U14-9 (Minor Kraken’s own restriction re-check sees an earlier part’s counters).",
+    "sourceHashes": {
+      "R324": "44be5fd7d7c93923d37764c5ab876f263fdb2cab0e12fc7278a80b694c4dd4fa"
+    },
+    "untested": true,
+    "engineDiffers": [
+      "F-U14-9"
+    ]
+  },
+  {
+    "key": "effects.resolution.recheck.same-object",
+    "parent": "effects.resolution.recheck",
+    "order": 2,
+    "text": "A target remains the same object while it stays where it is. A target that changes zone (to a hand, a bin, and so on) is gone, and the effect does not follow it to a new object. A target that stays put is still a legal target even if another effect also targets it.",
+    "examples": [
+      {
+        "text": "Example: Organic Exchange may target two of its controller's own units, and another spell aimed at one of them still resolves.",
+        "test": "396-raq-timing.test.ts::Organic Exchange may target two of your own units"
+      }
+    ],
+    "see": [
+      "410"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.40",
+          "quote": "save it. The spell will not change targets to the new"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1454169054402314362#2",
+          "quote": "Things only wouldn't resolve if a unit changed to a different location (like went to your hand, the bin, etc)."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1454169054402314362#2": "b3c1d6d85b56be21075308f74a85f88594cd2eeffac19ed21962bdeecd7a25d3"
+    }
+  },
+  {
+    "key": "effects.resolution.recheck.shared-target",
+    "parent": "effects.resolution.recheck",
+    "order": 3,
+    "text": "Several effects may target the same unit, even if together they would do more than destroying it takes. If an earlier one removes it, the later ones lose that target.",
+    "examples": [],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R144 (its half (b))",
+          "quote": "> stack simultaneously and be allowed to target the same unit, even exceeding"
+        },
+        {
+          "ref": "R144 (its half (b))",
+          "quote": "items have always been free to name the same target, and the survivor fizzles —"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R144": "d38299227d982a9c48914d31fdd2feb7a885638dcd002cfafeadc2572bdf3061"
+    }
+  },
+  {
+    "key": "effects.resolution.recheck.retarget",
+    "parent": "effects.resolution.recheck",
+    "order": 4,
+    "text": "Changing an effect's targets before it resolves can save it from fizzling.",
+    "examples": [],
+    "see": [
+      "110"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1354013430805434389#2",
+          "quote": "It is possible to fix targeting before the effect would resolve to prevent fizzle"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "12-fire-a.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1354013430805434389#2": "1a5aeab2eaa6794d57c3da50c1178ed79cc7287057e0fde38366204dc60d5af8"
+    }
+  },
+  {
+    "key": "effects.resolution.fizzle",
+    "parent": "704",
+    "order": 6,
+    "text": "An effect fizzles if, as it resolves, it has lost all of its targets. A fizzled effect does nothing, and a fizzled spell goes to the bin.",
+    "examples": [
+      {
+        "text": "Example: Arc Lightning’s only target dies before it resolves; Arc Lightning fizzles, deals no damage and goes to the bin.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.resolution.fizzle — Arc Lightning whose only target died fizzles, does nothing, and goes to the bin"
+      }
+    ],
+    "see": [
+      "110"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.43",
+          "quote": "Additionally, if all of the targets for a spell are removed, the spell will fail to resolve (fizzle) and be"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1354013430805434389#0",
+          "quote": "If effect loses ALL of its targets and wants to resolve."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R86",
+          "quote": "An effect fizzles when it loses ALL its targets, and takes its untargeted parts with it"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "78-round17-core.test.ts",
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R86": "639a304dbea161a97285440693b0b8e75776b784985f43b8071cdc46ade4824c",
+      "RAQ 1354013430805434389#0": "2f5f70bb31f81207fd0063d8c5b91bb010f1129ee383f5d918fa9b37f20f25bc"
+    }
+  },
+  {
+    "key": "effects.resolution.fizzle.whole",
+    "parent": "effects.resolution.fizzle",
+    "order": 1,
+    "text": "When an effect fizzles, none of it happens, including parts of it that had no target.",
+    "examples": [
+      {
+        "text": "Example: a graft composite that loses its only target fizzles whole; its untargeted grafts make no Poison.",
+        "test": "78-round17-core.test.ts::R86: a graft composite that loses its ONLY target fizzles whole"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1354013430805434389#0",
+          "quote": "currently atleast 1 target must remain for whole effect to be carried out"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R86",
+          "quote": "1 target must remain for whole effect to be carried out\"*, and *\"in order for"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "78-round17-core.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R86": "639a304dbea161a97285440693b0b8e75776b784985f43b8071cdc46ade4824c",
+      "RAQ 1354013430805434389#0": "2f5f70bb31f81207fd0063d8c5b91bb010f1129ee383f5d918fa9b37f20f25bc"
+    }
+  },
+  {
+    "key": "effects.resolution.fizzle.partial",
+    "parent": "effects.resolution.fizzle",
+    "order": 2,
+    "text": "If an effect has lost some but not all of its targets, it resolves as best it can against those that remain, untargeted parts included.",
+    "examples": [
+      {
+        "text": "Example: an effect with two targets and an untargeted draw loses one target before it resolves; it acts on the remaining target and the draw still happens (illustrative).",
+        "test": null
+      },
+      {
+        "text": "Example: Tidal Reversion still recalls the other unit when one of its targets is removed.",
+        "test": "390-raq-stack.test.ts::RAQ target requirements: Tidal Reversion still recalls the other unit when one target is removed"
+      },
+      {
+        "text": "Example: a graft composite whose one target survives also carries out its untargeted grafts.",
+        "test": "78-round17-core.test.ts::R86: one surviving target carries the untargeted grafts through"
+      },
+      {
+        "text": "Example: Twin Flame loses one of its two targets before it resolves; the remaining target still takes its 2 damage.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.resolution.fizzle.partial — Twin Flame with one of two targets gone still damages the other"
+      },
+      {
+        "text": "Example: a graft composite with two targeted grafts loses one of the targets; the untargeted grafts still make their Poison tokens.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.resolution.fizzle.partial — a graft composite with two targets losing one still runs its untargeted part"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.43",
+          "quote": "spell will attempt to resolve as best as it can. For"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1410252965276684418#4",
+          "quote": "but it will still resolve if one of the selected targets is removed"
+        },
+        {
+          "ref": "RAQ 1354013430805434389#0",
+          "quote": "currently atleast 1 target must remain for whole effect to be carried out"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R86",
+          "quote": "1 target must remain for whole effect to be carried out"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "78-round17-core.test.ts",
+        "390-raq-stack.test.ts",
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "Round 2: \"untargeted parts included\" is sourced to RAQ 1354013430805434389#0 (\"whole effect\") and R86. No suite test loses one of two targets with an untargeted part; the verifier's probe (data/comprehensive-rules/build/probes/U14/u14-r2-probes.test.ts) shows it, so example 1 is illustrative.",
+    "sourceHashes": {
+      "R86": "639a304dbea161a97285440693b0b8e75776b784985f43b8071cdc46ade4824c",
+      "RAQ 1354013430805434389#0": "2f5f70bb31f81207fd0063d8c5b91bb010f1129ee383f5d918fa9b37f20f25bc",
+      "RAQ 1410252965276684418#4": "ee20bb154c435ac4808f0e5142e48b71bed3539be7d3ccd79047f57b9f4e98a2"
+    }
+  },
+  {
+    "key": "effects.resolution.fizzle.pair",
+    "parent": "effects.resolution.fizzle",
+    "order": 3,
+    "text": "An effect that needs two of its targets together (a fight or an exchange) does nothing if it loses one of them. It does not fizzle.",
+    "examples": [
+      {
+        "text": "Example: Fight that loses one of its two targets does nothing to the survivor.",
+        "test": "390-raq-stack.test.ts::RAQ fizzles: Fight that loses one of its two targets does nothing to the survivor"
+      },
+      {
+        "text": "Example: Organic Exchange that loses one of its two targets exchanges nothing; the survivor stays with its controller.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.resolution.fizzle.pair — Organic Exchange that loses one target exchanges nothing"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.43",
+          "quote": "if one of the targets for a fight or an exchange is removed, the effect will not be able to happen (it takes"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1354013430805434389#1",
+          "quote": "It won't fizzle, but will do nothing."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts",
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "R5 (owner) says such an effect \"fizzles\": D-U14-2.",
+    "sourceHashes": {
+      "RAQ 1354013430805434389#1": "e83f85c2edb0a47374957f320ca086a87b90532a5c955f159204e0096b1019f0"
+    }
+  },
+  {
+    "key": "effects.resolution.fizzle.untargeted",
+    "parent": "effects.resolution.fizzle",
+    "order": 4,
+    "text": "An effect that has no targeting part anywhere cannot fizzle. Nor can a part whose target was optional (\"up to\") and was left empty: declaring no target was a legal choice, and the rest of the effect still happens.",
+    "examples": [
+      {
+        "text": "Example: an item with no targeting part anywhere never fizzles.",
+        "test": "78-round17-core.test.ts::R86: an item that declares NO target anywhere never fizzles"
+      }
+    ],
+    "see": [
+      "effects.resolution.fizzle.never-had-target"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R86",
+          "quote": "resolves — it has nothing to lose"
+        },
+        {
+          "ref": "R86",
+          "quote": "declaring no target was a legal choice, and the unconditional half must happen"
+        },
+        {
+          "ref": "R86",
+          "quote": "| no targeting **anywhere** (Ignis Sprite's spawn trigger) | resolves | resolves — it has nothing to lose |"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "78-round17-core.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R86": "639a304dbea161a97285440693b0b8e75776b784985f43b8071cdc46ade4824c"
+    }
+  },
+  {
+    "key": "effects.resolution.fizzle.ambush",
+    "parent": "effects.resolution.fizzle",
+    "order": 5,
+    "text": "An ambush is a targeted effect. If its target is removed, the ambush fizzles and the ambushing unit is put into the bin.",
+    "examples": [
+      {
+        "text": "Example: the ally targeted by Lurking Slimebeast’s ambush dies; the ambush fizzles and Slimebeast goes to the bin.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.resolution.fizzle.ambush — Lurking Slimebeast whose ambush target died fizzles and goes to the bin"
+      }
+    ],
+    "see": [
+      "803"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.40",
+          "quote": "is a targeted effect, meaning if the target is removed"
+        },
+        {
+          "ref": "Manual p.40",
+          "quote": "the ability will fizzle and the ambushing unit will be put"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.resolution.fizzle.virus",
+    "parent": "effects.resolution.fizzle",
+    "order": 6,
+    "text": "A Virus whose target has become invalid when it resolves is put into the bin, and cannot be used as a Virus again.",
+    "examples": [
+      {
+        "text": "Example: a Virus’s host dies before the Virus resolves; the Virus goes to the bin and is not offered as a Virus from there.",
+        "test": "425-cr-casting-and-stack.test.ts::cr:effects.resolution.fizzle.virus — a virus whose host died before it resolved goes to the bin and is not offered as a virus again"
+      }
+    ],
+    "see": [
+      "723"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.34",
+          "quote": "its target becomes invalid, it is placed into the bin, and cannot be used"
+        },
+        {
+          "ref": "Manual p.34",
+          "quote": "as a virus again, since the virus ability only works from hand."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.resolution.fizzle.never-had-target",
+    "parent": "effects.resolution.fizzle",
+    "order": 7,
+    "text": "An effect with a required target that never had a legal candidate fizzles, although it declared no target.",
+    "examples": [
+      {
+        "text": "Example: an item whose required target had no legal candidate when it was cast fizzles.",
+        "test": "78-round17-core.test.ts::R86: a required target with no legal candidate at cast still fizzles"
+      }
+    ],
+    "see": [
+      "effects.resolution.fizzle.untargeted"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R86",
+          "quote": "| a **required** target the item never had a legal candidate for | fizzles | fizzles — it wanted a target and has none |"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "78-round17-core.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Added in revision 1: R86 rejects the reading \"declared no target, so cannot fizzle\".",
+    "sourceHashes": {
+      "R86": "639a304dbea161a97285440693b0b8e75776b784985f43b8071cdc46ade4824c"
+    }
+  },
+  {
+    "key": "effects.resolution.source-gone",
+    "parent": "704",
+    "order": 7,
+    "text": "An effect stays on the stack, and still resolves, if its source leaves play.",
+    "examples": [
+      {
+        "text": "Example: an effect stays on the stack when its unit dies, and still resolves.",
+        "test": "390-raq-stack.test.ts::RAQ dead unit: an effect stays on the stack when its unit dies and still resolves"
+      }
+    ],
+    "see": [
+      "714"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353895783266516992#0",
+          "quote": "No, it will remain on stack and will try to resolve."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R325",
+          "quote": "A unit's effect stays on the stack when the unit dies and still tries to"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R225",
+          "relation": "its first grade (a source that died with its trigger on the stack places nothing) was reversed by R325"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R325": "a8d4151f54c2ff13247eed657bddc54a936613942ac00b9140df2db6c13abfa2",
+      "RAQ 1353895783266516992#0": "412137049bfc24e827b542b3dfc79d21a4266b4b159cceaff131b8f34634faf9"
+    }
+  },
+  {
+    "key": "effects.resolution.source-gone.last-known",
+    "parent": "effects.resolution.source-gone",
+    "order": 1,
+    "text": "Where such an effect reads its source (its attributes, power, defense, or the formation it stood in), it uses the source's last-known state: what the source was at the moment it left play.",
+    "examples": [
+      {
+        "text": "Example: Bellowing Boulder dies with its ping on the stack; the ping is still Deadly, from its last state.",
+        "test": "390-raq-stack.test.ts::RAQ dead unit: Bellowing Boulder dead with its ping on the stack still pings with Deadly, its last state"
+      }
+    ],
+    "see": [
+      "714"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353895783266516992#6",
+          "quote": "his effect will check BB 'state/last known state' on resolution"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R325",
+          "quote": "formation it stood in), it reads the source's **last-known state**: what the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts",
+        "401-raq-fix-stack.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R325": "a8d4151f54c2ff13247eed657bddc54a936613942ac00b9140df2db6c13abfa2",
+      "RAQ 1353895783266516992#6": "f3fb3cc96547bc75a258d9f30b6475bdeab29e6acc173f26d9c2a674bb59c2c7"
+    }
+  },
+  {
+    "key": "effects.resolution.source-gone.needs-body",
+    "parent": "effects.resolution.source-gone",
+    "order": 2,
+    "text": "An effect that acts on its source itself, or that says \"if I am still in formation\", does nothing if the source is gone.",
+    "examples": [
+      {
+        "text": "Example: Hooba-Nan gone with its trigger on the stack makes nothing.",
+        "test": "390-raq-stack.test.ts::RAQ dead unit: Hooba-Nan gone with its trigger on the stack makes nothing"
+      }
+    ],
+    "see": [
+      "714"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353895783266516992#1",
+          "quote": "There are only couple of effects which will do nothing since unit is gone (Rousing Spirit, Hooba-Nan)."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R325",
+          "quote": "An effect that **acts on the source itself** still needs the body: putting"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R325": "a8d4151f54c2ff13247eed657bddc54a936613942ac00b9140df2db6c13abfa2",
+      "RAQ 1353895783266516992#1": "65a0c51a153352e128eef786b5383dc0e9cbd1c14d6856b85af2e3b4402ea45c"
+    }
+  }
+]

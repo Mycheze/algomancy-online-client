@@ -1,0 +1,174 @@
+[
+  {
+    "id": "F-U07-1",
+    "rule": "zones.bin.controller",
+    "title": "Biomass Devourer test title and comments still assert a stolen unit dies to its OWNER's bin",
+    "summary": "R250 reversed this: a dying unit goes to its controller's bin. The 26-metal-a test is titled and commented for the owner's bin, but its assertions pass either way: the thief's bin ends with one copy and the owner's with none whichever bin received the dead card. So the title states superseded law and the test cannot tell the two apart. Retitle it and assert that the controller's bin received the dead copy.",
+    "evidence": [
+      {
+        "file": "client/engine/test/26-metal-a.test.ts",
+        "quote": "test('R140: a stolen unit dies — the erase reaches the OWNER\\'s bin, not the controller\\'s', () => {"
+      },
+      {
+        "file": "client/engine/test/26-metal-a.test.ts",
+        "quote": "withE(h, e => e.destroy(e.entity(victim)!, 'dies'));   // → D's bin (the owner's)"
+      }
+    ]
+  },
+  {
+    "id": "F-U07-2",
+    "rule": "zones.changes.tokens.cached",
+    "title": "Two test titles disagree about a token being cached",
+    "summary": "36-cache-prophecy says a token cached from play \"is erased, not cached\". 35-rot-debt-trash (R69) says it \"visits the cache and is erased out of it\". Both assert the same end state, so neither can fail on the visit, but the 36 title states the pre-R69 model.",
+    "evidence": [
+      {
+        "file": "client/engine/test/36-cache-prophecy.test.ts",
+        "quote": "test('R46: a TOKEN cached from play is erased, not cached (there is no card)', () => {"
+      },
+      {
+        "file": "client/engine/test/35-rot-debt-trash.test.ts",
+        "quote": "test('R69: a CACHED token visits the cache and is erased out of it (⚠ engine call)', () => {"
+      }
+    ]
+  },
+  {
+    "id": "F-U07-3",
+    "rule": "zones.bin.play-from-bin",
+    "title": "Abyssal Evocation timing test is still titled OPEN after R157 §12 ruled it",
+    "summary": "R96 left open whether a bin-played card obeys its printed timing. R157 §12 (owner) answered: a bin-play grant does not waive printed timing (\"Already correct — Abyssal Evocation, Writhing Host.\"). The test and its comment still call the question open and say the assertion \"flips\" if the owner rules otherwise.",
+    "evidence": [
+      {
+        "file": "client/engine/test/12-fire-a.test.ts",
+        "quote": "test('Abyssal Evocation: ⚠ OPEN — a bin-played card obeys its PRINTED timing', () => {"
+      }
+    ]
+  },
+  {
+    "id": "F-U07-4",
+    "rule": "zones.erased.says-erase",
+    "title": "Two R208 test titles assert law that R219 reversed (cost-erased mods and the erased pile)",
+    "summary": "R219 rules that a mod erased off a living host goes to the erased pile (Slag Spewer's cost, Suppression Field). The 178 test titles still say \"Q3 is OPEN\" and \"the pile is untouched\". The assertions may have been updated without the titles; check them.",
+    "evidence": [
+      {
+        "file": "client/engine/test/178-played-item-and-erased-mods.test.ts",
+        "quote": "test('R208 Slag Spewer: an erase paid as a COST still announces itself with \"info\" — Q3 is OPEN', () => {"
+      },
+      {
+        "file": "client/engine/test/178-played-item-and-erased-mods.test.ts",
+        "quote": "test('R208 Suppression Field: mods leave host and game, the host lives, and the pile is untouched', () => {"
+      }
+    ]
+  },
+  {
+    "id": "F-U07-5",
+    "rule": "zones.cache.lapse",
+    "title": "Glossary Glimpse row says an expired glimpse card is still moddable; R303 says it is not",
+    "summary": "Our Glimpse row ends \"public, targetable, and still moddable out of the zone at full price\". R303 refuses grafting and augmenting from an expired glimpse (\"an expired glimpse is not a graft, not an augment, not anything\"), and the Cache row of the same glossary agrees with R303. Test 177 does not catch it. Fix the Glimpse row.",
+    "evidence": [
+      {
+        "file": "client/ui/glossary.ts",
+        "quote": "Afterwards the permission lapses and it just sits in the cache — public, targetable, and still moddable out of the zone at full price."
+      },
+      {
+        "file": "client/engine/test/315-cache-mod-permission.test.ts",
+        "quote": "R303: an expired glimpse is not a graft, not an augment, not anything"
+      }
+    ]
+  },
+  {
+    "id": "F-U07-6",
+    "rule": "zones.bin.unstable",
+    "title": "Engine trashes a dying {Unstable} body via the bin; print and Caleb say it never enters the bin",
+    "summary": "Per R137 the engine pushes a dying {Unstable} card into the bin, trashes it there, then sweeps it to the erased pile. The printed reminder (\"If they would enter a bin, erase them instead.\") and Caleb's glossary line in R145 make it a replacement for entering the bin, which would mean no trash. Under the authority order zones.bin.unstable states the printed reading. A divergence, not necessarily a bug: it is open as D-U07-3 and depends on the owner's answer there.",
+    "evidence": [
+      {
+        "file": "client/engine/test/224-mod-trash.test.ts",
+        "quote": "test('R137 GUARD: the BODY of an Unstable unit that dies is still trashed, mods or no mods', () => {"
+      }
+    ]
+  },
+  {
+    "id": "F-U07-7",
+    "rule": "zones.general.follow-control",
+    "title": "A stolen unit erased from play is filed on its OWNER's erased pile, not its controller's",
+    "summary": "R262 (\"All four follow control\") corrected R172 item 3, and every other route (bin, hand, cache, a mod erased off a host, an {Unstable} death's sweep) files the card under the controller. Erasing a unit from play still emits the erased event with the owner's seat, so a stolen unit erased by Banishment or Celestial Purge lands on its owner's erased pile. Measured by the round-1 verifier probe; test 246 covers only the mod route.",
+    "evidence": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "quote": "unit: u.id, card: u.card, seat: u.owner, region: u.region,"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "> Round-32 Q2, Bena verbatim: *\"**(a) All four follow control** — one rule, no"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U07/u07-a2-probes.test.ts",
+        "quote": "assert.equal(count(erasedOf(h, owner), 'Just a Unit'), 1, 'the OWNER\\'s pile has it');"
+      }
+    ]
+  },
+  {
+    "id": "F-U07-8",
+    "rule": "zones.recycle.mark.whose",
+    "title": "The R296 §5 recycle test is titled for constructed but never builds a constructed game",
+    "summary": "The title says \"constructed gives each seat its own pile; shared and draft share one\". The body asserts the harness is NOT constructed and checks only the shared pile, so the per-seat constructed pile is untested by the suite. Add a constructed case (the round-1 verifier probe shows one).",
+    "evidence": [
+      {
+        "file": "client/engine/test/300-recycle-mark.test.ts",
+        "quote": "assert.notEqual(h.state.mode, 'constructed', 'this harness is a shared-deck game');"
+      }
+    ]
+  },
+  {
+    "id": "F-U07-9",
+    "title": "eraseFromPlay files a stolen unit on its OWNER's erased pile",
+    "summary": "E.eraseFromPlay emits the erased event with seat: u.owner, so a stolen unit erased from play (Banishment, Celestial Purge) is recorded on its owner's erased pile. R262 (\"All four follow control\") superseded R172 item 3; every other route (bin, hand, cache, eraseMod, an Unstable death's sweep) uses the controller.",
+    "evidence": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "quote": "unit: u.id, card: u.card, seat: u.owner, region: u.region,"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "> Round-32 Q2, Bena verbatim: *\"**(a) All four follow control** — one rule, no"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U07/u07-a2-probes.test.ts",
+        "quote": "assert.equal(count(erasedOf(h, owner), 'Just a Unit'), 1, 'the OWNER\\'s pile has it');"
+      }
+    ],
+    "rule": "zones.general.follow-control"
+  },
+  {
+    "id": "F-U07-10",
+    "title": "Unstable card dying from play is binned and trashed before erasure (documented owner divergence from the designer)",
+    "summary": "R137 has an Unstable unit that dies enter the bin, be trashed, then be erased; Caleb (2025-04-08) and the printed reminder say it is erased INSTEAD of entering the bin. Recorded on purpose in R137, so not a regression — listed because the brief asks for any engine/designer contradiction.",
+    "evidence": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "**An Unstable card that dies enters a bin, is trashed there, and is only then"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "  *\"Unstable units still die, they just get erased instead of ending up in the"
+      }
+    ],
+    "rule": "zones.bin.unstable"
+  },
+  {
+    "id": "F-U07-11",
+    "title": "A dying {Unstable} card enters the bin and is trashed before being erased",
+    "summary": "disposeToBin pushes an Unstable card into the bin, fires died(to:'bin') and noteTrashed, then sweeps it to the erased pile. The printed reminder ('If they would enter a bin, erase them instead.') and Caleb 2025-04-08 ('they just get erased instead of ending up in the bin') say it never enters the bin, so no trash should happen. This is a deliberate, recorded owner divergence (R137, still current); listed because the engine contradicts print and the designer.",
+    "evidence": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "quote": "this.noteTrashed(binSeat, u.card, 'play', u);"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "**An Unstable card that dies enters a bin, is trashed there, and is only then"
+      }
+    ],
+    "rule": "zones.bin.unstable"
+  }
+]

@@ -1,0 +1,4804 @@
+[
+  {
+    "key": "zones.bin.controller",
+    "textHash": "0a4c74e2a178c22d",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U07-r2-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:disposeToBin",
+        "agrees": true,
+        "note": "binSeat = opts.binTo ?? u.controller; noteTrashed(binSeat, ...) so the bin's owner trashes; token anchor never trashed"
+      },
+      {
+        "loc": "cards Pull Under",
+        "agrees": true,
+        "note": "destroy(..., { binTo: caster, keepBinned: true })"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "229-cosmic-and-control.test.ts",
+        "pattern": "every unit-shaped card dies into the bin of whoever controls it",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "15-water-b.test.ts",
+        "pattern": "ENEMY unmodded victim is trashed by the CASTER",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "15-water-b.test.ts",
+        "pattern": "TOKEN victim enters the CASTER bin untrashed",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Pull Under",
+        "supports": "yes",
+        "note": "names the caster's bin"
+      },
+      {
+        "ref": "R250 §4",
+        "supports": "yes",
+        "note": "the controller trashes it and it goes to their graveyard"
+      },
+      {
+        "ref": "R306",
+        "supports": "yes",
+        "note": "a token is not a card, so not trashed"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const binSeat = opts.binTo ?? u.controller;"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> \"The controller trashes it and it goes to their graveyard. In Algomancy,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "The {Unstable} carve-out defers to zones.bin.unstable; in the engine an Unstable card that dies still enters the controller's bin and is trashed there before the erase (R137)."
+  },
+  {
+    "key": "zones.bin.entering",
+    "textHash": "eb729dbcb6cfe3c9",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:destroy/disposeToBin, discardFromHand, dischargeItem",
+        "agrees": true,
+        "note": "death, delete, sacrifice, discard, resolution and negation/fizzle all reach toBin or the bin push"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.41",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.34",
+        "supports": "yes",
+        "note": "virus negated/fizzled -> bin"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "a unit dies or is deleted, it is placed in the bin (discard"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "its target becomes invalid, it is placed into the bin, and cannot be used"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.bin.entering.ambush-fizzle",
+    "textHash": "b6f5fd8bd29a2342",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:resolveItem fizzle branch -> dischargeItem",
+        "agrees": true,
+        "note": "item.kind === 'ambush' passes hasCard=true, so a fizzled ambusher is binned (from the stack, untrashed)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "08-cards2.test.ts",
+        "pattern": "Ambush fizzles when the target is removed — the ambusher is binned (R22)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.40",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "the ability will fizzle and the ambushing unit will be put"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "// a fizzled spell unit never spawns; a fizzled ambusher is binned too"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.bin.entering.spell-unit-fails",
+    "textHash": "cdb97753265c1cd1",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U07-r2-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:resolveItem (R86/R324 fizzle branch)",
+        "agrees": true,
+        "note": "an item that declared targets and lost all of them calls dischargeItem(item, true) for spellUnit: no spawn, bin, no trash"
+      },
+      {
+        "loc": "engine.ts:negate/dischargeItem",
+        "agrees": true,
+        "note": "a negated spellUnit is binned via toBin(...'stack')"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "Hooba-Pon spell unit: negated",
+        "passed": true,
+        "asserts_claim": "yes for the example (no Jelly body); it does not assert the bin half"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U07/u07-r2-a2-probes.test.ts",
+        "title": "zones.bin.entering.spell-unit-fails: a spell unit whose only target left play does not spawn, enters the bin, and is not trashed",
+        "passed": true,
+        "demonstrates": "yes: Jelly's target recalled in response, Jelly fizzled, no body, one more Jelly in the caster's bin, no trash"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": "literal: spell unit prevented from resolving does not spawn and enters the bin"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (targeted && !item.parts.some(partAlive)) {"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "this.toBin(item.controller, item.card, 'stack');"
+      },
+      {
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "text": "assert.ok(!unitsOf(h, A).some(u => u.card === 'Jelly'), 'no Jelly body');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Bound example test asserts only 'does not enter play'; the bin half is shown by the probe."
+  },
+  {
+    "key": "zones.bin.identity",
+    "textHash": "273a1c07d9f76ad1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "PlayerState.bin: CardName[]",
+        "agrees": true,
+        "note": "BinRef = (name, nth)"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R140",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R131",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A bin holds bare card NAMES, so identity in a bin is (name, nth occurrence)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.bin.identity.another",
+    "textHash": "7095f185ec725fb2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:noteTrashed binNth",
+        "agrees": true,
+        "note": "the trash names (name, nth occurrence); only that slot is excluded"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "121-another-identity.test.ts",
+        "pattern": "R131 Blightwalker",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R131",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "## R131 — \"another\" is a different ENTITY, not a different card name"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.bin.identity.that-card",
+    "textHash": "7fa6b9d9e095554e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:eraseFromZone (index)",
+        "agrees": true,
+        "note": "a named slot that no longer holds the card is \"gone\" — no fallback name search"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "26-metal-a.test.ts",
+        "pattern": "R140: Biomass Devourer does NOT erase an innocent older copy",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R140",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "? (bin[at.index] === name ? at.index : -1)   // R140: a mismatch is \"gone\", never a search"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.bin.leaving",
+    "textHash": "f3799c4cf7dfbe93",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:removeFromBin",
+        "agrees": true,
+        "note": "the one bin-removal path; fires 'leftBin' with a reason (recalled, revived, erased, cached, played, prophesied, recycled, modded)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "42-dark-b.test.ts",
+        "pattern": "Writhing Host (R123/R124): the grantor leaves through the R124 choke point",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Rotling",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R124",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const ev = this.ev('leftBin', '', { seat, card: name!, reason });"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.bin.mods-from-bin",
+    "textHash": "902e036139248fc8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "apply.ts mod offers (ModZone hand|bin|cache)",
+        "agrees": true,
+        "note": "bin augments/grafts offered in deployment when cost and affinity are met"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 point 3",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.15",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.34",
+        "supports": "partly",
+        "note": "virus-specific"
+      },
+      {
+        "ref": "RAQ 1355115946032889914#2",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "apply augments both from your hand and from your discard. Typically, Aug-"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.bin.mods-from-bin.virus",
+    "textHash": "a61e965958df9d5d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "apply.ts:battleAugmentAllowed",
+        "agrees": true,
+        "note": "a {Virus} is a battle augment only from 'hand' or 'cache'; a bin virus needs a granting card (Rook)"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U07/u07-a2-probes.test.ts",
+        "title": "zones.bin.mods-from-bin.virus: a {Virus} in the bin is offered as an augment in deployment, never in battle",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.34",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "cannot be used as a mod during battle."
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (c.virus && (from === 'hand' || from === 'cache')) return true;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Note only: a card granting bin augments in battle (Rook) is a printed exception the rule does not mention."
+  },
+  {
+    "key": "zones.bin.play-from-bin",
+    "textHash": "bcc151be5a20c28f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "apply.ts pushBinPlays/playAtTiming",
+        "agrees": true,
+        "note": "bin plays need a grant or own text; printed timing applies"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "12-fire-a.test.ts",
+        "pattern": "Abyssal Evocation: ⚠ OPEN — a bin-played card obeys its PRINTED timing",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Abyssal Evocation",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Trench Stalker",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R157 §12",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> *\"Cards that let you ignore timing say something like 'You may play them"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Note only: the bound test title still says \"⚠ OPEN\"; R157 §12 has since settled it in the tested direction."
+  },
+  {
+    "key": "zones.bin.play-from-bin.unstable",
+    "textHash": "002303d15b384958",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "apply.ts:doPlayFromBin",
+        "agrees": true,
+        "note": "unstable is passed only on the granting-card route"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "12-fire-a.test.ts",
+        "pattern": "Abyssal Evocation: a bin-played spell is {Unstable}",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "46-hybrids-ld-c.test.ts",
+        "pattern": "Trench Stalker (R123): played from your bin",
+        "passed": true,
+        "asserts_claim": "yes: the own-text route arrives WITHOUT {Unstable}"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Abyssal Evocation",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R123",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "under its OWN line is **NOT stamped {Unstable}**. The R96 stamp is the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.bin.trash",
+    "textHash": "8cbb730662c113fb",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U07-r2-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:toBin",
+        "agrees": true,
+        "note": "from 'stack' (and test-only 'sandbox') returns before noteTrashed; every other zone trashes"
+      },
+      {
+        "loc": "engine.ts:noteTrashed",
+        "agrees": true,
+        "note": "token anchor never trashed"
+      },
+      {
+        "loc": "engine.ts:disposeToBin",
+        "agrees": true,
+        "note": "nontoken mods are trashed only when !willSweep, i.e. not when erased with an Unstable host"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "spell going to the bin after RESOLVING is not trashed",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "TOKEN dying enters the bin, is NOT trashed",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "224-mod-trash.test.ts",
+        "pattern": "nontoken mod erased with its Unstable host is not trashed at all",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R40",
+        "supports": "yes",
+        "note": "the destination definition, stack excluded"
+      },
+      {
+        "ref": "R306",
+        "supports": "yes",
+        "note": "restores the noun: a CARD entering a bin; tokens not trashed"
+      },
+      {
+        "ref": "R244 §2",
+        "supports": "yes",
+        "note": "a nontoken mod erased with its Unstable host is not trashed"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (from === 'stack' || from === 'sandbox') return;"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (!willSweep) {"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**2. A nontoken mod erased with its {Unstable} host is not trashed at all.** It"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Accurate. Note the engine also does not trash a test-mode 'sandbox' bin placement (outside the rules), and an {Unstable} HOST that dies is itself still trashed in the engine (R137) — consistent with this rule's text, which only exempts the mod."
+  },
+  {
+    "key": "zones.bin.trash.inline-play",
+    "textHash": "e21e4a82eeb54083",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:dischargeItem",
+        "agrees": true,
+        "note": "R198: the free play really comes off the stack, so toBin(..., 'stack')"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "15-water-b.test.ts",
+        "pattern": "R146: Tides plays an ORDINARY spell for free",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R146",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "## R146 — a card entering a bin goes through the choke point, and an inline play can still erase itself"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.bin.unstable",
+    "textHash": "b90c5f4e9a0e9c51",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U07-r2-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:dischargeItem",
+        "agrees": true,
+        "note": "from the STACK an Unstable item goes straight to the erased pile, no bin"
+      },
+      {
+        "loc": "engine.ts:disposeToBin / destroy",
+        "agrees": false,
+        "note": "from PLAY the engine pushes the card into the bin, fires died(to:'bin'), trashes it, then erases it (R137) — the flagged divergence is real"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "125-active-zone.test.ts",
+        "pattern": "Aberrant Statweaver negated off the stack is ERASED",
+        "passed": true,
+        "asserts_claim": "yes: stack route"
+      },
+      {
+        "file": "125-active-zone.test.ts",
+        "pattern": "DISCARDED FROM HAND bins and TRASHES",
+        "passed": true,
+        "asserts_claim": "yes: inactive zone is not replaced"
+      },
+      {
+        "file": "42-dark-b.test.ts",
+        "pattern": "Hooba-Mon exchanges a MODDED host",
+        "passed": true,
+        "asserts_claim": "yes for the divergence: order ['trashed','erased']"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U07/u07-r2-a2-probes.test.ts",
+        "title": "zones.bin.unstable (measure): a modded unit that DIES passes through the bin and is TRASHED before the erase (the engine divergence)",
+        "passed": true,
+        "demonstrates": "yes: confirms the divergence from play"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Abyssal Evocation",
+        "supports": "yes",
+        "note": "printed reminder: if they would enter a bin, erase them instead"
+      },
+      {
+        "ref": "R145 (glossary line)",
+        "supports": "yes",
+        "note": "Caleb's glossary definition quoted in R145: active zone -> erase instead"
+      },
+      {
+        "ref": "R145 (active zones)",
+        "supports": "yes",
+        "note": "play and stack are the active zones"
+      },
+      {
+        "ref": "R137 (history)",
+        "supports": "yes",
+        "note": "R137 itself records it diverges from the printed reminder and Caleb 2025-04-08"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "1. **The ACTIVE ZONES are PLAY (the field / a formation) and the STACK.**"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**An Unstable card that dies enters a bin, is trashed there, and is only then"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "this.noteTrashed(binSeat, u.card, 'play', u);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Ruling confirmed against print + designer; engineDiffers is real for the from-play route only (the stack route agrees). R137 is still a current owner ruling that says the opposite; the rule relies on the authority order."
+  },
+  {
+    "key": "zones.bin.what",
+    "textHash": "7dc5974c410690ef",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "PlayerState.bin",
+        "agrees": true,
+        "note": "per-seat discard pile"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.44",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "a unit dies or is deleted, it is placed in the bin (discard"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.cache.from-play",
+    "textHash": "5c7dec58cca0d360",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:cacheUnit",
+        "agrees": true,
+        "note": "leavePlay pushes nontoken mods to the bin; afterDespawn trashes them"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "36-cache-prophecy.test.ts",
+        "pattern": "R46: caching a unit sheds its mods to the bin",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R46",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "## R46 — Mods do not follow a card into cache"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.cache.lapse",
+    "textHash": "789a1bc9f9a03675",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:cachePermission",
+        "agrees": true,
+        "note": "expired stamp -> null; the entry stays"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "36-cache-prophecy.test.ts",
+        "pattern": "R45: the glimpse permission expires at end of turn",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R303",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R45",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "The card stays in the cache when the window closes (R45) — it just does nothing there,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.cache.no-permission",
+    "textHash": "d006e52bafc78301",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:cachePermission",
+        "agrees": true,
+        "note": "returns null with no fulfilled prophecy and no live glimpse; playCached is then neither offered nor accepted"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "36-cache-prophecy.test.ts",
+        "pattern": "R41: being in the cache is NOT permission",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "glossary: Cache (ours)",
+        "supports": "no",
+        "note": ""
+      },
+      {
+        "ref": "R303",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Being in the cache is not permission to do *anything* with a card (R41). A cached card"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.cache.no-permission.like-hand",
+    "textHash": "e035af96dac14802",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "apply.ts:battleAugmentAllowed + cache offers",
+        "agrees": true,
+        "note": "R311: the cache offers what the hand offers, in every window"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "370-cached-virus-in-battle.test.ts",
+        "pattern": "R311: a glimpsed Virus in the cache goes onto an ENEMY unit in battle",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "315-cache-mod-permission.test.ts",
+        "pattern": "R303: a LIVE glimpse grafts for the card's mana",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "369-cache-is-the-hand.test.ts",
+        "pattern": "R311: every card in the pool offers the same modes",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1537748882501668934#3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1537748882501668934#4",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R311",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/370-cached-virus-in-battle.test.ts",
+        "text": "test('R311: a glimpsed Virus in the cache goes onto an ENEMY unit in battle, ignoring affinity', () => {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.cache.no-permission.live",
+    "textHash": "0b517326fbda4155",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:cachePermission",
+        "agrees": true,
+        "note": "fulfilled prophecy, or playableUntilTurn >= current turn"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "36-cache-prophecy.test.ts",
+        "pattern": "R45: the glimpse permission expires at end of turn",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "315-cache-mod-permission.test.ts",
+        "pattern": "R303: an expired glimpse",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R303",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (cc.playableUntilTurn !== undefined && this.s.turn <= cc.playableUntilTurn) return 'glimpse';"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.cache.no-permission.price",
+    "textHash": "9c4eabe4783ff54a",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U07-r2-a2",
+    "engine": [
+      {
+        "loc": "apply.ts:sourcePrice",
+        "agrees": true,
+        "note": "prophecy -> free + ignoreAffinity; glimpse -> mana paid, affinity ignored; the same price is used for plays and mods (modAffordable)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "36-cache-prophecy.test.ts",
+        "pattern": "released prophecy is FREE and ignores affinity",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "315-cache-mod-permission.test.ts",
+        "pattern": "the glimpse waives the pips, NOT the mana",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "315-cache-mod-permission.test.ts",
+        "pattern": "LIVE glimpse grafts for the card",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "315-cache-mod-permission.test.ts",
+        "pattern": "FULFILLED prophecy still grafts for free",
+        "passed": true,
+        "asserts_claim": "yes: the mods-included clause for prophecy"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R311",
+        "supports": "yes",
+        "note": "fulfilled prophecy free incl. affinity; glimpse pays mana, ignores affinity"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "? { free: true, ignoreAffinity: true }"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": ": { free: false, ignoreAffinity: true };"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "a **fulfilled prophecy** is free (affinity ignored too);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Key name ('no-permission') does not describe the content but the text is right. Designer support exists but is not cited (Caleb 2024-12-03, quoted in apply.ts: 'you can graft or augment for free if the prophecy is completed')."
+  },
+  {
+    "key": "zones.cache.no-permission.timing",
+    "textHash": "5f1b7fc2fa262f99",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:cachedTiming",
+        "agrees": true,
+        "note": "returns the printed timing, always"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "36-cache-prophecy.test.ts",
+        "pattern": "R42: normal TIMING still applies",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R311",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "return this.card(this.cache(seat)[index]!.card).timing;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.cache.not-the-hand",
+    "textHash": "7d04b3f3c13de817",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "apply.ts discardMe offers",
+        "agrees": true,
+        "note": "discard-me is a hand-only action; R100 hand restrictions do not reach the cache"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "369-cache-is-the-hand.test.ts",
+        "pattern": "R311: every card in the pool offers the same modes from the cache as from the hand",
+        "passed": true,
+        "asserts_claim": "yes: the sweep exempts discardMe from the hand side only, so a cache discard offer would be a mismatch"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R311",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/369-cache-is-the-hand.test.ts",
+        "text": " *  - \"Discard me\" (`c.discardMe`) is hand-only: discarding is a hand action."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.cache.prophesy-in-place",
+    "textHash": "6f9b394e4b987ab0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "apply.ts prophesy from cache",
+        "agrees": true,
+        "note": "banner attached to the same cache entry; playableUntilTurn cleared"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "36-cache-prophecy.test.ts",
+        "pattern": "R308: a GLIMPSED card with a banner may be prophesied where it stands",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R308",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "## R308 — A glimpsed card may be prophesied from the cache"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.cache.public",
+    "textHash": "c3d4a853ce183d0b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "view.ts",
+        "agrees": true,
+        "note": "the cache is not redacted; cached events are public log lines"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "36-cache-prophecy.test.ts",
+        "pattern": "R41: the cache is PUBLIC",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R41",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "## R41 ⚠ — Cache is public information"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.cache.targetable",
+    "textHash": "b4422c8da689ff03",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:pushCachedCardTargets",
+        "agrees": true,
+        "note": "walks presentSeats of the resolving region, not all players"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "293-cached-targets-are-regional.test.ts",
+        "pattern": "R291 §2 the report",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "293-cached-targets-are-regional.test.ts",
+        "pattern": "R291 §3 the control",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Prismatic Observer",
+        "supports": "partly",
+        "note": "shows a cached card is a target; the regional limit is R291"
+      },
+      {
+        "ref": "Manual p.19",
+        "supports": "partly",
+        "note": "on-topic: zones join a region with their player"
+      },
+      {
+        "ref": "R291",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "deployment. A player's cache can be targeted exactly when that player is"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.cache.what",
+    "textHash": "7bf7a367532125e0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:cacheFromHand/cacheFromBin/cacheTopOfDeck/cacheUnit",
+        "agrees": true,
+        "note": "the four sources: hand, bin, deck top, play"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "36-cache-prophecy.test.ts",
+        "pattern": "R41: the cache primitives move cards out of hand, bin and deck",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "glossary: Cache (ours)",
+        "supports": "no",
+        "note": "ours is not an authority"
+      },
+      {
+        "ref": "R41",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "cacheFromHand(seat: Seat, handIndex: number, opts: { prophecy?: string; playable?: boolean } = {}): CachedCard | undefined {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.changes.despawn",
+    "textHash": "1a5d2f2957e1c70e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:afterDespawn/disposeToBin/exchangeInPlace/eraseFromPlay",
+        "agrees": true,
+        "note": "'despawned' is fired on recall, cache, exchange and erase; R167 makes donated despawn text fire on a death too"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "141-despawn-mods.test.ts",
+        "pattern": "R167 (i)",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "145-erase-routes.test.ts",
+        "pattern": "R172 (i): an ERASE fires 'despawned'",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "141-despawn-mods.test.ts",
+        "pattern": "R167 (ii)",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "141-despawn-mods.test.ts",
+        "pattern": "R167 (iii)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R167",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R172",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "## R167 — a printed \"when I despawn\" means it whichever way the unit leaves play"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.changes.despawn.exchange",
+    "textHash": "5723bbc7a725335b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:exchangeInPlace",
+        "agrees": true,
+        "note": "no 'died'; 'despawned' fired; disposeToBin trashes"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "135-exchange-and-zones.test.ts",
+        "pattern": "exchange fires NO death trigger",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R157 §3",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> *\"It's not a death, but it is a despawn and trashing. Weird corner case.\"*"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.changes.face",
+    "textHash": "ffb3c9489a3ab695",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:revertFace",
+        "agrees": true,
+        "note": "called at the top of leavePlay, disposeToBin and eraseFromPlay, before any event reads u.card"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "135-exchange-and-zones.test.ts",
+        "pattern": "a transformed Scholar killed in play BINS as",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "135-exchange-and-zones.test.ts",
+        "pattern": "a transformed Scholar that died is RECURRABLE from the bin",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R157 §10",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R160",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> *\"Turns back over. In all zones, other than play, it exists as the front"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.changes.face.copies",
+    "textHash": "d4e14ef00e31f6e1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:leavePlay/disposeToBin",
+        "agrees": true,
+        "note": "the copy layer is a face over the Borrower entity; it leaves as its own card"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "26-metal-a.test.ts",
+        "pattern": "a Borrower that became something else still bins as BORROWER OF FORMS",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Borrower of Forms: recalled, it goes back to the hand as Borrower of Forms",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1372468222158180424#2",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1372468222158180424#7",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "text": "assert.ok(h.state.players[A]!.hand.includes('Borrower of Forms'), 'the card in hand is the Borrower');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.changes.mods",
+    "textHash": "2921d3ebb806289b",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U07-r2-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:leavePlay",
+        "agrees": true,
+        "note": "nontoken mods pushed into a bin; token mods not"
+      },
+      {
+        "loc": "engine.ts:recall / cacheUnit",
+        "agrees": true,
+        "note": "unit goes to hand / cache alone; afterDespawn trashes mods and announces token mods as erased"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "recalling a modded unit trashes its MODS",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "141-despawn-mods.test.ts",
+        "pattern": "nontoken mod is binned and trashed exactly once on all three routes",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "141-despawn-mods.test.ts",
+        "pattern": "token mod reaches the erased pile exactly once",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.35",
+        "supports": "yes",
+        "note": "literal for the hand case"
+      },
+      {
+        "ref": "Rulebook 2023 p.15",
+        "supports": "yes",
+        "note": "literal"
+      },
+      {
+        "ref": "RAQ 1372468222158180424#8",
+        "supports": "yes",
+        "note": "mods on a recalled Borrower go to the bin as usual"
+      },
+      {
+        "ref": "R46",
+        "supports": "yes",
+        "note": "cached unit's mods go to the bin"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (!m.token) this.player(m.controller).bin.push(m.card);   // R69: a token MOD has no card of its own — erased"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Those would go to your bin/discard as usual."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.changes.mods.dies",
+    "textHash": "034fa0456315391d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:isUnstable/disposeToBin",
+        "agrees": true,
+        "note": "mods.length > 0 makes the body Unstable; on a death body and mods are swept to the erased pile (via the bin, R137); eraseFromPlay files host and mods"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "R137: a TOKEN mod on a dying Unstable carrier is erased",
+        "passed": true,
+        "asserts_claim": "partly"
+      },
+      {
+        "file": "224-mod-trash.test.ts",
+        "pattern": "R244: a nontoken mod erased with its Unstable host",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.35",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.15",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "               As long as a card is modded, it has the unstable attrib-"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "               mods are erased with it. This means that even though"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Note only: Pull Under's printed \"put it and all of its mods into your bin\" overrides the erase (keepBinned)."
+  },
+  {
+    "key": "zones.changes.mods.exchanged",
+    "textHash": "68a121da14777f24",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U07-r2-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:exchangeInPlace -> disposeToBin",
+        "agrees": true,
+        "note": "a modded host is Unstable (isUnstable: mods.length>0); body and nontoken mods are pushed to the bin and swept to the erased pile; no 'died' event (a 'despawned' event)"
+      },
+      {
+        "loc": "engine.ts:disposeToBin",
+        "agrees": true,
+        "note": "the engine passes the body through the bin and trashes it first (R137) — the same divergence zones.bin.unstable records"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "42-dark-b.test.ts",
+        "pattern": "Hooba-Mon exchanges a MODDED host",
+        "passed": true,
+        "asserts_claim": "yes for the host; it does not assert the mod's fate"
+      },
+      {
+        "file": "42-dark-b.test.ts",
+        "pattern": "Hooba-Mon exchanges an UNMODDED host",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U07/u07-r2-a2-probes.test.ts",
+        "title": "zones.changes.mods.exchanged: Hooba-Mon augmented onto a host exchanges the host — host AND the Hooba-Mon mod end on the erased pile, neither left in a bin",
+        "passed": true,
+        "demonstrates": "yes: host and its mod both erased, no death event"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.35",
+        "supports": "partly",
+        "note": "supports 'modded = unstable'; but its next paragraph says a modded card that leaves play without dying/being erased puts its mods back in the bin, which on its face cuts against the exchange case"
+      },
+      {
+        "ref": "card: Abyssal Evocation",
+        "supports": "yes",
+        "note": "Unstable reminder: would enter a bin -> erase instead"
+      },
+      {
+        "ref": "R157 §3",
+        "supports": "partly",
+        "note": "exchange is not a death but is a despawn and trashing; says nothing about erasure"
+      },
+      {
+        "ref": "R152",
+        "supports": "yes",
+        "note": "when the body is Unstable (a modded host always is) its mods are swept out of the bin"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (e.mods.length > 0 || e.unstable === true) return true;"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> *\"It's not a death, but it is a despawn and trashing. Weird corner case.\"*"
+      },
+      {
+        "file": "client/engine/test/42-dark-b.test.ts",
+        "text": "assert.ok(new E(h.state).erased(A).includes('Rune Channeler'),"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Example 1 wording is loose: in the bound test Hooba-Mon is the AUGMENT and the host it sits on (Rune Channeler) is what gets exchanged — 'Hooba-Mon exchanges itself while it carries a mod' misdescribes it. Engine also trashes the body before erasing (R137)."
+  },
+  {
+    "key": "zones.changes.mods.token-mod",
+    "textHash": "a00c5a43d5bf9d66",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:leavePlay/disposeToBin",
+        "agrees": true,
+        "note": "token mods are never pushed to a bin; filed on the erased pile"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "R137: a TOKEN mod on a dying Unstable carrier is erased",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "338-tokens-are-not-trashed.test.ts",
+        "pattern": "R306: a token MOD on a dying card host",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R244",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const binnedMods = mods.filter(m => !m.token);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.changes.mods.whose-bin",
+    "textHash": "1d551dc3366f7719",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:leavePlay/disposeToBin modBin",
+        "agrees": true,
+        "note": "m.controller, which is the host controller"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "229-cosmic-and-control.test.ts",
+        "pattern": "R250: a MOD goes to the HOST CONTROLLER bin",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R250",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const modBin = (m: Entity): Seat => opts.binTo ?? m.controller;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.changes.new-object",
+    "textHash": "d6f85a85f7a86c41",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts spawnUnit",
+        "agrees": true,
+        "note": "a replayed card is a fresh entity with fresh budgets"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 calebgannon",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355115946032889914#16",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "text": "  assert.equal(handSize(h, A), hand1 + 1, 'the replayed Caudex is a new object and draws again');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.changes.new-object.reconfigure",
+    "textHash": "96a4511fbb753fde",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:moveMod",
+        "agrees": true,
+        "note": "no leave-play, no despawn event"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Reconfigure vs Despawn",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353847640214999170#0",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "text": "    'Growing Plague despawned ONCE — when the Robot died — and not when Bubb was moved');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.changes.new-object.targets",
+    "textHash": "7a2af1d99b762894",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U07-r2-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:targetStillLegal",
+        "agrees": true,
+        "note": "a unit target is matched by entity id; a unit that left play is gone and a returned copy is a new entity"
+      },
+      {
+        "loc": "engine.ts:markIllegalParts / slotLegalNow",
+        "agrees": true,
+        "note": "R324 re-check of each target against its slot at resolution"
+      },
+      {
+        "loc": "engine.ts:resolveItem fizzle",
+        "agrees": true,
+        "note": "an item that declared targets and lost all of them fizzles (untargeted parts do not keep it alive; min-0 'up to' parts do)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "Organic Exchange may target two",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "Ambush whose ally changed sides",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "grows past 5 defense before Minor Kraken",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U07/u07-r2-a2-probes.test.ts",
+        "title": "zones.changes.new-object.targets: a target that left play and came back is a new object, and the effect does not touch it",
+        "passed": true,
+        "demonstrates": "yes: Luminous Arc aimed at a whale that was recalled and replaced: new whale undamaged, Arc fizzled"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.40",
+        "supports": "partly",
+        "note": "Ambush fizzle when its target becomes invalid; on-topic, narrow"
+      },
+      {
+        "ref": "RAQ 1454169054402314362#2",
+        "supports": "partly",
+        "note": "supports the zone-change clause; its 'only' would, read alone, deny the slot-legality clause"
+      },
+      {
+        "ref": "RAQ 1355466429788328066#1",
+        "supports": "yes",
+        "note": "valid-then-invalid target fizzles"
+      },
+      {
+        "ref": "RAQ 1355466429788328066#2",
+        "supports": "yes",
+        "note": "stolen Ambush ally not recalled"
+      },
+      {
+        "ref": "R324",
+        "supports": "yes",
+        "note": "slot re-check; all lost -> fizzle"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if ('unit' in t) { const u = this.entity(t.unit); return !!u && !u.absent; }"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A target that fails is lost exactly like a target that left play. If every"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Things only wouldn't resolve if a unit changed to a different location (like went to your hand, the bin, etc)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Minor: 'If every target is lost, the effect fails to resolve' — the engine excepts optional ('up to') targets, which keep the item alive with none declared."
+  },
+  {
+    "key": "zones.changes.played-from",
+    "textHash": "fb8cc4b40051fe7f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts playInline/commitItem (from marker)",
+        "agrees": true,
+        "note": "the play carries from:'deck'/'cache'/'bin' onto cardPlayed"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "241-played-from-zone.test.ts",
+        "pattern": "R263 §5: Tides of the Cosmos plays off the top of the deck",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R263",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "## R263 — A CARD PLAYED MID-RESOLUTION STILL CAME OUT OF SOMEWHERE"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.changes.played-from.created",
+    "textHash": "d4b1cc6fef4ef549",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:spawnUnit",
+        "agrees": true,
+        "note": "a created token carries no from"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "241-played-from-zone.test.ts",
+        "pattern": "R263 §7",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R263",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "R129: a created token is not a card, was never in a zone, and must never carry a"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.changes.played-from.spell-token",
+    "textHash": "4d5d80bc428552e9",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts/apply.ts castSpellToken",
+        "agrees": true,
+        "note": "the cast is played from play, so \"from anywhere other than your hand\" watchers fire"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "408-raq-new-threads.test.ts",
+        "pattern": "RAQ Spell Tokens vs Hand: casting a Fireball token triggers Stalwart Sentinel",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.4",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R342",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "only cards currently that are “cast” from play, which functions the same way as if they were cast from your hand, but you may"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.changes.tokens",
+    "textHash": "5afa8675110f181e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:disposeToBin/recall/cacheUnit",
+        "agrees": true,
+        "note": "the token is pushed into the zone, the leave-play event fires (listeners only QUEUE), then eraseFromZone sweeps it before anything resolves"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "R69 + R306: a TOKEN dying enters the bin",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "R69: a CACHED token visits the cache",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "15-water-b.test.ts",
+        "pattern": "Rider of the Tides: recalling a TOKEN triggers it too",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355689559609839787#4",
+        "supports": "yes",
+        "note": "hand and bin"
+      },
+      {
+        "ref": "R152",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R69",
+        "supports": "yes",
+        "note": "R69 itself says the CACHE leg is the engine's call, not a ruling"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A dying token still **enters the bin** and is then erased from it by the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Note only: the cache leg is an engine call (R69), not designer-sourced; basis \"mixed\" covers it."
+  },
+  {
+    "key": "zones.changes.tokens.cached",
+    "textHash": "f6ce96147c30a768",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:cacheUnit",
+        "agrees": true,
+        "note": "cacheCard then eraseFromZone(cache, uid) for a token"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "R69: a CACHED token visits the cache",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R69",
+        "supports": "yes",
+        "note": "and says it is the engine's call"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (u.token) this.eraseFromZone(seat, u.card, 'cache', `${u.card} is erased from the cache — it is a token.`, { uid: cc.uid });"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.changes.tokens.dies",
+    "textHash": "6ddc6b5cc86060d9",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U07-r2-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:noteTrashed",
+        "agrees": true,
+        "note": "returns at once for a token anchor: no trashed event"
+      },
+      {
+        "loc": "engine.ts:disposeToBin",
+        "agrees": true,
+        "note": "body pushed to the bin, then eraseFromZone(...'bin') for a token"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "TOKEN dying enters the bin, is NOT trashed",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "15-water-b.test.ts",
+        "pattern": "TOKEN victim enters the CASTER bin untrashed",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355689559609839787#4",
+        "supports": "yes",
+        "note": "_passer, in client/ledgers/raq.ts: dying unit tokens enter the bin and are then erased"
+      },
+      {
+        "ref": "R306",
+        "supports": "yes",
+        "note": "a dying token still enters the bin and is erased; not trashed"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (anchor?.token) return;"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "3. Same applies to Unit Tokens being Recalled or Dying (they enter your hand/bin and then are instantly erased)"
+      },
+      {
+        "file": "client/engine/test/35-rot-debt-trash.test.ts",
+        "text": "assert.equal(trashes(h).length, 0, 'a token is not a card, so it is not trashed (R306)');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.changes.tokens.recalled",
+    "textHash": "5f63d0ed406a3b79",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:recall/recallSpellTokenItem",
+        "agrees": true,
+        "note": "toHand (handEntered) then eraseFromZone(hand)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Recall Spell Token",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "15-water-b.test.ts",
+        "pattern": "Rider of the Tides: recalling a TOKEN triggers it too",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355689559609839787#3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R335",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (u.token) this.eraseFromZone(seat, u.card, 'hand', `${u.card} is erased from the hand — it is a token.`);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.changes.tokens.spell-tokens-regroup",
+    "textHash": "09e1ba762898707a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts regroup / spellTokenSurvivesRegroup",
+        "agrees": true,
+        "note": "spell tokens in play are erased at regroup unless a card says otherwise"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.15",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "The magic captured in a spell token is limited, and any remaining spell tokens are erased from the game during re-"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.deck.empty",
+    "textHash": "eff5db1660c4b0c6",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U07-r2-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:draw / refillFromRecycled",
+        "agrees": true,
+        "note": "pile-empty guard returns; draw loop breaks on undefined; no loss is set"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "300-recycle-mark.test.ts",
+        "pattern": "an empty deck AND an empty pile draws fewer",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R296",
+        "supports": "yes",
+        "note": "both empty: simply draws fewer; no deck-out loss"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (c === undefined) break;"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**No deck-out loss.** A player whose deck *and* pile are both empty simply draws"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.deck.hidden",
+    "textHash": "e3f5d47aa68f76ce",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "view.ts:viewFor",
+        "agrees": true,
+        "note": "every deck (shared and per-seat, even your own) is served as HIDDEN_CARD; a recycle to the bottom names no card (R197b Bripp split, R296 redaction)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "300-recycle-mark.test.ts",
+        "pattern": "R296 §7",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R197b",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R296",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/server/view.ts",
+        "text": "v.sharedDeck = v.sharedDeck.map(() => HIDDEN_CARD);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.deck.shared",
+    "textHash": "a6107c9e530793d4",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:deckOf",
+        "agrees": true,
+        "note": "non-constructed modes read s.sharedDeck"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.11",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.16",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "In the live draft game mode, players use a shared deck"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.deck.shared.constructed",
+    "textHash": "2a895ba6c5c8bbe2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:deckOf",
+        "agrees": true,
+        "note": "constructed reads the per-seat deck"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.10",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.16",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "In constructed formats, there will be no shared deck and players’ individual decks will go in the location of their “pack”."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.deck.the-deck",
+    "textHash": "fa765ca5b544ead5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:deckOf",
+        "agrees": true,
+        "note": "constructed -> the seat's own deck; otherwise the shared deck; every deck reader is called with the effect controller's seat"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R157 §18",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> *\"Your deck. It will be shared during live draft and solo in constructed."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.deck.what",
+    "textHash": "b465cb04576a57fd",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:deckOf/dealPacks/draw",
+        "agrees": true,
+        "note": "draws and pack deals read the deck"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.16",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.2",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "shared deck clockwise starting with the initiative"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.erased.final",
+    "textHash": "fcd385e4e69bbfa8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts PlayerState.erased",
+        "agrees": true,
+        "note": "append-only; no code path reads a card back out of it"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R65",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R137",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "  /** R65: the cards erased out of `seat`'s zones — public, and never a zone"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.erased.front-face",
+    "textHash": "240bf35740304edb",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:eraseFromPlay",
+        "agrees": true,
+        "note": "revertFace before the erased event"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "145-erase-routes.test.ts",
+        "pattern": "R172 (iii)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R160",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "    // card is recorded there under its FRONT face — the piece of cardboard"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.erased.not-death",
+    "textHash": "35889975d347ff9d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:eraseFromPlay",
+        "agrees": true,
+        "note": "no bin push, no 'died', no noteTrashed"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "145-erase-routes.test.ts",
+        "pattern": "R172 (vii): Banishment still fires no 'died' and no 'trashed'",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R172",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R40",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "`${u.card} despawns as it is erased — not a death, and not a trash.`,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.erased.public",
+    "textHash": "7a199f9398cd38c2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:ev/erased",
+        "agrees": true,
+        "note": "PlayerState.erased is plain state; server/view.ts redacts deck, recycle pile and the opponent's hand but not the erased pile"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R65",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "triggers, nothing plays it back — but the information is public and there was"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.erased.says-erase",
+    "textHash": "b47235b25bf584b8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:eraseMod",
+        "agrees": true,
+        "note": "files an erased mod card on the R65 pile (leavesGame:false excepted)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "178-played-item-and-erased-mods.test.ts",
+        "pattern": "R208 Slag Spewer",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "178-played-item-and-erased-mods.test.ts",
+        "pattern": "R208 Suppression Field",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R219",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Obviously the card says where it should end up. It's erased… It should just"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.erased.says-erase.into-play",
+    "textHash": "6abb1b26295fb980",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:eraseMod leavesGame:false",
+        "agrees": true,
+        "note": "skips the pile"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "178-played-item-and-erased-mods.test.ts",
+        "pattern": "R208 Reclaim the Fallen",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R219",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **`leavesGame: false` skips the pile.** Reclaim the Fallen \"erases\" a mod that"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.erased.tokens",
+    "textHash": "ad0ad305845a06f3",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U07-r2-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:ev (R65 erased-pile writer)",
+        "agrees": true,
+        "note": "every 'erased' event with a seat appends to that seat's erased pile"
+      },
+      {
+        "loc": "engine.ts:eraseFromZone",
+        "agrees": true,
+        "note": "bin/hand/cache sweeps of a token emit 'erased'"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "TOKEN dying enters the bin, is NOT trashed",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U07/u07-r2-a2-probes.test.ts",
+        "title": "zones.erased.tokens: a cached unit token is recorded on the erased pile",
+        "passed": true,
+        "demonstrates": "yes: the cache route too"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R306",
+        "supports": "yes",
+        "note": "the erased pile still records a dying token"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (names.length) (this.player(seat).erased ??= []).push(...names);"
+      },
+      {
+        "file": "client/engine/test/35-rot-debt-trash.test.ts",
+        "text": "assert.deepEqual(h.q.erased(P), ['Test Grunt'], 'and it shows in the erased pile (R65)');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.erased.tokens.mods",
+    "textHash": "c80558cedec7fef0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:afterDespawn/disposeToBin/eraseFromPlay",
+        "agrees": true,
+        "note": "each route emits exactly one 'erased' naming the token mods"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "129-disposal-tail.test.ts",
+        "pattern": "R65: a TOKEN mod reaches the erased pile however its host leaves play",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R167",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R156",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "`${tokenMods.map(m => m.card).join(', ')} — erased with ${u.card}: a token mod has no card to bin.`,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.erased.what",
+    "textHash": "7dc03a0d5d4ed34c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:eraseFromPlay/eraseFromZone/eraseMod",
+        "agrees": true,
+        "note": "every erase emits 'erased' -> the pile"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.15",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R65",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "                                                                             erased (permanantly removed from the game). So"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.general.active",
+    "textHash": "1e12fc1e6c7acc02",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts itemIsUnstable / isUnstable",
+        "agrees": true,
+        "note": "Unstable replacement applies leaving play or the stack only"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R145",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "   Hand, deck, bin, cache and the erased pile are **inactive**."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.general.active.unstable",
+    "textHash": "0edbc1a1167ed608",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:discardFromHand/dischargeItem",
+        "agrees": true,
+        "note": "hand discard bins and trashes a printed-Unstable card; the stack erases it"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "125-active-zone.test.ts",
+        "pattern": "R145: a printed-Unstable card DISCARDED FROM HAND",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "125-active-zone.test.ts",
+        "pattern": "R145: Aberrant Statweaver negated off the stack is ERASED",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R145",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "3. A card leaving an **inactive** zone for a bin is **binned and trashed"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Note only: \"erased in place of entering a bin\" is literal for the stack; from play R137 still passes the card through the bin first (see zones.bin.unstable)."
+  },
+  {
+    "key": "zones.general.follow-control",
+    "textHash": "15491c6baf9a3ab5",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U07-r2-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:disposeToBin",
+        "agrees": true,
+        "note": "bin = controller"
+      },
+      {
+        "loc": "engine.ts:recall",
+        "agrees": true,
+        "note": "hand = opts.to ?? controller"
+      },
+      {
+        "loc": "engine.ts:cacheUnit",
+        "agrees": true,
+        "note": "cache = opts.to ?? controller"
+      },
+      {
+        "loc": "engine.ts:eraseFromPlay",
+        "agrees": false,
+        "note": "the 'erased' event is filed under seat: u.owner, so a stolen unit erased from play reaches its OWNER's erased pile — the flagged divergence is real"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "246-zones-follow-control.test.ts",
+        "pattern": "a stolen unit recalled goes to the THIEF hand",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "229-cosmic-and-control.test.ts",
+        "pattern": "a stolen unit that dies is trashed by its CONTROLLER",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U07/u07-r2-a2-probes.test.ts",
+        "title": "zones.general.follow-control: a STOLEN unit erased from play is filed on the CONTROLLER erased pile",
+        "passed": false,
+        "demonstrates": "no — fails: controller pile [], owner pile ['Good Whale']; this is the engine divergence"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U07/u07-r2-a2-probes.test.ts",
+        "title": "zones.general.follow-control (measure): which erased pile a stolen unit erased from play reaches",
+        "passed": true,
+        "demonstrates": "yes: measures the divergence (owner's pile)"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R250 §4",
+        "supports": "yes",
+        "note": "zones always follow control"
+      },
+      {
+        "ref": "R262",
+        "supports": "yes",
+        "note": "'All four follow control' — bin, hand, cache, erased pile"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> Round-32 Q2, Bena verbatim: *\"**(a) All four follow control** — one rule, no"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "unit: u.id, card: u.card, seat: u.owner, region: u.region,"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const seat = opts.to ?? u.controller;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Ruling confirmed; engineDiffers is real: eraseFromPlay files a stolen unit (and its mods) on the owner's erased pile. R262's table changed eraseMod but not eraseFromPlay."
+  },
+  {
+    "key": "zones.general.follow-control.constructed-owner",
+    "textHash": "43727ead94f85a6e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts createGame",
+        "agrees": true,
+        "note": "constructed cards are owned by the seat whose deck they came from"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R262",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "seam. Only exception is that \"owner\" in constructed is always the person's who"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.general.follow-control.ownership",
+    "textHash": "073405550e135929",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:giveControl/recall/cacheUnit",
+        "agrees": true,
+        "note": "only `controller` moves; `owner` is never reassigned and leftPlayFacts still reports it"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "93-engine-defects.test.ts",
+        "pattern": "Wake the Dead raising a unit from the ENEMY bin gives the caster control, not ownership",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "246-zones-follow-control.test.ts",
+        "pattern": "R262 §3: ownership does NOT move",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R250",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R262",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R107",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**2. Ownership does not move. Only the destination does.** `u.owner` still says"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.general.follow-control.printed-destination",
+    "textHash": "3e4886af1a900a58",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts recall/cacheUnit opts.to, disposeToBin opts.binTo",
+        "agrees": true,
+        "note": "an explicit destination overrides the controller default"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "15-water-b.test.ts",
+        "pattern": "Pull Under: deletes the target",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "135-exchange-and-zones.test.ts",
+        "pattern": "Grob caches a STOLEN unit into the CONTROLLER",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Pull Under",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Cosmic Reversal",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R262",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R157 §27",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**3. An explicit `to` still wins.** `opts.to` is how a card whose PRINTED TEXT"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.general.list",
+    "textHash": "4b7cb5e35575e6f5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "types.ts / engine.ts",
+        "agrees": true,
+        "note": "deck, hand, cache, entities (play), bin, stack, erased, recycle pile, packs"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.16",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R145",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R296",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "1. **The ACTIVE ZONES are PLAY (the field / a formation) and the STACK.**"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.general.per-player",
+    "textHash": "8024121006024d0c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "types.ts PlayerState",
+        "agrees": true,
+        "note": "hand, cache, bin, erased are per-seat fields"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.19",
+        "supports": "partly",
+        "note": ""
+      },
+      {
+        "ref": "R250",
+        "supports": "partly",
+        "note": ""
+      },
+      {
+        "ref": "R262",
+        "supports": "partly",
+        "note": "per-seat destinations table"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "| `cacheUnit` → **cache** | `opts.to ?? u.owner` | `opts.to ?? u.controller` |"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.general.zone-text",
+    "textHash": "f12c59d536301414",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts zone dispatch (R51/R300)",
+        "agrees": true,
+        "note": "bin/cache text is dispatched only to cards in that zone; the in-play body has none"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "310-zone-abilities.test.ts",
+        "pattern": "§3 Cinder Scuttler does NOT recall off the damage step it died in",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R300",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R51",
+        "supports": "partly",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "## R300 — Bin and cache text is not live from play, and the damage step was innocent"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.general.zone-text.one-firing",
+    "textHash": "e58169c969638a51",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts zone dispatch (R51)",
+        "agrees": true,
+        "note": "one firing per seat per card name"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "12-fire-a.test.ts",
+        "pattern": "Cinder Scuttler: one firing per bin, not per copy (R51)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R51",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "## R51 ⚠ — A card in a bin or a cache can listen"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.general.zone-text.your-bin",
+    "textHash": "9d821dec5b617215",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts leftBin dispatch (R124)",
+        "agrees": true,
+        "note": "the seat whose bin the card left triggers, decides, pays and collects"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "43-dark-c.test.ts",
+        "pattern": "Rotling: another card leaving the bin is not me; leaving the OPPONENT's bin triggers the bin owner",
+        "passed": true,
+        "asserts_claim": "yes (not bound; the example has no test)"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Rotling",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R124",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "bin owner's.** The seat whose bin the card left is the seat that triggers,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "The example is bound to no test; 43-dark-c \"leaving the OPPONENT's bin triggers the bin owner\" demonstrates it and could be bound."
+  },
+  {
+    "key": "zones.hand.discard",
+    "textHash": "1c2b89745190f2d4",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:discardFromHand",
+        "agrees": true,
+        "note": "splices the hand and toBin(seat, name, 'hand') — trashed, no stack item"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "R40: discarding from hand trashes",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R65",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R40",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "spawns, and the only thing anyone sees is the card's own \"when I am trashed\""
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "this.toBin(seat, name!, 'hand');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.hand.entering",
+    "textHash": "4d368073d5c77174",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:toHand",
+        "agrees": true,
+        "note": "one hand-entry point; one 'handEntered' per move carrying n and cards"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "152-hand-entry.test.ts",
+        "pattern": "Rider of the Tides: a BIN recursion (Collect Remains)",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "152-hand-entry.test.ts",
+        "pattern": "a multi-card move fires exactly ONE handEntered",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R179",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "## R179 — one hand-entry point, one event per move; and a removal is not a \"put on\""
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.hand.hidden",
+    "textHash": "a4e4e97684512e23",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "view.ts:viewFor",
+        "agrees": true,
+        "note": "opponent hand -> HIDDEN_CARD, count kept"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R197b",
+        "supports": "partly",
+        "note": "the cited span is about Bripp; the hidden-hand fact is stated in passing"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/server/view.ts",
+        "text": "p.hand = p.hand.map(() => HIDDEN_CARD);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.hand.hidden.look-at",
+    "textHash": "bf6a7f969743b269",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "card code privateTo + view.ts:visibleToSeat",
+        "agrees": true,
+        "note": "\"look at\" lines are tagged privateTo the looker; \"reveals\" lines are untagged"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "173-look-at-a-hand.test.ts",
+        "pattern": "R197b §1 Thought Extraction: aimed at YOUR OWN hand",
+        "passed": true,
+        "asserts_claim": "not judged: the verifier could not run this client/server test; it was executed at wave end (14/14 pass), and the probes are the demonstration"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U07/u07-a2-probes.test.ts",
+        "title": "zones.hand.hidden.look-at: aimed at the CASTER's own hand, the opponent is told nothing",
+        "passed": true,
+        "demonstrates": "yes: the bound example's scenario"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U07/u07-a2-probes.test.ts",
+        "title": "zones.hand.hidden.look-at: \"Look at target player's hand\" (Thought Extraction on the opponent) — the hand reaches the looker only",
+        "passed": true,
+        "demonstrates": "yes"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U07/u07-a2-probes.test.ts",
+        "title": "zones.hand.hidden.look-at: \"reveals their hand\" (Bioremediation) is shown to every player",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R197b",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "*\"**Look at** target player's hand\"* is a private look — you see it, the table"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.hand.only-the-hand",
+    "textHash": "b380abfa5e3242b0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "apply.ts noPlayFromHand gate",
+        "agrees": true,
+        "note": "refuses the hand play only; the cache release is still offered"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "40-light-c.test.ts",
+        "pattern": "is enforced, and not just un-offered",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Calming Force",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R100",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R311",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "The line names one zone and one verb, so that is all it takes away."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.hand.spell-tokens",
+    "textHash": "522b0b28a30fd78f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts",
+        "agrees": true,
+        "note": "spell tokens are entities in play; hand counts read PlayerState.hand"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "408-raq-new-threads.test.ts",
+        "pattern": "RAQ Spell Tokens vs Hand: Dreadspawn Horror",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "408-raq-new-threads.test.ts",
+        "pattern": "RAQ Spell Tokens vs Hand: Astral Tidewraith",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355689559609839787#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1355689559609839787#1",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R342",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A spell token is never in a hand. Anything that counts the cards in a hand"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.hand.what",
+    "textHash": "a069e3632f5b87e2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:draw/toHand",
+        "agrees": true,
+        "note": "draws go to the hand; playCard reads handIndex"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.16",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.15",
+        "supports": "partly",
+        "note": "on-topic: it is about applying augments from the hand"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "Players draw 2 cards during the draw step on every turn after the first."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.pack.drafting",
+    "textHash": "75f72cbc58bc77e4",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "apply.ts:doDraftCommit",
+        "agrees": true,
+        "note": "the pack must be left at exactly its size"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.6",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.17",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "During the draft step, players combine all of the non-token, non-resource cards in their hand with the pack and can draft a"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.pack.eliminated",
+    "textHash": "780d9acfac5340b7",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts",
+        "agrees": null,
+        "note": "not modelled: the engine is 1v1 and an elimination ends the game; nothing contradicts the printed rule"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.16",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.6",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "When a player is eliminated, their pack is recycled (put on the bottom"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Printed rule outside the engine's scope (1v1); confirmed on the sources alone."
+  },
+  {
+    "key": "zones.pack.private",
+    "textHash": "124ae9c51d0ab58f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "view.ts:viewFor",
+        "agrees": true,
+        "note": "a seat sees its own pack only while its draft step is open"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.16",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "                                                                             Packs may only be interacted with and looked at during the draft step,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.pack.refresh",
+    "textHash": "4c3a4a180721e3a0",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U07-r2-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:startDraftStep + packCycle",
+        "agrees": true,
+        "note": "turn > 1 and (turn-1) % (N+1) == 0 recycles every pack and deals fresh packs of packSize (10 by default)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "20-draft.test.ts",
+        "pattern": "packs refresh on turn 4",
+        "passed": true,
+        "asserts_claim": "yes: 1v1 refresh on turn 4, packs of 10"
+      },
+      {
+        "file": "20-draft.test.ts",
+        "pattern": "packCycle",
+        "passed": true,
+        "asserts_claim": "yes: N+1 cycle for 2 and 3 players"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.16",
+        "supports": "yes",
+        "note": "literal"
+      },
+      {
+        "ref": "Rulebook 2023 p.6",
+        "supports": "yes",
+        "note": "literal"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (this.s.turn > 1 && packCycle(this.s.turn, n).index === 0) {"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const total = Math.max(2, players + 1);"
+      },
+      {
+        "file": "client/engine/test/20-draft.test.ts",
+        "text": "assert.ok(h.log.some(l => l.includes('recycled; everyone is dealt')), 'turn 4 refreshes the packs');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Draft mode only (constructed has no packs; Rulebook p.6 team draft never refreshes — not modelled). Recycled packs go past the mark (R296). A custom deal (BL-43) can change the pack size from 10."
+  },
+  {
+    "key": "zones.pack.refresh.team-draft",
+    "textHash": "c592079172f22ade",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts",
+        "agrees": null,
+        "note": "not modelled: there is no team-draft mode in the engine"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.6",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "never refreshed in team drafts. All the other draft rules apply."
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Printed rule outside the engine's scope; confirmed on the source alone."
+  },
+  {
+    "key": "zones.pack.what",
+    "textHash": "7a875fd558f57c21",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:dealPacks",
+        "agrees": true,
+        "note": "packs of packSize (10) dealt from the deck in draft mode"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.16",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.6",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "10 cards face down. This pile is referred to as a “pack”.                  sure the pack contains 10 cards and pass it clockwise"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.pack.what.constructed",
+    "textHash": "6d27682531bf0e5d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:startTurn",
+        "agrees": true,
+        "note": "startDraftStep (which deals/refreshes packs) runs only when mode === 'draft'"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.16",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "In this mode, there are no packs or shared deck. During"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (this.s.mode === 'draft') this.startDraftStep();"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.play.spell-units",
+    "textHash": "07838b7dd4b63389",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:afterParts",
+        "agrees": true,
+        "note": "a spellUnit item spawns its card instead of discharging it to the bin"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.3",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "placed in the bin when they resolve, spell units spawn"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.play.tokens",
+    "textHash": "4bc0bdaaa353d269",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:createToken/createSpellToken",
+        "agrees": true,
+        "note": "created as entities in the given region"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.15",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "                                                                  Tokens are temporary cards that are created directly into play"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.play.what",
+    "textHash": "600b379057c7539e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "s.entities",
+        "agrees": true,
+        "note": "units/resources/tokens in play"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.18",
+        "supports": "partly",
+        "note": ""
+      },
+      {
+        "ref": "R145",
+        "supports": "partly",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "                                                                               Units are permanents, meaning when played, they will"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.recycle.for-resource",
+    "textHash": "58a4d9ee4b31df14",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "apply.ts:recycleForResource",
+        "agrees": true,
+        "note": "a hand card recycled in the resource step creates a dormant resource (Prismite/Shard included, R299)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "308-recycle-for-prismite.test.ts",
+        "pattern": "R299 every hand card offers a Prismite",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.18",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R299",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "outside the game by recycling a card from hand (putting it on the bottom of the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.recycle.hidden",
+    "textHash": "599a3d613c51a6a3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts Bripp + view.ts",
+        "agrees": true,
+        "note": "the recycled card is named in a privateTo line to the looker; the table gets \"a card\""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "173-look-at-a-hand.test.ts",
+        "pattern": "R197b §1 Bripp",
+        "passed": true,
+        "asserts_claim": "not judged: the verifier could not run this client/server test; it was executed at wave end (14/14 pass), and the probes are the demonstration"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U07/u07-a2-probes.test.ts",
+        "title": "zones.recycle.hidden: Bripp recycles a card out of the opponent's hand without naming it to that player",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R197b",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "HIDDEN hand and onto the HIDDEN bottom of a deck — `viewFor` maps every entry"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.recycle.mark",
+    "textHash": "59b62ec947399339",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:recycleToBottom",
+        "agrees": true,
+        "note": "pushes onto the recycle pile, never onto the live deck"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "300-recycle-mark.test.ts",
+        "pattern": "R296 §1",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R296",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**past the mark**, into the recycle pile, not onto the bottom of the live deck."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.recycle.mark.order",
+    "textHash": "b98b9dcd6c44199f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:refillFromRecycled",
+        "agrees": true,
+        "note": "the pile is shuffled (E.shuffle) as it becomes the new deck, so recycle order is unobservable"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R296",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "The pile is shuffled on its way back in, so the order cards were recycled in is"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "deck.push(...this.shuffle(pile.splice(0, n)));"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.recycle.mark.public-count",
+    "textHash": "8da2f06a9becc104",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "view.ts:viewFor",
+        "agrees": true,
+        "note": "the pile is served as HIDDEN_CARD per entry — count kept, names withheld, for every seat"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "300-recycle-mark.test.ts",
+        "pattern": "R296 §7 nothing in the pile is a card anybody can name",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R296",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "The count of the pile is public; its contents are not. The owner: *\"you see how"
+      },
+      {
+        "file": "client/server/view.ts",
+        "text": "if (v.sharedRecycled) v.sharedRecycled = v.sharedRecycled.map(() => HIDDEN_CARD);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.recycle.mark.reshuffle",
+    "textHash": "38ddda3c5c0490c2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:refillFromRecycled",
+        "agrees": true,
+        "note": "deck short -> pile shuffled under it, pile emptied, reshuffle announced"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "300-recycle-mark.test.ts",
+        "pattern": "R296 §2",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "300-recycle-mark.test.ts",
+        "pattern": "R296 §6b",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R296",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "becomes the new deck, behind a fresh mark and an empty pile."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.recycle.mark.scope",
+    "textHash": "22b6826f0145904a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:recycleToBottom",
+        "agrees": true,
+        "note": "the only writer to the bottom; no caller pushes onto a live deck"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "300-recycle-mark.test.ts",
+        "pattern": "R296 §6 every reader of the deck reshuffles at the mark",
+        "passed": true,
+        "asserts_claim": "yes for its own claim; it illustrates the readers, not the writers the rule is about"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R296",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**Scope: everything that hits the bottom.** Asked whether the mark covered only"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.recycle.mark.whose",
+    "textHash": "f4f173d2a894e975",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U07-r2-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:recycleOf",
+        "agrees": true,
+        "note": "constructed: per-seat pile; every other mode: one shared pile"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "300-recycle-mark.test.ts",
+        "pattern": "constructed gives each seat its own pile",
+        "passed": true,
+        "asserts_claim": "yes for example 1 (shared case only; the title's constructed half is not asserted)"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U07/u07-r2-a2-probes.test.ts",
+        "title": "zones.recycle.mark.whose: constructed gives each player their own recycle pile",
+        "passed": true,
+        "demonstrates": "yes: the constructed half"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R296",
+        "supports": "partly",
+        "note": "a deck has a mark and a pile; does not itself say whose"
+      },
+      {
+        "ref": "R157 §18",
+        "supports": "partly",
+        "note": "the deck is shared in live draft and solo in constructed — with R296 this implies the pile split"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (this.s.mode === 'constructed') {"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "return (this.s.sharedRecycled ??= []);"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> *\"Your deck. It will be shared during live draft and solo in constructed."
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Supported by derivation (pile per deck x deck per format) rather than stated in one source. The bound test's title claims the constructed case but its body asserts only the shared case; the probe covers constructed."
+  },
+  {
+    "key": "zones.recycle.what",
+    "textHash": "a2b0843e91926de2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:recycleToBottom",
+        "agrees": true,
+        "note": "the card goes to the recycle pile behind the mark (R296) — still the deck, never out of the game"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.18",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.7",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R190",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "outside the game by recycling a card from hand (putting it on the bottom of the"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "this.recycleOf(seat).push(name);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.stack.leaving",
+    "textHash": "092364fb29a1977e",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U07-r2-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:dischargeItem",
+        "agrees": true,
+        "note": "Unstable -> erased pile; eraseSelf -> erased pile; else toBin(...,'stack') which never trashes"
+      },
+      {
+        "loc": "engine.ts:afterParts",
+        "agrees": true,
+        "note": "spellUnit spawns instead; spell discharges to bin"
+      },
+      {
+        "loc": "cards/sets/batch-water-a.ts:Cosmic Reversal",
+        "agrees": true,
+        "note": "recalled stack items go to their controller's hand via toHand"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "125-active-zone.test.ts",
+        "pattern": "NON-Unstable virus negated off the stack still BINS",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "35-rot-debt-trash.test.ts",
+        "pattern": "NEGATED spell is not trashed either",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.3",
+        "supports": "yes",
+        "note": "spell resolves -> discard"
+      },
+      {
+        "ref": "Manual p.34",
+        "supports": "yes",
+        "note": "negated/invalid virus -> bin"
+      },
+      {
+        "ref": "card: Cosmic Reversal",
+        "supports": "yes",
+        "note": "negate and put into controller's hands"
+      },
+      {
+        "ref": "R145",
+        "supports": "yes",
+        "note": "negated augment -> bin; Unstable from the stack -> erased pile"
+      },
+      {
+        "ref": "R40",
+        "supports": "yes",
+        "note": "from the stack is not trashing"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "this.toBin(item.controller, item.card, 'stack');"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**From the stack** — straight to the owner's public erased pile (R65)."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> Q: \"Negating an augment puts it in the bin or erase?\" → A: **\"Into the bin\"**"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Scope is cards; a spell token on the stack has no card (NEGATE_BINS excludes 'spellToken') and is not covered."
+  },
+  {
+    "key": "zones.stack.leaving.self-erase",
+    "textHash": "616748f2d280e49d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:dischargeItem",
+        "agrees": true,
+        "note": "eraseSelf branch -> erased pile, no bin"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "15-water-b.test.ts",
+        "pattern": "R146: Tides plays \"Erase me.\" (Suspend) for free",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "89-self-erase.test.ts",
+        "pattern": "a FIZZLED self-erase spell is binned too",
+        "passed": true,
+        "asserts_claim": "partly: shows the resolving copy erased itself"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Suspend",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Collect Remains",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "`${item.label} erases itself — it does not go to a bin.`,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.stack.leaving.self-erase-negated",
+    "textHash": "fd249c31cf69cd95",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:dischargeItem",
+        "agrees": true,
+        "note": "eraseSelf is raised only by a resolving part; a negated or fizzled item never runs parts, so it takes the bin branch"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "89-self-erase.test.ts",
+        "pattern": "a NEGATED self-erase spell is binned",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "89-self-erase.test.ts",
+        "pattern": "a FIZZLED self-erase spell is binned too",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "} else if (item.eraseSelf === true && hasCard && item.card) {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Basis \"engine\" is acceptable; the test cites R68 (a negated effect does nothing), which could be cited as the ruling."
+  },
+  {
+    "key": "zones.stack.not-in-play",
+    "textHash": "f2bd220ac2aa343e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts:afterParts",
+        "agrees": true,
+        "note": "a spell unit spawns only when its item resolves"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "RAQ Bloomcaster",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353862592661164152#0",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/396-raq-timing.test.ts",
+        "text": "  // play yet). Bloomcaster trigger to create 1/1. After it resolves Mycelial"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.stack.tokens",
+    "textHash": "b587b4fd18f09d89",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "Download targeting",
+        "agrees": true,
+        "note": "a cast token item on the stack is offered"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Download: a Fireball already cast and on the stack is a token it can take",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353864175910387742#1",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "text": "test('RAQ Download: a Fireball already cast and on the stack is a token it can take', () => {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "zones.stack.what",
+    "textHash": "ce7e173250b43919",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U07-r1-a2",
+    "engine": [
+      {
+        "loc": "engine.ts stack",
+        "agrees": true,
+        "note": "LIFO"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.14",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.34",
+        "supports": "partly",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": " All interaction in Algomancy uses the stack, which abides by the concept of “First in, last out”. Visually you can see this by"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  }
+]

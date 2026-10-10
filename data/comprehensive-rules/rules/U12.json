@@ -1,0 +1,2593 @@
+[
+  {
+    "key": "combat.damage.overview",
+    "parent": "608",
+    "order": 1,
+    "text": "The combat damage step is the step of a battle in which the units in formation deal combat damage. It begins once blocks have been declared and all players have passed priority in the window that follows them, and it is followed by the after combat step (see rule 609).",
+    "examples": [
+      {
+        "text": "Example (illustrative): A 2/5 attacks and is blocked by a 2/5. After blocks, the block window opens; once both players pass, each deals 2 to the other, and then the after combat step begins.",
+        "test": "423-cr-combat-damage.test.ts::cr:combat.damage.overview — the step begins only once blocks are declared and both players pass, and the after combat step follows it"
+      }
+    ],
+    "see": [
+      "607",
+      "609"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "5. Combat Step happens - All units in formation deal"
+        },
+        {
+          "ref": "Rulebook 2023 p.11",
+          "quote": "passed priority, we move to the"
+        },
+        {
+          "ref": "Manual p.27",
+          "quote": "6. After combat priority window"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "423-cr-combat-damage.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.20 and p.27 list the step between the block window and the after combat window; Rulebook 2023 p.11 says the step begins after blocks are declared and both players have passed priority.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.damage.overview.per-region",
+    "parent": "combat.damage.overview",
+    "order": 1,
+    "text": "The combat damage step takes place separately in each region where a battle takes place. A region that was not attacked has no combat damage step.",
+    "examples": [
+      {
+        "text": "Example (illustrative): The first attacker declares no attack, so the defending player’s region has no combat damage step. The second player then attacks, and the only combat damage step of the turn is in the first player’s region.",
+        "test": "423-cr-combat-damage.test.ts::cr:combat.damage.overview.per-region — a battle round with no attack has no combat damage step"
+      }
+    ],
+    "see": [
+      "601",
+      "609"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "and After Combat which will all take place uniquely inside of each region (with the exception of regions that"
+        },
+        {
+          "ref": "Manual p.20",
+          "quote": "did not get attacked, in which case combat and after"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "423-cr-combat-damage.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.damage.overview.simultaneous",
+    "parent": "combat.damage.overview",
+    "order": 2,
+    "text": "All combat damage is dealt simultaneously, unless an ability changes when a column deals its damage. Swift and Sluggish are the attributes that do (see rule 608.2).",
+    "examples": [
+      {
+        "text": "Example (illustrative): A 3/3 attacks and is blocked by a 3/3. Both are dealt 3 at the same time, so both die.",
+        "test": "423-cr-combat-damage.test.ts::cr:combat.damage.overview.simultaneous — two 3/3s in one exchange both deal their damage before either dies"
+      }
+    ],
+    "see": [
+      "combat.damage.substeps",
+      "802.4",
+      "802.5"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.23",
+          "quote": "processes happen simultaneously, unless modified by"
+        },
+        {
+          "ref": "Manual p.23",
+          "quote": "Every damage exchange happens at the same time"
+        },
+        {
+          "ref": "card: Rime Wraith",
+          "quote": "Swift units deal combat damage first. Sluggish units deal combat damage last."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "423-cr-combat-damage.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.damage.overview.column-source",
+    "parent": "combat.damage.overview",
+    "order": 3,
+    "text": "Combat damage is dealt by columns. The attacking units of one column deal their combat damage together, as one source, and so do the blocking units of one column. In this section, each of these two groups is called a half-column: a column has an attacking half and a blocking half.",
+    "examples": [
+      {
+        "text": "Example: Two Slinks (Thieving) attack in one column and are not blocked. The column is one source of combat damage, so its controller draws one card, not two.",
+        "test": "388-raq-blocks-and-windows.test.ts::RAQ Thieving: two Thieving units in one column draw ONE card"
+      }
+    ],
+    "see": [
+      "603",
+      "802.20"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.23",
+          "quote": "Each column of attacking and defending units in a"
+        },
+        {
+          "ref": "card: Blightsea Polyp",
+          "quote": "Columns deal combat damage to players as 1 rot."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1460213341011050536#0",
+          "quote": "The source of combat damage is column"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R320",
+          "quote": "Each side of a column carries its own mark: the attacking half and the blocking"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "388-raq-blocks-and-windows.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "'Half-column' is this document's term, taken from R320's 'the attacking half and the blocking half'. The Thieving thread (RAQ 1460213341011050536) is the only designer source that names the column as the source of combat damage.",
+    "sourceHashes": {
+      "R320": "251b623d5c8476aca365b1e8438a2c174de15e8c2e238a32a6ceca1f63972087",
+      "RAQ 1460213341011050536#0": "fa52e9624ac82c44375508088e6d95241f0f446c0e79fb8e24e0fff0f169533d"
+    }
+  },
+  {
+    "key": "combat.damage.substeps",
+    "parent": "608",
+    "order": 2,
+    "text": "The combat damage step has three damage sub-steps, taken in this order: the Swift sub-step, the normal sub-step and the Sluggish sub-step. Each half-column strikes (deals its combat damage) only in the sub-steps that rule 608.2a gives it. The two halves of one column are scheduled separately.",
+    "examples": [
+      {
+        "text": "Example (illustrative): Dune Drifter (2/1, Swift) is blocked by a 1/5, and Ambling Mountaintop (Sluggish) attacks unblocked. The Drifter deals 2 in the Swift sub-step, the 1/5 strikes back in the normal sub-step and kills it, and the Mountaintop deals its damage last.",
+        "test": "423-cr-combat-damage.test.ts::cr:combat.damage.substeps — Swift, then normal, then Sluggish, and the two halves of one column strike in their own sub-steps"
+      }
+    ],
+    "see": [
+      "802.4",
+      "802.5"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.43",
+          "quote": "It deals combat damage twice, going first and last,"
+        },
+        {
+          "ref": "Manual p.43",
+          "quote": "with normal damage from other units happening"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1540678747953569832#2",
+          "quote": "move to next combat damage step (swift->normal->sluggish)"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        "R295",
+        {
+          "ref": "R320",
+          "quote": "half strike, and are remembered, separately."
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R3",
+          "relation": "its first clause (immediate recalculation between sub-steps) stands; its second clause (no priority window between sub-steps) was amended by R295"
+        },
+        {
+          "ruling": "R117",
+          "relation": "states the order 'Swift → normal → Sluggish' and attributes it to R3, which does not state it"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "297-damage-substeps-are-steps.test.ts",
+        "423-cr-combat-damage.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The three named sub-steps and their order are stated by the designer (RAQ 1540678747953569832#2) and printed as 'first' / 'last' with normal damage 'in-between' (Manual p.43). The separate scheduling of the two halves is R320's wording.",
+    "sourceHashes": {
+      "R295": "e30311733f4edf882d1892f41c15af9a598b6ffaeb78879961a86198e2a15c18",
+      "R320": "251b623d5c8476aca365b1e8438a2c174de15e8c2e238a32a6ceca1f63972087",
+      "RAQ 1540678747953569832#2": "c606d1a891a2c53e293717e8c62f1e2487fe5a75c188a2814b3b3bab5c88d228"
+    }
+  },
+  {
+    "key": "combat.damage.substeps.schedule",
+    "parent": "combat.damage.substeps",
+    "order": 1,
+    "text": "A half-column that has Swift strikes in the Swift sub-step. A half-column that has Sluggish strikes in the Sluggish sub-step. A half-column that has neither strikes in the normal sub-step.",
+    "examples": [
+      {
+        "text": "Example: Dune Drifter (2/1, Swift) and Rune Channeler (4/3) attack in one column and are blocked by a 2/2. The attacking half deals its 6 damage in the Swift sub-step; when that sub-step ends the 2/2 has been destroyed and the attackers are undamaged.",
+        "test": "02-combat.test.ts::R3/Swift: swift column deals damage first"
+      }
+    ],
+    "see": [
+      "802.4",
+      "802.5"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Rime Wraith",
+          "quote": "Swift units deal combat damage first."
+        },
+        {
+          "ref": "card: Rime Wraith",
+          "quote": "Sluggish units deal combat damage last."
+        },
+        {
+          "ref": "Manual p.25",
+          "quote": "anything before it has a chance to fight back."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        "R295"
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "02-combat.test.ts",
+        "297-damage-substeps-are-steps.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The bound test's title also claims 'no priority between sub-steps', which is superseded law (see F-U12-2); its assertions prove only the Swift strike.",
+    "sourceHashes": {
+      "R295": "e30311733f4edf882d1892f41c15af9a598b6ffaeb78879961a86198e2a15c18"
+    }
+  },
+  {
+    "key": "combat.damage.substeps.column-attributes",
+    "parent": "combat.damage.substeps",
+    "order": 2,
+    "text": "Whether a half-column has Swift or Sluggish depends on the combat attributes its units share: an attribute of any unit in a column is shared by every unit in that column (see rule 603). When a unit leaves a column, the other units in it lose the attributes that unit was sharing at once.",
+    "examples": [
+      {
+        "text": "Example: Dune Drifter (Swift) and Lithoghul attack in one column, so Lithoghul would strike in the Swift sub-step. If Dune Drifter is recalled, Lithoghul at once strikes in the normal sub-step instead.",
+        "test": "423-cr-combat-damage.test.ts::cr:combat.damage.substeps.column-attributes — a unit leaving a column takes the Swift it shared with it"
+      }
+    ],
+    "see": [
+      "603",
+      "802.1"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.24",
+          "quote": "Combat attributes (denoted in gold text) are shared by"
+        },
+        {
+          "ref": "Rulebook 2023 p.12",
+          "quote": "Units in the same column of a formation share attributes, meaning that if Smoke"
+        },
+        {
+          "ref": "Manual p.24",
+          "quote": "all other units in its column immediately lose access to"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [
+        "colAttrs"
+      ],
+      "tests": [
+        "423-cr-combat-damage.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Pages 24 (Manual) and 12 (Rulebook 2023) are not in the U12 pack; read from the extract's printedPages. The pilot's second sentence (an attribute is held at most once) is left to 802.1, where R19 states it.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.damage.substeps.swift-and-sluggish",
+    "parent": "combat.damage.substeps",
+    "order": 3,
+    "text": "A half-column that has both Swift and Sluggish strikes twice: once in the Swift sub-step and once in the Sluggish sub-step. It does not strike in the normal sub-step.",
+    "examples": [
+      {
+        "text": "Example: Rime Wraith (2/1, Swift and Sluggish) and Vroot (4/4) attack in one column and are not blocked. The column deals 6 in the Swift sub-step and 6 more in the Sluggish sub-step.",
+        "test": "134-column-and-substep.test.ts::R157 §5 — a {Swift}{Sluggish} column strikes twice"
+      },
+      {
+        "text": "Example: Rime Wraith attacks alone and is not blocked. It deals 2 in the Swift sub-step, nothing strikes in the normal sub-step, and it deals 2 more in the Sluggish sub-step.",
+        "test": "297-damage-substeps-are-steps.test.ts::R295 §5 a {Swift}{Sluggish} column strikes in two sub-steps"
+      }
+    ],
+    "see": [
+      "802.4",
+      "802.5"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.43",
+          "quote": "It deals combat damage twice, going first and last,"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1363298910528864318#2",
+          "quote": "it will deal damage during sluggish-combat-damage (for effective doublestrike)"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 (§5, its both-sub-steps answer)",
+          "quote": "> *\"Both apply. It's Algomancy's answer to double strike. A Swift+Sluggish unit"
+        },
+        "R295",
+        {
+          "ref": "R320",
+          "quote": "sub-step — *\"for effective doublestrike\"*. A Swift mark bars only normal"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R157",
+          "relation": "§5's ordering claim (triggers fire inside the sub-step) superseded by R261; its boundary amended by R295"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "134-column-and-substep.test.ts",
+        "297-damage-substeps-are-steps.test.ts",
+        "388-raq-blocks-and-windows.test.ts",
+        "423-cr-combat-damage.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
+      "R295": "e30311733f4edf882d1892f41c15af9a598b6ffaeb78879961a86198e2a15c18",
+      "R320": "251b623d5c8476aca365b1e8438a2c174de15e8c2e238a32a6ceca1f63972087",
+      "RAQ 1363298910528864318#2": "9a14388c3403ea1748e43c0000f1dd01cffe8b12f8d9069ceca019a04a08af6e"
+    }
+  },
+  {
+    "key": "combat.damage.substeps.pure",
+    "parent": "combat.damage.substeps",
+    "order": 4,
+    "text": "If either half of a column contains a Pure card, neither half of that column has Swift or Sluggish for that exchange, so both halves strike in the normal sub-step.",
+    "examples": [
+      {
+        "text": "Example: A printed Swift column blocked by a Pure unit strikes in the normal sub-step.",
+        "test": "53-playtest-round7.test.ts::R117 threads {Pure}: a printed {Swift} column blocked by a Pure unit strikes in the NORMAL sub-step"
+      }
+    ],
+    "see": [
+      "802.25"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Just a Unit",
+          "quote": "Pure cards and cards they are interacting with ignore all other attributes."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R61",
+          "quote": "Swift or Sluggish in it, the exchange strikes in the normal sub-step."
+        },
+        {
+          "ref": "R117 (its {Pure} pairing paragraph)",
+          "quote": "exchange to attributes in both directions, so a printed {Swift} column blocked by a Pure"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "53-playtest-round7.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "Reading 'the cards they are interacting with' as the attacking-half/blocking-half pair of one column is R61's; no designer source. An unblocked column with a Pure card has no pair: see D-U12-12.",
+    "sourceHashes": {
+      "R117": "7328a1c38a25974e04ec832eccb70e0f59b0d8f0bb8f52b0f3a1e130814937cc",
+      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
+    }
+  },
+  {
+    "key": "combat.damage.substeps.struck-mark",
+    "parent": "combat.damage.substeps",
+    "order": 5,
+    "text": "A half-column that has struck in the Swift sub-step does not strike in the normal sub-step, even if the unit that gave it Swift has since left the column, and even if a new unit has since been put into that column. A half-column that has struck in the normal sub-step does not strike in the Sluggish sub-step, even if it has since gained Sluggish. A half-column that struck in the Swift sub-step and has Sluggish in the Sluggish sub-step strikes again then (rule 608.2c). This record belongs to the half-column, not to the units in it, and it stays with that column if the columns are renumbered (for example, when a new column is opened to its left).",
+    "examples": [
+      {
+        "text": "Example: Dune Drifter (2/1, Swift) and a 3/3 attack in one column; a 1/1 attacks in another. The Swift column deals 5 in the Swift sub-step. Dune Drifter is then recalled. In the normal sub-step only the 1/1's column strikes.",
+        "test": "388-raq-blocks-and-windows.test.ts::RAQ Swift: a column that dealt Swift damage deals no normal damage"
+      },
+      {
+        "text": "Example: After Dune Drifter's column strikes in the Swift sub-step, Dune Drifter is recalled and Tiderunner Initiate is played into the emptied column. Tiderunner Initiate deals no normal combat damage.",
+        "test": "388-raq-blocks-and-windows.test.ts::RAQ Swift: a Tiderunner played into an emptied Swift column deals no normal damage"
+      },
+      {
+        "text": "Example: A column that struck in the Swift sub-step keeps its record when a new column is opened on its left.",
+        "test": "400-raq-fix-blocks.test.ts::R320 a struck mark moves with its column when a new column opens on the left"
+      }
+    ],
+    "see": [
+      "603"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1363298910528864318#1",
+          "quote": "it's marked with 'I did Swift damage', which means it won't be able to deal regular-combat-damage; even if original Swift unit is removed from that column"
+        },
+        {
+          "ref": "RAQ 1363298910528864318#3",
+          "quote": "it's marked with 'I did Regular damage' which means it won't be able to deal sluggish-combat-damage; even if it were to gain Sluggish"
+        },
+        {
+          "ref": "RAQ 1363298910528864318#4",
+          "quote": "if original Swift unit was removed and you played Tiderunner Innitiate in it's place, then this Tiderunner won't deal regular-combat-damage"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R320",
+          "quote": "- The mark moves with its column through `E.rekeyColumns`, so an R75"
+        }
+      ],
+      "history": [],
+      "engine": [
+        "struck"
+      ],
+      "tests": [
+        "388-raq-blocks-and-windows.test.ts",
+        "400-raq-fix-blocks.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The first three sentences are the designer's (RAQ 1363298910528864318). The renumbering sentence is R320's encoding note, not a designer statement. The RAQ register's note on claim #2 is stale since R320 (D-U12-16).",
+    "sourceHashes": {
+      "R320": "251b623d5c8476aca365b1e8438a2c174de15e8c2e238a32a6ceca1f63972087",
+      "RAQ 1363298910528864318#1": "f69fe64d58dd8da986837748f23976036e837eb8729b0dd4255d9b2250dd1c33",
+      "RAQ 1363298910528864318#3": "cbb707bcad01ac4069d276f6c5d4ec40fb77ee9268a88b0c24e640fcfdd7ebf0",
+      "RAQ 1363298910528864318#4": "87a1c1644641b7c266462dd6a0c98beac48fe62e47a1a5e58bdf400a5c698d8a"
+    }
+  },
+  {
+    "key": "combat.damage.substeps.live-attributes",
+    "parent": "combat.damage.substeps",
+    "order": 6,
+    "text": "Whether a half-column strikes in a sub-step is determined as that sub-step begins, from the units then in the column and the attributes they then share.",
+    "examples": [
+      {
+        "text": "Example: A column strikes in the Swift sub-step and then gains Sluggish. It strikes again in the Sluggish sub-step.",
+        "test": "388-raq-blocks-and-windows.test.ts::RAQ Swift: a Swift column that gains Sluggish strikes again in the Sluggish sub-step"
+      }
+    ],
+    "see": [
+      "603"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.24",
+          "quote": "all other units in its column immediately lose access to"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1363298910528864318#2",
+          "quote": "It's still possible to give this column Sluggish attribute and it will deal damage during sluggish-combat-damage (for effective doublestrike)"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R3 (its recalculation clause)",
+          "quote": "All formation changes are **recalculated immediately** (promotion, attribute sharing, column"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R3",
+          "relation": "only its first clause is cited here; its second clause (no priority window between sub-steps) was amended by R295"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "388-raq-blocks-and-windows.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "'Determined as the sub-step begins' is a synthesis of the RAQ (an attribute gained during the step counts later in the step) and R3's immediate recalculation; no source states the moment in those words.",
+    "sourceHashes": {
+      "R3": "34995371f69402284ef5a054fd335d708ffd7126727a1196591cf370bd153d89",
+      "RAQ 1363298910528864318#2": "9a14388c3403ea1748e43c0000f1dd01cffe8b12f8d9069ceca019a04a08af6e"
+    }
+  },
+  {
+    "key": "combat.damage.split",
+    "parent": "608",
+    "order": 3,
+    "text": "A combat damage step is split if, when the step begins, half-columns are scheduled to strike in two or more different sub-steps. Otherwise it is unsplit. Only Swift and Sluggish can split a step.",
+    "examples": [
+      {
+        "text": "Example (illustrative): Dune Drifter (Swift) is blocked by a unit without Swift or Sluggish. The attacking half strikes in the Swift sub-step and the blocking half in the normal one, so the step is split.",
+        "test": "423-cr-combat-damage.test.ts::cr:combat.damage.split — a Swift attacking half over a normal blocking half splits the step into two sub-steps with a window between them"
+      }
+    ],
+    "see": [
+      "802.4",
+      "802.5"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1363298910528864318#0",
+          "quote": "Those windows are only present if there are any Swift/Sluggish units"
+        },
+        {
+          "ref": "RAQ 1540678747953569832#2",
+          "quote": "presence of Swift or/and Sluggish opens new stacks which must be resolved before you move to next combat damage step (swift->normal->sluggish)"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R295",
+          "quote": "- **Split** (two or more sub-steps have a column striking in them): each is a real"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R261",
+          "relation": "made the hold of combat-damage triggers unconditional; R295 made it apply only to an unsplit step"
+        },
+        {
+          "ruling": "R3",
+          "relation": "its second clause ('no priority window between damage sub-steps') was amended by R295"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "297-damage-substeps-are-steps.test.ts",
+        "423-cr-combat-damage.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The designer speaks of the presence of Swift/Sluggish units; R295 sharpens it to two or more sub-steps with a column striking, an owner call (D-U12-9).",
+    "sourceHashes": {
+      "R295": "e30311733f4edf882d1892f41c15af9a598b6ffaeb78879961a86198e2a15c18",
+      "RAQ 1363298910528864318#0": "3bfd6b42b0de5ecc8690c43b87713aece9c7627312eeed9ca7313163b2b4dac2",
+      "RAQ 1540678747953569832#2": "c606d1a891a2c53e293717e8c62f1e2487fe5a75c188a2814b3b3bab5c88d228"
+    }
+  },
+  {
+    "key": "combat.damage.split.unsplit",
+    "parent": "combat.damage.split",
+    "order": 1,
+    "text": "In an unsplit step, all combat damage is dealt at once, as one step. No player receives priority during it, and abilities that trigger during it wait until the after combat step (see rule 608.9b).",
+    "examples": [
+      {
+        "text": "Example: Lithoghul (4/4) and Geode (1/1) attack in separate columns and are not blocked. Neither has Swift or Sluggish, so the step is unsplit; the 5 damage is dealt at once and the game goes straight to the after combat step.",
+        "test": "297-damage-substeps-are-steps.test.ts::R295 §3 the control: with no {Swift} and no {Sluggish} anywhere"
+      }
+    ],
+    "see": [
+      "609",
+      "703"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1363298910528864318#0",
+          "quote": "Those windows are only present if there are any Swift/Sluggish units"
+        },
+        {
+          "ref": "RAQ 1540678747953569832#0",
+          "quote": "Since all those effects are put on the same stack at the same time, each player can decide the order of their effects."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R295",
+          "quote": "- **Unsplit** (nothing Swift and nothing Sluggish strikes): R261 exactly as"
+        },
+        {
+          "ref": "R300",
+          "quote": "> die. There is no window of reaction for players between those, but they're technically"
+        },
+        "R261 (its unsplit hold)"
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "297-damage-substeps-are-steps.test.ts",
+        "239-damage-triggers-after-combat.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The 2023 Rulebook says the damage step has a priority window; the designer and the owner say an unsplit step has none (D-U12-1).",
+    "sourceHashes": {
+      "R261": "07d6f7efa79b63164e8f12b9dd39a9c844544f5b5411f16f14b6b139a7e9f7b2",
+      "R295": "e30311733f4edf882d1892f41c15af9a598b6ffaeb78879961a86198e2a15c18",
+      "R300": "433eaa2ccb6dc1247571654060ad72dec7a9ded55d273f78a24a63e3079f3338",
+      "RAQ 1363298910528864318#0": "3bfd6b42b0de5ecc8690c43b87713aece9c7627312eeed9ca7313163b2b4dac2",
+      "RAQ 1540678747953569832#0": "609f04503fdbf3baa6b081e145272a30ef8cb3d74e814175d0f41614d2d76708"
+    }
+  },
+  {
+    "key": "combat.damage.split.boundary-window",
+    "parent": "combat.damage.split",
+    "order": 2,
+    "text": "In a split step, each sub-step that was scheduled, when the step began, to have a half-column strike in it is a separate step. After each such sub-step except the last scheduled one, the abilities that triggered during it are put on the stack and players receive priority; the next sub-step deals no damage until that stack has resolved and all players have passed priority in succession with it empty. State-based changes (deaths, back-row units moving forward, lost shared attributes) have already happened when this window opens.",
+    "examples": [
+      {
+        "text": "Example: Bripp (4 power) and Bloated Manablub (2 power) attack in normal columns, and Adversary of the Deep (2/2, Sluggish; 'Whenever a player loses life, put that many +1/+1 counters on me') attacks in a third column. None are blocked. The normal sub-step deals 6; the step stops, Adversary's trigger resolves with priority, and Adversary strikes in the Sluggish sub-step for 8.",
+        "test": "297-damage-substeps-are-steps.test.ts::R295 §1 the report"
+      },
+      {
+        "text": "Example: At the boundary, the stack holds Adversary of the Deep's trigger and priority is with the player who does not control it.",
+        "test": "297-damage-substeps-are-steps.test.ts::R295 §2 the boundary is a real priority window"
+      }
+    ],
+    "see": [
+      "703",
+      "706"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1540678747953569832#2",
+          "quote": "presence of Swift or/and Sluggish opens new stacks which must be resolved before you move to next combat damage step (swift->normal->sluggish)"
+        },
+        {
+          "ref": "RAQ 1363298910528864318#0",
+          "quote": "There *may* be additional opportunity windows between swift-regular-sluggish"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R295",
+          "quote": "step. What it fired goes on the stack and resolves, with priority, at the"
+        },
+        {
+          "ref": "R295",
+          "quote": "state-based and still immediate — the promotion has already happened when the"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R31",
+          "relation": "said sub-step triggers resolve immediately, as special actions, with no priority window; superseded by R261 and R295"
+        },
+        {
+          "ruling": "R3",
+          "relation": "its second clause (no priority window between sub-steps) was amended by R295"
+        },
+        {
+          "ruling": "R261",
+          "relation": "its unconditional hold was made conditional on an unsplit step by R295"
+        }
+      ],
+      "engine": [
+        "pumpCombatDamage"
+      ],
+      "tests": [
+        "297-damage-substeps-are-steps.test.ts",
+        "239-damage-triggers-after-combat.test.ts",
+        "21-fixes.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "'All players have passed priority in succession with the stack empty' is ordinary priority procedure (rule 703), not stated by a combat source. R295's prose says a window follows a sub-step that 'struck'; this rule follows its fixed schedule instead (D-U12-10).",
+    "sourceHashes": {
+      "R295": "e30311733f4edf882d1892f41c15af9a598b6ffaeb78879961a86198e2a15c18",
+      "RAQ 1363298910528864318#0": "3bfd6b42b0de5ecc8690c43b87713aece9c7627312eeed9ca7313163b2b4dac2",
+      "RAQ 1540678747953569832#2": "c606d1a891a2c53e293717e8c62f1e2487fe5a75c188a2814b3b3bab5c88d228"
+    }
+  },
+  {
+    "key": "combat.damage.split.empty-substep",
+    "parent": "combat.damage.split",
+    "order": 3,
+    "text": "A sub-step in which no half-column was scheduled to strike when the step began is not a separate step: no window opens after it. A scheduled sub-step keeps its window even if every half-column scheduled for it has since been destroyed. No window opens after the last scheduled sub-step; a half-column that still strikes in a later sub-step (rule 608.2f) strikes without a window before it, and then the after combat step begins.",
+    "examples": [
+      {
+        "text": "Example: Dune Drifter (Swift) and Lithoghul attack in separate columns and are not blocked. Half-columns strike in the Swift and normal sub-steps and nothing strikes in the Sluggish sub-step, so there is exactly one window, between the Swift and normal sub-steps.",
+        "test": "297-damage-substeps-are-steps.test.ts::R295 §3b an EMPTY sub-step opens no window"
+      },
+      {
+        "text": "Example (illustrative): Dune Drifter (Swift) and a 1/1 attack in separate columns and are not blocked. At the window after the Swift sub-step, Dune Drifter's column gains Sluggish. The 1/1 strikes in the normal sub-step and no window follows; Dune Drifter's column then strikes in the Sluggish sub-step, and the after combat step begins.",
+        "test": "423-cr-combat-damage.test.ts::cr:combat.damage.split.empty-substep — a column that gains Sluggish after the last scheduled sub-step strikes with no window before it, then after combat begins"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R295",
+          "quote": "A window opens after a sub-step only when that sub-step **struck** and a **later"
+        },
+        {
+          "ref": "R295",
+          "quote": "one will strike**. An empty sub-step queued nothing and has nothing to offer a"
+        }
+      ],
+      "history": [],
+      "engine": [
+        "pumpCombatDamage"
+      ],
+      "tests": [
+        "297-damage-substeps-are-steps.test.ts",
+        "423-cr-combat-damage.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "R295's own condition is 'struck'; the pilot verifier measured that a window follows a scheduled sub-step whose strikers died, and that an unscheduled Sluggish sub-step still deals damage with no window before it (pilot probe P1, the illustrative example). The second and third sentences are engine-derived. See D-U12-10 and D-U12-11.",
+    "sourceHashes": {
+      "R295": "e30311733f4edf882d1892f41c15af9a598b6ffaeb78879961a86198e2a15c18"
+    }
+  },
+  {
+    "key": "combat.damage.split.schedule-fixed",
+    "parent": "combat.damage.split",
+    "order": 4,
+    "text": "Which sub-steps are separate steps is determined once, when the combat damage step begins. A unit that dies, leaves or loses an attribute during the step does not make a split step unsplit.",
+    "examples": [
+      {
+        "text": "Example: Dune Drifter (Swift) attacks beside Lithoghul and is blocked by another Dune Drifter. Both Swift units destroy each other in the Swift sub-step; the window before the normal sub-step still opens, and the death triggers can be answered there.",
+        "test": "297-damage-substeps-are-steps.test.ts::R295 §4 damageSubs is fixed when the step opens"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R295",
+          "quote": "when the damage step opens, and never recomputed. A Swift unit dying in the Swift"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "297-damage-substeps-are-steps.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Owner ruling (R295) with no designer source; the designer's 'presence of Swift/Sluggish' does not say when presence is judged (D-U12-11).",
+    "sourceHashes": {
+      "R295": "e30311733f4edf882d1892f41c15af9a598b6ffaeb78879961a86198e2a15c18"
+    }
+  },
+  {
+    "key": "combat.damage.split.state-between",
+    "parent": "combat.damage.split",
+    "order": 5,
+    "text": "Between sub-steps, the game's state is updated before anything else: units with lethal damage are destroyed, a unit behind a removed unit moves to the front row, and attributes shared by a removed unit are lost. A unit destroyed in an earlier sub-step deals no damage in a later one, and damage in a later sub-step is assigned to the formation as it then stands. Columns do not close gaps after blocks have been declared.",
+    "examples": [
+      {
+        "text": "Example: Dune Drifter (2/1, Swift) is blocked by a 2/2 in front of a 4/3. Its Swift damage destroys the 2/2; the 4/3 is already in front when the boundary window opens, and in the normal sub-step it destroys Dune Drifter while taking no damage.",
+        "test": "05-rulings.test.ts::R3 + R295: formation recalc between damage sub-steps is immediate"
+      },
+      {
+        "text": "Example: A blocking column whose attacker was destroyed in an earlier sub-step deals nothing in a later sub-step.",
+        "test": "64-formation-collapse.test.ts::R72 (ruling): a hole deals nothing in a LATER sub-step either"
+      }
+    ],
+    "see": [
+      "602",
+      "603"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.22",
+          "quote": "If a unit is removed from a formation, any units behind it move to the front row and take its place."
+        },
+        {
+          "ref": "Manual p.22",
+          "quote": "only happens before blocks are declared. After blocks, columns will not move to fill gaps."
+        },
+        {
+          "ref": "Manual p.24",
+          "quote": "all other units in its column immediately lose access to"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R3 (its recalculation clause)",
+          "quote": "All formation changes are **recalculated immediately** (promotion, attribute sharing, column"
+        },
+        {
+          "ref": "R295",
+          "quote": "state-based and still immediate — the promotion has already happened when the"
+        },
+        {
+          "ref": "R300",
+          "quote": "> Damage happens in the combat damage step, then state based actions are checked and units"
+        },
+        "R72 (its two halves of formation gravity)"
+      ],
+      "history": [
+        {
+          "ruling": "R3",
+          "relation": "first clause cited; second clause amended by R295"
+        },
+        {
+          "ruling": "R261",
+          "relation": "claimed both halves of R3 'still true'; R295 amended the second half"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "05-rulings.test.ts",
+        "64-formation-collapse.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Manual p.22 and p.24 are read from the extract's printedPages (not in the pack). 239's 'R3 STILL STANDS' test does not assert what its title claims (F-U12-3), so it is not bound here.",
+    "sourceHashes": {
+      "R295": "e30311733f4edf882d1892f41c15af9a598b6ffaeb78879961a86198e2a15c18",
+      "R3": "34995371f69402284ef5a054fd335d708ffd7126727a1196591cf370bd153d89",
+      "R300": "433eaa2ccb6dc1247571654060ad72dec7a9ded55d273f78a24a63e3079f3338",
+      "R72": "eed4648973a278cfbffddb860451cdd2629e8dfb6ab2b6c9a15137cdce515969"
+    }
+  },
+  {
+    "key": "combat.damage.pairing",
+    "parent": "608",
+    "order": 4,
+    "text": "Each attacking half-column deals its combat damage either to the defending player or to the blocking half-column in front of it, and each blocking half-column deals its combat damage to the attacking half-column it blocks. Piercing can also carry combat damage to a player (see rule 802.16). An attacking column is blocked once a blocking unit has been placed in front of it, normally in the block step (see rule 606) or later as rule 608.4d allows.",
+    "examples": [
+      {
+        "text": "Example (illustrative): A 3/5 and a 4/5 attack in two columns; a 2/5 blocks the 3/5. The 3/5 deals 3 to the blocker, the blocker deals 2 to the 3/5, and the 4/5 deals 4 to the defending player.",
+        "test": "423-cr-combat-damage.test.ts::cr:combat.damage.pairing — an unblocked attacking column hits the player, a blocked one hits its blocker, and the blocker hits the column it blocks"
+      }
+    ],
+    "see": [
+      "606",
+      "802.16"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.11",
+          "quote": "Unblocked attacking damage is dealt to the defending player’s life total, blocked attacking damage is dealt to the defending column."
+        },
+        {
+          "ref": "Rulebook 2023 p.11",
+          "quote": "Similarly, each column of defending units deals damage equal to the combined power of each unit within its column to the attacking column it has blocked."
+        },
+        {
+          "ref": "Manual p.23",
+          "quote": "Once a defending unit has been placed in front of an attacking column, that entire column is considered blocked."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        "R322"
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "423-cr-combat-damage.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The pilot's 'decided in the block step' was removed: R322 lets a column become blocked later (D-U12-4).",
+    "sourceHashes": {
+      "R322": "5e8047a00d274e87b580a74760c9c25054e659bfc751cab75d33aad619d2e05b"
+    }
+  },
+  {
+    "key": "combat.damage.pairing.unblocked",
+    "parent": "combat.damage.pairing",
+    "order": 1,
+    "text": "An attacking half-column that is not blocked deals its combat damage to the defending player.",
+    "examples": [
+      {
+        "text": "Example: Slink (2/3) attacks and is not blocked. The defending player is dealt 2 combat damage.",
+        "test": "09-attrs.test.ts::Thieving: Slink draws when its column deals combat damage to a player"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.23",
+          "quote": "Unblocked units deal combat damage to the defend-"
+        },
+        {
+          "ref": "Manual p.20",
+          "quote": "Units attack players directly. They do not attack individual units unless"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts",
+        "09-attrs.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.damage.pairing.blocked",
+    "parent": "combat.damage.pairing",
+    "order": 2,
+    "text": "An attacking half-column that is blocked deals its combat damage to the units of the blocking half-column in front of it, and that blocking half-column deals its combat damage to the units of the attacking half-column. A blocked attacking half-column deals no combat damage to the defending player, except as Piercing allows (see rule 802.16).",
+    "examples": [
+      {
+        "text": "Example (illustrative, from the Manual p.23): The column of Living Forge and A Pile of Rubbish deals a combined 3 damage to the Tiderunner Initiate blocking it; the Tiderunner deals 2 back, all to Living Forge because it is in the front.",
+        "test": "423-cr-combat-damage.test.ts::cr:combat.damage.pairing.blocked — the Manual p.23 example: Living Forge and A Pile of Rubbish deal 3 to the blocking Tiderunner Initiate, which deals 2 back, and the player takes nothing"
+      }
+    ],
+    "see": [
+      "802.16"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.23",
+          "quote": "ing player. If a column is blocked, the attacking and"
+        },
+        {
+          "ref": "Manual p.23",
+          "quote": "all dealt to Living Forge because it is in the front."
+        },
+        {
+          "ref": "Manual p.23",
+          "quote": "Blocked units do not deal combat damage to you."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "02-combat.test.ts",
+        "423-cr-combat-damage.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.damage.pairing.stays-blocked",
+    "parent": "combat.damage.pairing",
+    "order": 3,
+    "text": "Once an attacking column is blocked, it remains blocked for the rest of the battle, however its blockers leave the blocking half-column: destroyed, recalled, erased or stolen. If no blocking unit remains when that column strikes, an attacking half-column without Piercing deals no combat damage at all, and one with Piercing deals all of its damage to the defending player (see rule 802.16).",
+    "examples": [
+      {
+        "text": "Example: A vanilla attacker is blocked; the blocker is then recalled before damage. The column stays blocked and the defending player is dealt no damage.",
+        "test": "157-blocked-stays-blocked.test.ts::R185: a blocker that is RECALLED leaves the column blocked"
+      },
+      {
+        "text": "Example: Good Whale (7/5, Piercing) is blocked by a 1/1 that dies before damage. All 7 of its damage is dealt to the defending player.",
+        "test": "387-raq-combat.test.ts::RAQ Piercing: a Piercing column whose blocker died before damage puts its full power into the player"
+      },
+      {
+        "text": "Example: A 7/5 without Piercing is blocked by a 1/1 that dies before damage. It deals nothing to the defending player.",
+        "test": "387-raq-combat.test.ts::RAQ Piercing: a blocked NON-Piercing column whose blocker died deals nothing to the player"
+      }
+    ],
+    "see": [
+      "606",
+      "802.16"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.23",
+          "quote": "The column is considered blocked even if the defending unit is removed"
+        },
+        {
+          "ref": "Rulebook 2023 p.11",
+          "quote": "units won’t deal combat damage to you, even if the units blocking"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1365594171867664445#1",
+          "quote": "BUT because it's attacking formation and that unit/column has Piercing, then full damage will go to face."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        "R185",
+        "R13 (its conclusion)"
+      ],
+      "history": [
+        {
+          "ruling": "R13",
+          "relation": "its conclusion stands; its reason ('piercing excess is automatic per R7') rests on R7's Piercing half, reversed by R319"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "157-blocked-stays-blocked.test.ts",
+        "387-raq-combat.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R185 records this as an owner answer and calls the attacker-side direction an implementation detail; both printed books state it (D-U12-15).",
+    "sourceHashes": {
+      "R13": "f9107a61224155c76ba3c104e88ff9f8a8b0967f8f840846f01d4ba43328a18b",
+      "R185": "a2baa6ebf7628aa9c8a0d6542c2ed9993d9d44ba4ad0db5d8e342b3e7135306d",
+      "RAQ 1365594171867664445#1": "41fb2d1e14c747d46e906f02dbce574711b100fd92a19711d509a39f0e43a878"
+    }
+  },
+  {
+    "key": "combat.damage.pairing.late-blocker",
+    "parent": "combat.damage.pairing",
+    "order": 4,
+    "text": "If, after blocks have been declared and before combat damage is over, a unit is put into the defending formation in front of an unblocked attacking column, that column becomes blocked, and it stays blocked if that unit later leaves. The defending player may do this even if they declared no blockers.",
+    "examples": [
+      {
+        "text": "Example: Tiderunner Initiate is played in front of an unblocked attacker after blocks; the attacker deals its damage to the Tiderunner instead of the defending player.",
+        "test": "400-raq-fix-blocks.test.ts::R322 a Tiderunner put in front of an unblocked attacker fights it"
+      }
+    ],
+    "see": [
+      "606",
+      "607"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1366447016653361192#1",
+          "quote": "I think it would be considered blocked even against an empty column."
+        },
+        {
+          "ref": "RAQ 1366447016653361192#1",
+          "quote": "the column should still be blocked in that case"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R322",
+          "quote": "The defender may start a formation this way even having declared no blockers."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "400-raq-fix-blocks.test.ts",
+        "388-raq-blocks-and-windows.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "RAQ thread 1366447016653361192 ('What is blocked?') is not in the U12 pack; read from the extract. The designer's answer is hedged ('I think'), hence medium. The last sentence is R322's alone. How the unit is placed belongs to rule 606/607.",
+    "sourceHashes": {
+      "R322": "5e8047a00d274e87b580a74760c9c25054e659bfc751cab75d33aad619d2e05b",
+      "RAQ 1366447016653361192#1": "bb2e9add4233c31bbcfbc92538edbd8db613375135196b284f67dc344abb26c3"
+    }
+  },
+  {
+    "key": "combat.damage.pairing.attackers-gone",
+    "parent": "combat.damage.pairing",
+    "order": 5,
+    "text": "A blocking half-column with no attacking unit left in front of it when it would strike deals no combat damage, even if it has Piercing.",
+    "examples": [
+      {
+        "text": "Example: Good Whale (7/5, Piercing) blocks a column whose only attacker is destroyed in the block window. Good Whale deals no damage to the attacking player and takes none.",
+        "test": "64-formation-collapse.test.ts::R72 (ruling): a hole deals and takes no damage — Piercing included"
+      }
+    ],
+    "see": [
+      "802.16"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1365594171867664445#3",
+          "quote": "as defender you can only deal combat damage to opponents face if your blocking columns has piercing AND there is enemy unit in front of them"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R72 (its blocker-whose-attackers-died paragraph)",
+          "quote": "**A blocking column whose attackers are all dead deals nothing, Piercing included.** Piercing"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "64-formation-collapse.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R72 rests on the owner's words ('It stays, but has nothing to deal damage to'); the designer RAQ supports the Piercing half independently. R185 attributes the owner's words to the Manual (D-U12-15).",
+    "sourceHashes": {
+      "R72": "eed4648973a278cfbffddb860451cdd2629e8dfb6ab2b6c9a15137cdce515969",
+      "RAQ 1365594171867664445#3": "cd8215d0e5a46b53cfab6842a14326b1b194278f18d210e223711d1025228e1f"
+    }
+  },
+  {
+    "key": "combat.damage.pairing.side-block",
+    "parent": "combat.damage.pairing",
+    "order": 6,
+    "text": "A unit blocking where no attacking unit is (a side-block) forms a blocking half-column with no attacker in front of it. It deals no combat damage, even if it has Piercing, and it never makes the combat damage step split.",
+    "examples": [
+      {
+        "text": "Example: A Piercing unit side-blocks. It deals no combat damage to the attacking player.",
+        "test": "400-raq-fix-blocks.test.ts::R321 a Piercing side-blocker deals no combat damage to the attacking player"
+      }
+    ],
+    "see": [
+      "606",
+      "802.16"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.23",
+          "quote": "columns. Units may even be placed blocking in slots"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1365594171867664445#2",
+          "quote": "They wouldn't attack at all since they don't have any attacking enemy units in front of them."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R321",
+          "quote": "- A side-block deals **no combat damage**, Piercing included — _passer:"
+        },
+        {
+          "ref": "R321",
+          "quote": "- R295: a blocking half strikes only with an attacker in front of it, so a"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "400-raq-fix-blocks.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R321 is not in the U12 pack (it is U11's); read from digital-rules.md. 'Never splits the step' is R321's encoding note.",
+    "sourceHashes": {
+      "R321": "57bf15d8b02784f4b61ea34b6935e1fc693cc9bedc10c2d1d64e6d15cea5982b",
+      "RAQ 1365594171867664445#2": "bd777f7785251cf1029a2d7f5ba322510404ca15361576cb748a4deb7f88b3e3"
+    }
+  },
+  {
+    "key": "combat.damage.amount",
+    "parent": "608",
+    "order": 5,
+    "text": "A half-column's combat damage is the combined power of the units in it when it strikes, counted as rule 608.5c describes.",
+    "examples": [
+      {
+        "text": "Example (illustrative): A 1/1 and a 2/2 attack in one column beside a Swift column. In the window after the Swift sub-step the 1/1 gets two +1/+1 counters, so the column deals 3 + 2 = 5 in the normal sub-step.",
+        "test": "423-cr-combat-damage.test.ts::cr:combat.damage.amount — a column deals the combined power of its units as it is when it strikes, read after a pump between sub-steps"
+      }
+    ],
+    "see": [
+      "206"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.23",
+          "quote": "formation deals damage equal to the combined power"
+        },
+        {
+          "ref": "Rulebook 2023 p.10",
+          "quote": "Power indicates how much damage the unit will do in"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "02-combat.test.ts",
+        "423-cr-combat-damage.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Rulebook 2023 p.10 is not in the pack; read from the extract.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.damage.amount.zero-power",
+    "parent": "combat.damage.amount",
+    "order": 1,
+    "text": "A unit with 0 power deals no damage, but it does not stop its column from dealing the combined power of the other units in it. A half-column whose combined power is 0 deals no combat damage.",
+    "examples": [
+      {
+        "text": "Example: Zephyrzoa, reduced to 0 power, is in a column with a powered unit. The column deals combat damage and Zephyrzoa's 'when my column deals combat damage' ability triggers.",
+        "test": "134-column-and-substep.test.ts::R157 §4 — Zephyrzoa: a 0-power anchor in a POWERED column still fires"
+      },
+      {
+        "text": "Example: Zephyrzoa, reduced to 0 power, attacks alone. Its column deals no combat damage and its ability does not trigger.",
+        "test": "134-column-and-substep.test.ts::R157 §4 — Zephyrzoa: alone in a 0-POWER column it hears nothing"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 (§4)",
+          "quote": "> *\"Only if the other unit in the column has a positive power. 0 power units do"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "134-column-and-substep.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Owner answer only (R157 §4); D-U12-5.",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
+    }
+  },
+  {
+    "key": "combat.damage.amount.modifier-order",
+    "parent": "combat.damage.amount",
+    "order": 2,
+    "text": "Powerful doubles a half-column's combined power once, before that damage is divided among its recipients (see rule 802.10). Vulnerable does not change the amount a half-column deals; it doubles what a Vulnerable unit is dealt (see rule 802.11).",
+    "examples": [
+      {
+        "text": "Example: Chitin Shredder (Powerful) attacks unblocked; the defending player is dealt double its column's power.",
+        "test": "09-attrs.test.ts::Powerful: Chitin Shredder deals double combat damage to a player"
+      }
+    ],
+    "see": [
+      "802.10",
+      "802.11"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1362838395298119912#2",
+          "quote": "2/4 Resonant Powerful would deal 4 combat damage to enemy unit"
+        },
+        {
+          "ref": "RAQ 1372451771632320512#3",
+          "quote": "you are required to assing atleast 4 damage to Crumbling (which gets doubled due to Vulnerable)"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R23",
+          "quote": "**Powerful** doubles the source's total damage once, **before** assignment/overflow (a"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "09-attrs.test.ts",
+        "387-raq-combat.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "The designer confirms that Powerful doubles combat damage and that Vulnerable doubles on receipt; 'before division' is R23's engine call (D-U12-7). Sources are silent on additive modifiers to combat damage (D-U12-8), so this rule says nothing about them.",
+    "sourceHashes": {
+      "R23": "04ef097d6068557fac2a6fffbbbf1b13e15d998f142ea3b79c9b8242ea6173e1",
+      "RAQ 1362838395298119912#2": "13be376dafc911e98b9fd60517f7fc84ba94b25dcdfa1017a51f24d16bd972ec",
+      "RAQ 1372451771632320512#3": "ea23f808b78cd79313aac3fbff1c8949a14188079fda3436adcefe3e6b8dea75"
+    }
+  },
+  {
+    "key": "combat.damage.amount.counting",
+    "parent": "combat.damage.amount",
+    "order": 3,
+    "text": "When a half-column's combined power is counted, a unit with negative power counts as 0: it deals no damage and does not reduce its column's damage. In an exchange in which Unaware applies, each unit's printed power is used.",
+    "examples": [
+      {
+        "text": "Example (illustrative): Lithoghul (4/4) and a -2/3 token attack in one column and are not blocked. The column deals 4.",
+        "test": "423-cr-combat-damage.test.ts::cr:combat.damage.amount.counting — a negative-power unit counts as 0 and does not reduce its column"
+      },
+      {
+        "text": "Example: An Unaware blocker and the column it blocks both read their printed stats.",
+        "test": "05-rulings.test.ts::R10/R106: an Unaware blocker and what it blocks BOTH read at printed"
+      }
+    ],
+    "see": [
+      "802.9"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.42",
+          "quote": "Q: What happens when a unit has negative power?"
+        },
+        {
+          "ref": "Manual p.42",
+          "quote": "A: It deals 0 damage."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R106",
+          "quote": "> \"Unaware means that it looks ONLY at what is the literal printed text on all cards"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "05-rulings.test.ts",
+        "423-cr-combat-damage.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "Manual p.42 is in the pack. That the 0 also means 'does not reduce its column' is a reading of 'It deals 0 damage' (D-U12-6); the pilot verifier measured it (4 dealt in the illustrative example). R106 is not in the pack; read from digital-rules.md.",
+    "sourceHashes": {
+      "R106": "fcdf4679f553417968ef6edaa505171e1cd1a4ecbcacaea97f6fb17fce6f0e83"
+    }
+  },
+  {
+    "key": "combat.damage.assignment",
+    "parent": "608",
+    "order": 6,
+    "text": "When a half-column deals combat damage to the units of the opposing half-column, its damage is divided among those units, starting with the front unit and then the unit behind it.",
+    "examples": [
+      {
+        "text": "Example (from the Manual p.23): Living Forge and A Pile of Rubbish attack in one column and are blocked by Tiderunner Initiate. All 2 of the Tiderunner’s damage goes to Living Forge, in front; none goes to A Pile of Rubbish behind it.",
+        "test": "423-cr-combat-damage.test.ts::cr:combat.damage.assignment — the Manual p.23 example: the blocking half-column damage goes to the front unit first, none to the unit behind it"
+      }
+    ],
+    "see": [
+      "602"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.23",
+          "quote": "receive damage from front to back. The front row receives damage first. If the amount of damage received"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1353888077625561108#2",
+          "quote": "before you can start assigning the damage to the back unit, you have to assign damage which would be required to kill unit in the front"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        "R114 (its elective-split and dealt-in-full halves)"
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "100-elective-assign.test.ts",
+        "423-cr-combat-damage.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R114": "72fe8ffddaac70bf365e990d2627680e698af427677f651cb92ec5a4dfe63d34",
+      "RAQ 1353888077625561108#2": "0cf01441bd810b845bf96b626f6691dd313691d7f50481e4a94d6f2f46077b50"
+    }
+  },
+  {
+    "key": "combat.damage.assignment.chooser",
+    "parent": "combat.damage.assignment",
+    "order": 1,
+    "text": "The controller of the half-column dealing the damage divides it: the attacking player divides an attacking half-column's damage among the blocking units, and the defending player divides a blocking half-column's damage among the attacking units.",
+    "examples": [
+      {
+        "text": "Example: A 4-power attacker is blocked by two 1/1s. The attacking player is asked how to divide the 4.",
+        "test": "100-elective-assign.test.ts::R120 (a): the ATTACKER is asked"
+      },
+      {
+        "text": "Example: The defending player divides a blocking half-column's damage and may put all of it on the front attacker.",
+        "test": "100-elective-assign.test.ts::R120 (h): the BLOCK-side strike multi-assigns too"
+      }
+    ],
+    "see": [
+      "combat.damage.assignment"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.43",
+          "quote": "A: Yes, the player dealing damage may choose to"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R7 (its who-decides half)",
+          "quote": "The **controller of the damage-dealing unit** decides how damage splits (including"
+        },
+        {
+          "ref": "R120 (the dealing side is asked)",
+          "quote": "**dealing** the column's damage — the attacker over the blocking column, the defender over"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R7",
+          "relation": "its Piercing half ('Piercing is automatic, not elective') was reversed by R319"
+        },
+        {
+          "ruling": "R120",
+          "relation": "its exclusion of Piercing strikes from the elective split was reversed by R319"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "100-elective-assign.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "No designer quote names the chooser; Manual p.43 says 'the player dealing damage'. R7 says the controller of the damage-dealing unit; R120 says the dealing side.",
+    "sourceHashes": {
+      "R120": "031593f655a8323fa0f718e8c5a55727d6843359937f85d752fc77de445a4230",
+      "R7": "68cf7ca82d75289343905253b59fe4f1561af0cf5eb49c540d354e923d0ccc68"
+    }
+  },
+  {
+    "key": "combat.damage.assignment.lethal-first",
+    "parent": "combat.damage.assignment",
+    "order": 2,
+    "text": "Lethal damage (rule 608.6e) must be assigned to a unit before any damage is assigned to the unit behind it.",
+    "examples": [
+      {
+        "text": "Example: Amounts below the front unit's lethal damage are never offered while any damage could go behind it.",
+        "test": "100-elective-assign.test.ts::R120 (c): amounts below the front unit"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.23",
+          "quote": "would be enough to kill the front row, any excess damage is dealt to the unit in the back row. Excess damage"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1353888077625561108#2",
+          "quote": "before you can start assigning the damage to the back unit, you have to assign damage which would be required to kill unit in the front"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R114 (its elective-split and dealt-in-full halves)",
+          "quote": "enough to kill them both. The only rule is that the front unit must be assigned lethal"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "100-elective-assign.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R114": "72fe8ffddaac70bf365e990d2627680e698af427677f651cb92ec5a4dfe63d34",
+      "RAQ 1353888077625561108#2": "0cf01441bd810b845bf96b626f6691dd313691d7f50481e4a94d6f2f46077b50"
+    }
+  },
+  {
+    "key": "combat.damage.assignment.overkill",
+    "parent": "combat.damage.assignment",
+    "order": 3,
+    "text": "A unit may be assigned more than lethal damage. The dealing player may assign all of a half-column's damage to the front unit and none to the unit behind it, even if there is enough to destroy both.",
+    "examples": [
+      {
+        "text": "Example: A 4-power attacker is blocked by a 1/1 in front of a 1/1. The attacking player assigns all 4 to the front 1/1; the back 1/1 is untouched.",
+        "test": "100-elective-assign.test.ts::R120 (a): the ATTACKER is asked"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.43",
+          "quote": "assign additional damage beyond lethal to a unit"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1353888077625561108#1",
+          "quote": "You can even decide to deal all damage to the front and 0 to the back."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        "R114 (its elective-split and dealt-in-full halves)"
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "100-elective-assign.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "Manual p.23's front-to-back flow reads as forced; the designer and Manual p.43 make it elective (D-U12-2).",
+    "sourceHashes": {
+      "R114": "72fe8ffddaac70bf365e990d2627680e698af427677f651cb92ec5a4dfe63d34",
+      "RAQ 1353888077625561108#1": "6c743ceba2078c61cb476de0e4e96512ee9690e83f7893485a604485a376cf35"
+    }
+  },
+  {
+    "key": "combat.damage.assignment.dealt-in-full",
+    "parent": "combat.damage.assignment",
+    "order": 4,
+    "text": "All combat damage assigned to a unit is dealt to that unit, including any beyond its lethal damage; none of it is lost. A half-column without Piercing that has at least one unit to deal damage to assigns all of its damage to those units, so none of it reaches the player; any of its damage still unassigned when the last unit is reached is assigned to that unit.",
+    "examples": [
+      {
+        "text": "Example: Rune Channeler (4/3, no Piercing) is blocked by a 1/1. All 4 damage is dealt to the 1/1; none is lost and none reaches the player.",
+        "test": "05-rulings.test.ts::R114: without Piercing the excess is not lost, it lands on the unit"
+      },
+      {
+        "text": "Example: An overkill combat hit on Mirage Scuttler marks the whole amount, not only the lethal part.",
+        "test": "17-earth-b.test.ts::Mirage Scuttler: an overkill combat hit marks the WHOLE amount"
+      }
+    ],
+    "see": [
+      "802.16",
+      "combat.damage.pairing.stays-blocked"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.23",
+          "quote": "beyond the health of the back row unit does not carry over to the player."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1353888077625561108#0",
+          "quote": "all combat damage MUST be assigned to this unit"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R114 (its elective-split and dealt-in-full halves)",
+          "quote": "> \"ALL damage is dealt to units, even if it surpasses its defense. The only exception is"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R98",
+          "relation": "its open item 1 (prevention counters capped at lethal because excess combat damage was dropped) was superseded by R114"
+        },
+        {
+          "ruling": "R114",
+          "relation": "its description of Piercing's leftover as always carried to the face was amended by R319"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "05-rulings.test.ts",
+        "24-wood-b.test.ts",
+        "17-earth-b.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Narrowed per the pilot verifier: the sentence about unassigned damage applies to non-Piercing half-columns that still have a unit to deal damage to. A half-column whose blockers are all gone is rule 608.4c; Piercing remainders are rule 802.16.",
+    "sourceHashes": {
+      "R114": "72fe8ffddaac70bf365e990d2627680e698af427677f651cb92ec5a4dfe63d34",
+      "RAQ 1353888077625561108#0": "407c8fd6ffa3d55d40283402ece731275686fbffa031a4a525902b7a88bd75fb"
+    }
+  },
+  {
+    "key": "combat.damage.assignment.lethal-defined",
+    "parent": "combat.damage.assignment",
+    "order": 5,
+    "text": "Lethal damage, for assignment, is the smallest amount of the half-column's damage that would destroy the unit, given the damage already marked on it: its remaining defense; half of that, rounded up, if the unit is Vulnerable; 1 if the half-column has Deadly. In an exchange in which Unaware applies, the unit's printed defense, less the damage already marked on it, is used. In an exchange involving a Pure card, neither Vulnerable nor Deadly changes lethal damage.",
+    "examples": [
+      {
+        "text": "Example: A Deadly half-column's lethal damage for each blocker is 1.",
+        "test": "100-elective-assign.test.ts::R120 (e): {Deadly} floors are 1"
+      },
+      {
+        "text": "Example: A 10-power Piercing half-column blocked by a Vulnerable 3/8 must assign 4 to it, and the other 6 may go to the player.",
+        "test": "387-raq-combat.test.ts::RAQ Vulnerable: a 10-power Piercing column into a Vulnerable 3/8 assigns 4 and 6 goes to the player"
+      }
+    ],
+    "see": [
+      "802.3",
+      "802.9",
+      "802.11",
+      "802.25"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353888077625561108#3",
+          "quote": "With Deadly you need to assign atleast 1 damage to front unit"
+        },
+        {
+          "ref": "RAQ 1372451771632320512#3",
+          "quote": "you are required to assing atleast 4 damage to Crumbling (which gets doubled due to Vulnerable)"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R120 (the dealing side is asked)",
+          "quote": "rounded up under {Vulnerable}, 1 under {Deadly}, printed defense in an {Unaware}"
+        },
+        {
+          "ref": "R61",
+          "quote": "Afflicting or Thieving, and the victim's Vulnerable is off too. With no"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "100-elective-assign.test.ts",
+        "387-raq-combat.test.ts",
+        "134-column-and-substep.test.ts",
+        "423-cr-combat-damage.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "Vulnerable rounding up for odd defense, the Unaware rule and counting damage already marked rest on R120's engine text (D-U12-17).",
+    "sourceHashes": {
+      "R120": "031593f655a8323fa0f718e8c5a55727d6843359937f85d752fc77de445a4230",
+      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e",
+      "RAQ 1353888077625561108#3": "66c91c974f97a373e4461c01315e9276f92dca3565803a7736d38a030f2e2df2",
+      "RAQ 1372451771632320512#3": "ea23f808b78cd79313aac3fbff1c8949a14188079fda3436adcefe3e6b8dea75"
+    }
+  },
+  {
+    "key": "combat.damage.assignment.lone-unit",
+    "parent": "combat.damage.assignment",
+    "order": 6,
+    "text": "If the opposing half-column has only one unit, all of the damage is assigned to that unit; with Piercing, the dealing player may instead send damage beyond that unit's lethal damage to its controller (see rule 802.16).",
+    "examples": [
+      {
+        "text": "Example: A Piercing attacker with 10 power is blocked by a lone Vulnerable 3/8. It may assign all 10 to that unit (dealt as 20), and then none reaches the player.",
+        "test": "399-raq-fix-combat.test.ts::R319: a Piercing attacker may put all 10 into a lone Vulnerable 3/8"
+      }
+    ],
+    "see": [
+      "802.16"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353888077625561108#0",
+          "quote": "all combat damage MUST be assigned to this unit"
+        },
+        {
+          "ref": "RAQ 1372451771632320512#4",
+          "quote": "You could assign all 10 damage to Crumbling, which would then get doubled to 20, but then all that 20 damage sinks into Crumbling Ancient and nothing goes to opponent face."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        "R319 (its combat Piercing election)"
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "05-rulings.test.ts",
+        "399-raq-fix-combat.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R319": "0dae2a17d049496f72aaa046c437f57fa624c4e4ec1214658772a1945e77cdd0",
+      "RAQ 1353888077625561108#0": "407c8fd6ffa3d55d40283402ece731275686fbffa031a4a525902b7a88bd75fb",
+      "RAQ 1372451771632320512#4": "c0cb696285859a76caf8c5a328ef57f3dbb7330ef74a4ddfe29d70ba791f50ca"
+    }
+  },
+  {
+    "key": "combat.damage.assignment.shields-ignored",
+    "parent": "combat.damage.assignment",
+    "order": 7,
+    "text": "Damage prevention on a unit does not change its lethal damage. Lethal damage is worked out as if the unit were not protected, and the prevention applies when the damage is dealt (rule 608.7a).",
+    "examples": [
+      {
+        "text": "Example: A shielded 0/5 Awoken Tomb is in front of a 5/6. At least 5 must be assigned to the Tomb before any is assigned to the 5/6.",
+        "test": "387-raq-combat.test.ts::RAQ Excessive: a shielded Awoken Tomb in front must still be assigned its 5"
+      }
+    ],
+    "see": [
+      "708"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353888077625561108#8",
+          "quote": "You must assign atleast 5 damage to Awoken"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R98 (its assignment and prevention paragraphs)",
+          "quote": "floor: those are planned against the unit's real toughness as if it were unprotected. The"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R98": "3b5eca7b78135e3b83d9772ba1d9b4a61e98a52ee192747ede43080eb4f13a41",
+      "RAQ 1353888077625561108#8": "a6363f7f9f93b0bd988ec213839a7fb5b4c524ef1e439de15809bf7d040fc4f8"
+    }
+  },
+  {
+    "key": "combat.damage.assignment.timing",
+    "parent": "combat.damage.assignment",
+    "order": 8,
+    "text": "In each sub-step, every half-column's damage is divided before any damage in that sub-step is dealt.",
+    "examples": [
+      {
+        "text": "Example (illustrative): Two 10/20 attackers are each blocked by two 1/3s. Both attackers are asked how to divide their damage, and no damage is dealt until both have answered.",
+        "test": "423-cr-combat-damage.test.ts::cr:combat.damage.assignment.timing — both columns are asked for their split before any damage of the sub-step is dealt"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R120 (the dealing side is asked)",
+          "quote": "At the top of every combat-damage sub-step, **before the ledger exists and before any event"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "100-elective-assign.test.ts",
+        "423-cr-combat-damage.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Stated by R120 as engine procedure; it follows from simultaneous dealing (rule 608.1b) but no printed or designer source says it.",
+    "sourceHashes": {
+      "R120": "031593f655a8323fa0f718e8c5a55727d6843359937f85d752fc77de445a4230"
+    }
+  },
+  {
+    "key": "combat.damage.dealing",
+    "parent": "608",
+    "order": 7,
+    "text": "All the combat damage of one sub-step is dealt simultaneously. Damage dealt to a unit is marked on it; a Vulnerable unit is dealt double the damage assigned to it (see rule 802.11), and a Poisonous source deals its damage to units in the form of -1/-1 counters (see rule 802.18).",
+    "examples": [
+      {
+        "text": "Example: Crumbling Ancient (Vulnerable) is marked with double the combat damage assigned to it.",
+        "test": "09-attrs.test.ts::Vulnerable: Crumbling Ancient marks double the combat damage it receives"
+      }
+    ],
+    "see": [
+      "802.11",
+      "802.18"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.23",
+          "quote": "Every damage exchange happens at the same time"
+        },
+        {
+          "ref": "card: Blightmound",
+          "quote": "Poisonous sources damage units in the form of -1/-1 counters."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1372451771632320512#4",
+          "quote": "which would then get doubled to 20"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        "R237"
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "09-attrs.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R237": "ec152f51160f9f8410800e8323fd9f676fdf45864242ec64e8d1e35ce6ae3cc7",
+      "RAQ 1372451771632320512#4": "c0cb696285859a76caf8c5a328ef57f3dbb7330ef74a4ddfe29d70ba791f50ca"
+    }
+  },
+  {
+    "key": "combat.damage.dealing.prevention",
+    "parent": "combat.damage.dealing",
+    "order": 1,
+    "text": "Prevention applies as combat damage is dealt. Damage that is prevented is not dealt: it is not marked, it places no -1/-1 counters, it does not trigger abilities that trigger on a unit being dealt damage, and it cannot destroy a unit through Deadly.",
+    "examples": [
+      {
+        "text": "Example: A 12-power half-column is blocked by an Awoken Tomb under Phytochemical Protection in front of a 5/6. The 5 combat damage assigned to the Tomb is prevented: none is marked, and the Tomb’s “when I am dealt damage” ability does not trigger.",
+        "test": "387-raq-combat.test.ts::RAQ Excessive: a shielded Awoken Tomb in front must still be assigned its 5 before anything goes behind it"
+      },
+      {
+        "text": "Example: A Deadly half-column cannot destroy a unit whose damage is prevented.",
+        "test": "24-wood-b.test.ts::Phytochemical Protection: {Deadly} cannot kill through it"
+      }
+    ],
+    "see": [
+      "708"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1354148437355925554#1",
+          "quote": "Jollyglop doesn't trigger, won't get -2/-2 from Poisonous but will receive +2/+2 counters from Phytochemical Protection."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R98 (its assignment and prevention paragraphs)",
+          "quote": "So a fully prevented hit produces **no `damage` event** (\"whenever I am dealt damage\" stays"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "24-wood-b.test.ts",
+        "387-raq-combat.test.ts",
+        "423-cr-combat-damage.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "RAQ thread 1354148437355925554 is not in the U12 pack; read from the extract. Prevention in general is rule 708.",
+    "sourceHashes": {
+      "R98": "3b5eca7b78135e3b83d9772ba1d9b4a61e98a52ee192747ede43080eb4f13a41",
+      "RAQ 1354148437355925554#1": "0cee7d451013b6afaa95e382f1b150732182e144830830fbfe16e51ceaef2394"
+    }
+  },
+  {
+    "key": "combat.damage.dealing.deaths",
+    "parent": "combat.damage.dealing",
+    "order": 2,
+    "text": "After a sub-step's damage has been dealt, units with lethal damage, and units dealt damage by a Deadly source, are destroyed before the next sub-step begins.",
+    "examples": [
+      {
+        "text": "Example: A Swift half-column destroys its 2/2 blocker in the Swift sub-step; the blocker never strikes back in the normal sub-step.",
+        "test": "02-combat.test.ts::R3/Swift: swift column deals damage first"
+      }
+    ],
+    "see": [
+      "713",
+      "802.3"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R21 (its Deadly-kill timing)",
+          "quote": "the same damage sub-step, before the next sub-step's recalc. Deadly works on effect"
+        },
+        {
+          "ref": "R300",
+          "quote": "> Damage happens in the combat damage step, then state based actions are checked and units"
+        },
+        {
+          "ref": "R3 (its recalculation clause)",
+          "quote": "All formation changes are **recalculated immediately** (promotion, attribute sharing, column"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R21",
+          "relation": "its 'auto-assignment' wording for Deadly + Piercing is now only the default (R319)"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "02-combat.test.ts",
+        "239-damage-triggers-after-combat.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R21": "c16390a9d33690be83ffdf59839ed7e0e3bee9f98b7f69322832e3c1ca48e215",
+      "R3": "34995371f69402284ef5a054fd335d708ffd7126727a1196591cf370bd153d89",
+      "R300": "433eaa2ccb6dc1247571654060ad72dec7a9ded55d273f78a24a63e3079f3338"
+    }
+  },
+  {
+    "key": "combat.damage.dealing.regroup",
+    "parent": "combat.damage.dealing",
+    "order": 3,
+    "text": "Damage marked on units remains until the regroup phase, when it is removed.",
+    "examples": [
+      {
+        "text": "Example: An attacker and its blocker each have 2 damage marked in the first battle of the turn. Both still have 2 damage marked when the second battle begins; it is removed in the regroup phase.",
+        "test": "423-cr-combat-damage.test.ts::cr:combat.damage.dealing.regroup — damage from the first battle of the turn is still marked when the second battle starts, and is removed in regroup"
+      }
+    ],
+    "see": [
+      "506"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.11",
+          "quote": "All damage on units goes away during the regroup step."
+        },
+        {
+          "ref": "Manual p.27",
+          "quote": "Reset unit damage and buffs"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "05-rulings.test.ts",
+        "423-cr-combat-damage.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.damage.player",
+    "parent": "608",
+    "order": 8,
+    "text": "Combat damage is dealt to a player in two ways: by an unblocked attacking half-column (rule 608.4a), and as Piercing excess from an attacking half-column, or from a blocking half-column with an attacker in front of it (see rule 802.16). Combat damage dealt to a player causes that player to lose that much life, unless an effect replaces that damage or changes the life lost.",
+    "examples": [
+      {
+        "text": "Example: A Piercing attacker is not blocked; all of its damage is dealt to the defending player.",
+        "test": "387-raq-combat.test.ts::RAQ Piercing: an unblocked Piercing column hits the player"
+      },
+      {
+        "text": "Example: A blocking Piercing half-column with an attacker in front of it deals its excess to the attacking player.",
+        "test": "387-raq-combat.test.ts::RAQ Piercing: a defending Piercing column with an attacker in front of it carries its excess to the attacker"
+      }
+    ],
+    "see": [
+      "112",
+      "802.16"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Adversary of the Deep",
+          "quote": "Damage causes life loss."
+        },
+        {
+          "ref": "Manual p.23",
+          "quote": "The two unblocked columns each deal 2 damage to"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1365594171867664445#3",
+          "quote": "as defender you can only deal combat damage to opponents face if your blocking columns has piercing AND there is enemy unit in front of them"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1365594171867664445#3": "cd8215d0e5a46b53cfab6842a14326b1b194278f18d210e223711d1025228e1f"
+    }
+  },
+  {
+    "key": "combat.damage.player.replaced-still-dealt",
+    "parent": "combat.damage.player",
+    "order": 1,
+    "text": "Combat damage to a player that an effect replaces (for example, Blightsea Polyp's rot) was still dealt. An ability that triggers when a column deals combat damage to a player still triggers, and reads the damage dealt, even if the player lost no life.",
+    "examples": [
+      {
+        "text": "Example: A fully replaced combat hit still counts as dealt: Vroot's 'that much' pays out the damage its column dealt, not the life the player lost.",
+        "test": "207-replaced-hit-was-dealt.test.ts::R238: the payout is the DAMAGE DEALT, not the life lost"
+      }
+    ],
+    "see": [
+      "708",
+      "112"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R238",
+          "quote": "> **\"Yes, blightsea pollup says it deals damage as, so its still damage. Just"
+        },
+        {
+          "ref": "R195 (its per-column attribution)",
+          "quote": "**Face damage is attributed. The event is not split.**"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R195",
+          "relation": "its reading of 'my column deals combat damage' off the life lost was amended by R238 to read the damage dealt"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "207-replaced-hit-was-dealt.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R238 also quotes Caleb (2024-10-24, rules-questions, not a RAQ thread) answering 'Yes' to whether combat damage still applies after Rot Jelly's replacement; that exchange is quoted only inside R238, so the basis is owner.",
+    "sourceHashes": {
+      "R195": "a5af5584eea55fc837cbd45f0ca20bb78a211a4e6b1438af952cf6abfecdb4e3",
+      "R238": "0e100f9b3442e2b363e7a1ca1abf5dfaa1189d9688d1ed9c1bdc237b3d6faccb"
+    }
+  },
+  {
+    "key": "combat.damage.player.not-combat",
+    "parent": "combat.damage.player",
+    "order": 2,
+    "text": "Damage dealt by an ability that a source's combat damage causes, such as Resonant's extra damage, is not combat damage, even when it is dealt during or because of combat.",
+    "examples": [
+      {
+        "text": "Example: Resonant's extra damage to a player is not combat damage, so Oorblak does not take it; the player does.",
+        "test": "387-raq-combat.test.ts::RAQ Resonant: the extra damage is not combat damage"
+      }
+    ],
+    "see": [
+      "802.19"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1362838395298119912#0",
+          "quote": "extra damage from Resonant effect wouldn't be considered as 'combat damage'"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        "R315 (its rider-is-the-source's-trigger ruling)"
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts",
+        "399-raq-fix-combat.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R315": "6ca33ebc6ed5bca380a104b3da4e4e7bbf6136abea553cd4f5c0d0dda4a7b92f",
+      "RAQ 1362838395298119912#0": "f2bca29b34ca4054e89f4b875b3d7a76dfcd1624d98fd3d374c67f03e27eaf00"
+    }
+  },
+  {
+    "key": "combat.damage.player.redirect",
+    "parent": "combat.damage.player",
+    "order": 3,
+    "text": "If combat damage that would be dealt to a player is dealt to a unit instead (as Oorblak's ability does), the replacement applies to that damage once. Without Piercing, all of that damage is dealt to the unit. With Piercing, the damage beyond the unit's lethal damage is dealt to the player, and it is not redirected again.",
+    "examples": [
+      {
+        "text": "Example: 10 Piercing combat damage that would be dealt to a player is redirected into a 2/4 Oorblak. 4 destroy it, and the other 6 are dealt to the player.",
+        "test": "387-raq-combat.test.ts::RAQ Oorblak: 10 Piercing combat damage redirected into a 2/4 Oorblak"
+      },
+      {
+        "text": "Example: A non-Piercing overkill redirected into Oorblak is absorbed whole; nothing reaches the player.",
+        "test": "17-earth-b.test.ts::Oorblak: a NON-Piercing overkill is absorbed whole"
+      }
+    ],
+    "see": [
+      "708",
+      "802.16"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Oorblak",
+          "quote": "If combat damage would be dealt to you, that damage is dealt to me instead."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1397188292239163454#0",
+          "quote": "he takes 4 damage which is enough to kill him and leftover 6 damage is still Piercing so it goes to players face"
+        },
+        {
+          "ref": "RAQ 1397188292239163454#0",
+          "quote": "replacement effects only apply once in an effect Unless a new trigger occurs"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts",
+        "17-earth-b.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "medium",
+    "notes": "'Not redirected again' follows Caleb's 'replacement effects only apply once in an effect' read per damage, as the register states the claim ('and are not redirected again'). The engine offers the leftover to OTHER replacement holders (a second Oorblak, a Blightsea Polyp): F-U12-1, D-U12-13. The pilot's clause 'but a different replacement effect may' had no source and is dropped.",
+    "sourceHashes": {
+      "RAQ 1397188292239163454#0": "859ade14197b364f8aed8a0d8462175435c6ba4ba8f67b055cf85849ae403635"
+    },
+    "engineDiffers": [
+      "F-U12-1"
+    ]
+  },
+  {
+    "key": "combat.damage.triggers",
+    "parent": "608",
+    "order": 9,
+    "text": "An ability that triggers on combat damage, or on something combat damage causes (such as a unit being destroyed), triggers when that event happens, during the combat damage step, and its trigger condition is checked then. It is put on the stack later, as rules 608.9b and 608.9c describe, and only then are its targets chosen.",
+    "examples": [
+      {
+        "text": "Example: A combat-damage trigger is announced inside the damage step and pushed to the stack after it.",
+        "test": "239-damage-triggers-after-combat.test.ts::R261: a combat-damage trigger is announced INSIDE the damage step"
+      }
+    ],
+    "see": [
+      "706",
+      "703"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1540678747953569832#0",
+          "quote": "Since all those effects are put on the same stack at the same time, each player can decide the order of their effects."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R261 (its announce-then-hold mechanism)",
+          "quote": "**The trigger still FIRES during the damage step**, and that is not a detail — it is what"
+        },
+        {
+          "ref": "R300",
+          "quote": "> different steps to process. Any triggers that come off of dealing or recieving damage or"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R31",
+          "relation": "said such triggers resolve immediately inside the damage step; superseded by R261 and R295"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "239-damage-triggers-after-combat.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "That the condition is checked at the event and the targets chosen later is R261's (owner) mechanism; the designer RAQ says only when the triggers go on the stack.",
+    "sourceHashes": {
+      "R261": "07d6f7efa79b63164e8f12b9dd39a9c844544f5b5411f16f14b6b139a7e9f7b2",
+      "R300": "433eaa2ccb6dc1247571654060ad72dec7a9ded55d273f78a24a63e3079f3338",
+      "RAQ 1540678747953569832#0": "609f04503fdbf3baa6b081e145272a30ef8cb3d74e814175d0f41614d2d76708"
+    }
+  },
+  {
+    "key": "combat.damage.triggers.my-column",
+    "parent": "combat.damage.triggers",
+    "order": 1,
+    "text": "An ability that triggers 'when my column deals combat damage' triggers in each sub-step in which its own column deals combat damage, and only for damage its own column dealt; another column's damage does not trigger it. A 0-power unit with such an ability triggers if its column's combined power is greater than 0.",
+    "examples": [
+      {
+        "text": "Example: A Swift and Sluggish column with Vroot strikes twice, and Vroot's ability triggers twice.",
+        "test": "134-column-and-substep.test.ts::R157 §5 — a {Swift}{Sluggish} column strikes twice"
+      },
+      {
+        "text": "Example: Vroot's 'that much' is its own column's damage, not the total dealt to the player by every column.",
+        "test": "166-face-damage-attribution.test.ts::R195 — Vroot: \"[Augment] When my column deals combat damage, each opponent gains that much life\""
+      }
+    ],
+    "see": [
+      "706"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R117 (its own-column gate)",
+          "quote": "> It fires in the sub-step its **own column** strikes in — a {Swift} column fires in the"
+        },
+        {
+          "ref": "R157 (§4)",
+          "quote": "> *\"Only if the other unit in the column has a positive power. 0 power units do"
+        },
+        {
+          "ref": "R157 (§5, its both-sub-steps answer)",
+          "quote": "`strikesInCurrentSubStep` fires a column's triggers once while its damage lands"
+        },
+        {
+          "ref": "R195 (its per-column attribution)",
+          "quote": "So the COLUMN is the dealer of a column-scoped clause — a 0-power anchor beside"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R117",
+          "relation": "'otherwise the normal one' was corrected by R157 §5 (a Swift+Sluggish column fires in both); its claim that the trigger resolves inside its sub-step was superseded by R261"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "134-column-and-substep.test.ts",
+        "166-face-damage-attribution.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Owner rulings only (D-U12-14). R117's rule line is incomplete for Sluggish columns; read with R157 §5.",
+    "sourceHashes": {
+      "R117": "7328a1c38a25974e04ec832eccb70e0f59b0d8f0bb8f52b0f3a1e130814937cc",
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
+      "R195": "a5af5584eea55fc837cbd45f0ca20bb78a211a4e6b1438af952cf6abfecdb4e3"
+    }
+  },
+  {
+    "key": "combat.damage.triggers.unsplit",
+    "parent": "combat.damage.triggers",
+    "order": 2,
+    "text": "In an unsplit step, every ability that triggered during the combat damage step is put on the stack in the after combat step, together with the abilities that trigger at the start of the after combat step, as one batch. The initiative player puts all of theirs on the stack first, in the order they choose, and then the other player puts theirs; each player may interleave the two kinds in any order. All players may respond to them.",
+    "examples": [
+      {
+        "text": "Example: One player's combat-damage trigger and after-combat trigger are ordered together, in one decision.",
+        "test": "239-damage-triggers-after-combat.test.ts::R261 THE RAQ BATCH"
+      },
+      {
+        "text": "Example: The initiative player's triggers go on the stack first and sit at the bottom.",
+        "test": "239-damage-triggers-after-combat.test.ts::R261 RAQ STACK ORDER"
+      }
+    ],
+    "see": [
+      "609",
+      "706"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1540678747953569832#0",
+          "quote": "Since all those effects are put on the same stack at the same time, each player can decide the order of their effects."
+        },
+        {
+          "ref": "RAQ 1540678747953569832#1",
+          "quote": "Initiative (IT) player put all of his effects on the stack first, then non-Initiative (NIT) player puts his."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        "R261 (its unsplit hold)",
+        "R295"
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "239-damage-triggers-after-combat.test.ts",
+        "423-cr-combat-damage.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "Claim 1540678747953569832#1 is not in the U12 pack; read from the extract.",
+    "sourceHashes": {
+      "R261": "07d6f7efa79b63164e8f12b9dd39a9c844544f5b5411f16f14b6b139a7e9f7b2",
+      "R295": "e30311733f4edf882d1892f41c15af9a598b6ffaeb78879961a86198e2a15c18",
+      "RAQ 1540678747953569832#0": "609f04503fdbf3baa6b081e145272a30ef8cb3d74e814175d0f41614d2d76708",
+      "RAQ 1540678747953569832#1": "ce36c3bfc3d1d8aba0f94ddfc9de4ab45798548219bbceaf78a06074b7d3d5c6"
+    }
+  },
+  {
+    "key": "combat.damage.triggers.split",
+    "parent": "combat.damage.triggers",
+    "order": 3,
+    "text": "In a split step, the abilities that triggered during a sub-step other than the last scheduled one are put on the stack, in the same order as in rule 608.9b, at the window after that sub-step, and resolve before the next sub-step deals damage (rule 608.3b). The abilities that trigger during the last sub-step in which damage is dealt join the after combat batch as in rule 608.9b.",
+    "examples": [
+      {
+        "text": "Example: In a split step, a death trigger from the Swift sub-step resolves at the window before the normal sub-step, not after combat.",
+        "test": "239-damage-triggers-after-combat.test.ts::R295: in a SPLIT damage step a death trigger resolves at the boundary"
+      },
+      {
+        "text": "Example: With Sluggish last, a death in the Sluggish sub-step joins the after combat batch.",
+        "test": "408-raq-new-threads.test.ts::RAQ Combat Damage & After Combat: with Sluggish last"
+      }
+    ],
+    "see": [
+      "609",
+      "706"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1540678747953569832#2",
+          "quote": "presence of Swift or/and Sluggish opens new stacks which must be resolved before you move to next combat damage step (swift->normal->sluggish)"
+        },
+        {
+          "ref": "RAQ 1540678747953569832#3",
+          "quote": "but the last one which happens is then directly connected with \"after combat\""
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        "R295"
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "239-damage-triggers-after-combat.test.ts",
+        "408-raq-new-threads.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R295": "e30311733f4edf882d1892f41c15af9a598b6ffaeb78879961a86198e2a15c18",
+      "RAQ 1540678747953569832#2": "c606d1a891a2c53e293717e8c62f1e2487fe5a75c188a2814b3b3bab5c88d228",
+      "RAQ 1540678747953569832#3": "c8218df1e839008921539cfa4041b3584d8fb1dcd806017d5d7bbb8f10d0b352"
+    }
+  },
+  {
+    "key": "combat.damage.triggers.tax",
+    "parent": "combat.damage.triggers",
+    "order": 4,
+    "text": "Abilities that trigger during the combat damage step trigger during battle, so an effect that makes abilities cost more to trigger during battle applies to them.",
+    "examples": [
+      {
+        "text": "Example: Crevice Lurker taxes a combat-damage trigger; on the same board without the Lurker there is no tax.",
+        "test": "239-damage-triggers-after-combat.test.ts::R121 WIDENED BY R261"
+      }
+    ],
+    "see": [
+      "111",
+      "706"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Crevice Lurker",
+          "quote": "Abilities cost [one] more to activate or trigger during battle."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R261 (its widening of the battle tax)",
+          "quote": "**[R121] is widened, and the widening is the printed text.** Crevice Lurker prints"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "239-damage-triggers-after-combat.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "",
+    "sourceHashes": {
+      "R261": "07d6f7efa79b63164e8f12b9dd39a9c844544f5b5411f16f14b6b139a7e9f7b2"
+    }
+  },
+  {
+    "key": "combat.damage.triggers.bin-cards",
+    "parent": "combat.damage.triggers",
+    "order": 5,
+    "text": "An ability that works only while its card is in the bin can trigger on combat damage only if the card is already in the bin when that damage is dealt. A unit destroyed by combat damage is not in the bin while that same damage is dealt, but a unit destroyed in an earlier sub-step is.",
+    "examples": [
+      {
+        "text": "Example: Cinder Scuttler is destroyed in the same sub-step in which another of its controller's columns deals combat damage to the opponent. It does not return.",
+        "test": "310-zone-abilities.test.ts::§3 Cinder Scuttler does NOT recall off the damage step it died in"
+      },
+      {
+        "text": "Example: A Swift unit destroys Cinder Scuttler in the Swift sub-step; in the normal sub-step its controller deals combat damage to the opponent, and it returns.",
+        "test": "310-zone-abilities.test.ts::§4 but a Swift unit bins it BEFORE the normal step"
+      }
+    ],
+    "see": [
+      "405",
+      "706"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Cinder Scuttler",
+          "quote": "When you deal combat damage to an opponent, if I am in your bin, recall me."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R300",
+          "quote": "> then it's impossible for Cinder Scuttler to die to combat damage and be returned at the"
+        },
+        {
+          "ref": "R300",
+          "quote": "> same moment since, technically, it's not in the bin when the damage is dealt."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "310-zone-abilities.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R300": "433eaa2ccb6dc1247571654060ad72dec7a9ded55d273f78a24a63e3079f3338"
+    }
+  }
+]

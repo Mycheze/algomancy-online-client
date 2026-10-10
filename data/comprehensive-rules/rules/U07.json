@@ -1,0 +1,4508 @@
+[
+  {
+    "key": "zones.general.list",
+    "parent": "400",
+    "order": 1,
+    "text": "The zones of the game are the deck, the hand, the cache, play, the bin, the stack, the erased pile, the recycle pile and the pack.",
+    "examples": [
+      {
+        "text": "The engine keeps cards in exactly nine zones: deck, hand, cache, play, bin, stack, erased pile, recycle pile and pack.",
+        "test": "418-cr-zones.test.ts::cr:zones.general.list — the engine keeps cards in exactly nine zones: deck, hand, cache, play, bin, stack, erased pile, recycle pile and pack"
+      }
+    ],
+    "see": [
+      "401",
+      "402",
+      "403",
+      "404",
+      "405",
+      "406",
+      "407",
+      "408",
+      "409"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.16",
+          "quote": "10 cards face down. This pile is referred to as a “pack”."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R145",
+          "quote": "Hand, deck, bin, cache and the erased pile are **inactive**."
+        },
+        {
+          "ref": "R145",
+          "quote": "The ACTIVE ZONES are PLAY (the field / a formation) and the STACK."
+        },
+        {
+          "ref": "R296",
+          "quote": "**past the mark**, into the recycle pile, not onto the bottom of the live deck."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "No source enumerates the zones in one place: R145 names seven, R296 the recycle pile, the Manual the pack. The list matches the nine the engine exports (extract.json enums.zones: deck, hand, cache, bin, play, stack, recycle, erased, pack). The printed \"token pile\" is not a zone in this list: see D-U07-11.",
+    "sourceHashes": {
+      "R145": "dc76fc0a317d5bd6bd6de5ed5a24eb9d84407f6b45dcbb85d2e8978fe56f98e3",
+      "R296": "d53f03d41df34d3f07ac7687b7104a2376c6e1fc4108537d53fe87f48c0f1a56"
+    }
+  },
+  {
+    "key": "zones.general.active",
+    "parent": "400",
+    "order": 2,
+    "text": "Play and the stack are the active zones. The hand, the deck, the bin, the cache and the erased pile are inactive zones.",
+    "examples": [
+      {
+        "text": "A printed Unstable card is erased leaving play or the stack, and only binned leaving the hand, the deck or the cache.",
+        "test": "418-cr-zones.test.ts::cr:zones.general.active — a printed Unstable card is erased leaving play or the stack, and only binned leaving the hand, the deck or the cache"
+      }
+    ],
+    "see": [
+      "404",
+      "406",
+      "803"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R145",
+          "quote": "The ACTIVE ZONES are PLAY (the field / a formation) and the STACK."
+        },
+        {
+          "ref": "R145",
+          "quote": "Hand, deck, bin, cache and the erased pile are **inactive**."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R145: the phrase \"active zone\" is Caleb's (a glossary line quoted in R145), the zone list is the owner's; R145 says outright \"do not attribute the zone list to Caleb\". R152 reaches the same pair from tokens. The recycle pile and the pack are not classified by any source: D-U07-9.",
+    "sourceHashes": {
+      "R145": "dc76fc0a317d5bd6bd6de5ed5a24eb9d84407f6b45dcbb85d2e8978fe56f98e3"
+    }
+  },
+  {
+    "key": "zones.general.active.unstable",
+    "parent": "zones.general.active",
+    "order": 1,
+    "text": "Whether a zone is active matters to {Unstable}: an {Unstable} card is erased in place of entering a bin only when it leaves an active zone. A card leaving an inactive zone for a bin is binned normally, {Unstable} or not.",
+    "examples": [
+      {
+        "text": "Aberrant Statweaver (printed {Unstable}) discarded from a hand goes to the bin and stays there: the hand is inactive.",
+        "test": "125-active-zone.test.ts::R145: a printed-Unstable card DISCARDED FROM HAND bins and TRASHES — hand is inactive"
+      },
+      {
+        "text": "The same card negated off the stack is erased: the stack is active.",
+        "test": "125-active-zone.test.ts::R145: Aberrant Statweaver negated off the stack is ERASED, not binned"
+      }
+    ],
+    "see": [
+      "405",
+      "803"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R145",
+          "quote": "{Unstable} replaces a bin entry with an **erase** only when the card is"
+        },
+        {
+          "ref": "R145",
+          "quote": "A card leaving an **inactive** zone for a bin is **binned and trashed"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "125-active-zone.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Unstable itself is 803 (U21). How an {Unstable} death reaches the erased pile is disputed: D-U07-3.",
+    "sourceHashes": {
+      "R145": "dc76fc0a317d5bd6bd6de5ed5a24eb9d84407f6b45dcbb85d2e8978fe56f98e3"
+    }
+  },
+  {
+    "key": "zones.general.per-player",
+    "parent": "400",
+    "order": 3,
+    "text": "Each player has their own hand, cache, bin and erased pile.",
+    "examples": [
+      {
+        "text": "A card put in one player hand, cache, bin or erased pile leaves the other player four zones untouched.",
+        "test": "418-cr-zones.test.ts::cr:zones.general.per-player — a card put in one player hand, cache, bin or erased pile leaves the other player four zones untouched"
+      }
+    ],
+    "see": [
+      "402",
+      "403",
+      "405",
+      "407"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.19",
+          "quote": "Additionally, if a player enters a region, their bin, hand,"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R250 (its §4 zones-follow-control half)",
+          "quote": "The ruling as given is about **bins**. Three other per-seat destinations still"
+        },
+        {
+          "ref": "R262",
+          "quote": "| `cacheUnit` → **cache** | `opts.to ?? u.owner` | `opts.to ?? u.controller` |"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "No source says it in one sentence. Manual p.10 draws a bin in each player region; R250/R262 treat hand, cache, bin and erased pile as per-seat destinations. Whether the deck, the recycle pile and the pack are per player depends on the format: 401, 408, 409. Manual p.19 is an added page (not in the pack).",
+    "sourceHashes": {
+      "R250": "85f8949b08f8ce75cfdb86bf8e04db453b4f36aa27bd63c5b44ca693e61ffc53",
+      "R262": "285c09786add087f0d8ecb5046ca62c5f17bc6467b4bf16b1cdcae859881edf8"
+    }
+  },
+  {
+    "key": "zones.general.follow-control",
+    "parent": "400",
+    "order": 4,
+    "text": "A card that leaves play for a bin, a hand, a cache or an erased pile goes to that zone of the player who controlled it when it left play, not to its owner's.",
+    "examples": [
+      {
+        "text": "A unit stolen with a control-changing effect is recalled. It goes to the hand of the player who stole it.",
+        "test": "246-zones-follow-control.test.ts::R262 §1: a stolen unit recalled goes to the THIEF hand, not the owner"
+      },
+      {
+        "text": "A stolen unit dies. It goes to its controller's bin, and its controller trashes it.",
+        "test": "229-cosmic-and-control.test.ts::R250: a stolen unit that dies is trashed by its CONTROLLER, into the controller bin"
+      }
+    ],
+    "see": [
+      "102",
+      "711"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R250 (its §4 zones-follow-control half)",
+          "quote": "Zones ALWAYS follow control. One rule, no split."
+        },
+        {
+          "ref": "R262",
+          "quote": "(a) All four follow control"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R107",
+          "relation": "its destination half (a card put into play from another player's bin dies to its OWNER's bin) reversed by R250"
+        },
+        {
+          "ruling": "R244",
+          "relation": "§1 \"THE DESTINATION DOES NOT MOVE\" (a mod goes to its owner's bin) reversed by R250"
+        },
+        {
+          "ruling": "R140",
+          "relation": "its Biomass Devourer premise that a dying card bins to its owner superseded by R250"
+        },
+        {
+          "ruling": "R152",
+          "relation": "§2 each nontoken mod goes to its own owner's bin; superseded by R250"
+        },
+        {
+          "ruling": "R153",
+          "relation": "step 1 nontoken mods go to their own owner's bin; superseded by R250"
+        },
+        {
+          "ruling": "R156",
+          "relation": "the token-mod erased-pile entry filed under the host's owner; corrected by R262"
+        },
+        {
+          "ruling": "R172",
+          "relation": "§2 item 3 an erased-from-play card filed on its owner's erased pile; corrected by R262"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "246-zones-follow-control.test.ts",
+        "229-cosmic-and-control.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R262 extends R250 from bins to the hand, the cache and the erased pile, and deliberately overrules a Manual recall sentence the printed pages do not contain (D-U07-10). R145 still says a card erased off the stack goes to its OWNER's erased pile: D-U07-4. Not covered: a card that leaves the stack or a hand rather than play. Engine differs on one route: a card erased FROM PLAY is filed on its owner's erased pile (the R172 item 3 behaviour R262 corrected); measured by the round-1 verifier probe. F-U07-7. Test 246's erased-pile case covers a mod erased off a host, not a unit erased from play.",
+    "sourceHashes": {
+      "R250": "85f8949b08f8ce75cfdb86bf8e04db453b4f36aa27bd63c5b44ca693e61ffc53",
+      "R262": "285c09786add087f0d8ecb5046ca62c5f17bc6467b4bf16b1cdcae859881edf8"
+    },
+    "engineDiffers": [
+      "F-U07-7"
+    ]
+  },
+  {
+    "key": "zones.general.follow-control.ownership",
+    "parent": "zones.general.follow-control",
+    "order": 1,
+    "text": "A card's owner never changes. Changing zones, changing controller and being put into play out of another player's zone all leave the card owned by the same player.",
+    "examples": [
+      {
+        "text": "Wake the Dead puts a unit from the opponent's bin into play under the caster's control; the opponent still owns it.",
+        "test": "93-engine-defects.test.ts::Wake the Dead raising a unit from the ENEMY bin gives the caster control, not ownership"
+      },
+      {
+        "text": "A stolen unit that is recalled is still owned by the player it was stolen from.",
+        "test": "246-zones-follow-control.test.ts::R262 §3: ownership does NOT move — only the destination does"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R250 (its §4 zones-follow-control half)",
+          "quote": "its OWNER's, always, forever"
+        },
+        {
+          "ref": "R262",
+          "quote": "Ownership does not move. Only the destination does."
+        },
+        {
+          "ref": "R107 (its ownership half)",
+          "quote": "Putting a card into play out of a zone you do not own does not"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "93-engine-defects.test.ts",
+        "246-zones-follow-control.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R107": "230aca6c5c9d6012b7aea083d3ae340a1c886b907d219759abc2670e8529ef23",
+      "R250": "85f8949b08f8ce75cfdb86bf8e04db453b4f36aa27bd63c5b44ca693e61ffc53",
+      "R262": "285c09786add087f0d8ecb5046ca62c5f17bc6467b4bf16b1cdcae859881edf8"
+    }
+  },
+  {
+    "key": "zones.general.follow-control.printed-destination",
+    "parent": "zones.general.follow-control",
+    "order": 2,
+    "text": "If the effect that moves a card names where it goes, the card goes there instead.",
+    "examples": [
+      {
+        "text": "Pull Under: \"Delete target unit. If you do, put it and all of its mods into your bin.\" The deleted unit and its mods go to the bin of Pull Under's caster, whoever controlled the unit.",
+        "test": "15-water-b.test.ts::Pull Under: deletes the target; it and its mods land in YOUR bin"
+      },
+      {
+        "text": "Grob makes the target unit's controller cache it, so a stolen unit goes to the thief's cache.",
+        "test": "135-exchange-and-zones.test.ts::Grob caches a STOLEN unit into the CONTROLLER"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Pull Under",
+          "quote": "put it and {/n}all of its mods into your bin."
+        },
+        {
+          "ref": "card: Cosmic Reversal",
+          "quote": "put them into their controller's hands."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R262",
+          "quote": "An explicit `to` still wins."
+        },
+        {
+          "ref": "R157 (§27)",
+          "quote": "Controller's cache — the printed text wins. Printed text always wins."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "246-zones-follow-control.test.ts",
+        "15-water-b.test.ts",
+        "135-exchange-and-zones.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
+      "R262": "285c09786add087f0d8ecb5046ca62c5f17bc6467b4bf16b1cdcae859881edf8"
+    }
+  },
+  {
+    "key": "zones.general.follow-control.constructed-owner",
+    "parent": "zones.general.follow-control",
+    "order": 3,
+    "text": "In constructed, a card's owner is the player who brought it to the game.",
+    "examples": [
+      {
+        "text": "In constructed every card a seat holds comes from the deck that seat brought, and a unit it plays is owned by it even after control changes.",
+        "test": "418-cr-zones.test.ts::cr:zones.general.follow-control.constructed-owner — in constructed every card a seat holds comes from the deck that seat brought, and a unit it plays is owned by it even after control changes"
+      }
+    ],
+    "see": [
+      "901"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R262",
+          "quote": "Only exception is that \"owner\" in constructed is always the person's who"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "The owner offered this as \"keep it in mind\"; it is the only source on who owns a card. Who owns a card drawn or drafted from the shared live-draft deck is not stated: D-U07-8.",
+    "sourceHashes": {
+      "R262": "285c09786add087f0d8ecb5046ca62c5f17bc6467b4bf16b1cdcae859881edf8"
+    }
+  },
+  {
+    "key": "zones.general.zone-text",
+    "parent": "400",
+    "order": 5,
+    "text": "An ability that works while its card is in a bin or a cache (\"if I am in your bin\") works only while the card is in that zone. It never works while the card is in play.",
+    "examples": [
+      {
+        "text": "Cinder Scuttler (\"When you deal combat damage to an opponent, if I am in your bin, recall me.\") dies in the same combat damage sub-step in which another attacker hits the opponent. It was not in the bin when the damage was dealt, so it is not recalled.",
+        "test": "310-zone-abilities.test.ts::§3 Cinder Scuttler does NOT recall off the damage step it died in"
+      }
+    ],
+    "see": [
+      "706"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R300",
+          "quote": "The rule: an in-play body has no bin or cache text."
+        },
+        {
+          "ref": "R51",
+          "quote": "A triggered ability may now declare"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "310-zone-abilities.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R51 gave bin and cache cards a trigger surface; R300 stops the same clause firing from play. R51 is mostly engine prose; R300 carries the owner's model of the damage step.",
+    "sourceHashes": {
+      "R300": "433eaa2ccb6dc1247571654060ad72dec7a9ded55d273f78a24a63e3079f3338",
+      "R51": "ea59354ad5751e5900bd6e9374b7c4b159ecbce8353698a93639a993929510d4"
+    }
+  },
+  {
+    "key": "zones.general.zone-text.one-firing",
+    "parent": "zones.general.zone-text",
+    "order": 1,
+    "text": "Copies of one card in the same bin or cache share one such ability: it triggers once for that zone, not once per copy.",
+    "examples": [
+      {
+        "text": "Two Cinder Scuttlers in a bin: one combat hit on the opponent recalls one of them, not both.",
+        "test": "12-fire-a.test.ts::Cinder Scuttler: one firing per bin, not per copy (R51)"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R51",
+          "quote": "the printed texts are standing permissions (\"if I am in your bin\"),"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "12-fire-a.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R51 calls this a \"deliberate limit\": an owner/engine call with no designer source.",
+    "sourceHashes": {
+      "R51": "ea59354ad5751e5900bd6e9374b7c4b159ecbce8353698a93639a993929510d4"
+    }
+  },
+  {
+    "key": "zones.general.zone-text.your-bin",
+    "parent": "zones.general.zone-text",
+    "order": 2,
+    "text": "\"Your bin\" in such an ability means the bin the card is in: the player whose bin it is controls the ability, whoever once played the card.",
+    "examples": [
+      {
+        "text": "Rotling (\"When I leave your bin, … You may pay [1] to draw a card\") leaves the opponent's bin. The opponent, whose bin it left, is the one offered the draw.",
+        "test": null
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Rotling",
+          "quote": "When I leave your bin, [Switch1] You may pay [1] to draw a card and gain 1 rot."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R124",
+          "quote": "The seat whose bin the card left is the seat that triggers,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "The example is from R124's test list (43-dark-c, \"leaving the opponent's bin triggers the bin owner\"), which the tests index for this pack does not carry, so it is marked illustrative. (illustrative)",
+    "sourceHashes": {
+      "R124": "1812aae3970d1e7833a708eedf7bd45318790898b7f2b354aac9c28661640b22"
+    }
+  },
+  {
+    "key": "zones.deck.what",
+    "parent": "401",
+    "order": 1,
+    "text": "The deck is the face-down pile that cards are drawn from and that packs are dealt from.",
+    "examples": [
+      {
+        "text": "The deck is face down to every seat, a draw takes its top card, and the live-draft packs are dealt out of it.",
+        "test": "418-cr-zones.test.ts::cr:zones.deck.what — the deck is face down to every seat, a draw takes its top card, and the live-draft packs are dealt out of it"
+      }
+    ],
+    "see": [
+      "503"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.16",
+          "quote": "shared deck clockwise starting with the initiative"
+        },
+        {
+          "ref": "Rulebook 2023 p.2",
+          "quote": "cards from the chosen factions together. This is the deck."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "\"Face-down\" is not stated in these words; it rests on zones.deck.hidden. Rulebook p.2 is an added page.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "zones.deck.hidden",
+    "parent": "401",
+    "order": 2,
+    "text": "The cards in the deck are hidden: no player may look at them or at their order. A card put on the bottom of the deck is not revealed unless the effect says so.",
+    "examples": [],
+    "see": [
+      "408"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R197b",
+          "quote": "HIDDEN hand and onto the HIDDEN bottom of a deck"
+        },
+        {
+          "ref": "R296",
+          "quote": "`server/view.ts` redacts the pile's contents the way it redacts a deck's, and the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "No printed or designer source states it; both rulings take it as given while describing the client's redaction. R197b is classified basis printed/other, R296 owner.",
+    "sourceHashes": {
+      "R197b": "6dbeb39bb020fa68a46ae0b9e1fc0ab3e5ba72d2fadd82ef6d6681e64878c6bc",
+      "R296": "d53f03d41df34d3f07ac7687b7104a2376c6e1fc4108537d53fe87f48c0f1a56"
+    }
+  },
+  {
+    "key": "zones.deck.shared",
+    "parent": "401",
+    "order": 3,
+    "text": "In live draft, all players draw from one shared deck.",
+    "examples": [
+      {
+        "text": "In live draft both players draw from the one shared deck.",
+        "test": "418-cr-zones.test.ts::cr:zones.deck.shared — in live draft both players draw from the one shared deck"
+      }
+    ],
+    "see": [
+      "902"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.11",
+          "quote": "In the live draft game mode, players use a shared deck"
+        },
+        {
+          "ref": "Manual p.16",
+          "quote": "shared deck clockwise starting with the initiative"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.11 is an added page.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "zones.deck.shared.constructed",
+    "parent": "zones.deck.shared",
+    "order": 1,
+    "text": "In constructed, there is no shared deck: each player has their own deck.",
+    "examples": [
+      {
+        "text": "In constructed there is no shared deck and each seat draws from its own.",
+        "test": "418-cr-zones.test.ts::cr:zones.deck.shared.constructed — in constructed there is no shared deck and each seat draws from its own"
+      }
+    ],
+    "see": [
+      "901"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.10",
+          "quote": "In constructed formats, there will be no shared deck and players’ individual decks will go in the location of their “pack”."
+        },
+        {
+          "ref": "Manual p.16",
+          "quote": "In this mode, there are no packs or shared deck. During"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "zones.deck.the-deck",
+    "parent": "zones.deck.shared",
+    "order": 2,
+    "text": "\"The deck\" in card text means the deck of the effect's controller: the shared deck in live draft, that player's own deck in constructed.",
+    "examples": [
+      {
+        "text": "In constructed a Glimpse 1 reveals the top of the deck of the effect controller, not of the opponent.",
+        "test": "418-cr-zones.test.ts::cr:zones.deck.the-deck — in constructed a Glimpse 1 reveals the top of the deck of the effect controller, not of the opponent"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 (§18)",
+          "quote": "'The deck' always refers to the deck of the effect's controller. The targeted"
+        },
+        {
+          "ref": "R157 (§18)",
+          "quote": "Your deck. It will be shared during live draft and solo in constructed."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
+    }
+  },
+  {
+    "key": "zones.deck.empty",
+    "parent": "401",
+    "order": 4,
+    "text": "A player who must draw from an empty deck when the recycle pile is also empty draws as many cards as there are. Running out of cards does not make a player lose.",
+    "examples": [
+      {
+        "text": "With deck and recycle pile both empty, a draw of two draws nothing and the game goes on.",
+        "test": "300-recycle-mark.test.ts::R296 §4 an empty deck AND an empty pile draws fewer"
+      }
+    ],
+    "see": [
+      "408",
+      "104"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R296",
+          "quote": "A player whose deck *and* pile are both empty simply draws"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "300-recycle-mark.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "When the deck runs out but the recycle pile does not, see 408 (the pile is reshuffled in).",
+    "sourceHashes": {
+      "R296": "d53f03d41df34d3f07ac7687b7104a2376c6e1fc4108537d53fe87f48c0f1a56"
+    }
+  },
+  {
+    "key": "zones.hand.what",
+    "parent": "402",
+    "order": 1,
+    "text": "Each player has a hand. Drawn cards go to the hand, and cards in the hand are played from there.",
+    "examples": [
+      {
+        "text": "A drawn card goes to the hand, and a card is played out of the hand.",
+        "test": "418-cr-zones.test.ts::cr:zones.hand.what — a drawn card goes to the hand, and a card is played out of the hand"
+      }
+    ],
+    "see": [
+      "503",
+      "702"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.16",
+          "quote": "Players draw 2 cards during the draw step on every"
+        },
+        {
+          "ref": "Rulebook 2023 p.15",
+          "quote": "apply augments both from your hand and from your discard."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "zones.hand.hidden",
+    "parent": "402",
+    "order": 2,
+    "text": "A hand is hidden from the other players.",
+    "examples": [
+      {
+        "text": "The server view shows a hand to its holder and only card backs to the other player.",
+        "test": "418-cr-zones.test.ts::cr:zones.hand.hidden — the server view shows a hand to its holder and only card backs to the other player"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R197b",
+          "quote": "HIDDEN hand and onto the HIDDEN bottom of a deck"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Stated in R197b as a premise (the client maps every hand entry to a hidden card), not as a ruling of its own. No printed or designer source in the pack.",
+    "sourceHashes": {
+      "R197b": "6dbeb39bb020fa68a46ae0b9e1fc0ab3e5ba72d2fadd82ef6d6681e64878c6bc"
+    }
+  },
+  {
+    "key": "zones.hand.hidden.look-at",
+    "parent": "zones.hand.hidden",
+    "order": 1,
+    "text": "An effect that lets a player \"look at\" a hand shows it to that player only. An effect that makes a player \"reveal\" their hand shows it to every player.",
+    "examples": [
+      {
+        "text": "Thought Extraction aimed at its caster's own hand shows that hand to nobody else.",
+        "test": "173-look-at-a-hand.test.ts::R197b §1 Thought Extraction: aimed at YOUR OWN hand"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R197b",
+          "quote": "is a private look — you see it, the table"
+        },
+        {
+          "ref": "R197b",
+          "quote": "Target player **reveals** their hand\"* is public."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "173-look-at-a-hand.test.ts",
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R197b reads the two printed verbs; its register basis is printed/other.",
+    "sourceHashes": {
+      "R197b": "6dbeb39bb020fa68a46ae0b9e1fc0ab3e5ba72d2fadd82ef6d6681e64878c6bc"
+    }
+  },
+  {
+    "key": "zones.hand.spell-tokens",
+    "parent": "402",
+    "order": 3,
+    "text": "A spell token is never in a hand. An effect that counts or refers to the cards in a hand does not count a spell token.",
+    "examples": [
+      {
+        "text": "Dreadspawn Horror does not count spell tokens as cards in hand.",
+        "test": "408-raq-new-threads.test.ts::RAQ Spell Tokens vs Hand: Dreadspawn Horror does not count spell tokens"
+      },
+      {
+        "text": "Nor does Astral Tidewraith.",
+        "test": "408-raq-new-threads.test.ts::RAQ Spell Tokens vs Hand: Astral Tidewraith"
+      }
+    ],
+    "see": [
+      "304"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355689559609839787#0",
+          "quote": "A spell token is not in the hand: Dreadspawn Horror does not count it."
+        },
+        {
+          "ref": "RAQ 1355689559609839787#1",
+          "quote": "Spell tokens are not in hand. They won't count for things like Dreadspawn Horror or Astral Tidewraith."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R342",
+          "quote": "A spell token is never in a hand. Anything that counts the cards in a hand"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "408-raq-new-threads.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "A recalled token does pass through the hand for an instant: zones.changes.tokens.recalled.",
+    "sourceHashes": {
+      "R342": "d40ffb96e31fbdf6aa3cac68ee0921ffeeccc03bf47fa883e587063d06209598",
+      "RAQ 1355689559609839787#0": "1ff907ab13f4bd3d73eae1c6ecb4e0b3c8f0f3e170cfabc913aa6b2c1c77b117",
+      "RAQ 1355689559609839787#1": "d82e092bad0f3725225577f3f1110969396f3caa7ee6215adc43a8e62e6ec951"
+    }
+  },
+  {
+    "key": "zones.hand.entering",
+    "parent": "402",
+    "order": 4,
+    "text": "A card enters a hand whenever an effect puts it there: a draw, a recall, or a move out of a bin, the stack, a cache or another hand. Several cards that enter one hand in a single move enter it together, as one event (\"one or more cards enter a hand\").",
+    "examples": [
+      {
+        "text": "Collect Remains puts a card from a bin into its caster's hand during battle; Rider of the Tides sees a card enter a hand, though it was neither drawn nor recalled.",
+        "test": "152-hand-entry.test.ts::Rider of the Tides: a BIN recursion (Collect Remains) is a card entering a hand"
+      },
+      {
+        "text": "A recall of two cards from a bin is one entry, not two.",
+        "test": "152-hand-entry.test.ts::a multi-card move fires exactly ONE handEntered"
+      }
+    ],
+    "see": [
+      "706"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R179",
+          "quote": "ONE EVENT FOR A MULTI-CARD MOVE."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "152-hand-entry.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R179 is an engine repair read off the printed \"one or more\" on Xenopod Progenitor and Galerider Eel; no designer source.",
+    "sourceHashes": {
+      "R179": "3182e34830acb735bedd78d8bfa82b37c3583f82f7d92ceee5fe8ba8f20522ac"
+    }
+  },
+  {
+    "key": "zones.hand.discard",
+    "parent": "402",
+    "order": 5,
+    "text": "Discarding a card moves it from its hand to the bin. Discarding is not playing the card: nothing goes on the stack.",
+    "examples": [
+      {
+        "text": "A card discarded from a hand goes to the bin and is trashed.",
+        "test": "35-rot-debt-trash.test.ts::R40: discarding from hand trashes"
+      }
+    ],
+    "see": [
+      "405",
+      "701",
+      "801"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R65 (its discard-me and erased-pile halves)",
+          "quote": "Discarding is not playing (R37) — nothing reaches the stack, nothing"
+        },
+        {
+          "ref": "R40 (its definition: a card entering a bin from anywhere but the stack)",
+          "quote": "Discarding, sacrificing, milling and dying in combat all trash. A spell or"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "35-rot-debt-trash.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R40": "1fe34b8e0dd03488280eb472ae0af3e23d897d51b0b722ec7513a739275c6789",
+      "R65": "e9ed084b299e697c3a8550bce01553259bfc5d6601416e6e6fc3adb041378a6d"
+    }
+  },
+  {
+    "key": "zones.hand.only-the-hand",
+    "parent": "402",
+    "order": 6,
+    "text": "Card text that restricts playing a card \"from your hand\" restricts only the hand. The card may still be played from any other zone an effect allows.",
+    "examples": [
+      {
+        "text": "Calming Force (\"I can't be played from your hand.\") cannot be cast from the hand, but a copy in the cache under a live permission can be played.",
+        "test": "40-light-c.test.ts::is enforced, and not just un-offered"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Calming Force",
+          "quote": "I can't be played from your hand."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R100",
+          "quote": "The line names one zone and one verb, so that is all it takes away."
+        },
+        {
+          "ref": "R311",
+          "quote": "R100's \"I can't be played from your hand\" (Calming Force) refuses the hand,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "40-light-c.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R100": "906f73a1833772f0be7fab01302639ab8d587239f61784e1436e4460914492b7",
+      "R311": "dff09246da3a81a8b90c1f386c3bdd5a463e44e7086278b0d4116e6bfd877122"
+    }
+  },
+  {
+    "key": "zones.cache.what",
+    "parent": "403",
+    "order": 1,
+    "text": "The cache is a zone of its own, beside the hand, the bin and the deck. Effects put cards into it (\"cache\"), out of the hand, the bin, the deck or play.",
+    "examples": [
+      {
+        "text": "Cards can be cached out of the hand, the bin and the top of the deck.",
+        "test": "36-cache-prophecy.test.ts::R41: the cache primitives move cards out of hand, bin and deck"
+      }
+    ],
+    "see": [
+      "801",
+      "803"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [
+        {
+          "ref": "glossary: Cache",
+          "quote": "A zone of its own beside hand, bin and deck"
+        }
+      ],
+      "rulings": [
+        {
+          "ref": "R41",
+          "quote": "calls cache \"a neutral zone like the hand and bin\""
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "36-cache-prophecy.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R41 quotes Caleb (2024-02-25) calling the cache \"a neutral zone like the hand and bin\"; the quote reaches this document only through R41, so the basis is the ruling. Caching out of play: zones.cache.from-play; Grob: zones.general.follow-control.printed-destination.",
+    "sourceHashes": {
+      "R41": "b36860212932ef9298bbee65d84cfe617b23849e3e65bc03a7949f7e67dc0346"
+    }
+  },
+  {
+    "key": "zones.cache.public",
+    "parent": "403",
+    "order": 2,
+    "text": "The cache is public. Every player can see every cached card, and any prophecy attached to it.",
+    "examples": [
+      {
+        "text": "Both players read the same cache, with nothing hidden.",
+        "test": "36-cache-prophecy.test.ts::R41: the cache is PUBLIC"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R41",
+          "quote": "Both players can see every cached card and which prophecy is attached to it."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "36-cache-prophecy.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R41 is \"Bena's call\" (\"overturn if prophesied cards turn out to be face-down\"), argued from glimpse revealing the card and Prismatic Observer targeting one.",
+    "sourceHashes": {
+      "R41": "b36860212932ef9298bbee65d84cfe617b23849e3e65bc03a7949f7e67dc0346"
+    }
+  },
+  {
+    "key": "zones.cache.no-permission",
+    "parent": "403",
+    "order": 3,
+    "text": "Being in the cache does not by itself let a player do anything with a card.",
+    "examples": [
+      {
+        "text": "A card cached with no permission can never be played.",
+        "test": "36-cache-prophecy.test.ts::R41: being in the cache is NOT permission"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [
+        {
+          "ref": "glossary: Cache",
+          "quote": "being cached is not permission to use one"
+        }
+      ],
+      "rulings": [
+        {
+          "ref": "R303",
+          "quote": "Being in the cache is not permission to do *anything* with a card (R41). A cached card"
+        },
+        {
+          "ref": "R303",
+          "quote": "do that. You can only play cached cards that allow you to play them (like glimpse). But"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "36-cache-prophecy.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R303 quotes Caleb 2024-12-03 for this; the quote reaches the document through R303.",
+    "sourceHashes": {
+      "R303": "362c6d1e5a9c15d8912809d210e41b88548997fd1e9c63acbfa5b730f81e130c"
+    }
+  },
+  {
+    "key": "zones.cache.no-permission.live",
+    "parent": "zones.cache.no-permission",
+    "order": 1,
+    "text": "A cached card can be used only while a permission on it is live: a prophecy on it that has been fulfilled, or a glimpse that cached it this turn.",
+    "examples": [],
+    "see": [
+      "801",
+      "803"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R303",
+          "quote": "may be played only while a prophecy on it is fulfilled or a glimpse stamp is live — and"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "36-cache-prophecy.test.ts",
+        "315-cache-mod-permission.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R303": "362c6d1e5a9c15d8912809d210e41b88548997fd1e9c63acbfa5b730f81e130c"
+    }
+  },
+  {
+    "key": "zones.cache.no-permission.like-hand",
+    "parent": "zones.cache.no-permission",
+    "order": 2,
+    "text": "While a permission is live, the cached card can be used in every way the same card could be used from the hand: in every play mode, in every window, and as a mod.",
+    "examples": [
+      {
+        "text": "A glimpsed Virus in the cache is augmented onto an enemy unit during battle.",
+        "test": "370-cached-virus-in-battle.test.ts::R311: a glimpsed Virus in the cache goes onto an ENEMY unit in battle"
+      },
+      {
+        "text": "A live glimpse lets the cached card be grafted.",
+        "test": "315-cache-mod-permission.test.ts::R303: a LIVE glimpse grafts for the card's mana, ignoring affinity"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1537748882501668934#3",
+          "quote": "A glimpsed Virus can be applied out of the cache during battle."
+        },
+        {
+          "ref": "RAQ 1537748882501668934#4",
+          "quote": "A glimpsed augment or graft card can be applied out of the cache during deployment."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R311",
+          "quote": "your hand: every play mode, in every window, and every mod."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "370-cached-virus-in-battle.test.ts",
+        "315-cache-mod-permission.test.ts",
+        "369-cache-is-the-hand.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Manual p.34 says the virus ability \"only works from hand\": D-U07-2; the RAQ wins.",
+    "sourceHashes": {
+      "R311": "dff09246da3a81a8b90c1f386c3bdd5a463e44e7086278b0d4116e6bfd877122",
+      "RAQ 1537748882501668934#3": "58d15a8f21bd69d98736c68f7e52c872ebcbec1bd08dd995eedac13a2d589288",
+      "RAQ 1537748882501668934#4": "df4d0cd9f8f8f6ffe2cb2d5cb96411c53fe72b7bdf7ebd4d83a69d41061fd0ec"
+    }
+  },
+  {
+    "key": "zones.cache.no-permission.price",
+    "parent": "zones.cache.no-permission",
+    "order": 3,
+    "text": "A card used under a fulfilled prophecy costs nothing and ignores affinity. A card used under a glimpse costs its mana but ignores affinity. This holds for every way of using it, mods included.",
+    "examples": [
+      {
+        "text": "A released prophecy is played for free, ignoring affinity.",
+        "test": "36-cache-prophecy.test.ts::R42: a released prophecy is FREE and ignores affinity"
+      },
+      {
+        "text": "A live glimpse does not waive the mana: a player who cannot pay is refused.",
+        "test": "315-cache-mod-permission.test.ts::R303: the glimpse waives the pips, NOT the mana"
+      },
+      {
+        "text": "A live glimpse grafts for the card's mana, ignoring affinity.",
+        "test": "315-cache-mod-permission.test.ts::R303: a LIVE glimpse grafts for the card's mana, ignoring affinity"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R311",
+          "quote": "a **fulfilled prophecy** is free (affinity ignored too);"
+        },
+        {
+          "ref": "R311",
+          "quote": "a **glimpse** pays the mana and ignores the affinity (for an Ambush, the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "36-cache-prophecy.test.ts",
+        "315-cache-mod-permission.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R42 (Caleb 2024-10-28: free also ignores affinity) and R45 (glimpse ignores affinity, pays mana) are the sources R311 restates.",
+    "sourceHashes": {
+      "R311": "dff09246da3a81a8b90c1f386c3bdd5a463e44e7086278b0d4116e6bfd877122"
+    }
+  },
+  {
+    "key": "zones.cache.no-permission.timing",
+    "parent": "zones.cache.no-permission",
+    "order": 4,
+    "text": "A cached card keeps its printed timing. A permission says that the card may be used, not when.",
+    "examples": [
+      {
+        "text": "A released {Battle} card is refused in deployment.",
+        "test": "36-cache-prophecy.test.ts::R42: normal TIMING still applies"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R311",
+          "quote": "Timing is the card's printed timing on both routes (R42/R45). A cached unit"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "36-cache-prophecy.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R45 cites Caleb 2025-12-28 for timing still applying under a glimpse.",
+    "sourceHashes": {
+      "R311": "dff09246da3a81a8b90c1f386c3bdd5a463e44e7086278b0d4116e6bfd877122"
+    }
+  },
+  {
+    "key": "zones.cache.not-the-hand",
+    "parent": "403",
+    "order": 4,
+    "text": "The cache is not the hand. A cached card cannot be discarded, and card text that names the hand does not reach the cache.",
+    "examples": [],
+    "see": [
+      "zones.hand.only-the-hand"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R311",
+          "quote": "functions 100% like the hand* except *for the fact that it's not considered your"
+        },
+        {
+          "ref": "R311",
+          "quote": "is not in your hand, so it can't be discarded from there. (`c.discardMe`.)"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "369-cache-is-the-hand.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R311 gives Rook (\"augment cards from hand and bin during battle\") as the other case: it still does not reach the cache.",
+    "sourceHashes": {
+      "R311": "dff09246da3a81a8b90c1f386c3bdd5a463e44e7086278b0d4116e6bfd877122"
+    }
+  },
+  {
+    "key": "zones.cache.lapse",
+    "parent": "403",
+    "order": 5,
+    "text": "When a glimpse permission ends, the card stays in the cache, with no permission.",
+    "examples": [
+      {
+        "text": "The glimpse permission ends at end of turn; the card is still in the cache.",
+        "test": "36-cache-prophecy.test.ts::R45: the glimpse permission expires at end of turn"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R303",
+          "quote": "The card stays in the cache when the window closes (R45) — it just does nothing there,"
+        },
+        {
+          "ref": "R45",
+          "quote": "The permission expires at end of turn; the card stays in cache,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "36-cache-prophecy.test.ts",
+        "315-cache-mod-permission.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R206 calls an expired glimpse card still \"moddable\", and our glossary's Glimpse row still says so; R303 (later) refuses every verb: D-U07-6, F-U07-5.",
+    "sourceHashes": {
+      "R303": "362c6d1e5a9c15d8912809d210e41b88548997fd1e9c63acbfa5b730f81e130c",
+      "R45": "d60323d5966f1b63cccd9187354aa66801b416197dda93338b1e5c855969d117"
+    }
+  },
+  {
+    "key": "zones.cache.targetable",
+    "parent": "403",
+    "order": 6,
+    "text": "A cached card can be targeted. A player's cache can be targeted only by an effect that resolves in a region where that player is present.",
+    "examples": [
+      {
+        "text": "In deployment, Prismatic Observer can recall only a card from its own player's cache.",
+        "test": "293-cached-targets-are-regional.test.ts::R291 §2 the report"
+      },
+      {
+        "text": "In battle, with both players present, it can reach the opponent's cache.",
+        "test": "293-cached-targets-are-regional.test.ts::R291 §3 the control"
+      }
+    ],
+    "see": [
+      "110",
+      "601"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Prismatic Observer",
+          "quote": "Recall up to one target cached card."
+        },
+        {
+          "ref": "Manual p.19",
+          "quote": "Additionally, if a player enters a region, their bin, hand,"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R291",
+          "quote": "and targetable in either player's zone; it does not put the opponent in your"
+        },
+        {
+          "ref": "R291",
+          "quote": "A player's cache can be targeted exactly when that player is"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "293-cached-targets-are-regional.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Manual p.19 names the bin and the hand, not the cache; R291 applies the same presence test to the cache. Added page.",
+    "sourceHashes": {
+      "R291": "dd422fb3df1ded08a2bcb94fa3267d5004856953838adf81a7a68e78b96f0ef2"
+    }
+  },
+  {
+    "key": "zones.cache.from-play",
+    "parent": "403",
+    "order": 7,
+    "text": "When a unit in play is cached, only the card goes to the cache. Its mods go to the bin.",
+    "examples": [
+      {
+        "text": "A cached unit's mods go to the bin (and are trashed there).",
+        "test": "36-cache-prophecy.test.ts::R46: caching a unit sheds its mods to the bin"
+      }
+    ],
+    "see": [
+      "410",
+      "720"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R46",
+          "quote": "When a unit in play is cached, the mods attached to it go to the bin rather"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "36-cache-prophecy.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R46 cites Caleb 2024-09-15; designer-backed per the register. Whose bin: zones.changes.mods.whose-bin.",
+    "sourceHashes": {
+      "R46": "b5a11201ce99a44ead0cf242a1d16bae8f03d8fd6d51d7064c725bbe3ab19665"
+    }
+  },
+  {
+    "key": "zones.cache.prophesy-in-place",
+    "parent": "403",
+    "order": 8,
+    "text": "A card in the cache under a live glimpse permission may be prophesied where it stands. It does not move and is not cached a second time, and the glimpse permission is used up.",
+    "examples": [
+      {
+        "text": "A glimpsed card with a prophecy banner is prophesied in deployment without leaving the cache.",
+        "test": "36-cache-prophecy.test.ts::R308: a GLIMPSED card with a banner may be prophesied where it stands in the cache"
+      }
+    ],
+    "see": [
+      "803"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R308",
+          "quote": "The card does not move. The prophecy is attached to the cache entry where it"
+        },
+        {
+          "ref": "R308",
+          "quote": "The glimpse permission is spent. The hand-like permission is what the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "36-cache-prophecy.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R308": "47693b2fe9ccc286cfd3da7af7fa8f3094811a44ef742035394f73c86395eb8f"
+    }
+  },
+  {
+    "key": "zones.play.what",
+    "parent": "404",
+    "order": 1,
+    "text": "Play is the zone of the units, resources and tokens on the table. A unit stays in play until something removes it.",
+    "examples": [
+      {
+        "text": "A unit in play stays there through whole turns until something removes it.",
+        "test": "418-cr-zones.test.ts::cr:zones.play.what — a unit in play stays there through whole turns until something removes it"
+      }
+    ],
+    "see": [
+      "601",
+      "602"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "Units are permanents, meaning when played, they will"
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "stay in play until removed. Units are what players use"
+        },
+        {
+          "ref": "Manual p.18",
+          "quote": "All resources spawn dormant (come into play face down). Players may activate a"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R145",
+          "quote": "The ACTIVE ZONES are PLAY (the field / a formation) and the STACK."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R145": "dc76fc0a317d5bd6bd6de5ed5a24eb9d84407f6b45dcbb85d2e8978fe56f98e3"
+    }
+  },
+  {
+    "key": "zones.play.tokens",
+    "parent": "zones.play.what",
+    "order": 1,
+    "text": "A token is created directly into play, in the region where it was created.",
+    "examples": [
+      {
+        "text": "Galactic Germination cast by the attacker creates its unit tokens straight into play in the battle region.",
+        "test": "418-cr-zones.test.ts::cr:zones.play.tokens — Galactic Germination cast by the attacker creates its unit tokens straight into play in the battle region"
+      }
+    ],
+    "see": [
+      "304"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.15",
+          "quote": "Just like spell tokens, unit tokens spawn directly into"
+        },
+        {
+          "ref": "Manual p.15",
+          "quote": "play in the region they were created."
+        },
+        {
+          "ref": "Manual p.15",
+          "quote": "When spell tokens spawn they are put directly into play"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "zones.play.spell-units",
+    "parent": "zones.play.what",
+    "order": 2,
+    "text": "A spell unit enters play as it resolves, in place of going to the bin.",
+    "examples": [
+      {
+        "text": "Jelly resolves into play as a unit and does not go to the bin.",
+        "test": "418-cr-zones.test.ts::cr:zones.play.spell-units — Jelly resolves into play as a unit and does not go to the bin"
+      }
+    ],
+    "see": [
+      "303"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "also have stats (5) and enter play rather than the discard as they resolve."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Rulebook p.3 is an added page.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "zones.bin.what",
+    "parent": "405",
+    "order": 1,
+    "text": "The bin is a player's discard pile.",
+    "examples": [
+      {
+        "text": "A discarded card goes to the bin of the player who discarded it.",
+        "test": "418-cr-zones.test.ts::cr:zones.bin.what — a discarded card goes to the bin of the player who discarded it"
+      }
+    ],
+    "see": [
+      "zones.general.per-player"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "a unit dies or is deleted, it is placed in the bin (discard"
+        },
+        {
+          "ref": "Manual p.44",
+          "quote": "bin (discard pile)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.44 is an added page. Whether the bin is public is not stated: D-U07-7.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "zones.bin.entering",
+    "parent": "405",
+    "order": 2,
+    "text": "A card goes to the bin when: a unit dies or is deleted; a unit is sacrificed; a spell resolves; a card is discarded; or a card that was being played is negated or fails to resolve, unless a rule sends it elsewhere.",
+    "examples": [
+      {
+        "text": "A unit that dies, is deleted or is sacrificed, and a discarded card, each go to the bin.",
+        "test": "418-cr-zones.test.ts::cr:zones.bin.entering — a unit that dies, is deleted or is sacrificed, and a discarded card, each go to the bin"
+      }
+    ],
+    "see": [
+      "704",
+      "801"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "a unit dies or is deleted, it is placed in the bin (discard"
+        },
+        {
+          "ref": "Manual p.41",
+          "quote": "Sacrifice is a term denoting that a player will take a permanent of their choice and put it into their bin, causing it"
+        },
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "with other players. When a spell resolves, it goes directly to your discard."
+        },
+        {
+          "ref": "Manual p.34",
+          "quote": "its target becomes invalid, it is placed into the bin, and cannot be used"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.41, p.34 and Rulebook p.3 are added pages. \"Unless a rule sends it elsewhere\": spell units (zones.play.spell-units), {Unstable} (zones.bin.unstable), self-erasing spells (zones.stack.leaving.self-erase), card-named destinations (zones.general.follow-control.printed-destination).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "zones.bin.entering.spell-unit-fails",
+    "parent": "zones.bin.entering",
+    "order": 1,
+    "text": "A spell unit that is prevented from resolving (for example because its targets became invalid) does not spawn. It goes to the bin.",
+    "examples": [
+      {
+        "text": "A negated Jelly, a spell unit played through Hooba-Pon, does not enter play.",
+        "test": "396-raq-timing.test.ts::RAQ Hooba-Pon spell unit: negated, the unit does not enter play"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "resolving, for example due to its targets being made"
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "invalid, the unit will not spawn and will enter the bin."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts",
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The bound test asserts the no-spawn half only; the bin half is shown by the round-1 verifier probes (u07-a2-probes: a negated Jelly, and a fizzled spell unit, end in the caster's bin untrashed).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "zones.bin.entering.ambush-fizzle",
+    "parent": "zones.bin.entering",
+    "order": 2,
+    "text": "An ambushing unit whose ambush fails to resolve goes to the bin.",
+    "examples": [],
+    "see": [
+      "803"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.40",
+          "quote": "the ability will fizzle and the ambushing unit will be put"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.40 is an added page.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "zones.bin.controller",
+    "parent": "405",
+    "order": 3,
+    "text": "A unit that dies goes to the bin of the player who controlled it when it died, unless the effect that kills it names another bin or the unit is {Unstable} (see zones.bin.unstable). If it is a card, the player whose bin it enters trashes it; a token is never trashed.",
+    "examples": [
+      {
+        "text": "Every unit-shaped card in the pool, dying under a controller who is not its owner, goes to the controller's bin.",
+        "test": "229-cosmic-and-control.test.ts::R250 whole pool: every unit-shaped card dies into the bin of whoever controls it"
+      },
+      {
+        "text": "Pull Under deletes an enemy unit and puts it into its caster's bin; the caster trashes it.",
+        "test": "15-water-b.test.ts::Pull Under: an ENEMY unmodded victim is trashed by the CASTER, exactly once"
+      },
+      {
+        "text": "A token that Pull Under deletes enters the caster's bin but is not trashed.",
+        "test": "15-water-b.test.ts::Pull Under: a TOKEN victim enters the CASTER bin untrashed"
+      }
+    ],
+    "see": [
+      "zones.general.follow-control",
+      "801",
+      "zones.bin.unstable",
+      "zones.bin.trash"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Pull Under",
+          "quote": "Delete target unit. If you do, put it and"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R250 (its §4 zones-follow-control half)",
+          "quote": "The controller trashes it and it goes to their graveyard."
+        },
+        {
+          "ref": "R306",
+          "quote": "trashed.* A token is not a card (R133's first half, which stands), so a token"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R140",
+          "relation": "its Biomass Devourer premise that a dying card bins to its OWNER, superseded by R250"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "229-cosmic-and-control.test.ts",
+        "15-water-b.test.ts",
+        "338-tokens-are-not-trashed.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "One test title still asserts the superseded owner's-bin premise: F-U07-1. Round 1: narrowed for tokens (R306) and printed destinations (Pull Under), as the verifier asked.",
+    "sourceHashes": {
+      "R250": "85f8949b08f8ce75cfdb86bf8e04db453b4f36aa27bd63c5b44ca693e61ffc53",
+      "R306": "63ddd3a55f5ae1c3565593e3bc4c1c6ad19bb0124baf0ac5f651e7ad794e765f"
+    }
+  },
+  {
+    "key": "zones.bin.trash",
+    "parent": "405",
+    "order": 4,
+    "text": "A card that enters a bin from any zone except the stack is trashed. A card that comes from the stack is not, and a token is never trashed. A nontoken mod erased together with its {Unstable} host is not trashed either. See 801.",
+    "examples": [
+      {
+        "text": "A spell going to the bin after resolving is not trashed.",
+        "test": "35-rot-debt-trash.test.ts::R40: a spell going to the bin after RESOLVING is not trashed"
+      },
+      {
+        "text": "A dying token enters the bin but is not trashed.",
+        "test": "35-rot-debt-trash.test.ts::R69 + R306: a TOKEN dying enters the bin, is NOT trashed, and is then erased"
+      },
+      {
+        "text": "A nontoken mod on an {Unstable} host that dies is erased with it and is not trashed.",
+        "test": "224-mod-trash.test.ts::R244: a nontoken mod erased with its Unstable host is not trashed at all"
+      }
+    ],
+    "see": [
+      "801"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R40 (its definition: a card entering a bin from anywhere but the stack)",
+          "quote": "ability going to the bin after resolving does NOT (it comes from the stack),"
+        },
+        {
+          "ref": "R306",
+          "quote": "with its noun restored: *a card entering a bin from anywhere but the stack is"
+        },
+        {
+          "ref": "R244 (its §2: a mod erased with its host)",
+          "quote": "**2. A nontoken mod erased with its {Unstable} host is not trashed at all.** It"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R40",
+          "relation": "its 2026-08-21 amendment that tokens CAN be trashed, reversed by R306"
+        },
+        {
+          "ruling": "R137",
+          "relation": "its section \"The mods ride with it\" (a mod erased with its host is trashed), reversed by R244"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "35-rot-debt-trash.test.ts",
+        "338-tokens-are-not-trashed.test.ts",
+        "224-mod-trash.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Trashing belongs to 801 (U18); stated here only because it turns on which zone a card came from. R40 cites a printed reminder (Void Scavenger, cut) and Caleb 2025-02-01.",
+    "sourceHashes": {
+      "R244": "080c30954c21cbfd6d041bc15712a2dc0db9582ff06e979cf06690adcac0b11f",
+      "R306": "63ddd3a55f5ae1c3565593e3bc4c1c6ad19bb0124baf0ac5f651e7ad794e765f",
+      "R40": "1fe34b8e0dd03488280eb472ae0af3e23d897d51b0b722ec7513a739275c6789"
+    }
+  },
+  {
+    "key": "zones.bin.trash.inline-play",
+    "parent": "zones.bin.trash",
+    "order": 1,
+    "text": "A spell played for free while another effect resolves (for example by Tides of the Cosmos) and then put into the bin counts as coming from the stack, so it is not trashed.",
+    "examples": [
+      {
+        "text": "Tides of the Cosmos plays an ordinary spell for free; it goes to the bin and is not trashed.",
+        "test": "15-water-b.test.ts::R146: Tides plays an ORDINARY spell for free → the bin, and it is NOT a trash"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R146",
+          "quote": "Answer: `from: 'stack'` — it is NOT a trash."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "15-water-b.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R146 calls itself \"the engine's call, derived from R40, R65, R69/R79, R137 and R145\": no owner or designer was asked.",
+    "sourceHashes": {
+      "R146": "b10694e95019e609b8999d033086b28612f6b68c67226f0b0e6b4a3b9bd2ef35"
+    }
+  },
+  {
+    "key": "zones.bin.unstable",
+    "parent": "405",
+    "order": 5,
+    "text": "An {Unstable} card that would enter a bin from an active zone is erased instead: it goes to the erased pile, not the bin. See 803.",
+    "examples": [
+      {
+        "text": "A unit carrying a mod is {Unstable}. When it dies, it ends on the erased pile and is not left in the bin.",
+        "test": "418-cr-zones.test.ts::cr:zones.bin.unstable — a modded unit that dies ends on the erased pile, not in the bin"
+      }
+    ],
+    "see": [
+      "803",
+      "713",
+      "zones.general.active.unstable"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Abyssal Evocation",
+          "quote": "(If they would enter a bin, erase them instead.)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R145 (the Unstable glossary line it quotes; its from-play bullet defers to R137 and is not cited)",
+          "quote": "\"Unstable\": \"If an unstable card would enter a bin from an active"
+        },
+        {
+          "ref": "R145 (its active-zone list)",
+          "quote": "1. **The ACTIVE ZONES are PLAY (the field / a formation) and the STACK.**"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R137",
+          "relation": "STILL CURRENT as an owner ruling and NOT followed here: a dying {Unstable} card enters the bin, is trashed there and is only then erased. It records itself as a deliberate divergence from the printed reminder and from Caleb 2025-04-08; under the authority order print and designer outrank it (D-U07-3, F-U07-6)"
+        },
+        {
+          "ruling": "R69",
+          "relation": "its Unstable-death branch, amended by R137"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "125-active-zone.test.ts",
+        "224-mod-trash.test.ts",
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "low",
+    "notes": "Stated under the authority order: the printed reminder (Abyssal Evocation, Spell Excavation) and Caleb's glossary line quoted in R145 both say the card does not enter the bin. R137, the current owner ruling, says a dying {Unstable} card enters the bin and is trashed there before it is erased, and the engine does that. The difference is whether the death trashes. Tier-1 question: D-U07-3.",
+    "engineDiffers": [
+      "F-U07-6"
+    ],
+    "sourceHashes": {
+      "R145": "dc76fc0a317d5bd6bd6de5ed5a24eb9d84407f6b45dcbb85d2e8978fe56f98e3"
+    },
+    "rebuttal": "Kept. \"Not the bin\" from play is deliberate: the authority order puts printed text and Caleb above our R-rulings, and the printed reminder (\"If they would enter a bin, erase them instead.\") and Caleb's Unstable glossary line quoted in R145 (\"from an active zone\") cover play as well as the stack. R137 is an owner ruling that records itself as diverging from both. The rule already carries engineDiffers F-U07-6 for the measured play route, and D-U07-3 asks the owner whether R137 stands as a deliberate divergence. R145's own from-play bullet defers to R137, so R145 is now cited only for the glossary line and the active-zone list."
+  },
+  {
+    "key": "zones.bin.identity",
+    "parent": "405",
+    "order": 6,
+    "text": "Copies of one card in a bin cannot be told apart. A card in a bin is identified only by its name and by which copy of that name it is.",
+    "examples": [
+      {
+        "text": "A bin holds bare card names, and two copies of one card are offered as the same name told apart only by which copy.",
+        "test": "418-cr-zones.test.ts::cr:zones.bin.identity — a bin holds bare card names, and two copies of one card are offered as the same name told apart only by which copy"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R140 (its rule: a responder names the copy the event named)",
+          "quote": "A bin holds bare card NAMES, so identity in a bin is (name, nth occurrence)"
+        },
+        {
+          "ref": "R131",
+          "quote": "indistinguishable — the card name plus which copy IS the whole identity\"*."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "The repo's own model (R64 BinRef, quoted by R131), confirmed by R140; not a designer statement.",
+    "sourceHashes": {
+      "R131": "43728cea609c04e1a04453063a2d517487923b3450504286c64547f2bde9262b",
+      "R140": "2e9b4ea62ee69e50c3c173fee95983f1cd0f2b27591e3934db15209bedb2dfbf"
+    }
+  },
+  {
+    "key": "zones.bin.identity.another",
+    "parent": "zones.bin.identity",
+    "order": 1,
+    "text": "\"Another\" said by a card in a bin excludes that one copy, not every card with its name.",
+    "examples": [
+      {
+        "text": "Blightwalker is trashed while another Blightwalker is already in the bin; the older copy is \"another\" and can be chosen.",
+        "test": "121-another-identity.test.ts::R131 Blightwalker: a Blightwalker ALREADY in the bin is"
+      }
+    ],
+    "see": [
+      "110"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R131",
+          "quote": "a bin means **one SLOT excluded**, not one name, and the only missing piece was"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "121-another-identity.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R131": "43728cea609c04e1a04453063a2d517487923b3450504286c64547f2bde9262b"
+    }
+  },
+  {
+    "key": "zones.bin.identity.that-card",
+    "parent": "zones.bin.identity",
+    "order": 2,
+    "text": "An effect that refers back to a card that just entered a bin (\"that card\", \"it\") means that copy. If that copy has left the bin, the effect finds nothing. It never takes a different copy of the same name.",
+    "examples": [
+      {
+        "text": "A token or {Unstable} copy is swept out of the bin before Biomass Devourer resolves; an older copy of the same card in that bin is not erased.",
+        "test": "26-metal-a.test.ts::R140: Biomass Devourer does NOT erase an innocent older copy when the dead one was swept"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R140 (its rule: a responder names the copy the event named)",
+          "quote": "It never means \"take the other copy\"."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "26-metal-a.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R140 calls itself R131 applied, \"not an owner ruling and not a new rule of the game\".",
+    "sourceHashes": {
+      "R140": "2e9b4ea62ee69e50c3c173fee95983f1cd0f2b27591e3934db15209bedb2dfbf"
+    }
+  },
+  {
+    "key": "zones.bin.leaving",
+    "parent": "405",
+    "order": 7,
+    "text": "A card leaves a bin whenever an effect takes it out, for any reason: recalled, played, cached, erased, recycled, prophesied, or applied as a mod. A \"when I leave your bin\" ability triggers on every such departure.",
+    "examples": [
+      {
+        "text": "Writhing Host leaves the bin when it is erased to pay for a haste play.",
+        "test": "42-dark-b.test.ts::Writhing Host (R123/R124): the grantor leaves through the R124 choke point"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Rotling",
+          "quote": "When I leave your bin, [Switch1] You may pay [1] to draw a card and gain 1 rot."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R124",
+          "quote": "verb ('recalled', 'revived', 'erased', 'cached', 'played', 'prophesied',"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "42-dark-b.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "R124 is an engine seam (\"every bin removal goes through one choke point\"); the printed card is the only rules text behind it.",
+    "sourceHashes": {
+      "R124": "1812aae3970d1e7833a708eedf7bd45318790898b7f2b354aac9c28661640b22"
+    }
+  },
+  {
+    "key": "zones.bin.mods-from-bin",
+    "parent": "405",
+    "order": 8,
+    "text": "An augment or graft may be applied from the bin as well as from the hand, during deployment, if its cost is paid and its affinity met.",
+    "examples": [
+      {
+        "text": "A graft comes from the bin as well as the hand, and only when its cost and affinity are met.",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 point 3"
+      }
+    ],
+    "see": [
+      "720",
+      "721",
+      "722"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.15",
+          "quote": "apply augments both from your hand and from your discard."
+        },
+        {
+          "ref": "Manual p.34",
+          "quote": "If a virus is in a bin, it can be applied as normal during deployment but"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#2",
+          "quote": "A graft can come from the bin or the hand, and only when its cost and affinity are met."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1355115946032889914#2": "9f337d12f5fd058f571fec6cde21e8b5dc71e805c91a2651f132ecfc658f8d43"
+    }
+  },
+  {
+    "key": "zones.bin.mods-from-bin.virus",
+    "parent": "zones.bin.mods-from-bin",
+    "order": 1,
+    "text": "A {Virus} card in a bin can be applied only as an ordinary mod during deployment. It cannot be used as a mod during battle.",
+    "examples": [
+      {
+        "text": "Bumblecrab, a {Virus}, sits in a player's bin. In deployment it can augment out of the bin; in battle it is offered only from the hand.",
+        "test": "418-cr-zones.test.ts::cr:zones.bin.mods-from-bin.virus — a Virus card in the bin is offered as an augment in deployment, never in battle"
+      }
+    ],
+    "see": [
+      "723"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.34",
+          "quote": "If a virus is in a bin, it can be applied as normal during deployment but"
+        },
+        {
+          "ref": "Manual p.34",
+          "quote": "cannot be used as a mod during battle."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "A card granting battle mods from the bin (Rook) is an exception the card itself states (R311).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "zones.bin.play-from-bin",
+    "parent": "405",
+    "order": 9,
+    "text": "A card can be played from a bin only when an effect or the card's own text allows it. The card keeps its printed timing unless the permission says it may be played \"now\".",
+    "examples": [
+      {
+        "text": "Abyssal Evocation lets its caster play spells from the bin in this battle; only {Battle} spells there can be played.",
+        "test": "12-fire-a.test.ts::Abyssal Evocation: ⚠ OPEN — a bin-played card obeys its PRINTED timing"
+      }
+    ],
+    "see": [
+      "702"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Abyssal Evocation",
+          "quote": "In this battle, you may play spells from your bin."
+        },
+        {
+          "ref": "card: Trench Stalker",
+          "quote": "I can be played directly into formation, and played from your bin."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 (§12)",
+          "quote": "Cards that let you ignore timing say something like 'You may play them"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "12-fire-a.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R96 left the timing question OPEN; R157 §12 (owner) answered it. The test that pins it still says OPEN in its title: F-U07-3.",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
+    }
+  },
+  {
+    "key": "zones.bin.play-from-bin.unstable",
+    "parent": "zones.bin.play-from-bin",
+    "order": 1,
+    "text": "A card played from a bin is {Unstable} only if the permission says so. A card played from a bin under its own text does not become {Unstable}.",
+    "examples": [
+      {
+        "text": "A spell played from the bin under Abyssal Evocation gains {Unstable}, so it is erased rather than going back to the bin.",
+        "test": "12-fire-a.test.ts::Abyssal Evocation: a bin-played spell is {Unstable}"
+      }
+    ],
+    "see": [
+      "803"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Abyssal Evocation",
+          "quote": "If you do, they gain {p}unstable until regroup."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R123",
+          "quote": "under its OWN line is **NOT stamped {Unstable}**. The R96 stamp is the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "12-fire-a.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R123": "d0fcb30a403a6a548112e80a8c50c406fcdcd37ce268553acc6c891a079cf9fb"
+    }
+  },
+  {
+    "key": "zones.stack.what",
+    "parent": "406",
+    "order": 1,
+    "text": "The stack is the zone where cards being played, and abilities, wait to resolve. The last thing put on the stack resolves first. See 703.",
+    "examples": [
+      {
+        "text": "Two spells wait on the stack and the one put there last resolves first.",
+        "test": "418-cr-zones.test.ts::cr:zones.stack.what — two spells wait on the stack and the one put there last resolves first"
+      }
+    ],
+    "see": [
+      "703",
+      "704"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.14",
+          "quote": "All interaction in Algomancy uses the stack, which abides by the concept of"
+        },
+        {
+          "ref": "Manual p.34",
+          "quote": "Augmenting with viruses uses the stack, just like any other card and"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Rulebook p.14 and Manual p.34 are added pages. Stack procedure is U14's.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "zones.stack.not-in-play",
+    "parent": "406",
+    "order": 2,
+    "text": "A spell unit on the stack is not yet in play. It enters play only when it resolves.",
+    "examples": [
+      {
+        "text": "Mycelial Mentor, played with Bloomcaster out, is still on the stack while Bloomcaster's 1/1 is made, so the Mentor never sees the 1/1.",
+        "test": "396-raq-timing.test.ts::RAQ Bloomcaster: its 1/1 resolves before the Mycelial Mentor it was played with arrives"
+      }
+    ],
+    "see": [
+      "303"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353862592661164152#0",
+          "quote": "He goes on the stack (but is not Spawned / In play yet)."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1353862592661164152#0": "b8900e5634fbf608f3841fe20f39a2a1330bd12286120aa061d5273d2c0002c0"
+    }
+  },
+  {
+    "key": "zones.stack.tokens",
+    "parent": "406",
+    "order": 3,
+    "text": "A spell token that has been cast is on the stack, and is still a token there.",
+    "examples": [
+      {
+        "text": "Download can take a Fireball token already cast and on the stack.",
+        "test": "393-raq-mods.test.ts::RAQ Download: a Fireball already cast and on the stack is a token it can take"
+      }
+    ],
+    "see": [
+      "304"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353864175910387742#1",
+          "quote": "A Fireball already cast and on the stack is a token Download can take."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1353864175910387742#1": "10774ef8ff034c6b985c2dbe4f791fd4196ce73820247adcf3f440aa3f3afcf8"
+    }
+  },
+  {
+    "key": "zones.stack.leaving",
+    "parent": "406",
+    "order": 4,
+    "text": "When a card on the stack resolves, is negated or fails to resolve, it goes to the bin unless it enters play or something sends it elsewhere: an {Unstable} card is erased (see zones.bin.unstable), a card whose own text erases it goes to the erased pile (see zones.stack.leaving.self-erase), and a recall puts it into a hand. A card that goes to the bin this way is not trashed, because it comes from the stack.",
+    "examples": [
+      {
+        "text": "A non-{Unstable} virus negated off the stack goes to the bin.",
+        "test": "125-active-zone.test.ts::R145 negative control: a NON-Unstable virus negated off the stack still BINS"
+      },
+      {
+        "text": "A negated spell is not trashed.",
+        "test": "35-rot-debt-trash.test.ts::R40: a NEGATED spell is not trashed either"
+      }
+    ],
+    "see": [
+      "704",
+      "zones.bin.trash",
+      "zones.bin.unstable",
+      "zones.stack.leaving.self-erase"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "with other players. When a spell resolves, it goes directly to your discard."
+        },
+        {
+          "ref": "Manual p.34",
+          "quote": "its target becomes invalid, it is placed into the bin, and cannot be used"
+        },
+        {
+          "ref": "card: Cosmic Reversal",
+          "quote": "Negate them and put them into their controller's hands."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R145",
+          "quote": "> Q: \"Negating an augment puts it in the bin or erase?\" → A: **\"Into the bin\"**"
+        },
+        {
+          "ref": "R40 (its definition: a card entering a bin from anywhere but the stack)",
+          "quote": "so negating a spell is not trashing; erasing never touches the bin and so is"
+        },
+        {
+          "ref": "R145 (its stack route)",
+          "quote": "**From the stack** — straight to the owner's public erased pile (R65)."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "125-active-zone.test.ts",
+        "35-rot-debt-trash.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Round 1: the exits other than the bin are now named in the rule. A spell token or a copy has no card and ceases to exist (zones.changes.tokens). Whose erased pile an {Unstable} card leaving the stack goes to: D-U07-4.",
+    "sourceHashes": {
+      "R145": "dc76fc0a317d5bd6bd6de5ed5a24eb9d84407f6b45dcbb85d2e8978fe56f98e3",
+      "R40": "1fe34b8e0dd03488280eb472ae0af3e23d897d51b0b722ec7513a739275c6789"
+    }
+  },
+  {
+    "key": "zones.stack.leaving.self-erase",
+    "parent": "zones.stack.leaving",
+    "order": 1,
+    "text": "A spell whose text says \"Erase me\" goes to the erased pile when it resolves, instead of the bin.",
+    "examples": [
+      {
+        "text": "Tides of the Cosmos plays Suspend for free; Suspend goes to the erased pile, never the bin.",
+        "test": "15-water-b.test.ts::R146: Tides plays \"Erase me.\" (Suspend) for free → the ERASED pile, never a bin"
+      }
+    ],
+    "see": [
+      "407"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Suspend",
+          "quote": "Target player's life total can't change during this battle. Erase me."
+        },
+        {
+          "ref": "card: Collect Remains",
+          "quote": "Put target card in a bin into your hand.{/n}Erase me."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "15-water-b.test.ts",
+        "89-self-erase.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "zones.stack.leaving.self-erase-negated",
+    "parent": "zones.stack.leaving",
+    "order": 2,
+    "text": "A self-erasing spell that is negated or fails to resolve goes to the bin. Its \"Erase me\" never happened.",
+    "examples": [
+      {
+        "text": "A negated self-erase spell is binned.",
+        "test": "89-self-erase.test.ts::a NEGATED self-erase spell is binned, not erased"
+      },
+      {
+        "text": "So is one whose target went away.",
+        "test": "89-self-erase.test.ts::a FIZZLED self-erase spell is binned too"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "89-self-erase.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "medium",
+    "notes": "ENGINE-ONLY: no printed, designer or ruling sentence states it; it follows from \"Erase me\" being part of the effect that never resolved. D-U07-13.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "zones.erased.what",
+    "parent": "407",
+    "order": 1,
+    "text": "Erasing a card takes it out of the game. An erased card goes to the erased pile.",
+    "examples": [
+      {
+        "text": "Celestial Purge takes a unit out of the game onto the erased pile: no bin and no death.",
+        "test": "418-cr-zones.test.ts::cr:zones.erased.what — Celestial Purge takes a unit out of the game onto the erased pile: no bin and no death"
+      }
+    ],
+    "see": [
+      "801"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.15",
+          "quote": "erased (permanantly removed from the game). So"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R65 (its erased-pile half)",
+          "quote": "Erasing takes a card out of the game — no bin, no death"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R65": "e9ed084b299e697c3a8550bce01553259bfc5d6601416e6e6fc3adb041378a6d"
+    }
+  },
+  {
+    "key": "zones.erased.public",
+    "parent": "zones.erased.what",
+    "order": 1,
+    "text": "The erased pile is public.",
+    "examples": [
+      {
+        "text": "The server view shows each erased pile in full to both seats.",
+        "test": "418-cr-zones.test.ts::cr:zones.erased.public — the server view shows each erased pile in full to both seats"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R65 (its erased-pile half)",
+          "quote": "triggers, nothing plays it back — but the information is public and there was"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R65": "e9ed084b299e697c3a8550bce01553259bfc5d6601416e6e6fc3adb041378a6d"
+    }
+  },
+  {
+    "key": "zones.erased.final",
+    "parent": "zones.erased.what",
+    "order": 2,
+    "text": "Nothing takes a card back out of the erased pile.",
+    "examples": [
+      {
+        "text": "A card on the erased pile adds nothing to the legal actions, where the same card in the bin does.",
+        "test": "418-cr-zones.test.ts::cr:zones.erased.final — a card on the erased pile adds nothing to the legal actions, where the same card in the bin does"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R65 (its erased-pile half)",
+          "quote": "triggers, nothing plays it back — but the information is public and there was"
+        },
+        {
+          "ref": "R137 (its body-trash ruling and its Rector and Distiller notes)",
+          "quote": "must never become reachable, because that pile is how a card leaves the game"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R137": "00ed618822f8717f8af7f8dab9ab26806d04118a8c2b0ec6ea6c0508ec449fe7",
+      "R65": "e9ed084b299e697c3a8550bce01553259bfc5d6601416e6e6fc3adb041378a6d"
+    }
+  },
+  {
+    "key": "zones.erased.not-death",
+    "parent": "zones.erased.what",
+    "order": 3,
+    "text": "Erasing is not dying and not trashing: an erased card never enters a bin.",
+    "examples": [
+      {
+        "text": "A unit erased by Banishment does not die and is not trashed.",
+        "test": "145-erase-routes.test.ts::R172 (vii): Banishment still fires no 'died' and no 'trashed'"
+      }
+    ],
+    "see": [
+      "zones.changes.despawn"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R172 (its §1 erase-is-a-despawn and §4 Download halves)",
+          "quote": "An erase is still not a death and still not a trash."
+        },
+        {
+          "ref": "R40 (its definition: a card entering a bin from anywhere but the stack)",
+          "quote": "so negating a spell is not trashing; erasing never touches the bin and so is"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "145-erase-routes.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R172": "f2dcff3abbd86d856448719117ab0e47d8b54c70d14a0e56e2d890eeeebcfc2d",
+      "R40": "1fe34b8e0dd03488280eb472ae0af3e23d897d51b0b722ec7513a739275c6789"
+    }
+  },
+  {
+    "key": "zones.erased.says-erase",
+    "parent": "407",
+    "order": 2,
+    "text": "A card that an effect erases goes to the erased pile, including a mod erased off a host that stays in play (for example to pay a cost).",
+    "examples": [],
+    "see": [
+      "720"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R219",
+          "quote": "end up in the erased zone.\"**"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R208",
+          "relation": "its held behaviour that a mod erased off a living host files nothing on the erased pile, reversed by R219"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "178-played-item-and-erased-mods.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Two titles in the cited test still say the question is open or the pile is untouched: F-U07-4.",
+    "sourceHashes": {
+      "R219": "91a197c7e851ffbf143b3dcf56a422b3db8045cd2765a61677648786776c30bb"
+    }
+  },
+  {
+    "key": "zones.erased.says-erase.into-play",
+    "parent": "zones.erased.says-erase",
+    "order": 1,
+    "text": "A mod taken off its host and put into play as a card of its own (Reclaim the Fallen) does not leave the game and does not go to the erased pile.",
+    "examples": [
+      {
+        "text": "Reclaim the Fallen: the card stands in play and no erase names it.",
+        "test": "178-played-item-and-erased-mods.test.ts::R208 Reclaim the Fallen: leavesGame:false"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R219",
+          "quote": "**`leavesGame: false` skips the pile.** Reclaim the Fallen \"erases\" a mod that"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "178-played-item-and-erased-mods.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R219": "91a197c7e851ffbf143b3dcf56a422b3db8045cd2765a61677648786776c30bb"
+    }
+  },
+  {
+    "key": "zones.erased.tokens",
+    "parent": "407",
+    "order": 3,
+    "text": "A token that ceases to exist after entering a zone is recorded on the erased pile.",
+    "examples": [
+      {
+        "text": "A dying token enters the bin, is erased from it, and is recorded on the erased pile.",
+        "test": "35-rot-debt-trash.test.ts::R69 + R306: a TOKEN dying enters the bin, is NOT trashed, and is then erased"
+      }
+    ],
+    "see": [
+      "zones.changes.tokens"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R306",
+          "quote": "the event window still sees it, and the erased pile (R65) still records it."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "35-rot-debt-trash.test.ts",
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R306 continues \"and the erased pile (R65) still records it\". R219 reads R65's pile as \"a list of cards\" and does not file a token mod erased off a living host: D-U07-5.",
+    "sourceHashes": {
+      "R306": "63ddd3a55f5ae1c3565593e3bc4c1c6ad19bb0124baf0ac5f651e7ad794e765f"
+    }
+  },
+  {
+    "key": "zones.erased.tokens.mods",
+    "parent": "zones.erased.tokens",
+    "order": 1,
+    "text": "A token mod is recorded on the erased pile once when its host leaves play, however the host leaves.",
+    "examples": [
+      {
+        "text": "One token mod reaches the erased pile once on a death, a recall and a cache alike.",
+        "test": "129-disposal-tail.test.ts::R65: a TOKEN mod reaches the erased pile however its host leaves play"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R167",
+          "quote": "reaches the public erased pile exactly once on each of the three routes."
+        },
+        {
+          "ref": "R156 (its announcement on every route)",
+          "quote": "The rule turns on the destination, not"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "129-disposal-tail.test.ts",
+        "141-despawn-mods.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R219 does not file a token mod erased off a host that stays in play. D-U07-5.",
+    "sourceHashes": {
+      "R156": "a26d61b2a352d6e842fef1b8ee918a040eebaf7250d67127a0cef48bdd4db492",
+      "R167": "7b3b795a55a9c9e8a63cd25ecd39a570d9a767790a2890de421ba72020f75770"
+    }
+  },
+  {
+    "key": "zones.erased.front-face",
+    "parent": "407",
+    "order": 4,
+    "text": "A transformed card is recorded on the erased pile as its front face.",
+    "examples": [
+      {
+        "text": "A transformed Scholar of the Void erased by Banishment is recorded as Scholar of the Void.",
+        "test": "145-erase-routes.test.ts::R172 (iii)"
+      }
+    ],
+    "see": [
+      "zones.changes.face"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R160",
+          "quote": "The erased pile takes the front face too."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "145-erase-routes.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R160": "3faf64369314175224afc5fc756751d214429b55f79ad1d2f0e282740918f995"
+    }
+  },
+  {
+    "key": "zones.recycle.what",
+    "parent": "408",
+    "order": 1,
+    "text": "To recycle a card is to put it on the bottom of the deck. A recycled card has not left the game.",
+    "examples": [
+      {
+        "text": "A card recycled for a resource is drawn again once the rest of the deck is gone, so it never left the game.",
+        "test": "418-cr-zones.test.ts::cr:zones.recycle.what — a card recycled for a resource is drawn again once the rest of the deck is gone, so it never left the game"
+      }
+    ],
+    "see": [
+      "801"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.18",
+          "quote": "outside the game by recycling a card from hand (putting it on the bottom of the"
+        },
+        {
+          "ref": "Rulebook 2023 p.7",
+          "quote": "recycling a card in your hand (putting it on the bottom of the deck)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R190 (its Recycle-row correction)",
+          "quote": "recycled card was \"gone for the rest of the game\", which is the one thing recycling"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R190": "2c143552cacb38910f6dc1519d8a523d96382a92393de01fc335337f1c1a60a1"
+    }
+  },
+  {
+    "key": "zones.recycle.mark",
+    "parent": "408",
+    "order": 2,
+    "text": "A deck has a mark where it originally ended. A card put on the bottom of the deck goes past the mark, into the recycle pile, not onto the bottom of the cards still to be drawn.",
+    "examples": [
+      {
+        "text": "A recycled card stays behind the mark while the deck still has cards.",
+        "test": "300-recycle-mark.test.ts::R296 §1 a recycled card stays behind the mark"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R296",
+          "quote": "A deck has a **mark** at the original end of the library. A recycled card goes"
+        },
+        {
+          "ref": "R296",
+          "quote": "**past the mark**, into the recycle pile, not onto the bottom of the live deck."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "300-recycle-mark.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R296: \"Not a printed rule anywhere in this repository\" — the owner learned it from a judge-level player. D-U07-12.",
+    "sourceHashes": {
+      "R296": "d53f03d41df34d3f07ac7687b7104a2376c6e1fc4108537d53fe87f48c0f1a56"
+    }
+  },
+  {
+    "key": "zones.recycle.mark.scope",
+    "parent": "zones.recycle.mark",
+    "order": 1,
+    "text": "Every card put on the bottom of the deck goes past the mark, whatever put it there: recycling for a resource, the constructed put-back, the cards a glimpse did not cache, and recycled packs alike.",
+    "examples": [
+      {
+        "text": "Every effect that reads the deck reshuffles at the mark, not only drawing.",
+        "test": "300-recycle-mark.test.ts::R296 §6 every reader of the deck reshuffles at the mark"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R296",
+          "quote": "Scope: everything that hits the bottom."
+        },
+        {
+          "ref": "R296",
+          "quote": "every caller of `E.recycleToBottom`: recycling from hand for a resource, the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "300-recycle-mark.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R296": "d53f03d41df34d3f07ac7687b7104a2376c6e1fc4108537d53fe87f48c0f1a56"
+    }
+  },
+  {
+    "key": "zones.recycle.mark.reshuffle",
+    "parent": "zones.recycle.mark",
+    "order": 2,
+    "text": "When the deck runs out and more cards are needed, the recycle pile is shuffled and becomes the new deck, with a new mark and an empty recycle pile.",
+    "examples": [
+      {
+        "text": "The deck runs out, the pile is shuffled in, and drawing continues.",
+        "test": "300-recycle-mark.test.ts::R296 §2 when the deck runs out the pile is shuffled in"
+      },
+      {
+        "text": "A glimpse wider than the deck reshuffles mid-reveal and still reveals N.",
+        "test": "300-recycle-mark.test.ts::R296 §6b a glimpse WIDER than the deck"
+      }
+    ],
+    "see": [
+      "zones.deck.empty"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R296",
+          "quote": "When the deck runs out and more cards are needed, the pile is **shuffled** and"
+        },
+        {
+          "ref": "R296",
+          "quote": "becomes the new deck, behind a fresh mark and an empty pile."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "300-recycle-mark.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R296": "d53f03d41df34d3f07ac7687b7104a2376c6e1fc4108537d53fe87f48c0f1a56"
+    }
+  },
+  {
+    "key": "zones.recycle.mark.public-count",
+    "parent": "zones.recycle.mark",
+    "order": 3,
+    "text": "Every player can see how many cards are in the recycle pile. No player may look at them.",
+    "examples": [
+      {
+        "text": "Nothing in the pile is named to any player.",
+        "test": "300-recycle-mark.test.ts::R296 §7 nothing in the pile is a card anybody can name"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R296",
+          "quote": "The count of the pile is public; its contents are not. The owner: *\"you see how"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "300-recycle-mark.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R296": "d53f03d41df34d3f07ac7687b7104a2376c6e1fc4108537d53fe87f48c0f1a56"
+    }
+  },
+  {
+    "key": "zones.recycle.mark.order",
+    "parent": "zones.recycle.mark",
+    "order": 4,
+    "text": "The order in which cards were recycled does not matter to the game.",
+    "examples": [
+      {
+        "text": "The recycle pile is hidden from both seats and is shuffled before it is drawn again.",
+        "test": "418-cr-zones.test.ts::cr:zones.recycle.mark.order — the recycle pile is hidden from both seats and is shuffled before it is drawn again"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R296",
+          "quote": "The pile is shuffled on its way back in, so the order cards were recycled in is"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R296": "d53f03d41df34d3f07ac7687b7104a2376c6e1fc4108537d53fe87f48c0f1a56"
+    }
+  },
+  {
+    "key": "zones.recycle.mark.whose",
+    "parent": "zones.recycle.mark",
+    "order": 5,
+    "text": "Each deck has its own recycle pile. In live draft, all players share one pile; in constructed, each player has their own.",
+    "examples": [
+      {
+        "text": "In a shared-deck game both players recycle into one pile.",
+        "test": "300-recycle-mark.test.ts::R296 §5 constructed gives each seat its own pile"
+      },
+      {
+        "text": "In constructed, a card one player recycles goes into that player's own pile, not the opponent's. (illustrative)",
+        "test": null
+      }
+    ],
+    "see": [
+      "zones.deck.shared"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R296",
+          "quote": "A deck has a **mark** at the original end of the library. A recycled card goes"
+        },
+        {
+          "ref": "R157 (§18)",
+          "quote": "Your deck. It will be shared during live draft and solo in constructed."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "300-recycle-mark.test.ts",
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Derived: a pile is past the mark of a deck (R296), and the deck is shared in live draft and per player in constructed (R157 §18). Only the test states the split directly. Round 1: the 300 test asserts only the shared pile, though its title names constructed too (F-U07-8); the constructed half is shown by the verifier's probe (u07-a2-probes), not by a suite test.",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
+      "R296": "d53f03d41df34d3f07ac7687b7104a2376c6e1fc4108537d53fe87f48c0f1a56"
+    }
+  },
+  {
+    "key": "zones.recycle.hidden",
+    "parent": "408",
+    "order": 3,
+    "text": "A card recycled out of a hand is not revealed unless the effect says so.",
+    "examples": [
+      {
+        "text": "Bripp recycles a card from a hand without naming it to the table.",
+        "test": "173-look-at-a-hand.test.ts::R197b §1 Bripp: \"Look at target player's hand\" — and the card it recycles is not named to the table either"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R197b",
+          "quote": "and nothing Bripp prints says \"reveal\", so the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "173-look-at-a-hand.test.ts",
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "",
+    "sourceHashes": {
+      "R197b": "6dbeb39bb020fa68a46ae0b9e1fc0ab3e5ba72d2fadd82ef6d6681e64878c6bc"
+    }
+  },
+  {
+    "key": "zones.recycle.for-resource",
+    "parent": "408",
+    "order": 4,
+    "text": "During the resource step, a player may recycle a card from their hand to create a resource. See 502.",
+    "examples": [],
+    "see": [
+      "502",
+      "106"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.18",
+          "quote": "outside the game by recycling a card from hand (putting it on the bottom of the"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R299",
+          "quote": "outside the game by recycling a card from hand\"* — and a Prismite is a resource."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "308-recycle-for-prismite.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Which resources (an element of the game, a Prismite, a Shard) is U08/U02.",
+    "sourceHashes": {
+      "R299": "46fc7e836df1d7e04bba74789f7fcde1ccbc21d3a515dc0c74abc3b6f211228c"
+    }
+  },
+  {
+    "key": "zones.pack.what",
+    "parent": "409",
+    "order": 1,
+    "text": "In live draft, each player has a pack: a face-down pile of 10 cards dealt from the deck at the start of the game, which that player drafts from.",
+    "examples": [
+      {
+        "text": "A live draft deals each seat a 10-card pack from the deck at the start, and the pack is what that seat drafts from.",
+        "test": "418-cr-zones.test.ts::cr:zones.pack.what — a live draft deals each seat a 10-card pack from the deck at the start, and the pack is what that seat drafts from"
+      }
+    ],
+    "see": [
+      "503",
+      "902"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.16",
+          "quote": "10 cards face down. This pile is referred to as a “pack”."
+        },
+        {
+          "ref": "Rulebook 2023 p.6",
+          "quote": "have 10 cards in them when they are dealt or passed to other players. Packs may only be interacted with and looked at during"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "zones.pack.what.constructed",
+    "parent": "zones.pack.what",
+    "order": 1,
+    "text": "Constructed has no packs.",
+    "examples": [
+      {
+        "text": "A constructed game has no packs and no draft step.",
+        "test": "418-cr-zones.test.ts::cr:zones.pack.what.constructed — a constructed game has no packs and no draft step"
+      }
+    ],
+    "see": [
+      "901"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.16",
+          "quote": "In this mode, there are no packs or shared deck. During"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "zones.pack.private",
+    "parent": "409",
+    "order": 2,
+    "text": "A pack may be looked at and used only during the draft step, and no player may look at another player's pack.",
+    "examples": [
+      {
+        "text": "A seat sees its own pack only while its draft step is open, and never the other pack.",
+        "test": "418-cr-zones.test.ts::cr:zones.pack.private — a seat sees its own pack only while its draft step is open, and never the other pack"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.16",
+          "quote": "Packs may only be interacted with and looked at during the draft step,"
+        },
+        {
+          "ref": "Manual p.16",
+          "quote": "and players may not look at the packs of other players."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "zones.pack.drafting",
+    "parent": "409",
+    "order": 3,
+    "text": "In the draft step, a player combines the non-token, non-resource cards in their hand with their pack, keeps any of them, and passes the pack on with exactly 10 cards in it. See 503.",
+    "examples": [
+      {
+        "text": "The draft commit merges hand and pack, keeps any cards, and passes on a pack of exactly 10.",
+        "test": "418-cr-zones.test.ts::cr:zones.pack.drafting — the draft commit merges hand and pack, keeps any cards, and passes on a pack of exactly 10"
+      }
+    ],
+    "see": [
+      "503"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.6",
+          "quote": "During the draft step, players combine all of the non-token, non-resource cards in their hand with the pack and can draft a"
+        },
+        {
+          "ref": "Manual p.17",
+          "quote": "ALWAYS LEAVE 10 CARDS IN THE PACK"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "zones.pack.refresh",
+    "parent": "409",
+    "order": 4,
+    "text": "After each cycle of N+1 turns, where N is the number of players, every pack is recycled and each player is dealt a new pack of 10 cards.",
+    "examples": [],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.16",
+          "quote": "Additionally, after each cycle of N+1 turns, where N"
+        },
+        {
+          "ref": "Manual p.16",
+          "quote": "is the number of players, all of the existing packs are"
+        },
+        {
+          "ref": "Rulebook 2023 p.6",
+          "quote": "After N+1 turns, where N is the number of players, all of the packs are recycled (put on the bottom of the deck in a random"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "zones.pack.refresh.team-draft",
+    "parent": "zones.pack.refresh",
+    "order": 1,
+    "text": "In team draft, packs are never refreshed.",
+    "examples": [],
+    "see": [
+      "904"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.6",
+          "quote": "never refreshed in team drafts. All the other draft rules apply."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "team draft is not a format the digital engine runs (two seats, no teams), so there is no pack refresh to observe"
+  },
+  {
+    "key": "zones.pack.eliminated",
+    "parent": "409",
+    "order": 5,
+    "text": "When a player is eliminated, their pack is recycled.",
+    "examples": [],
+    "see": [
+      "104"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.16",
+          "quote": "When a player is eliminated, their pack is recycled (put on the bottom"
+        },
+        {
+          "ref": "Rulebook 2023 p.6",
+          "quote": "the draft step, and players may not look at the packs of other players. When a player is eliminated, their pack is recycled (put on"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "the engine seats exactly two players and an elimination ends the game, so nothing follows it that could show the pack recycled"
+  },
+  {
+    "key": "zones.changes.new-object",
+    "parent": "410",
+    "order": 1,
+    "text": "A card that leaves play and comes back is a new object. It does not remember its earlier time in play.",
+    "examples": [
+      {
+        "text": "Engorged Caudex is recalled and played again; its once-per-turn grafted draw works again the same turn.",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 calebgannon: a recalled and replayed Engorged Caudex is a new object"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#16",
+          "quote": "A unit that leaves play and comes back is a new object"
+        },
+        {
+          "ref": "RAQ 1355115946032889914#16",
+          "quote": "calebgannon: \"Yes that works\""
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1355115946032889914#16": "abae6cef85e10fe99218407de9525b8c3ed984778e54d0fc43a32c796d206b02"
+    }
+  },
+  {
+    "key": "zones.changes.new-object.targets",
+    "parent": "zones.changes.new-object",
+    "order": 1,
+    "text": "An effect aimed at a card that has since changed zones does not affect it. An effect aimed at a card that is still in the same zone affects it only if the card is still a legal target for the slot it was chosen for; otherwise that target is lost as well. If every target is lost, the effect fails to resolve.",
+    "examples": [
+      {
+        "text": "Organic Exchange may target two of its caster's own units, and another spell aimed at one of them still resolves.",
+        "test": "396-raq-timing.test.ts::RAQ Another set: Organic Exchange may target two of your own units"
+      },
+      {
+        "text": "An Ambush whose target ally was stolen in response recalls nothing: the unit is no longer its controller's ally.",
+        "test": "390-raq-stack.test.ts::RAQ valid targets: an Ambush whose ally changed sides before it resolves recalls nothing"
+      },
+      {
+        "text": "Minor Kraken's target grows past 5 defense before it resolves, and is not recalled.",
+        "test": "390-raq-stack.test.ts::RAQ valid targets: a target that grows past 5 defense before Minor Kraken resolves is not recalled"
+      }
+    ],
+    "see": [
+      "704",
+      "110"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.40",
+          "quote": "unit, and will fail to resolve (fizzle). This makes ambush"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1454169054402314362#2",
+          "quote": "Things only wouldn't resolve if a unit changed to a different location (like went to your hand, the bin, etc)"
+        },
+        {
+          "ref": "RAQ 1355466429788328066#1",
+          "quote": "If you did target something which was valid, but became invalid target then effect will fizzle on resolution."
+        },
+        {
+          "ref": "RAQ 1355466429788328066#2",
+          "quote": "Ambush won't resolve as it's effect 'Recall target ALLY' and that unit is no longer ally of your opponent"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R324",
+          "quote": "A target that fails is lost exactly like a target that left play. If every"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts",
+        "390-raq-stack.test.ts",
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Fizzling itself is 704 (U14). Round 1: the second sentence was wrong (\"resolves, whatever else has happened\") and is corrected to R324 and the [Solved] \"Valid targets becomes invalid\" thread. R324 and RAQ 1355466429788328066 were not in the pack; read from digital-rules.md and the RAQ register. The register's paraphrase of RAQ 1454169054402314362#2 is no longer quoted; Caleb's own words are. The two designer sources read against each other: D-U07-15.",
+    "sourceHashes": {
+      "R324": "44be5fd7d7c93923d37764c5ab876f263fdb2cab0e12fc7278a80b694c4dd4fa",
+      "RAQ 1355466429788328066#1": "f53ca9b5d71cf73d523e142fa4e28c792a1389664583fec5c7076d2cc4039b9d",
+      "RAQ 1355466429788328066#2": "b9dc6c179ca7f7dde9e8d6da8311051efd7aefbceb51e702076e7dd0f181715f",
+      "RAQ 1454169054402314362#2": "b3c1d6d85b56be21075308f74a85f88594cd2eeffac19ed21962bdeecd7a25d3"
+    }
+  },
+  {
+    "key": "zones.changes.new-object.reconfigure",
+    "parent": "zones.changes.new-object",
+    "order": 2,
+    "text": "Moving a mod from one unit to another is not a zone change: the mod never leaves play, and nothing despawns.",
+    "examples": [
+      {
+        "text": "Reconfigure moves Bubb and its Growing Plague onto a Robot; Growing Plague's \"when I despawn\" does not trigger.",
+        "test": "393-raq-mods.test.ts::RAQ Reconfigure vs Despawn: moving Bubb and its Growing Plague onto a Robot fires no despawn"
+      }
+    ],
+    "see": [
+      "720"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353847640214999170#0",
+          "quote": "Reconfigure moving a unit and its mods onto another unit is not a despawn"
+        },
+        {
+          "ref": "RAQ 1353847640214999170#0",
+          "quote": "The Unit never switch zones"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1353847640214999170#0": "0bff393adef7eae7d57a8fc64c94d828f9d0899aa4fff6b63e5be57023ecba70"
+    }
+  },
+  {
+    "key": "zones.changes.despawn",
+    "parent": "410",
+    "order": 2,
+    "text": "A unit despawns whenever it leaves play, by any route: dying, being recalled, being cached, being exchanged or being erased. A \"when I despawn\" ability triggers whichever way the unit leaves.",
+    "examples": [
+      {
+        "text": "A donated \"[Augment] When I despawn\" triggers when its host is recalled.",
+        "test": "141-despawn-mods.test.ts::R167 (i): a donated"
+      },
+      {
+        "text": "An erased ally is seen despawning by Demon of the Depths.",
+        "test": "145-erase-routes.test.ts::R172 (i): an ERASE fires 'despawned'"
+      }
+    ],
+    "see": [
+      "706"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R167",
+          "quote": "a printed \"when I despawn\" means it whichever way the unit leaves play"
+        },
+        {
+          "ref": "R172 (its §1 erase-is-a-despawn and §4 Download halves)",
+          "quote": "an ERASE is a despawn; the erase copies are one primitive; and a unit stolen mid-battle sits out until regroup"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "141-despawn-mods.test.ts",
+        "145-erase-routes.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Both are engine-structural rulings (\"no player quote needed\", R167) built on R157 §3 (owner: an exchange \"is a despawn\").",
+    "sourceHashes": {
+      "R167": "7b3b795a55a9c9e8a63cd25ecd39a570d9a767790a2890de421ba72020f75770",
+      "R172": "f2dcff3abbd86d856448719117ab0e47d8b54c70d14a0e56e2d890eeeebcfc2d"
+    }
+  },
+  {
+    "key": "zones.changes.despawn.exchange",
+    "parent": "zones.changes.despawn",
+    "order": 1,
+    "text": "A unit exchanged out of play (Hooba-Mon, Necromorph) despawns and goes to the bin, where it is trashed, but it does not die.",
+    "examples": [
+      {
+        "text": "Necromorph's exchange triggers no death ability, but the unit despawns and is trashed.",
+        "test": "135-exchange-and-zones.test.ts::exchange fires NO death trigger"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 (§3)",
+          "quote": "It's not a death, but it is a despawn and trashing. Weird corner case."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "135-exchange-and-zones.test.ts",
+        "129-disposal-tail.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
+    }
+  },
+  {
+    "key": "zones.changes.face",
+    "parent": "410",
+    "order": 3,
+    "text": "A transformed card exists as its front face in every zone except play. It turns back over as it leaves play, before anything sees it leave.",
+    "examples": [
+      {
+        "text": "A transformed Scholar of the Void that dies goes to the bin as Scholar of the Void.",
+        "test": "135-exchange-and-zones.test.ts::a transformed Scholar killed in play BINS as"
+      },
+      {
+        "text": "It can then be returned from the bin as a Scholar.",
+        "test": "135-exchange-and-zones.test.ts::a transformed Scholar that died is RECURRABLE from the bin"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 (§10)",
+          "quote": "Turns back over. In all zones, other than play, it exists as the front"
+        },
+        {
+          "ref": "R160",
+          "quote": "The flip happens at the leave-play boundary, before anything reads the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "135-exchange-and-zones.test.ts",
+        "145-erase-routes.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
+      "R160": "3faf64369314175224afc5fc756751d214429b55f79ad1d2f0e282740918f995"
+    }
+  },
+  {
+    "key": "zones.changes.face.copies",
+    "parent": "zones.changes.face",
+    "order": 1,
+    "text": "A unit that is copying another card (Borrower of Forms) leaves play as itself. If it dies it goes to the bin as Borrower of Forms; if it is recalled it goes to the hand as Borrower of Forms.",
+    "examples": [
+      {
+        "text": "A Borrower that became something else still goes to the bin as Borrower of Forms.",
+        "test": "26-metal-a.test.ts::a Borrower that became something else still bins as BORROWER OF FORMS"
+      },
+      {
+        "text": "Recalled, it goes back to the hand as Borrower of Forms.",
+        "test": "393-raq-mods.test.ts::RAQ Borrower of Forms: recalled, it goes back to the hand as Borrower of Forms"
+      }
+    ],
+    "see": [
+      "710"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1372468222158180424#2",
+          "quote": "If it dies it goes to the bin as Borrower of Forms; what it mimicked was erased when it resolved."
+        },
+        {
+          "ref": "RAQ 1372468222158180424#7",
+          "quote": "Recalled, it goes back to the hand as Borrower of Forms; the original was erased."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "26-metal-a.test.ts",
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1372468222158180424#2": "6f8f74f0bbd6cae24ae79c2d4e11976bcd397801eac98203b560daddc106f8b4",
+      "RAQ 1372468222158180424#7": "5ed960b6abd609c253a7137d312a9ab7690d5ea072fca8bb89494e251dfbcf54"
+    }
+  },
+  {
+    "key": "zones.changes.mods",
+    "parent": "410",
+    "order": 4,
+    "text": "When a modded unit is recalled or cached, its mods go to the bin and the unit goes on alone. A token mod ceases to exist instead (see zones.changes.mods.token-mod).",
+    "examples": [
+      {
+        "text": "A recalled modded unit goes to the hand; its mods go to the bin and are trashed there.",
+        "test": "35-rot-debt-trash.test.ts::R40: recalling a modded unit trashes its MODS"
+      }
+    ],
+    "see": [
+      "720",
+      "zones.cache.from-play",
+      "zones.changes.mods.exchanged",
+      "zones.changes.mods.token-mod"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.35",
+          "quote": "hand from play, all of its mods are put back into the"
+        },
+        {
+          "ref": "Manual p.35",
+          "quote": "bin, while the base card goes to the hand."
+        },
+        {
+          "ref": "Rulebook 2023 p.15",
+          "quote": "from play), all of its modifications are put back into"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1372468222158180424#8",
+          "quote": "Those would go to your bin/discard as usual."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R46",
+          "quote": "When a unit in play is cached, the mods attached to it go to the bin rather"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "35-rot-debt-trash.test.ts",
+        "141-despawn-mods.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Round 1: narrowed from \"leaves play without dying or being erased\" to recall and cache. An exchange is the third such departure and is ruled separately (zones.changes.mods.exchanged).",
+    "sourceHashes": {
+      "R46": "b5a11201ce99a44ead0cf242a1d16bae8f03d8fd6d51d7064c725bbe3ab19665",
+      "RAQ 1372468222158180424#8": "4749a0555f81f431bdb189541b3b076a53e5db5a32158b157ea8da96ea48d54c"
+    }
+  },
+  {
+    "key": "zones.changes.mods.whose-bin",
+    "parent": "zones.changes.mods",
+    "order": 1,
+    "text": "A mod that goes to a bin when its host leaves play goes to the bin of the host's controller.",
+    "examples": [
+      {
+        "text": "A virus on an opponent's unit goes to that opponent's bin when the unit leaves play.",
+        "test": "229-cosmic-and-control.test.ts::R250: a MOD goes to the HOST CONTROLLER bin, superseding R244 destination half"
+      }
+    ],
+    "see": [
+      "zones.general.follow-control"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R250 (its §4 zones-follow-control half)",
+          "quote": "Zones ALWAYS follow control. One rule, no split."
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R244",
+          "relation": "§1 \"THE DESTINATION DOES NOT MOVE\" paragraph (a mod goes to its own owner's bin), reversed by R250"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "229-cosmic-and-control.test.ts",
+        "129-disposal-tail.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R250 asked the owner whether control reaches a mod: \"Zones ALWAYS follow control.\" Who trashes the mod (the host's controller, R244) is 801.",
+    "sourceHashes": {
+      "R250": "85f8949b08f8ce75cfdb86bf8e04db453b4f36aa27bd63c5b44ca693e61ffc53"
+    }
+  },
+  {
+    "key": "zones.changes.mods.dies",
+    "parent": "zones.changes.mods",
+    "order": 2,
+    "text": "A modded card is {Unstable}. When it dies or is erased, it and all of its mods are erased.",
+    "examples": [],
+    "see": [
+      "803",
+      "zones.bin.unstable"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.35",
+          "quote": "As long as a card is modded, it has the unstable attribute, meaning when it dies or is erased, it and all of its"
+        },
+        {
+          "ref": "Rulebook 2023 p.15",
+          "quote": "erased (permanantly removed from the game). So"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The route an {Unstable} death takes to the erased pile is disputed: D-U07-3. A nontoken mod erased with its host is not trashed (R244 §2); that is 801. A printed destination overrides the erase: Pull Under puts the unit and all of its mods into its caster's bin (zones.bin.controller).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "zones.changes.mods.token-mod",
+    "parent": "zones.changes.mods",
+    "order": 3,
+    "text": "A token mod has no card of its own. It never enters a bin; when its host leaves play it ceases to exist.",
+    "examples": [
+      {
+        "text": "A token mod on a dying {Unstable} unit is erased, never binned or trashed.",
+        "test": "35-rot-debt-trash.test.ts::R137: a TOKEN mod on a dying Unstable carrier is erased, never binned or trashed"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R244 (its §2 and token-mod sentence)",
+          "quote": "A token mod is unchanged**: it has no card of its own (R69), reaches no bin,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "35-rot-debt-trash.test.ts",
+        "141-despawn-mods.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R152 notes the owner's token rule (\"ceases to exist in all zones other than in play/stack\") read literally would send a token mod through a bin; R69 and the engine do not. Reported in R152, not resolved.",
+    "sourceHashes": {
+      "R244": "080c30954c21cbfd6d041bc15712a2dc0db9582ff06e979cf06690adcac0b11f"
+    }
+  },
+  {
+    "key": "zones.changes.mods.exchanged",
+    "parent": "zones.changes.mods",
+    "order": 4,
+    "text": "An exchange is not a death. But a modded unit is {Unstable}, so when it is exchanged out of play, it and all of its mods are erased, just as they would be if it died.",
+    "examples": [
+      {
+        "text": "Hooba-Mon exchanges itself while it carries a mod; it is erased, not left in a bin.",
+        "test": "42-dark-b.test.ts::R146: Hooba-Mon exchanges a MODDED host → the host is trashed, then ERASED (not left in a bin)"
+      },
+      {
+        "text": "An unmodded Hooba-Mon exchanged the same way stays in the bin.",
+        "test": "42-dark-b.test.ts::R146 control: Hooba-Mon exchanges an UNMODDED host → it still BINS and stays there"
+      }
+    ],
+    "see": [
+      "zones.changes.mods.dies",
+      "zones.bin.unstable",
+      "801"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.35",
+          "quote": "As long as a card is modded, it has the unstable attribute, meaning when it dies or is erased, it and all of its"
+        },
+        {
+          "ref": "card: Abyssal Evocation",
+          "quote": "(If they would enter a bin, erase them instead.)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 (§3)",
+          "quote": "It's not a death, but it is a despawn and trashing. Weird corner case."
+        },
+        {
+          "ref": "R152 (its exchange route; the own-owner's-bin destination is superseded by R250)",
+          "quote": "* when the body is `{Unstable}` — which a modded host always is, by derivation"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "42-dark-b.test.ts",
+        "135-exchange-and-zones.test.ts",
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "Added in round 1: the verifier measured a modded unit exchanged by Necromorph ending on the erased pile with its mod, and no died event (u07-a2-probes). Printed text does not mention exchange; the rule follows from the Manual's \"modded = unstable\" plus the Unstable reminder, once R157 §3 says an exchange enters a bin (\"trashing\"). Whether the exchanged body is trashed on the way is the D-U07-3 question again: D-U07-16.",
+    "sourceHashes": {
+      "R152": "7acfd1f8cc66db708da47c2ea0ae4e1eebccd23e29ec475183a4ebaed7797bd9",
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
+    }
+  },
+  {
+    "key": "zones.changes.tokens",
+    "parent": "410",
+    "order": 5,
+    "text": "A token that leaves play goes to the zone it was sent to (a hand, a bin, a cache) and really is there. It ceases to exist there the next time state-based actions are checked, which is before anything it caused to trigger can resolve.",
+    "examples": [],
+    "see": [
+      "304",
+      "713",
+      "zones.general.active"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355689559609839787#4",
+          "quote": "A recalled unit token enters the hand, and a dying unit token enters the bin, and each is then erased."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R152 (its §4 token-body ruling)",
+          "quote": "exist in all zones other than in play/stack whenever SBAs are checked.**\""
+        },
+        {
+          "ref": "R69 (its zone-visit and timing halves)",
+          "quote": "trigger goes on the stack — *\"state based effects happen to erase it and then"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R69",
+          "relation": "its subsection \"a dying token is trashed\", reversed by R306"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "35-rot-debt-trash.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The Manual says tokens go to the token pile \"instead of the hand or bin\": D-U07-1. The RAQ wins.",
+    "sourceHashes": {
+      "R152": "7acfd1f8cc66db708da47c2ea0ae4e1eebccd23e29ec475183a4ebaed7797bd9",
+      "R69": "4765548d7e5280fe64527ba6b02f2f307ddb47cce7eb72a9ff53142ae02ff9b4",
+      "RAQ 1355689559609839787#4": "95729ce10f69a4d6d99b4e697bef8ca60d3e911670df6a82a939387b72bdbdf3"
+    }
+  },
+  {
+    "key": "zones.changes.tokens.dies",
+    "parent": "zones.changes.tokens",
+    "order": 1,
+    "text": "A unit token that dies enters the bin and is then erased. It is not trashed.",
+    "examples": [
+      {
+        "text": "A dying token enters the bin, is not trashed, and is then erased.",
+        "test": "35-rot-debt-trash.test.ts::R69 + R306: a TOKEN dying enters the bin, is NOT trashed, and is then erased"
+      }
+    ],
+    "see": [
+      "801"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355689559609839787#4",
+          "quote": "3. Same applies to Unit Tokens being Recalled or Dying (they enter your hand/bin and then are instantly erased)"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R306",
+          "quote": "A dying token still **enters the bin** and is then erased from it by the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "35-rot-debt-trash.test.ts",
+        "338-tokens-are-not-trashed.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R306": "63ddd3a55f5ae1c3565593e3bc4c1c6ad19bb0124baf0ac5f651e7ad794e765f",
+      "RAQ 1355689559609839787#4": "95729ce10f69a4d6d99b4e697bef8ca60d3e911670df6a82a939387b72bdbdf3"
+    }
+  },
+  {
+    "key": "zones.changes.tokens.recalled",
+    "parent": "zones.changes.tokens",
+    "order": 2,
+    "text": "A recalled token, unit or spell, enters its controller's hand and is then erased. It counts as a card entering a hand for anything that is watching.",
+    "examples": [
+      {
+        "text": "A Fireball token recalled off the stack enters its controller's hand, Rider of the Tides sees it, and it is erased.",
+        "test": "393-raq-mods.test.ts::RAQ Recall Spell Token: a Fireball token recalled off the stack enters its controller hand"
+      },
+      {
+        "text": "Recalling a unit token triggers Rider of the Tides too.",
+        "test": "15-water-b.test.ts::Rider of the Tides: recalling a TOKEN triggers it too"
+      }
+    ],
+    "see": [
+      "zones.hand.entering"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355689559609839787#3",
+          "quote": "A recalled spell token enters its controller's hand (so Rider of the Tides and Xenopod Progenitor hear it) and is then erased."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R335",
+          "quote": "*\"Token Spell technically enter your hand if you Recall them and are instantly erased (this matter for the purpose of triggers like Xenopod Progenitator or Rider of the Tides).\"*"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R250",
+          "relation": "§1's stack half (a recalled spell token is erased straight off the stack), amended by R335"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts",
+        "15-water-b.test.ts",
+        "403-raq-fix-mods.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R335": "a64cd8c064631a89300a212d31e5dd2ecf07fd7e02e8d15f31d3a7365d11b52b",
+      "RAQ 1355689559609839787#3": "49651c3a7eb2f5dad8538f4f0d972498ac3efde032eed37a7fa95a305916a10a"
+    }
+  },
+  {
+    "key": "zones.changes.tokens.cached",
+    "parent": "zones.changes.tokens",
+    "order": 3,
+    "text": "A token put into a cache enters the cache and is then erased.",
+    "examples": [
+      {
+        "text": "A cached token is in the cache while the cache event happens, then is swept out.",
+        "test": "35-rot-debt-trash.test.ts::R69: a CACHED token visits the cache and is erased out of it"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R69 (its zone-visit and timing halves)",
+          "quote": "The CACHE is the engine's call, not a ruling."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "35-rot-debt-trash.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "low",
+    "notes": "R69: \"There is no designer statement about a token being cached — none at all.\" It extends the hand and bin answers so that no zone behaves differently. Owner-overturnable. D-U07-14. A second test title disagrees: F-U07-2.",
+    "sourceHashes": {
+      "R69": "4765548d7e5280fe64527ba6b02f2f307ddb47cce7eb72a9ff53142ae02ff9b4"
+    }
+  },
+  {
+    "key": "zones.changes.tokens.spell-tokens-regroup",
+    "parent": "zones.changes.tokens",
+    "order": 4,
+    "text": "Any spell tokens still in play are erased during regroup.",
+    "examples": [
+      {
+        "text": "A Fireball spell token left unused is erased at regroup.",
+        "test": "418-cr-zones.test.ts::cr:zones.changes.tokens.spell-tokens-regroup — a Fireball spell token left unused is erased at regroup"
+      }
+    ],
+    "see": [
+      "506"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.15",
+          "quote": "any remaining spell tokens in play are erased from the"
+        },
+        {
+          "ref": "Manual p.15",
+          "quote": "game after battle during regroup. This includes unused"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "418-cr-zones.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "zones.changes.played-from",
+    "parent": "410",
+    "order": 6,
+    "text": "A card is played from the zone it came out of, even when another effect plays it as it resolves. A card played from the cache, a bin or the deck is not played from the hand.",
+    "examples": [
+      {
+        "text": "Tides of the Cosmos plays cards off the top of the deck; Proph and Stalwart Sentinel (\"from anywhere other than your hand\") both see it.",
+        "test": "241-played-from-zone.test.ts::R263 §5: Tides of the Cosmos plays off the top of the deck"
+      }
+    ],
+    "see": [
+      "701",
+      "702"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R263",
+          "quote": "it originates from the cache or bin or somewhere else, it's not played from"
+        },
+        {
+          "ref": "R263",
+          "quote": "Tides' eight cards are revealed off the TOP OF THE DECK and played from there."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "241-played-from-zone.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R263": "be0e39f8d855e871f137cc7bcc78363790b292063c77aa9530b9e102070144ef"
+    }
+  },
+  {
+    "key": "zones.changes.played-from.spell-token",
+    "parent": "zones.changes.played-from",
+    "order": 1,
+    "text": "A spell token is cast from where it stands in play, so it is played from somewhere other than the hand.",
+    "examples": [
+      {
+        "text": "Casting a Fireball token triggers Stalwart Sentinel.",
+        "test": "408-raq-new-threads.test.ts::RAQ Spell Tokens vs Hand: casting a Fireball token triggers Stalwart Sentinel"
+      }
+    ],
+    "see": [
+      "304"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "only cards currently that are “cast” from play, which functions the same way as if they were cast from your hand, but you may"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R342",
+          "quote": "playing a spell (R305) from where it stands in play, so \"when you play a unit"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "408-raq-new-threads.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R342 is designer-backed (the RAQ thread's point 1, added 2026-08-14), but that claim is not among the pack's RAQ claims, so the RAQ is not cited here.",
+    "sourceHashes": {
+      "R342": "d40ffb96e31fbdf6aa3cac68ee0921ffeeccc03bf47fa883e587063d06209598"
+    }
+  },
+  {
+    "key": "zones.changes.played-from.created",
+    "parent": "zones.changes.played-from",
+    "order": 2,
+    "text": "A token created by an effect was not played and came from no zone.",
+    "examples": [
+      {
+        "text": "An effect-created token fires neither Proph nor Stalwart Sentinel.",
+        "test": "241-played-from-zone.test.ts::R263 §7: an effect-created token carries no zone at all"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R263",
+          "quote": "R129: a created token is not a card, was never in a zone, and must never carry a"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "241-played-from-zone.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R263": "be0e39f8d855e871f137cc7bcc78363790b292063c77aa9530b9e102070144ef"
+    }
+  }
+]
