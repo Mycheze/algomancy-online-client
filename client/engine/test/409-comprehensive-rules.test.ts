@@ -50,9 +50,11 @@ const EXPECTED_UNCLASSIFIED = 329;
 const EXPECTED_STALE = 0;
 
 const EX: Extract = extract();
-const INPUTS: CrInputs = loadInputs();
-const OUT = render(INPUTS, EX);
-const RESULT = check(INPUTS, EX);
+// A broken ledger must fail (1) and (3) by name, not crash the file before (2)
+// can say which number moved — so the committed state is loaded defensively.
+let INPUTS: CrInputs | null = null, OUT: ReturnType<typeof render> | null = null, LOAD_ERROR = '';
+try { INPUTS = loadInputs(); OUT = render(INPUTS, EX); } catch (e) { LOAD_ERROR = String((e as Error).message ?? e); }
+const RESULT = INPUTS ? check(INPUTS, EX) : null;
 
 function pinned(name: string, actual: number, pin: number, list: string): void {
   assert.ok(actual <= pin, `${name}: ${actual}, above the pin of ${pin}. New unreviewed work: ${list}`);
@@ -60,6 +62,7 @@ function pinned(name: string, actual: number, pin: number, list: string): void {
 }
 
 test('(1) re-rendering gives the committed document files, byte for byte, and no number is born', () => {
+  assert.ok(INPUTS && OUT, `the committed state does not render: ${LOAD_ERROR}`);
   assert.deepEqual(OUT.born, [], `the committed ledger lacks ${OUT.born.length} number(s) (first: ${JSON.stringify(OUT.born[0])}) — run npm --prefix client run cr:render`);
   assert.equal(readFileSync(CR_LEDGER, 'utf8'), formatLedger(OUT.ledger), 'ledger.json is not in canonical form — run cr:render');
   for (const [k, p] of Object.entries(OUTPUT_PATHS)) {
@@ -70,6 +73,11 @@ test('(1) re-rendering gives the committed document files, byte for byte, and no
   // and the render is deterministic: a second run is byte-identical
   assert.deepEqual(render(INPUTS, EX).files, OUT.files);
 });
+
+function result(): NonNullable<typeof RESULT> {
+  assert.ok(RESULT, `the committed state does not load: ${LOAD_ERROR}`);
+  return RESULT;
+}
 
 test('(2) the ledger is append-only against the last commit', (t) => {
   let head: string;
@@ -86,21 +94,24 @@ test('(2) the ledger is append-only against the last commit', (t) => {
 });
 
 test('(3) check.mjs finds no problems in the committed records', () => {
-  const lines = RESULT.problems.map((p) => `${p.code}  ${p.where}: ${p.msg}`);
+  const lines = result().problems.map((p) => `${p.code}  ${p.where}: ${p.msg}`);
   assert.deepEqual(lines, [], `${lines.length} problem(s):\n${lines.slice(0, 40).join('\n')}`);
 });
 
 test('(4) every supersession candidate is decided (pinned until supersession.json lands)', () => {
-  pinned('undecided supersession candidates', RESULT.undecided.length, EXPECTED_UNDECIDED,
-    RESULT.undecided.slice(0, 10).map((u) => `${u.from}>${u.to}`).join(', '));
+  const r = result();
+  pinned('undecided supersession candidates', r.undecided.length, EXPECTED_UNDECIDED,
+    r.undecided.slice(0, 10).map((u) => `${u.from}>${u.to}`).join(', '));
 });
 
 test('(5) every ruling is classified (pinned until classification.json lands)', () => {
-  pinned('unclassified rulings', RESULT.unclassified.length, EXPECTED_UNCLASSIFIED, RESULT.unclassified.slice(-10).join(', '));
+  const r = result();
+  pinned('unclassified rulings', r.unclassified.length, EXPECTED_UNCLASSIFIED, r.unclassified.slice(-10).join(', '));
 });
 
 test('(6) the stale count is pinned', () => {
-  pinned('stale rules', RESULT.stale.length, EXPECTED_STALE, RESULT.stale.slice(0, 10).map((s) => `${s.where}: ${s.msg}`).join('; '));
+  const r = result();
+  pinned('stale rules', r.stale.length, EXPECTED_STALE, r.stale.slice(0, 10).map((s) => `${s.where}: ${s.msg}`).join('; '));
 });
 
 /* ── §7 the ledger ─────────────────────────────────────────────────────── */
