@@ -1360,6 +1360,11 @@ export const RAQ: RaqEntry[] = [
     ],
   },
   {
+    id: "1540386741016592593", title: "Oh wait i had an epiphany!!!",
+    status: 'skipped',
+    note: "A rules-questions thread (2026-08-21) of two players (nyarlathotep8457, rbran123) weighing a house rule: whether attack/block triggers should open a priority window of their own. No calebgannon or _passer; rbran123 closes it as a thought experiment — \"I knew for the last while it wasn't the way the game was designed\". Nothing to check.",
+  },
+  {
     id: "1540678747953569832", title: "[Solved] Combat Damage triggers & \"After Combat\" triggers stack.",
     status: 'reviewed',
     note: "The write-up is the RAQ the owner quoted for R261 (239's header carries it verbatim). The follow-up question is mycheze's (the owner), the answer _passer's; the image is Lost Guardian.",
