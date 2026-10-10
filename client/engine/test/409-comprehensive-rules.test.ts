@@ -52,7 +52,7 @@ import {
  *    fall means lower the pin, so the number only ever ratchets down. ── */
 /** supersession.json's `uncertain` rows: questions the register review could
  *  not settle, held undecided for the owner. Resolving one lowers this */
-const EXPECTED_UNCERTAIN = 9;
+const EXPECTED_UNCERTAIN = 0;
 /** rules whose cited sources changed since they were drafted */
 const EXPECTED_STALE = 0;
 
