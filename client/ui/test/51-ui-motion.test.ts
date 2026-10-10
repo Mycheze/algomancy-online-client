@@ -111,6 +111,11 @@ test('stack → bin: a spell that is not a unit lands in its owner’s bin', () 
   const onStack = census(h.state);
   const stackKey = `s${h.state.stack[0]!.id}`;
   pass(h); pass(h);
+  // R340: each Good Whale is {Piercing} with 2 over lethal, so each side is
+  // asked where its excess goes; the default sends it to the player
+  for (let guard = 4; h.state.decision?.kind === 'assignDamage' && guard-- > 0;) {
+    h.do({ type: 'decide', seat: h.state.decision.seat, choice: 0 });
+  }
 
   const moves = diffCensus(onStack, census(h.state)).moves;
   const gone = via(moves, stackKey);
