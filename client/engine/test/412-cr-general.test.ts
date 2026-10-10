@@ -158,22 +158,22 @@ function stolenWhale(seed: number, fn: (e: E, id: number, P: Seat, O: Seat) => v
   });
 }
 
-const offered = (e: E, what: string, id: number, seat: Seat): boolean =>
+const targetableBy = (e: E, what: string, id: number, seat: Seat): boolean =>
   e.targetCandidates({ what, prompt: 'probe' } as never, e.entity(id)!.region, undefined, seat)
     .some(r => JSON.stringify(r) === JSON.stringify({ unit: id }));
 
 test('cr:concepts.players.ally.control — a unit you have taken control of is on your ally menu and off the ally menu of its owner', () => {
   stolenWhale(70105, (e, id, P, O) => {
     assert.equal(e.entity(id)!.owner, O);
-    assert.equal(offered(e, 'allyUnit', id, P), true, 'the new controller can aim an ally slot at it');
-    assert.equal(offered(e, 'allyUnit', id, O), false, 'its owner cannot');
+    assert.equal(targetableBy(e, 'allyUnit', id, P), true, 'the new controller can aim an ally slot at it');
+    assert.equal(targetableBy(e, 'allyUnit', id, O), false, 'its owner cannot');
   });
 });
 
 test('cr:concepts.players.enemy — a unit taken from its owner is on the enemy menu of that owner and off the enemy menu of its controller', () => {
   stolenWhale(70105, (e, id, P, O) => {
-    assert.equal(offered(e, 'enemyUnit', id, O), true, 'it is an enemy to its owner');
-    assert.equal(offered(e, 'enemyUnit', id, P), false, 'and not to the player who controls it');
+    assert.equal(targetableBy(e, 'enemyUnit', id, O), true, 'it is an enemy to its owner');
+    assert.equal(targetableBy(e, 'enemyUnit', id, P), false, 'and not to the player who controls it');
   });
 });
 
