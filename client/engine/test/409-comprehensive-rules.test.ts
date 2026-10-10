@@ -352,9 +352,18 @@ function fixtureInputs(): CrInputs {
     key: 'glossary.column', term: 'Column', text: 'The units of a formation one behind another.', examples: [], see: ['608'],
     sources: {}, sourceHashes: {},
   };
+  // the glossary covers every derived term source: here the two attributes and our client-glossary row
+  const gloss = (term: string, see: string, derived: string[], extra: Partial<RuleRecord> = {}): RuleRecord => ({
+    key: `glossary.${term.toLowerCase()}`, term, text: `${term} is a fixture term.`, examples: [], see: [see], derived,
+    sources: {}, sourceHashes: {}, ...extra,
+  });
+  const GF = gloss('Flying', 'attr.flying', ['attr:Flying']);
+  const GD = gloss('Deadly', 'attr.deadly', ['attr:Deadly']);
+  const GS = gloss('Swift', '608', ['ours:Swift']);
+  const GO = gloss('Skirmish', '608', [], { obsolete: true, usedBy: [{ ref: 'Manual p.23', quote: 'Unblocked units deal combat damage' }] });
   const inputs: CrInputs = {
     outline: structuredClone(OUTLINE), frontMatter: '## Introduction\n\nEdition {{EDITION}}, {{EFFECTIVE}}, {{ENGINE_COMMIT}}.\n',
-    records: [A, B, C], glossary: [G], fileOf: new Map(),
+    records: [A, B, C], glossary: [G, GF, GD, GS, GO], fileOf: new Map(),
     ledger: emptyLedger(),
     verdicts: [{
       key: 'combat.damage.overview', textHash: recordHash(A), verdict: 'confirmed', round: 1, verifier: 'fixture',
@@ -443,6 +452,13 @@ const PLANTS: Plant[] = [
   { name: 'a question with one reading', code: 'schema', plant: (i) => { i.discrepancies[0]!.question!.readings.pop(); } },
   { name: 'a rule text names a key that is no live rule', code: 'ref-unresolved', plant: (i) => { A(i).text += ' Ties are rule combat.damage.no-such-key.'; } },
   { name: 'an example names a dead rule number', code: 'ref-unresolved', plant: (i) => { A(i).examples[0]!.text += ' See rule 608.9.'; } },
+  { name: 'a glossary entry whose "See rule" target does not exist', code: 'glossary-see-unresolved', plant: (i) => { rec(i, 'glossary.column').see = ['608.99']; } },
+  { name: 'a derived term with no glossary entry', code: 'glossary-term-missing', plant: (i) => { rec(i, 'glossary.deadly').derived = []; } },
+  { name: 'a derived term the extract no longer has', code: 'glossary-tag-unknown', plant: (_i, x) => { x.enums.attrs = ['Flying']; } },
+  { name: 'a client-glossary row with no glossary entry', code: 'glossary-term-missing', plant: (_i, x) => { x.glossary.push({ term: 'Sluggish', text: 'Sluggish units deal combat damage last.' }); } },
+  { name: 'an obsolete term with no source using the old name', code: 'schema', plant: (i) => { delete rec(i, 'glossary.skirmish').usedBy; } },
+  { name: 'an obsolete term whose source quote is not verbatim', code: 'quote-not-verbatim', plant: (i) => { rec(i, 'glossary.skirmish').usedBy![0]!.quote = 'Skirmishes deal combat damage'; } },
+  { name: 'two glossary entries for one term', code: 'duplicate-term', plant: (i) => { i.glossary.push({ ...structuredClone(rec(i, 'glossary.column')), key: 'glossary.column-two' }); } },
   { name: 'a glossary row names an unknown key', code: 'ref-unresolved', plant: (i) => { rec(i, 'glossary.column').text += ' (see attr.no-such-attr)'; } },
   { name: 'a finding summary names an unknown key', code: 'ref-unresolved', plant: (i) => { i.findings[0]!.summary += ' Measured by the probe for rule combat.damage.gone.'; } },
   { name: 'a discrepancy resolution names a key prefix, not a rule', code: 'ref-unresolved', plant: (i) => { i.discrepancies[0]!.resolution += ' The keys combat.damage.* move.'; } },
@@ -576,6 +592,14 @@ test('§9 an empty rules dir renders every section as "No rules drafted yet" and
   i.ledger = out.ledger;
   assert.match(out.files.doc, /### 608\. Combat Damage Step\n\n\*No rules drafted yet\.\*/);
   assert.deepEqual(check(i, x).problems, []);
+});
+
+test('§9 the generator refuses a glossary entry whose "See rule" target is no live rule', () => {
+  const x = fixtureExtract();
+  const i = fixtureInputs();
+  assert.match(render(i, x).files.doc, /\*\*Skirmish\*\* \(Obsolete\): Skirmish is a fixture term\. See rule 608\./);
+  [...i.records, ...i.glossary].find((r) => r.key === 'glossary.column')!.see = ['608.99'];
+  assert.throws(() => render(i, x), /glossary entries point at no live rule: "Column" → 608\.99/);
 });
 
 /* ── §10 the harness: plant → judge → feedback → finalize ──────────────── */

@@ -24,6 +24,7 @@ data/comprehensive-rules/
   Algomancy-Comprehensive-Rules.txt    the same, plain text      generated   CR_DOC_TXT
   Annex-D-Digital-Conventions.md       digital-only conventions  generated   CR_ANNEX_D
   rules/*.json                         the rule records, one file per section   CR_RULES_DIR
+  rules/glossary.json                  the glossary: pointer rows (term → rule)  CR_RULES_DIR
   ledger.json                          rule key -> number        reviewed    CR_LEDGER
   supersession.json                    ruling -> ruling edges    reviewed    CR_SUPERSESSION
   classification.json                  ruling -> scope, sections reviewed    CR_CLASSIFICATION
@@ -146,6 +147,29 @@ One JSON object per rule, in `rules/<section>.json`:
 A verdict pins the record by `recordHash` (schema.mjs): its text, plus its
 examples and their test bindings. An example bound to a promoted
 `NNN-cr-<unit>.test.ts` does not count, since the gate runs that test itself.
+
+## The glossary (`rules/glossary.json`)
+
+A pointer layer, as in the MTG CR. Each row is one sentence paraphrasing the
+first sentence of the rule it points at, plus `see[]` (keys; the first is the
+defining rule). It never states a rule the numbered rules do not state. A row
+has `term` instead of `parent`/`order`, takes no number, and carries no basis or
+verdict: the rule it points at carries those.
+
+- The term list is **derived**, and `cr:check` holds it there
+  (`check.mjs glossaryTags`): every zone, phase, battle step and damage
+  sub-step of the engine's enum exports, every attribute, every row of
+  `client/ui/glossary.ts` and every top-level rule of 801 and 803 must be
+  covered by a row's `derived` tags (`glossary-term-missing`), and a tag that
+  names nothing fails (`glossary-tag-unknown`). Terms a rule defines ("X is …")
+  are added by hand from the rules.
+- A `see` target that is no live rule fails `cr:check`
+  (`glossary-see-unresolved`) and makes `cr:render` refuse to render.
+- A term that changed name stays as an `obsolete` row pointing at the new one,
+  only where a source really uses the old name: `usedBy[{ref, quote}]`, the
+  quote checked verbatim (`file: <repo path>` reaches the old rules glossary).
+- A term no rule defines says so ("Not defined by these rules: …") and is filed
+  as a tier-4 discrepancy in `discrepancies/glossary.json`.
 
 ## Numbering and the ledger
 

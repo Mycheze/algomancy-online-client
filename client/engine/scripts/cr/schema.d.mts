@@ -6,6 +6,8 @@ export const DISC_KINDS: readonly string[];
 export const TIERS: Record<1 | 2 | 3 | 4, string>;
 export const MAX_QUOTE: number;
 export const KEY_RE: RegExp;
+export const GLOSSARY_TAG_KINDS: readonly string[];
+export const GLOSSARY_TAG_RE: RegExp;
 export const SECTION_NUM_RE: RegExp;
 export const RULE_NUM_RE: RegExp;
 export const ANY_NUM_RE: RegExp;
@@ -25,6 +27,10 @@ export interface RuleRecord {
   /** a glossary row has `term` instead of `parent`/`order` */
   term?: string;
   obsolete?: boolean;
+  /** glossary row: the derived term sources it covers ("zone:bin", "attr:Flying", "keyword:<801/803 key>", …) */
+  derived?: string[];
+  /** glossary row, required when obsolete: a source that uses the old name */
+  usedBy?: RefQuote[];
   parent?: string;
   order?: number;
   text: string;

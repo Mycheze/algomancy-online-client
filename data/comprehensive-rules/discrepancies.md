@@ -1764,7 +1764,31 @@ R78 left one presentation call open: the log line "X resolves." is written when 
 
 **Resolution:** An owner-only presentation call. R78 leaves "X resolves." logged when resolution starts, and asks the owner to rule. No rule states it (rule D6.3 covers only what the board shows). Sign-off: keep the line as the heading of the effect lines under it (today), or log it only once the item has resolved.
 
-## 4. Everything else (119)
+## 4. Everything else (122)
+
+### D-GL-1 · Other · rule 304.11
+
+Glossary term with no defining rule: "Conjure". data/rules/Algomancy-Rules-Glossary.md uses the word, no numbered rule defines it, and no card in the pool prints it.
+
+- file: data/rules/Algomancy-Rules-Glossary.md: "Conjure is a mechanic that creates a spell token that is cast at a specific time."
+
+**Resolution:** The glossary keeps "Conjure" as an obsolete entry that says no rule defines it and points at rule 304.11, the nearest current rule. No rule is written for it: nothing in play uses it.
+
+### D-GL-2 · Other · rule 802.1
+
+Glossary term with no defining rule: "Devastating". data/rules/Algomancy-Rules-Glossary.md uses the word, no numbered rule defines it, and no card in the pool prints it.
+
+- file: data/rules/Algomancy-Rules-Glossary.md: "Things like Deadly, Flying, Poisonous, Electric and Devastating."
+
+**Resolution:** The glossary keeps "Devastating" as an obsolete entry that says no rule defines it and points at rule 802.1, the nearest current rule. No rule is written for it: nothing in play uses it.
+
+### D-GL-3 · Other · rule 802.4
+
+Glossary term with no defining rule: "Ranged". Rulebook 2023 p.12 uses the word, no numbered rule defines it, and no card in the pool prints it.
+
+- Rulebook 2023 p.12: "Spike has the “Ranged” attribute, which allows it to deal combat damage first and block fliers."
+
+**Resolution:** The glossary keeps "Ranged" as an obsolete entry that says no rule defines it and points at rule 802.4 and rule 802.2, the nearest current rules. No rule is written for it: nothing in play uses it.
 
 ### D-U01-1 · Sources disagree · rule 101.6a
 

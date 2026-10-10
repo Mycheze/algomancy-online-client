@@ -73,6 +73,34 @@ export function indexExtract(ex) {
   return { pages, cards, claims, threads, rulings, gloss, tests, symbols };
 }
 
+/**
+ * The terms the glossary must define, DERIVED, never listed: tag → what it is.
+ *   zone:<z> phase:<p> step:<s> substep:<s>   the engine's enum exports (ex.enums),
+ *                                              except the phase `gameover`, the
+ *                                              engine's terminal state and not one of
+ *                                              the turn's phases (rule 500.1)
+ *   attr:<Name>                                every attribute (the 802 slots)
+ *   ours:<Term>                                every row of client/ui/glossary.ts
+ *   keyword:<key>                              every top-level rule of 801 and 803
+ *                                              (keyword actions, other keywords)
+ * A new zone, attribute, client-glossary row or keyword rule turns the gate red
+ * until the glossary has an entry for it.
+ */
+export function glossaryTags(ex, ledger) {
+  const tags = new Map();
+  const en = ex?.enums ?? {};
+  for (const z of en.zones ?? []) tags.set(`zone:${z}`, `the zone ${z}`);
+  for (const p of en.phases ?? []) if (p !== 'gameover') tags.set(`phase:${p}`, `the phase ${p}`);
+  for (const s of en.battleSteps ?? []) tags.set(`step:${s}`, `the battle step ${s}`);
+  for (const s of en.damageSubSteps ?? []) tags.set(`substep:${s}`, `the damage sub-step ${s}`);
+  for (const a of en.attrs ?? []) tags.set(`attr:${a}`, `the attribute ${a}`);
+  for (const g of ex?.glossary ?? []) tags.set(`ours:${g.term}`, `the client glossary row ${g.term}`);
+  for (const e of ledger?.entries ?? []) {
+    if (e.kind !== 'section' && !e.removed && /^80[13]\.\d+$/.test(e.num)) tags.set(`keyword:${e.key}`, `keyword rule ${e.num} (${e.key})`);
+  }
+  return tags;
+}
+
 /** the test files an example/test reference names (by path suffix or basename) */
 export function testFilesFor(X, file) {
   const f = file.replace(/^client\//, '');
@@ -308,8 +336,31 @@ export function check(inputs, ex, opts = {}) {
 
     proseRefs(w, 'text', r.text);
     for (const [i, x] of (Array.isArray(r.examples) ? r.examples : []).entries()) proseRefs(w, `examples[${i}]`, x?.text);
-    for (const s2 of Array.isArray(r.see) ? r.see : []) if (!numOk(s2)) P('see-unresolved', w, `see ${s2} is not a live rule number or key`);
+    for (const s2 of Array.isArray(r.see) ? r.see : []) {
+      if (numOk(s2)) continue;
+      if ('term' in r) P('glossary-see-unresolved', w, `the glossary entry "${r.term}" points at ${s2}, which is not a live rule number or key: a glossary row is a pointer, and this one points nowhere`);
+      else P('see-unresolved', w, `see ${s2} is not a live rule number or key`);
+    }
     for (const f of r.engineDiffers ?? []) if (!findingIds.has(f)) P('finding-missing', w, `engineDiffers names ${f}, which is not in findings.json`);
+  }
+
+  /* the glossary: a pointer layer over the numbered rules (see glossaryTags) */
+  if (inputs.glossary.length) {
+    const tags = glossaryTags(ex, M?.ledger);
+    const covered = new Map();
+    const terms = new Map();
+    for (const g of inputs.glossary) {
+      const w = g.key ?? '(no key)';
+      for (const t of Array.isArray(g.derived) ? g.derived : []) {
+        if (!tags.has(t)) P('glossary-tag-unknown', w, `derived tag ${t} names no zone, phase, step, sub-step, attribute, client-glossary row or 801/803 keyword rule (renamed or removed?)`);
+        covered.set(t, w);
+      }
+      for (const [i, u] of (Array.isArray(g.usedBy) ? g.usedBy : []).entries()) quoteIn(`${w} usedBy[${i}]`, u?.ref, u?.quote);
+      const t = String(g.term ?? '').toLowerCase();
+      if (terms.has(t)) P('duplicate-term', w, `the term "${g.term}" is also ${terms.get(t)}`);
+      terms.set(t, w);
+    }
+    for (const [t, what] of tags) if (!covered.has(t)) P('glossary-term-missing', t, `${what} has no glossary entry: add a row to rules/glossary.json whose derived tags include "${t}"`);
   }
 
   /* discrepancies: every side's quote verbatim, the rule resolves */

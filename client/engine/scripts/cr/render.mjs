@@ -810,6 +810,11 @@ ${body.join('\n')}
  */
 export function render(inputs, ex) {
   const M = buildModel(inputs, ex);
+  // the glossary is a pointer layer: an entry whose "See rule" target is no live
+  // rule would print a dead pointer, so the generator refuses (check.mjs names it
+  // as glossary-see-unresolved)
+  const dangling = M.glossary.flatMap((g) => (g.see ?? []).filter((s) => !M.numOfRef(s)).map((s) => `"${g.term}" → ${s}`));
+  if (dangling.length) throw new Error(`glossary entries point at no live rule: ${dangling.join('; ')}`);
   const P = provenance(M);
   const md = renderMd(M, P);
   return {

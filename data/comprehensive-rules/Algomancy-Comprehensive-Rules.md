@@ -2831,6 +2831,8 @@ order.
 
 <sub>Basis: Printed · Verified: confirmed, round 1, 1 test run · Printed: Manual p.15; Manual p.15; Rulebook 2023 p.4 · Tests: 03-stack.test.ts · Key: types.tokens.spell-tokens</sub>
 
+<sub>Discrepancies: D-GL-1 (discrepancies.md)</sub>
+
 <a id="r304.11a"></a>**304.11a** A spell token can be cast only in the region it is in. See rule 601.
 
 > *Example (non-normative): A spell token left at home cannot be cast in a battle in another region.* <sub>test: 417-cr-card-types.test.ts::cr:types.tokens.spell-tokens.region — a spell token left at home cannot be cast in a battle in another region</sub>
@@ -8948,6 +8950,8 @@ order.
 
 <sub>Basis: Printed · Verified: confirmed, round 1, 0 tests run · Printed: Rulebook 2023 p.12; Manual p.24 · Key: attr.general</sub>
 
+<sub>Discrepancies: D-GL-2 (discrepancies.md)</sub>
+
 <a id="r802.1a"></a>**802.1a** Cards with attributes carry reminder text, in italics, to help players remember what each attribute does. *(Untested: no executed test demonstrates it.)*
 
 <sub>Basis: Printed · Verified: confirmed, round 1, 0 tests run · Printed: Manual p.24; Manual p.24 · Key: attr.general.reminder</sub>
@@ -9167,6 +9171,8 @@ order.
 > *Example (non-normative): Dune Drifter (2/1 Swift) is blocked by a 2/2; the blocker dies before it strikes, and the Drifter survives undamaged.* <sub>test: 430-cr-attributes-1.test.ts::cr:attr.swift — Rime Wraith prints the reminder, and a Swift 2/1 kills a 2/2 blocker before it can strike back</sub>
 
 <sub>Basis: Printed · Verified: confirmed, round 1, 0 tests run · Printed: card: Rime Wraith; Manual p.25 · Our glossary (not a source): Swift · Tests: 430-cr-attributes-1.test.ts · Key: attr.swift</sub>
+
+<sub>Discrepancies: D-GL-3 (discrepancies.md)</sub>
 
 <a id="r802.4a"></a>**802.4a** A half-column that has Swift deals its combat damage in the Swift sub-step, before the normal and Sluggish sub-steps (see rule 608.2a). See rules 608.2, 608.2a.
 
@@ -11456,7 +11462,381 @@ R5, R47, R92, R191, R207, R212
 
 ## Glossary
 
-*No entries yet.*
+**Ability**: Text on a card that describes the card's effects. See rule 109.1.
+
+**Activated ability**: An ability written with a colon, whose cost is everything before the colon. See rules 705.1, 109.2.
+
+**Active zone**: Play or the stack; every other zone is inactive. See rule 400.2.
+
+**Adjacent**: Next to a unit on its left, right, front or back in the same formation. See rule 603.2.
+
+**Affinity**: A card's elemental requirement, shown as element pips, and a player's count of non-dormant resources of an element. See rules 105.3, 105.4.
+
+**Afflicting**: An attribute whose reminder text reads "When an afflicting source kills one or more units, those units' controllers gain a rot." See rule 802.23.
+
+**After combat step**: The last step of a battle round, a priority window that follows the combat damage step. See rules 609.1, 609.2.
+
+**Alluring**: An attribute whose reminder text reads "When an alluring column attacks, target enemy can't attack and must block it this combat if able." See rule 802.15.
+
+**Ally**: A unit under your control in the region where the effect is happening. See rule 102.7.
+
+**Ambush**: A keyword that lets a unit card be played during battle with the effect "Recall target ally, put me into their position in play." See rule 803.6.
+
+**Apply**: To put a mod onto a card, a special action that is not playing a card. See rules 720.2, 701.2.
+
+**Archenemy**: A player setup, typically 2v1, in which the single player takes 1 or 2 turns before the other two begin. See rule 904.12.
+
+**Attack step**: The first step of a battle, in which the attacking player declares its attacking formation. See rules 505.2, 604.2.
+
+**Attack window**: The priority window that follows the declaration of an attack, in the region attacked. See rule 605.1.
+
+**Attacking**: Bringing units, and the spell tokens that travel with them, into a neighbouring enemy region for battle. See rule 604.1.
+
+**Attribute**: A quality a card can have, printed on its type line, that changes how it engages in combat. See rules 802.1, 204.4.
+
+**Augment**: A modification that adds the text after a card's augment symbol to the card it is applied to. See rules 721.1, 208.1.
+
+**Auto-pass**: A client preference that passes priority for a player only in a window where passing is the only thing they could do. See rule D2.3.
+
+**Balanced**: An attribute whose reminder text reads "The power and defense of balanced units are equal to the greater of the two." See rule 802.7.
+
+**Banner**: The part of a card that offers another way to play it, for a cost of its own, as Ambush and Prophecy do. See rule 203.1.
+
+**Battle**: A timing keyword: a card with Battle can be played only while its player is in battle with another player. See rules 803.3, 207.4.
+
+**Battle phase**: The second phase of the turn, and its only interactive one. See rules 505.1, 500.4.
+
+**Battle round**: One of the two attacks of a 1v1 or team battle phase: the initiative team's attack, then the counterattack. See rule 505.3.
+
+**Bin**: A player's discard pile. See rule 405.1.
+
+**Blessed**: An attribute whose reminder text reads "Damage dealt by a blessed source causes its controller to gain that much life." See rule 802.22.
+
+**Block step**: The second step of a battle, in which the defending player may place its units in front of the attacking formation. See rules 505.2, 606.1.
+
+**Block window**: The priority window that follows the declaration of blocks. See rule 607.1.
+
+**Blocking**: How a player who has been attacked defends, by placing units in front of the attacking formation. See rule 606.1.
+
+**Bluff haste**: A client preference with which the client never finishes the haste step for the player. See rule D2.5b.
+
+**Burst**: A non-combat attribute printed on spell tokens: casting one casts every spell token of the same name its controller has in that region at the same time. See rule 803.5.
+
+**Cache**: A public zone of each player's, beside the hand, the bin and the deck; to cache a card is to put it there. See rules 403.1, 801.8.
+
+**Card**: A physical Algomancy card, one with an Algomancy card back; a token is not a card. See rules 108.1, 304.2.
+
+**Cast**: To play a spell; casting a spell is playing it. See rule 700.2.
+
+**Clock**: A chess clock a game may be played with, in which each player has a bank of time. See rule D3.1.
+
+**Column**: One file of the battle line: the attacking units in it and the defending units placed in front of it. See rule 603.1.
+
+**Combat attribute**: An attribute printed in gold; units in the same column of a formation share their combat attributes. See rules 802.1b, 712.8.
+
+**Combat damage**: The damage columns deal to each other and to players in the combat damage step. See rule 112.7.
+
+**Combat damage step**: The step of a battle in which the units in formation deal combat damage. See rule 608.1.
+
+**Complexity**: What is used to choose which cards are in a game, shown by the colour of the set symbol. See rules 209.2, 209.1.
+
+**Concede**: To end the game as a loss, in the same way as being eliminated. See rule 104.4.
+
+**Conjure** (Obsolete): Not defined by these rules: the old rules glossary's mechanic that created a spell token to be cast at a set time, which no current card prints. See rule 304.11.
+
+**Constructed**: A game mode in which each player brings their own deck, built before the game, and plays from it. See rule 901.1.
+
+**Continuous effect**: An effect that changes the game for a period of time rather than once. See rule 709.1.
+
+**Controller**: The player who controls a card, who may differ from its owner. See rule 102.5.
+
+**Copy**: A copy of a spell is a new effect on the stack, not played; a unit that becomes a copy of a card takes that card's name, printed stats, attributes and text. See rules 108.4, 710.1.
+
+**Cost**: Something a player must pay to do something: to play a card, to apply a mod, or to activate an ability. See rule 111.1.
+
+**Cost orb**: The part of a card that shows its mana cost. See rule 202.1.
+
+**Counterattack**: The non-initiative team's attack in a battle phase with two battle rounds. See rule 610.1.
+
+**Creature** (Obsolete): The old rules glossary's word for what these rules call a unit. See rule 301.1.
+
+**Cube draft**: A format for large groups in which players draft decks before the game and then play constructed matches. See rule 902.6.
+
+**Damage**: What a source deals to a unit or a player: marked on a unit, and lost as life by a player. See rule 112.5.
+
+**Damage sub-step**: One of the three parts of the combat damage step, taken in order: the Swift sub-step, the normal sub-step and the Sluggish sub-step. See rule 608.2.
+
+**Deadly**: A combat attribute whose reminder text reads "Any damage from a deadly source will kill a unit." See rule 802.3.
+
+**Debt**: A counter a player has, paid off at 1 mana each at the end of that player's resource step. See rule 112.14.
+
+**Deck**: The face-down pile that cards are drawn from and that packs are dealt from. See rule 401.1.
+
+**Defense**: The second of a unit's stats: how much damage it can take before it dies. See rules 206.1, 301.4.
+
+**Delete**: To remove a unit from play into the bin, as when a unit dies. See rule 801.5.
+
+**Deployment phase**: The last phase of each turn, in which players build up their forces for the next. See rule 507.1.
+
+**Despawn**: What a unit does whenever it leaves play, by any route. See rule 410.2.
+
+**Devastating** (Obsolete): Not defined by these rules: an attribute the old rules glossary names without defining it, which no current card prints. See rule 802.1.
+
+**Discard**: To put a card from a hand into the bin. See rule 801.3.
+
+**Dormant**: Face down: every resource enters play dormant, and activating it turns it face up (active). See rule 106.3.
+
+**Draft step**: The step of the planning phase in which, in a live draft, each player combines their hand with their pack and chooses which cards to keep in hand. See rule 503.2.
+
+**Draw step**: The step of the planning phase in which each player draws 2 cards. See rule 503.1.
+
+**Each opponent**: Each opponent in the region where the effect happens. See rule 102.2.
+
+**Each player**: Each player in the region where the effect happens. See rule 102.3.
+
+**Effect**: Anything on the stack. See rule 700.1.
+
+**Electric**: An attribute whose reminder text reads "Excess damage from electric sources can be directed to an adjacent unit, recursively." See rule 802.17.
+
+**Eliminated**: Out of the game: a player whose life total reaches 0 is eliminated. See rule 104.1.
+
+**End of turn**: A special step after deployment finishes, in which abilities that trigger "at the end of turn" trigger. See rule 508.1.
+
+**Enemy**: A unit not under your control in the region where the effect is happening. See rule 102.8.
+
+**Erase**: To take a card out of the game, to the erased pile. See rule 801.6.
+
+**Erased pile**: The zone where a card goes when an effect erases it. See rules 407.2, 801.6.
+
+**Evasive**: An attribute whose reminder text reads "Evasive units require two blockers." See rule 802.13.
+
+**Excess damage**: For Piercing, the damage a source deals to a unit beyond that unit's lethal damage. See rule 802.16a.
+
+**Exchange**: A word printed in four senses, each read from its card. See rule 801.13.
+
+**Expend**: To turn a resource sideways for 1 mana, once per turn, to pay a mana cost. See rule 106.5.
+
+**Feeble**: An attribute: a Feeble unit can't block. See rule 802.12.
+
+**Fight**: When two units fight, each deals damage equal to its power to the other. See rule 801.11.
+
+**Fizzle**: What an effect does if, as it resolves, it has lost all of its targets: it does nothing. See rule 704.6.
+
+**Flying**: A combat attribute whose reminder text reads "Only flying units can block flying units." See rule 802.2.
+
+**Formation**: The placement of a player's units when they attack or block: an attacking or a defending formation. See rule 602.1.
+
+**Free-for-all**: A player setup (FFA) in which every player plays for themselves. See rule 903.1.
+
+**Full control**: A client mode, held with the Control key, in which the client gives a player every stop. See rule D2.7.
+
+**Glimpse**: Glimpse N means: reveal the top N cards of the deck, cache one of them, and recycle the rest. See rule 801.9.
+
+**Graft**: A modification, marked by the graft symbol, that combines several effects under a single cause. See rule 722.1.
+
+**Half-column**: The attacking units of one column, or its blocking units, which deal their combat damage together as one source. See rule 608.1c.
+
+**Hand**: The zone of a player's own cards, which each player has and which is hidden from the other players. See rules 402.1, 402.2.
+
+**Haste**: A timing keyword: a card with Haste can be played during the haste step as well as during deployment. See rules 803.2, 207.3.
+
+**Haste step**: The last step of the planning phase, in which players may play only haste cards. See rules 504.1, 504.2.
+
+**Hidden simultaneous segment**: A part of the turn in which both players act at once and neither sees what the other does until both are done. See rule D1.4.
+
+**Host**: The card a mod is applied to and becomes part of. See rule 720.6.
+
+**Hybrid**: A card that belongs to two elements. See rule 105.2.
+
+**Initiative**: What one player has in each turn; in a 1v1 game the initiative player acts first. See rule 500.3.
+
+**Initiative token**: The marker of which player has the initiative, passed clockwise when the turn is over; it is not a token. See rules 508.3, 508.4.
+
+**Intent card**: A card with which players declare attacks in free-for-all, all at the same time. See rule 905.1.
+
+**Inverted**: An attribute whose reminder text begins "Invert the stat changes of inverted units." See rule 802.8.
+
+**Keyword action**: A verb that card text uses with a fixed game meaning. See rule 801.1.
+
+**Last-known state**: What a unit was at the instant it left play. See rule 714.1.
+
+**Learn to Play**: One learner against the Tutorial Bot in one continuous game, with lessons shown as each rule first matters. See rule D8.1.
+
+**Lethal**: An attribute whose reminder text reads "Any combat damage from a lethal unit will kill a player." See rule 802.24.
+
+**Life**: What each player has, starting at 30; a player whose life total reaches 0 is eliminated. See rules 112.1, 104.1.
+
+**Live draft**: A game mode in which the players share one deck and draft cards from it during the game. See rule 902.1.
+
+**Mana cost**: The number of resources a player must expend to play a card, shown in its cost orb. See rules 202.1, 111.1a.
+
+**Mod**: A modification: a card that is applied to another card instead of being played. See rules 305.1, 720.1.
+
+**Modular**: An attribute whose reminder text begins "You can apply mods to a modular card from your hand and/or bin as it is played." See rules 802.26, 724.1.
+
+**Negate**: To remove an effect from the stack: a negated effect is removed at once, when the effect that negates it resolves. See rule 704.4.
+
+**Non-combat attribute**: An attribute printed in purple, such as Burst and Unstable, that describes a card and generally has nothing to do with combat. See rules 803.1, 802.1b.
+
+**Noncombat damage**: All damage other than combat damage. See rule 112.7.
+
+**Nonspell effect**: Any effect that is not a spell effect. See rule 700.1b.
+
+**Once**: The [once] keyword: an ability marked [once] can be activated or triggered only once per turn. See rules 803.4, 109.9.
+
+**Open decision**: A question the game is waiting on a player to answer, which they must answer, or concede, before taking any other action. See rule D2.1.
+
+**Owner**: The player whose card it is; a card's owner never changes. See rule 102.4.
+
+**Pack**: In live draft, each player's face-down pile of 10 cards dealt from the deck, which that player drafts from. See rule 409.1.
+
+**Phase**: One of the four parts of a turn: the planning, battle, regroup and deployment phases. See rule 500.1.
+
+**Piercing**: An attribute whose reminder text reads "Excess damage from piercing sources is dealt to the recipient's controller." See rule 802.16.
+
+**Pips**: The element marks with a card's cost, which are its affinity requirement and not part of its cost. See rule 202.2.
+
+**Planning phase**: The first phase of the turn, in which players prepare for the turn ahead. See rule 501.1.
+
+**Play**: The zone of the units, resources and tokens on the table. See rule 404.1.
+
+**Playing a card**: What is done to units and spells, from whatever zone: meeting the card's affinity requirement, paying its mana cost and selecting its targets. See rules 701.1, 702.1.
+
+**Poisonous**: An attribute whose reminder text reads "Poisonous sources damage units in the form of -1/-1 counters." See rule 802.18.
+
+**Power**: The first of a unit's stats: how much damage it deals in combat. See rules 206.1, 301.3.
+
+**Powerful**: A combat attribute whose reminder text reads "Powerful sources deal double damage." See rule 802.10.
+
+**Prevention effect**: An effect that prevents damage that would be dealt; it is not a replacement effect. See rules 708.11, 112.11.
+
+**Priority**: The ability to take game actions such as playing cards or activating abilities. See rule 703.2.
+
+**Priority window**: A sequence in which the players (or teams) each receive priority in order. See rule 703.3.
+
+**Prismite**: A resource with no element, which gives no affinity. See rule 106.8.
+
+**Prophecy**: A keyword printed on a card's banner as a cost and a condition. See rule 803.7.
+
+**Prophesy**: To pay the cost on a card's prophecy banner and put it into the cache with its prophecy attached. See rule 801.14.
+
+**Pure**: An attribute whose reminder text reads "Pure cards and cards they are interacting with ignore all other attributes." See rule 802.25.
+
+**Ranged** (Obsolete): Not defined by these rules: the 2023 Rulebook's attribute that dealt combat damage first and could block fliers, which no current card prints. See rules 802.4, 802.2.
+
+**Reaping**: An attribute whose reminder text begins "When a reaping source kills one or more units, draw a card." See rule 802.21.
+
+**Recall**: To put a card into a hand. See rule 801.7.
+
+**Recap**: The playback each player is shown of what the other did in the haste step or in deployment. See rule D5.1.
+
+**Recycle**: To put a card on the bottom of the deck, past the deck's mark, into the recycle pile. See rules 801.10, 408.1.
+
+**Recycle pile**: The cards past the deck's mark, where a card put on the bottom of the deck goes. See rule 408.2.
+
+**Refresh**: The first step of the planning phase, in which each player's expended resources refresh. See rules 501.2a, 106.5.
+
+**Region**: Where all gameplay takes place; there is one region for each player. See rule 601.1.
+
+**Regroup**: The global step, once battle has ended in every region, that resets the game between battles. See rule 506.1.
+
+**Reminder text**: Italic text that restates what an attribute or keyword does. See rule 205.2.
+
+**Replacement effect**: An ability that changes an event as it happens, written "If … instead". See rule 708.1.
+
+**Resonant**: An attribute whose reminder text reads "Whenever a resonant source deals damage to a unit, it deals that much damage to that unit's controller." See rule 802.19.
+
+**Resource**: A source of mana, which a player needs to play cards. See rule 106.1.
+
+**Resource step**: The step of the planning phase in which players create and activate resources. See rule 502.1.
+
+**Rockfall**: Rockfall N means: each player chooses one of their units, and the source of the rockfall deals N damage to each chosen unit. See rule 801.12.
+
+**Rot**: A counter a player has, which deals that player damage equal to it at the start of each deployment phase. See rule 112.13.
+
+**Sacrifice**: For a player to choose a unit they control and put it into their bin. See rule 801.4.
+
+**Safe point**: A moment at which the game makes state checks, such as the end of every action. See rules 713.3, 713.1.
+
+**Shard**: A resource of its own kind, which pays one generic mana once activated. See rule 106.9.
+
+**Side-block**: A defending unit placed blocking where no attacker is. See rule 606.4.
+
+**Single Card Duel**: A variant of constructed in which each player picks a single card and their deck is 30 copies of it. See rules 901.8, D8.2.
+
+**Skirmish** (Obsolete): The old rules glossary's name for the place where attackers meet defenders, one per player; the current term is region. See rule 601.1.
+
+**Sluggish**: A combat attribute whose reminder text reads "Sluggish units deal combat damage last." See rule 802.5.
+
+**Sneaky**: An attribute whose reminder text reads "Sneaky units can't be blocked if attacking alone." See rule 802.14.
+
+**Source**: The thing that deals damage. See rule 112.6.
+
+**Spell**: A card type that provides a one-time effect. See rules 302.1, 300.1.
+
+**Spell effect**: An effect that is a spell: a spell, a spell unit or a spell token on the stack, or an ambush. See rule 700.1a.
+
+**Spell token**: A spell that an effect creates directly into play, which its controller may cast from play. See rules 304.11, 108.2.
+
+**Spell unit**: A card that is both a spell and a unit. See rule 303.1.
+
+**Stack**: The zone where cards being played, and abilities, wait to resolve, the last one put there resolving first. See rules 406.1, 703.1.
+
+**Standing pass**: Pass through stack or Pass all: a promise the client keeps on a player's behalf in later windows. See rule D2.2.
+
+**State check**: A check the game itself makes at safe points, in which every unit that should be dead dies. See rule 713.1.
+
+**Static ability**: An ability that states a change its card continuously makes to the game for as long as the card is in play. See rules 707.1, 109.4.
+
+**Stats**: A unit's two numbers, printed power/defense. See rule 206.1.
+
+**Strip**: An effect that makes a unit lose all its attributes, all its abilities, or both. See rule 712.1.
+
+**Subtype**: A word of the type line other than its markers and its card type, such as Whale. See rule 204.3.
+
+**Swift**: A combat attribute whose reminder text reads "Swift units deal combat damage first." See rule 802.4.
+
+**Target**: Something a card or ability chooses, with the word "target", to receive its actions. See rule 110.1.
+
+**Team game**: A player setup in which two teams play against each other, 2v2 or 3v3. See rule 904.1.
+
+**Thieving**: An attribute whose reminder text reads "Whenever a thieving source deals combat damage to an opponent, draw a card." See rule 802.20.
+
+**Timestamp**: When an effect began to apply. See rule 113.2.
+
+**Timing icon**: An icon in the top right corner of a card that changes when, and how, the card can be played. See rule 207.1.
+
+**Token**: A unit or a spell that an effect creates directly into play; a token is not a card. See rules 108.2, 304.2.
+
+**Tough**: An attribute: a Tough unit's defense is doubled. See rule 802.6.
+
+**Transform**: To turn a card in play to its other face up; it stays the same unit and does not leave play. See rule 108.3.
+
+**Trash**: What happens to a card that enters a bin from any zone except the stack. See rule 801.2.
+
+**Triggered ability**: An ability that happens when something else takes place. See rule 706.1.
+
+**Turn**: The global cycle of four phases that every player goes through together. See rules 500.1, 100.2.
+
+**Type line**: The line of a card that describes what the card is. See rule 204.1.
+
+**Unaware**: An attribute: an Unaware card, and every card interacting with it, ignores all stat changes: each is read at the stats printed on it. See rule 802.9.
+
+**Unit**: A card type that, once it enters play, stays there until something removes it; units attack and defend. See rules 301.1, 300.1.
+
+**Unit token**: A unit that an effect creates, whether or not the effect calls it a token. See rules 304.4, 304.9.
+
+**Unstable**: A non-combat attribute: an Unstable card that would enter a bin from an active zone is erased instead. See rule 803.8.
+
+**Virus**: A timing icon: a Virus card can also be applied as an augment from the hand during battle. See rule 723.1.
+
+**Vulnerable**: An attribute: a Vulnerable unit is dealt double the damage that would be dealt to it. See rule 802.11.
+
+**X**: A number that the card defines. See rule 107.1.
+
+**You**: On a card, the controller of the effect. See rule 102.6.
+
+**Zone**: One of the places a card can be: the deck, the hand, the cache, play, the bin, the stack, the erased pile, the recycle pile and the pack. See rule 400.1.
 
 ## Changelog
 

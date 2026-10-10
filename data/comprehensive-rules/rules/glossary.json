@@ -1,0 +1,2406 @@
+[
+  {
+    "key": "glossary.ability",
+    "term": "Ability",
+    "text": "Text on a card that describes the card's effects.",
+    "see": [
+      "concepts.abilities.what"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.activated-ability",
+    "term": "Activated ability",
+    "text": "An ability written with a colon, whose cost is everything before the colon.",
+    "see": [
+      "effects.activated.what",
+      "concepts.abilities.activated"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.active-zone",
+    "term": "Active zone",
+    "text": "Play or the stack; every other zone is inactive.",
+    "see": [
+      "zones.general.active"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.adjacent",
+    "term": "Adjacent",
+    "text": "Next to a unit on its left, right, front or back in the same formation.",
+    "see": [
+      "combat.columns.adjacency"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.affinity",
+    "term": "Affinity",
+    "text": "A card's elemental requirement, shown as element pips, and a player's count of non-dormant resources of an element.",
+    "see": [
+      "concepts.elements.affinity",
+      "concepts.elements.affinity-count"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.afflicting",
+    "term": "Afflicting",
+    "text": "An attribute whose reminder text reads \"When an afflicting source kills one or more units, those units' controllers gain a rot.\"",
+    "see": [
+      "attr.afflicting"
+    ],
+    "derived": [
+      "attr:Afflicting",
+      "ours:Afflicting"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.after-combat-step",
+    "term": "After combat step",
+    "text": "The last step of a battle round, a priority window that follows the combat damage step.",
+    "see": [
+      "combat.after.what-it-is",
+      "combat.after.window"
+    ],
+    "derived": [
+      "step:afterWindow"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.alluring",
+    "term": "Alluring",
+    "text": "An attribute whose reminder text reads \"When an alluring column attacks, target enemy can't attack and must block it this combat if able.\"",
+    "see": [
+      "attr.alluring"
+    ],
+    "derived": [
+      "attr:Alluring",
+      "ours:Alluring"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.ally",
+    "term": "Ally",
+    "text": "A unit under your control in the region where the effect is happening.",
+    "see": [
+      "concepts.players.ally"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.ambush",
+    "term": "Ambush",
+    "text": "A keyword that lets a unit card be played during battle with the effect \"Recall target ally, put me into their position in play.\"",
+    "see": [
+      "keywords.abilities.ambush"
+    ],
+    "derived": [
+      "keyword:keywords.abilities.ambush",
+      "ours:Ambush"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.apply",
+    "term": "Apply",
+    "text": "To put a mod onto a card, a special action that is not playing a card.",
+    "see": [
+      "effects.mods.special-action",
+      "effects.playing.applying"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.archenemy",
+    "term": "Archenemy",
+    "text": "A player setup, typically 2v1, in which the single player takes 1 or 2 turns before the other two begin.",
+    "see": [
+      "formats.teams.archenemy"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.attack-step",
+    "term": "Attack step",
+    "text": "The first step of a battle, in which the attacking player declares its attacking formation.",
+    "see": [
+      "turn.battle.steps",
+      "combat.attack.declaring"
+    ],
+    "derived": [
+      "step:declare"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.attack-window",
+    "term": "Attack window",
+    "text": "The priority window that follows the declaration of an attack, in the region attacked.",
+    "see": [
+      "combat.attack-window.general"
+    ],
+    "derived": [
+      "step:attackWindow"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.attacking",
+    "term": "Attacking",
+    "text": "Bringing units, and the spell tokens that travel with them, into a neighbouring enemy region for battle.",
+    "see": [
+      "combat.attack.general"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.attribute",
+    "term": "Attribute",
+    "text": "A quality a card can have, printed on its type line, that changes how it engages in combat.",
+    "see": [
+      "attr.general",
+      "card.type-line.attributes"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.augment",
+    "term": "Augment",
+    "text": "A modification that adds the text after a card's augment symbol to the card it is applied to.",
+    "see": [
+      "effects.augment.what",
+      "card.augment-box.what"
+    ],
+    "derived": [
+      "ours:Augment"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.auto-pass",
+    "term": "Auto-pass",
+    "text": "A client preference that passes priority for a player only in a window where passing is the only thing they could do.",
+    "see": [
+      "annexd.auto-pass.preference"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.balanced",
+    "term": "Balanced",
+    "text": "An attribute whose reminder text reads \"The power and defense of balanced units are equal to the greater of the two.\"",
+    "see": [
+      "attr.balanced"
+    ],
+    "derived": [
+      "attr:Balanced",
+      "ours:Balanced"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.banner",
+    "term": "Banner",
+    "text": "The part of a card that offers another way to play it, for a cost of its own, as Ambush and Prophecy do.",
+    "see": [
+      "card.banner.what"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.battle",
+    "term": "Battle",
+    "text": "A timing keyword: a card with Battle can be played only while its player is in battle with another player.",
+    "see": [
+      "keywords.abilities.battle",
+      "card.timing.battle"
+    ],
+    "derived": [
+      "keyword:keywords.abilities.battle",
+      "ours:Battle"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.battle-phase",
+    "term": "Battle phase",
+    "text": "The second phase of the turn, and its only interactive one.",
+    "see": [
+      "turn.battle.what-it-is",
+      "turn.general.interactive"
+    ],
+    "derived": [
+      "phase:battle"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.battle-round",
+    "term": "Battle round",
+    "text": "One of the two attacks of a 1v1 or team battle phase: the initiative team's attack, then the counterattack.",
+    "see": [
+      "turn.battle.rounds"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.bin",
+    "term": "Bin",
+    "text": "A player's discard pile.",
+    "see": [
+      "zones.bin.what"
+    ],
+    "derived": [
+      "zone:bin"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.blessed",
+    "term": "Blessed",
+    "text": "An attribute whose reminder text reads \"Damage dealt by a blessed source causes its controller to gain that much life.\"",
+    "see": [
+      "attr.blessed"
+    ],
+    "derived": [
+      "attr:Blessed",
+      "ours:Blessed"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.block-step",
+    "term": "Block step",
+    "text": "The second step of a battle, in which the defending player may place its units in front of the attacking formation.",
+    "see": [
+      "turn.battle.steps",
+      "combat.blocks.general"
+    ],
+    "derived": [
+      "step:blocks"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.block-window",
+    "term": "Block window",
+    "text": "The priority window that follows the declaration of blocks.",
+    "see": [
+      "combat.block-window.general"
+    ],
+    "derived": [
+      "step:blockWindow"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.blocking",
+    "term": "Blocking",
+    "text": "How a player who has been attacked defends, by placing units in front of the attacking formation.",
+    "see": [
+      "combat.blocks.general"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.bluff-haste",
+    "term": "Bluff haste",
+    "text": "A client preference with which the client never finishes the haste step for the player.",
+    "see": [
+      "annexd.auto-pass.haste-ready.bluff"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.burst",
+    "term": "Burst",
+    "text": "A non-combat attribute printed on spell tokens: casting one casts every spell token of the same name its controller has in that region at the same time.",
+    "see": [
+      "keywords.abilities.burst"
+    ],
+    "derived": [
+      "keyword:keywords.abilities.burst",
+      "ours:Burst"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.cache",
+    "term": "Cache",
+    "text": "A public zone of each player's, beside the hand, the bin and the deck; to cache a card is to put it there.",
+    "see": [
+      "zones.cache.what",
+      "keywords.actions.cache"
+    ],
+    "derived": [
+      "zone:cache",
+      "keyword:keywords.actions.cache",
+      "ours:Cache"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.card",
+    "term": "Card",
+    "text": "A physical Algomancy card, one with an Algomancy card back; a token is not a card.",
+    "see": [
+      "concepts.cards.card",
+      "types.tokens.not-cards"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.cast",
+    "term": "Cast",
+    "text": "To play a spell; casting a spell is playing it.",
+    "see": [
+      "effects.general.cast-is-play"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.clock",
+    "term": "Clock",
+    "text": "A chess clock a game may be played with, in which each player has a bank of time.",
+    "see": [
+      "annexd.clocks.banks"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.column",
+    "term": "Column",
+    "text": "One file of the battle line: the attacking units in it and the defending units placed in front of it.",
+    "see": [
+      "combat.columns.definition"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.combat-attribute",
+    "term": "Combat attribute",
+    "text": "An attribute printed in gold; units in the same column of a formation share their combat attributes.",
+    "see": [
+      "attr.general.kinds",
+      "effects.column-share"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.combat-damage",
+    "term": "Combat damage",
+    "text": "The damage columns deal to each other and to players in the combat damage step.",
+    "see": [
+      "concepts.damage.combat-and-noncombat"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.combat-damage-step",
+    "term": "Combat damage step",
+    "text": "The step of a battle in which the units in formation deal combat damage.",
+    "see": [
+      "combat.damage.overview"
+    ],
+    "derived": [
+      "step:damageWindow"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.complexity",
+    "term": "Complexity",
+    "text": "What is used to choose which cards are in a game, shown by the colour of the set symbol.",
+    "see": [
+      "card.complexity.use",
+      "card.complexity.set-symbol"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.concede",
+    "term": "Concede",
+    "text": "To end the game as a loss, in the same way as being eliminated.",
+    "see": [
+      "concepts.ending.concede"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.conjure",
+    "term": "Conjure",
+    "obsolete": true,
+    "text": "Not defined by these rules: the old rules glossary's mechanic that created a spell token to be cast at a set time, which no current card prints.",
+    "see": [
+      "types.tokens.spell-tokens"
+    ],
+    "usedBy": [
+      {
+        "ref": "file: data/rules/Algomancy-Rules-Glossary.md",
+        "quote": "Conjure is a mechanic that creates a spell token that is cast at a specific time."
+      }
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.constructed",
+    "term": "Constructed",
+    "text": "A game mode in which each player brings their own deck, built before the game, and plays from it.",
+    "see": [
+      "formats.constructed.what"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.continuous-effect",
+    "term": "Continuous effect",
+    "text": "An effect that changes the game for a period of time rather than once.",
+    "see": [
+      "effects.continuous.what"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.controller",
+    "term": "Controller",
+    "text": "The player who controls a card, who may differ from its owner.",
+    "see": [
+      "concepts.players.controller"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.copy",
+    "term": "Copy",
+    "text": "A copy of a spell is a new effect on the stack, not played; a unit that becomes a copy of a card takes that card's name, printed stats, attributes and text.",
+    "see": [
+      "concepts.cards.copies",
+      "effects.copies.becoming"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.cost",
+    "term": "Cost",
+    "text": "Something a player must pay to do something: to play a card, to apply a mod, or to activate an ability.",
+    "see": [
+      "concepts.costs.what-a-cost-is"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.cost-orb",
+    "term": "Cost orb",
+    "text": "The part of a card that shows its mana cost.",
+    "see": [
+      "card.cost-orb.mana-cost"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.counterattack",
+    "term": "Counterattack",
+    "text": "The non-initiative team's attack in a battle phase with two battle rounds.",
+    "see": [
+      "combat.counterattack.what-it-is"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.creature",
+    "term": "Creature",
+    "obsolete": true,
+    "text": "The old rules glossary's word for what these rules call a unit.",
+    "see": [
+      "types.units.permanent"
+    ],
+    "usedBy": [
+      {
+        "ref": "file: data/rules/Algomancy-Rules-Glossary.md",
+        "quote": "Creatures are not spells."
+      }
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.cube-draft",
+    "term": "Cube draft",
+    "text": "A format for large groups in which players draft decks before the game and then play constructed matches.",
+    "see": [
+      "formats.draft.cube"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.damage",
+    "term": "Damage",
+    "text": "What a source deals to a unit or a player: marked on a unit, and lost as life by a player.",
+    "see": [
+      "concepts.damage.basics"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.damage-sub-step",
+    "term": "Damage sub-step",
+    "text": "One of the three parts of the combat damage step, taken in order: the Swift sub-step, the normal sub-step and the Sluggish sub-step.",
+    "see": [
+      "combat.damage.substeps"
+    ],
+    "derived": [
+      "substep:Swift",
+      "substep:normal",
+      "substep:Sluggish"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.deadly",
+    "term": "Deadly",
+    "text": "A combat attribute whose reminder text reads \"Any damage from a deadly source will kill a unit.\"",
+    "see": [
+      "attr.deadly"
+    ],
+    "derived": [
+      "attr:Deadly",
+      "ours:Deadly"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.debt",
+    "term": "Debt",
+    "text": "A counter a player has, paid off at 1 mana each at the end of that player's resource step.",
+    "see": [
+      "concepts.debt"
+    ],
+    "derived": [
+      "ours:Debt"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.deck",
+    "term": "Deck",
+    "text": "The face-down pile that cards are drawn from and that packs are dealt from.",
+    "see": [
+      "zones.deck.what"
+    ],
+    "derived": [
+      "zone:deck"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.defense",
+    "term": "Defense",
+    "text": "The second of a unit's stats: how much damage it can take before it dies.",
+    "see": [
+      "card.stats.what",
+      "types.units.defense"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.delete",
+    "term": "Delete",
+    "text": "To remove a unit from play into the bin, as when a unit dies.",
+    "see": [
+      "keywords.actions.delete"
+    ],
+    "derived": [
+      "keyword:keywords.actions.delete"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.deployment-phase",
+    "term": "Deployment phase",
+    "text": "The last phase of each turn, in which players build up their forces for the next.",
+    "see": [
+      "turn.deploy.what-it-is"
+    ],
+    "derived": [
+      "phase:deploy"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.despawn",
+    "term": "Despawn",
+    "text": "What a unit does whenever it leaves play, by any route.",
+    "see": [
+      "zones.changes.despawn"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.devastating",
+    "term": "Devastating",
+    "obsolete": true,
+    "text": "Not defined by these rules: an attribute the old rules glossary names without defining it, which no current card prints.",
+    "see": [
+      "attr.general"
+    ],
+    "usedBy": [
+      {
+        "ref": "file: data/rules/Algomancy-Rules-Glossary.md",
+        "quote": "Things like Deadly, Flying, Poisonous, Electric and Devastating."
+      }
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.discard",
+    "term": "Discard",
+    "text": "To put a card from a hand into the bin.",
+    "see": [
+      "keywords.actions.discard"
+    ],
+    "derived": [
+      "keyword:keywords.actions.discard"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.dormant",
+    "term": "Dormant",
+    "text": "Face down: every resource enters play dormant, and activating it turns it face up (active).",
+    "see": [
+      "concepts.resources.dormant-active"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.draft-step",
+    "term": "Draft step",
+    "text": "The step of the planning phase in which, in a live draft, each player combines their hand with their pack and chooses which cards to keep in hand.",
+    "see": [
+      "turn.draw.draft"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.draw-step",
+    "term": "Draw step",
+    "text": "The step of the planning phase in which each player draws 2 cards.",
+    "see": [
+      "turn.draw.draw"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.each-opponent",
+    "term": "Each opponent",
+    "text": "Each opponent in the region where the effect happens.",
+    "see": [
+      "concepts.players.each-opponent"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.each-player",
+    "term": "Each player",
+    "text": "Each player in the region where the effect happens.",
+    "see": [
+      "concepts.players.each-player"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.effect",
+    "term": "Effect",
+    "text": "Anything on the stack.",
+    "see": [
+      "effects.general.effect"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.electric",
+    "term": "Electric",
+    "text": "An attribute whose reminder text reads \"Excess damage from electric sources can be directed to an adjacent unit, recursively.\"",
+    "see": [
+      "attr.electric"
+    ],
+    "derived": [
+      "attr:Electric",
+      "ours:Electric"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.eliminated",
+    "term": "Eliminated",
+    "text": "Out of the game: a player whose life total reaches 0 is eliminated.",
+    "see": [
+      "concepts.ending.elimination"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.end-of-turn",
+    "term": "End of turn",
+    "text": "A special step after deployment finishes, in which abilities that trigger \"at the end of turn\" trigger.",
+    "see": [
+      "turn.initiative.end-of-turn"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.enemy",
+    "term": "Enemy",
+    "text": "A unit not under your control in the region where the effect is happening.",
+    "see": [
+      "concepts.players.enemy"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.erase",
+    "term": "Erase",
+    "text": "To take a card out of the game, to the erased pile.",
+    "see": [
+      "keywords.actions.erase"
+    ],
+    "derived": [
+      "keyword:keywords.actions.erase"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.erased-pile",
+    "term": "Erased pile",
+    "text": "The zone where a card goes when an effect erases it.",
+    "see": [
+      "zones.erased.says-erase",
+      "keywords.actions.erase"
+    ],
+    "derived": [
+      "zone:erased"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.evasive",
+    "term": "Evasive",
+    "text": "An attribute whose reminder text reads \"Evasive units require two blockers.\"",
+    "see": [
+      "attr.evasive"
+    ],
+    "derived": [
+      "attr:Evasive",
+      "ours:Evasive"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.excess-damage",
+    "term": "Excess damage",
+    "text": "For Piercing, the damage a source deals to a unit beyond that unit's lethal damage.",
+    "see": [
+      "attr.piercing.excess"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.exchange",
+    "term": "Exchange",
+    "text": "A word printed in four senses, each read from its card.",
+    "see": [
+      "keywords.actions.exchange"
+    ],
+    "derived": [
+      "keyword:keywords.actions.exchange"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.expend",
+    "term": "Expend",
+    "text": "To turn a resource sideways for 1 mana, once per turn, to pay a mana cost.",
+    "see": [
+      "concepts.resources.expend"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.feeble",
+    "term": "Feeble",
+    "text": "An attribute: a Feeble unit can't block.",
+    "see": [
+      "attr.feeble"
+    ],
+    "derived": [
+      "attr:Feeble",
+      "ours:Feeble"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.fight",
+    "term": "Fight",
+    "text": "When two units fight, each deals damage equal to its power to the other.",
+    "see": [
+      "keywords.actions.fight"
+    ],
+    "derived": [
+      "keyword:keywords.actions.fight"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.fizzle",
+    "term": "Fizzle",
+    "text": "What an effect does if, as it resolves, it has lost all of its targets: it does nothing.",
+    "see": [
+      "effects.resolution.fizzle"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.flying",
+    "term": "Flying",
+    "text": "A combat attribute whose reminder text reads \"Only flying units can block flying units.\"",
+    "see": [
+      "attr.flying"
+    ],
+    "derived": [
+      "attr:Flying",
+      "ours:Flying"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.formation",
+    "term": "Formation",
+    "text": "The placement of a player's units when they attack or block: an attacking or a defending formation.",
+    "see": [
+      "combat.formations.definition"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.free-for-all",
+    "term": "Free-for-all",
+    "text": "A player setup (FFA) in which every player plays for themselves.",
+    "see": [
+      "formats.ffa.what"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.full-control",
+    "term": "Full control",
+    "text": "A client mode, held with the Control key, in which the client gives a player every stop.",
+    "see": [
+      "annexd.auto-pass.full-control"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.glimpse",
+    "term": "Glimpse",
+    "text": "Glimpse N means: reveal the top N cards of the deck, cache one of them, and recycle the rest.",
+    "see": [
+      "keywords.actions.glimpse"
+    ],
+    "derived": [
+      "keyword:keywords.actions.glimpse",
+      "ours:Glimpse"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.graft",
+    "term": "Graft",
+    "text": "A modification, marked by the graft symbol, that combines several effects under a single cause.",
+    "see": [
+      "effects.graft.what"
+    ],
+    "derived": [
+      "ours:Graft"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.half-column",
+    "term": "Half-column",
+    "text": "The attacking units of one column, or its blocking units, which deal their combat damage together as one source.",
+    "see": [
+      "combat.damage.overview.column-source"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.hand",
+    "term": "Hand",
+    "text": "The zone of a player's own cards, which each player has and which is hidden from the other players.",
+    "see": [
+      "zones.hand.what",
+      "zones.hand.hidden"
+    ],
+    "derived": [
+      "zone:hand"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.haste",
+    "term": "Haste",
+    "text": "A timing keyword: a card with Haste can be played during the haste step as well as during deployment.",
+    "see": [
+      "keywords.abilities.haste",
+      "card.timing.haste"
+    ],
+    "derived": [
+      "keyword:keywords.abilities.haste",
+      "ours:Haste"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.haste-step",
+    "term": "Haste step",
+    "text": "The last step of the planning phase, in which players may play only haste cards.",
+    "see": [
+      "turn.haste.what",
+      "turn.haste.plays"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.hidden-simultaneous-segment",
+    "term": "Hidden simultaneous segment",
+    "text": "A part of the turn in which both players act at once and neither sees what the other does until both are done.",
+    "see": [
+      "annexd.general.hidden-segment"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.host",
+    "term": "Host",
+    "text": "The card a mod is applied to and becomes part of.",
+    "see": [
+      "effects.mods.one-card"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.hybrid",
+    "term": "Hybrid",
+    "text": "A card that belongs to two elements.",
+    "see": [
+      "concepts.elements.hybrid"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.initiative",
+    "term": "Initiative",
+    "text": "What one player has in each turn; in a 1v1 game the initiative player acts first.",
+    "see": [
+      "turn.general.initiative"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.initiative-token",
+    "term": "Initiative token",
+    "text": "The marker of which player has the initiative, passed clockwise when the turn is over; it is not a token.",
+    "see": [
+      "turn.initiative.pass",
+      "turn.initiative.not-a-token"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.intent-card",
+    "term": "Intent card",
+    "text": "A card with which players declare attacks in free-for-all, all at the same time.",
+    "see": [
+      "formats.intent.what"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.inverted",
+    "term": "Inverted",
+    "text": "An attribute whose reminder text begins \"Invert the stat changes of inverted units.\"",
+    "see": [
+      "attr.inverted"
+    ],
+    "derived": [
+      "attr:Inverted",
+      "ours:Inverted"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.keyword-action",
+    "term": "Keyword action",
+    "text": "A verb that card text uses with a fixed game meaning.",
+    "see": [
+      "keywords.actions.general"
+    ],
+    "derived": [
+      "keyword:keywords.actions.general"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.last-known-state",
+    "term": "Last-known state",
+    "text": "What a unit was at the instant it left play.",
+    "see": [
+      "effects.last-known.what"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.learn-to-play",
+    "term": "Learn to Play",
+    "text": "One learner against the Tutorial Bot in one continuous game, with lessons shown as each rule first matters.",
+    "see": [
+      "annexd.modes.learn-to-play"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.lethal",
+    "term": "Lethal",
+    "text": "An attribute whose reminder text reads \"Any combat damage from a lethal unit will kill a player.\"",
+    "see": [
+      "attr.lethal"
+    ],
+    "derived": [
+      "attr:Lethal",
+      "ours:Lethal"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.life",
+    "term": "Life",
+    "text": "What each player has, starting at 30; a player whose life total reaches 0 is eliminated.",
+    "see": [
+      "concepts.life.basics",
+      "concepts.ending.elimination"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.live-draft",
+    "term": "Live draft",
+    "text": "A game mode in which the players share one deck and draft cards from it during the game.",
+    "see": [
+      "formats.draft.live-draft"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.mana-cost",
+    "term": "Mana cost",
+    "text": "The number of resources a player must expend to play a card, shown in its cost orb.",
+    "see": [
+      "card.cost-orb.mana-cost",
+      "concepts.costs.what-a-cost-is.mana"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.mod",
+    "term": "Mod",
+    "text": "A modification: a card that is applied to another card instead of being played.",
+    "see": [
+      "types.mods.what",
+      "effects.mods.what"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.modular",
+    "term": "Modular",
+    "text": "An attribute whose reminder text begins \"You can apply mods to a modular card from your hand and/or bin as it is played.\"",
+    "see": [
+      "attr.modular",
+      "effects.modular.what"
+    ],
+    "derived": [
+      "attr:Modular",
+      "ours:Modular"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.negate",
+    "term": "Negate",
+    "text": "To remove an effect from the stack: a negated effect is removed at once, when the effect that negates it resolves.",
+    "see": [
+      "effects.resolution.negation"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.non-combat-attribute",
+    "term": "Non-combat attribute",
+    "text": "An attribute printed in purple, such as Burst and Unstable, that describes a card and generally has nothing to do with combat.",
+    "see": [
+      "keywords.abilities.non-combat",
+      "attr.general.kinds"
+    ],
+    "derived": [
+      "keyword:keywords.abilities.non-combat"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.noncombat-damage",
+    "term": "Noncombat damage",
+    "text": "All damage other than combat damage.",
+    "see": [
+      "concepts.damage.combat-and-noncombat"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.nonspell-effect",
+    "term": "Nonspell effect",
+    "text": "Any effect that is not a spell effect.",
+    "see": [
+      "effects.general.effect.nonspell-effect"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.once",
+    "term": "Once",
+    "text": "The [once] keyword: an ability marked [once] can be activated or triggered only once per turn.",
+    "see": [
+      "keywords.abilities.once",
+      "concepts.abilities.once"
+    ],
+    "derived": [
+      "keyword:keywords.abilities.once",
+      "ours:Once"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.open-decision",
+    "term": "Open decision",
+    "text": "A question the game is waiting on a player to answer, which they must answer, or concede, before taking any other action.",
+    "see": [
+      "annexd.auto-pass.open-decision"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.owner",
+    "term": "Owner",
+    "text": "The player whose card it is; a card's owner never changes.",
+    "see": [
+      "concepts.players.owner"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.pack",
+    "term": "Pack",
+    "text": "In live draft, each player's face-down pile of 10 cards dealt from the deck, which that player drafts from.",
+    "see": [
+      "zones.pack.what"
+    ],
+    "derived": [
+      "zone:pack"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.phase",
+    "term": "Phase",
+    "text": "One of the four parts of a turn: the planning, battle, regroup and deployment phases.",
+    "see": [
+      "turn.general.phases"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.piercing",
+    "term": "Piercing",
+    "text": "An attribute whose reminder text reads \"Excess damage from piercing sources is dealt to the recipient's controller.\"",
+    "see": [
+      "attr.piercing"
+    ],
+    "derived": [
+      "attr:Piercing",
+      "ours:Piercing"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.pips",
+    "term": "Pips",
+    "text": "The element marks with a card's cost, which are its affinity requirement and not part of its cost.",
+    "see": [
+      "card.cost-orb.pips"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.planning-phase",
+    "term": "Planning phase",
+    "text": "The first phase of the turn, in which players prepare for the turn ahead.",
+    "see": [
+      "turn.planning.what"
+    ],
+    "derived": [
+      "phase:planning"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.play",
+    "term": "Play",
+    "text": "The zone of the units, resources and tokens on the table.",
+    "see": [
+      "zones.play.what"
+    ],
+    "derived": [
+      "zone:play"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.playing-a-card",
+    "term": "Playing a card",
+    "text": "What is done to units and spells, from whatever zone: meeting the card's affinity requirement, paying its mana cost and selecting its targets.",
+    "see": [
+      "effects.playing.what-is-played",
+      "effects.casting.requirements"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.poisonous",
+    "term": "Poisonous",
+    "text": "An attribute whose reminder text reads \"Poisonous sources damage units in the form of -1/-1 counters.\"",
+    "see": [
+      "attr.poisonous"
+    ],
+    "derived": [
+      "attr:Poisonous",
+      "ours:Poisonous"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.power",
+    "term": "Power",
+    "text": "The first of a unit's stats: how much damage it deals in combat.",
+    "see": [
+      "card.stats.what",
+      "types.units.power"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.powerful",
+    "term": "Powerful",
+    "text": "A combat attribute whose reminder text reads \"Powerful sources deal double damage.\"",
+    "see": [
+      "attr.powerful"
+    ],
+    "derived": [
+      "attr:Powerful",
+      "ours:Powerful"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.prevention-effect",
+    "term": "Prevention effect",
+    "text": "An effect that prevents damage that would be dealt; it is not a replacement effect.",
+    "see": [
+      "effects.replacement.prevention",
+      "concepts.damage.prevented"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.priority",
+    "term": "Priority",
+    "text": "The ability to take game actions such as playing cards or activating abilities.",
+    "see": [
+      "effects.priority.priority"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.priority-window",
+    "term": "Priority window",
+    "text": "A sequence in which the players (or teams) each receive priority in order.",
+    "see": [
+      "effects.priority.window"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.prismite",
+    "term": "Prismite",
+    "text": "A resource with no element, which gives no affinity.",
+    "see": [
+      "concepts.resources.prismite"
+    ],
+    "derived": [
+      "ours:Prismite"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.prophecy",
+    "term": "Prophecy",
+    "text": "A keyword printed on a card's banner as a cost and a condition.",
+    "see": [
+      "keywords.abilities.prophecy"
+    ],
+    "derived": [
+      "keyword:keywords.abilities.prophecy",
+      "ours:Prophecy"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.prophesy",
+    "term": "Prophesy",
+    "text": "To pay the cost on a card's prophecy banner and put it into the cache with its prophecy attached.",
+    "see": [
+      "keywords.actions.prophesy"
+    ],
+    "derived": [
+      "keyword:keywords.actions.prophesy"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.pure",
+    "term": "Pure",
+    "text": "An attribute whose reminder text reads \"Pure cards and cards they are interacting with ignore all other attributes.\"",
+    "see": [
+      "attr.pure"
+    ],
+    "derived": [
+      "attr:Pure",
+      "ours:Pure"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.ranged",
+    "term": "Ranged",
+    "obsolete": true,
+    "text": "Not defined by these rules: the 2023 Rulebook's attribute that dealt combat damage first and could block fliers, which no current card prints.",
+    "see": [
+      "attr.swift",
+      "attr.flying"
+    ],
+    "usedBy": [
+      {
+        "ref": "Rulebook 2023 p.12",
+        "quote": "Spike has the “Ranged” attribute, which allows it to deal combat damage first and block fliers."
+      }
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.reaping",
+    "term": "Reaping",
+    "text": "An attribute whose reminder text begins \"When a reaping source kills one or more units, draw a card.\"",
+    "see": [
+      "attr.reaping"
+    ],
+    "derived": [
+      "attr:Reaping",
+      "ours:Reaping"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.recall",
+    "term": "Recall",
+    "text": "To put a card into a hand.",
+    "see": [
+      "keywords.actions.recall"
+    ],
+    "derived": [
+      "keyword:keywords.actions.recall"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.recap",
+    "term": "Recap",
+    "text": "The playback each player is shown of what the other did in the haste step or in deployment.",
+    "see": [
+      "annexd.recap.what"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.recycle",
+    "term": "Recycle",
+    "text": "To put a card on the bottom of the deck, past the deck's mark, into the recycle pile.",
+    "see": [
+      "keywords.actions.recycle",
+      "zones.recycle.what"
+    ],
+    "derived": [
+      "keyword:keywords.actions.recycle",
+      "ours:Recycle"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.recycle-pile",
+    "term": "Recycle pile",
+    "text": "The cards past the deck's mark, where a card put on the bottom of the deck goes.",
+    "see": [
+      "zones.recycle.mark"
+    ],
+    "derived": [
+      "zone:recycle"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.refresh",
+    "term": "Refresh",
+    "text": "The first step of the planning phase, in which each player's expended resources refresh.",
+    "see": [
+      "turn.planning.steps.refresh",
+      "concepts.resources.expend"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.region",
+    "term": "Region",
+    "text": "Where all gameplay takes place; there is one region for each player.",
+    "see": [
+      "combat.regions.definition"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.regroup",
+    "term": "Regroup",
+    "text": "The global step, once battle has ended in every region, that resets the game between battles.",
+    "see": [
+      "turn.regroup.what-it-is"
+    ],
+    "derived": [
+      "phase:regroup"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.reminder-text",
+    "term": "Reminder text",
+    "text": "Italic text that restates what an attribute or keyword does.",
+    "see": [
+      "card.text-box.reminder"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.replacement-effect",
+    "term": "Replacement effect",
+    "text": "An ability that changes an event as it happens, written \"If … instead\".",
+    "see": [
+      "effects.replacement.what"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.resonant",
+    "term": "Resonant",
+    "text": "An attribute whose reminder text reads \"Whenever a resonant source deals damage to a unit, it deals that much damage to that unit's controller.\"",
+    "see": [
+      "attr.resonant"
+    ],
+    "derived": [
+      "attr:Resonant",
+      "ours:Resonant"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.resource",
+    "term": "Resource",
+    "text": "A source of mana, which a player needs to play cards.",
+    "see": [
+      "concepts.resources.what"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.resource-step",
+    "term": "Resource step",
+    "text": "The step of the planning phase in which players create and activate resources.",
+    "see": [
+      "turn.resource.what"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.rockfall",
+    "term": "Rockfall",
+    "text": "Rockfall N means: each player chooses one of their units, and the source of the rockfall deals N damage to each chosen unit.",
+    "see": [
+      "keywords.actions.rockfall"
+    ],
+    "derived": [
+      "keyword:keywords.actions.rockfall"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.rot",
+    "term": "Rot",
+    "text": "A counter a player has, which deals that player damage equal to it at the start of each deployment phase.",
+    "see": [
+      "concepts.rot"
+    ],
+    "derived": [
+      "ours:Rot"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.sacrifice",
+    "term": "Sacrifice",
+    "text": "For a player to choose a unit they control and put it into their bin.",
+    "see": [
+      "keywords.actions.sacrifice"
+    ],
+    "derived": [
+      "keyword:keywords.actions.sacrifice"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.safe-point",
+    "term": "Safe point",
+    "text": "A moment at which the game makes state checks, such as the end of every action.",
+    "see": [
+      "effects.state.when",
+      "effects.state.what"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.shard",
+    "term": "Shard",
+    "text": "A resource of its own kind, which pays one generic mana once activated.",
+    "see": [
+      "concepts.resources.shard"
+    ],
+    "derived": [
+      "ours:Shard"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.side-block",
+    "term": "Side-block",
+    "text": "A defending unit placed blocking where no attacker is.",
+    "see": [
+      "combat.blocks.side"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.single-card-duel",
+    "term": "Single Card Duel",
+    "text": "A variant of constructed in which each player picks a single card and their deck is 30 copies of it.",
+    "see": [
+      "formats.constructed.single-card",
+      "annexd.modes.single-card-duel"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.skirmish",
+    "term": "Skirmish",
+    "obsolete": true,
+    "text": "The old rules glossary's name for the place where attackers meet defenders, one per player; the current term is region.",
+    "see": [
+      "combat.regions.definition"
+    ],
+    "usedBy": [
+      {
+        "ref": "file: data/rules/Algomancy-Rules-Glossary.md",
+        "quote": "Each of these locations is called a Skirmish."
+      }
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.sluggish",
+    "term": "Sluggish",
+    "text": "A combat attribute whose reminder text reads \"Sluggish units deal combat damage last.\"",
+    "see": [
+      "attr.sluggish"
+    ],
+    "derived": [
+      "attr:Sluggish",
+      "ours:Sluggish"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.sneaky",
+    "term": "Sneaky",
+    "text": "An attribute whose reminder text reads \"Sneaky units can't be blocked if attacking alone.\"",
+    "see": [
+      "attr.sneaky"
+    ],
+    "derived": [
+      "attr:Sneaky",
+      "ours:Sneaky"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.source",
+    "term": "Source",
+    "text": "The thing that deals damage.",
+    "see": [
+      "concepts.damage.source"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.spell",
+    "term": "Spell",
+    "text": "A card type that provides a one-time effect.",
+    "see": [
+      "types.spells.what",
+      "types.general.kinds"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.spell-effect",
+    "term": "Spell effect",
+    "text": "An effect that is a spell: a spell, a spell unit or a spell token on the stack, or an ambush.",
+    "see": [
+      "effects.general.effect.spell-effect"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.spell-token",
+    "term": "Spell token",
+    "text": "A spell that an effect creates directly into play, which its controller may cast from play.",
+    "see": [
+      "types.tokens.spell-tokens",
+      "concepts.cards.token"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.spell-unit",
+    "term": "Spell unit",
+    "text": "A card that is both a spell and a unit.",
+    "see": [
+      "types.spell-units.what"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.stack",
+    "term": "Stack",
+    "text": "The zone where cards being played, and abilities, wait to resolve, the last one put there resolving first.",
+    "see": [
+      "zones.stack.what",
+      "effects.priority.stack"
+    ],
+    "derived": [
+      "zone:stack"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.standing-pass",
+    "term": "Standing pass",
+    "text": "Pass through stack or Pass all: a promise the client keeps on a player's behalf in later windows.",
+    "see": [
+      "annexd.auto-pass.pass-buttons"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.state-check",
+    "term": "State check",
+    "text": "A check the game itself makes at safe points, in which every unit that should be dead dies.",
+    "see": [
+      "effects.state.what"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.static-ability",
+    "term": "Static ability",
+    "text": "An ability that states a change its card continuously makes to the game for as long as the card is in play.",
+    "see": [
+      "effects.static.what",
+      "concepts.abilities.static"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.stats",
+    "term": "Stats",
+    "text": "A unit's two numbers, printed power/defense.",
+    "see": [
+      "card.stats.what"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.strip",
+    "term": "Strip",
+    "text": "An effect that makes a unit lose all its attributes, all its abilities, or both.",
+    "see": [
+      "effects.stripping.what"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.subtype",
+    "term": "Subtype",
+    "text": "A word of the type line other than its markers and its card type, such as Whale.",
+    "see": [
+      "card.type-line.subtypes"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.swift",
+    "term": "Swift",
+    "text": "A combat attribute whose reminder text reads \"Swift units deal combat damage first.\"",
+    "see": [
+      "attr.swift"
+    ],
+    "derived": [
+      "attr:Swift",
+      "ours:Swift"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.target",
+    "term": "Target",
+    "text": "Something a card or ability chooses, with the word \"target\", to receive its actions.",
+    "see": [
+      "concepts.targets.what"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.team-game",
+    "term": "Team game",
+    "text": "A player setup in which two teams play against each other, 2v2 or 3v3.",
+    "see": [
+      "formats.teams.what"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.thieving",
+    "term": "Thieving",
+    "text": "An attribute whose reminder text reads \"Whenever a thieving source deals combat damage to an opponent, draw a card.\"",
+    "see": [
+      "attr.thieving"
+    ],
+    "derived": [
+      "attr:Thieving",
+      "ours:Thieving"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.timestamp",
+    "term": "Timestamp",
+    "text": "When an effect began to apply.",
+    "see": [
+      "concepts.timestamps.when"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.timing-icon",
+    "term": "Timing icon",
+    "text": "An icon in the top right corner of a card that changes when, and how, the card can be played.",
+    "see": [
+      "card.timing.what"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.token",
+    "term": "Token",
+    "text": "A unit or a spell that an effect creates directly into play; a token is not a card.",
+    "see": [
+      "concepts.cards.token",
+      "types.tokens.not-cards"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.tough",
+    "term": "Tough",
+    "text": "An attribute: a Tough unit's defense is doubled.",
+    "see": [
+      "attr.tough"
+    ],
+    "derived": [
+      "attr:Tough",
+      "ours:Tough"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.transform",
+    "term": "Transform",
+    "text": "To turn a card in play to its other face up; it stays the same unit and does not leave play.",
+    "see": [
+      "concepts.cards.faces"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.trash",
+    "term": "Trash",
+    "text": "What happens to a card that enters a bin from any zone except the stack.",
+    "see": [
+      "keywords.actions.trash"
+    ],
+    "derived": [
+      "keyword:keywords.actions.trash",
+      "ours:Trash"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.triggered-ability",
+    "term": "Triggered ability",
+    "text": "An ability that happens when something else takes place.",
+    "see": [
+      "effects.triggered.what"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.turn",
+    "term": "Turn",
+    "text": "The global cycle of four phases that every player goes through together.",
+    "see": [
+      "turn.general.phases",
+      "concepts.general.turns"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.type-line",
+    "term": "Type line",
+    "text": "The line of a card that describes what the card is.",
+    "see": [
+      "card.type-line.what"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.unaware",
+    "term": "Unaware",
+    "text": "An attribute: an Unaware card, and every card interacting with it, ignores all stat changes: each is read at the stats printed on it.",
+    "see": [
+      "attr.unaware"
+    ],
+    "derived": [
+      "attr:Unaware",
+      "ours:Unaware"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.unit",
+    "term": "Unit",
+    "text": "A card type that, once it enters play, stays there until something removes it; units attack and defend.",
+    "see": [
+      "types.units.permanent",
+      "types.general.kinds"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.unit-token",
+    "term": "Unit token",
+    "text": "A unit that an effect creates, whether or not the effect calls it a token.",
+    "see": [
+      "types.tokens.created-units",
+      "types.tokens.unit-tokens"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.unstable",
+    "term": "Unstable",
+    "text": "A non-combat attribute: an Unstable card that would enter a bin from an active zone is erased instead.",
+    "see": [
+      "keywords.abilities.unstable"
+    ],
+    "derived": [
+      "keyword:keywords.abilities.unstable",
+      "ours:Unstable"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.virus",
+    "term": "Virus",
+    "text": "A timing icon: a Virus card can also be applied as an augment from the hand during battle.",
+    "see": [
+      "effects.virus.what"
+    ],
+    "derived": [
+      "ours:Virus"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.vulnerable",
+    "term": "Vulnerable",
+    "text": "An attribute: a Vulnerable unit is dealt double the damage that would be dealt to it.",
+    "see": [
+      "attr.vulnerable"
+    ],
+    "derived": [
+      "attr:Vulnerable",
+      "ours:Vulnerable"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.x",
+    "term": "X",
+    "text": "A number that the card defines.",
+    "see": [
+      "concepts.numbers.x"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.you",
+    "term": "You",
+    "text": "On a card, the controller of the effect.",
+    "see": [
+      "concepts.players.you"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  },
+  {
+    "key": "glossary.zone",
+    "term": "Zone",
+    "text": "One of the places a card can be: the deck, the hand, the cache, play, the bin, the stack, the erased pile, the recycle pile and the pack.",
+    "see": [
+      "zones.general.list"
+    ],
+    "examples": [],
+    "sources": {},
+    "sourceHashes": {}
+  }
+]

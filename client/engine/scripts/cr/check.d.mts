@@ -11,6 +11,8 @@ export const DIGITAL_EVIDENCE_ROOTS: string[];
 export const isAnnexD: (r: { key?: string } | null | undefined) => boolean;
 export function isEvidenceSpan(r: { key?: string } | null | undefined, file: unknown): boolean;
 export function indexExtract(ex: Extract): any;
+/** the glossary's derived term sources: tag → what it is */
+export function glossaryTags(ex: Extract, ledger?: { entries: { num: string; key: string; kind?: string; removed?: string }[] } | null): Map<string, string>;
 export function testFilesFor(X: any, file: string): any[];
 export function titleMatches(X: any, binding: string): { files: number; n: number };
 export function check(inputs: CrInputs, ex: Extract, opts?: { repoRoot?: string }): {

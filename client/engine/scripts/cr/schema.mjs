@@ -8,7 +8,10 @@
  *
  * The shapes (data/comprehensive-rules/README.md has the prose):
  *   rule record   CONTROL's v2 schema + `parent`, `order`, `sourceHashes`
- *   glossary row  a rule record with `term` instead of `parent`/`order`
+ *   glossary row  a rule record with `term` instead of `parent`/`order`; a pointer:
+ *                 one sentence + `see` (the first target is the defining rule),
+ *                 `derived?` (the term-source tags it covers), `obsolete?` and,
+ *                 when obsolete, `usedBy[{ref, quote}]` (a source using the old name)
  *   discrepancy   {id, kind, rule, summary, sides[{source, quote}], resolution, tier,
  *                  seeAlso?[{id, rule}], question?}
  *                 (seeAlso: the same question filed by another unit and merged into
@@ -64,6 +67,14 @@ export const REGISTER_FINDING_RE = /^F-REG-\d+$/;
 
 /** a key: lower-case dotted segments, hyphens allowed inside a segment */
 export const KEY_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*(?:\.[a-z0-9]+(?:-[a-z0-9]+)*)*$/;
+/**
+ * The glossary's derived term sources (check.mjs glossaryTags): a zone, phase,
+ * battle step or damage sub-step of the engine's enums, an attribute, a row of
+ * our client glossary, or a keyword rule of 801/803 by its key. A glossary row
+ * lists the tags it covers in `derived`.
+ */
+export const GLOSSARY_TAG_KINDS = ['zone', 'phase', 'step', 'substep', 'attr', 'ours', 'keyword'];
+export const GLOSSARY_TAG_RE = new RegExp(`^(?:${GLOSSARY_TAG_KINDS.join('|')}):\\S.*$`);
 /** a ruling citation: `R114`, `R197b`, optionally followed by a scope
  *  ("R7 its Piercing half") */
 const RULING_CITE_RE = /^R(\d+)(b?)(?![\w])\s*(.*)$/;
@@ -150,6 +161,13 @@ export function validateRecord(r) {
     if (!nonEmpty(r.term)) P('term is empty');
     if (!Array.isArray(r.see) || r.see.length === 0) P('a glossary row needs at least one "see" target');
     if (r.obsolete !== undefined && typeof r.obsolete !== 'boolean') P('obsolete must be a boolean');
+    if (r.derived !== undefined && (!Array.isArray(r.derived) || !r.derived.every((t) => isStr(t) && GLOSSARY_TAG_RE.test(t)))) P(`derived must be an array of "<${GLOSSARY_TAG_KINDS.join('|')}>:<name>" tags`);
+    // an obsolete term is kept only where a source really uses the old name: the quote proves it
+    if (r.obsolete && (!Array.isArray(r.usedBy) || r.usedBy.length === 0)) P('an obsolete term needs usedBy: [{ref, quote}], a source that uses the old name');
+    if (r.usedBy !== undefined) {
+      if (!Array.isArray(r.usedBy)) P('usedBy must be an array');
+      else out.push(...refQuoteList(`${id}: usedBy`, r.usedBy, (x) => ['page', 'card', 'file'].includes(parseRef(x)?.type), '"Manual p.N", "Rulebook 2023 p.N", "card: <Name>" or "file: <repo path>"'));
+    }
   } else {
     if (!nonEmpty(r.parent)) P('parent is missing (the rule it hangs under, e.g. "608" or "608.2", or a key)');
     else if (r.parent.includes('.') && /^\d/.test(r.parent) && !RULE_NUM_RE.test(r.parent) && !SECTION_NUM_RE.test(r.parent)) P(`parent ${r.parent} is a subrule: rules go three levels deep at most`);
