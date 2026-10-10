@@ -210,7 +210,7 @@ const KEYWORD_RULES: GlossEntry[] = [
   // effect"), and combat's own blocker branch (engine.ts:10102) pierces into
   // the ATTACKING player. 177 now derives this row's obligation from the two
   // printed reminders, so the card can never get ahead of it again.
-  { term: 'Piercing', ruling: ['R13', 'R103', 'R114', 'printed'], text: 'Excess damage from a piercing source is dealt to the recipient’s controller — automatically, as part of the same damage, never as a separate trigger. In combat that is the player behind the blocked column; a piercing BLOCKER pierces into the attacking player; and it works on non-combat damage too.' },
+  { term: 'Piercing', ruling: ['R13', 'R103', 'R114', 'R319', 'R340', 'printed'], text: 'Excess damage from a piercing source is dealt to the recipient’s controller, as part of the same damage, never as a separate trigger. Once each unit has been given lethal, the dealing player may keep any of the excess on the units instead. In combat that is the player behind the blocked column; a piercing BLOCKER pierces into the attacking player; and it works on non-combat damage too.' },
   // R206, CT-80 (e): the row said "an adjacent unit" and stopped. The engine
   // walks a `visited` chain (engine.ts:4123-4160) and Envoy of Lightning's
   // PRINTED reminder names the recursion outright — "can be directed to an

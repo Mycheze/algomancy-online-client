@@ -44,6 +44,9 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-10-10', kind: 'change', text: 'Piercing is a choice outside combat too: when a Piercing unit deals damage through Squish, Fight, Battle or an ability, its controller may keep the excess on the unit instead of sending it to the player.' },
+  { date: '2026-10-10', kind: 'fix', text: 'Borrower of Forms now gets the augments of the unit it copies: a copied virus or other augment works on the copy, not just in its text.' },
+  { date: '2026-10-10', kind: 'fix', text: 'Side-blocks can now be placed to the left of the attack as well as the right, and placement buttons number columns the same way the board does.' },
   { date: '2026-10-09', kind: 'new', text: 'Side-blocks: you can block where no attacker stands, with any number of units, each as its own column. A unit played in front of an unblocked attacker after blocks now blocks it.' },
   { date: '2026-10-09', kind: 'change', text: 'Piercing is now a choice: when your Piercing unit is blocked you split its damage yourself, and may keep the excess on the blocker instead of sending it to the player.' },
   { date: '2026-10-09', kind: 'fix', text: 'Resonant now deals damage, so Conduit of Pain and Powerful apply to it and Crevice Lurker taxes it. Conduit of Pain adds its 1 before Powerful doubles.' },

@@ -6357,16 +6357,23 @@ export class E {
     if (attacker) {
       out.push({ col: null, end: 'left', label: 'a new column on the left', spot: { kind: 'end', end: 'left' } });
     }
+    // The LABEL numbers columns the way the board does: by the attacking
+    // column each one stands opposite. The defender's grid is only its
+    // blocking columns, so its index i is not that number once a block skips
+    // a column or a side-block opens one (R321) — the bar said "column 3" for
+    // what the board drew as column 5. `spot` keeps the grid index.
+    const keys = attacker ? null : Object.keys(b.blocks).map(Number).sort((a, z) => a - z);
     grid.forEach((col, i) => {
       const alive = col.filter(id => this.entity(id));
+      const n = (keys ? keys[i]! : i) + 1;
       if (alive.length === 1) {
         out.push({
-          col, label: `column ${i + 1}, behind ${this.entity(alive[0]!)?.card ?? '?'}`,
+          col, label: `column ${n}, behind ${this.entity(alive[0]!)?.card ?? '?'}`,
           spot: { kind: 'behind', unit: alive[0]! },
         });
       } else if (alive.length === 0) {
         out.push({
-          col, label: `column ${i + 1} (an empty slot in the line)`,
+          col, label: `column ${n} (an empty slot in the line)`,
           spot: { kind: 'hole', column: i },
         });
       }

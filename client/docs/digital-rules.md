@@ -5138,7 +5138,7 @@ printed word decides the mechanism, and "target" is the switch.** Do not build
 one path and special-case the other — sort every card in ledger #60 by that
 test first.
 
-## R103 — {Piercing} pierces on NON-COMBAT damage too, into the unit's controller
+## R103 — {Piercing} pierces on NON-COMBAT damage too, into the unit's controller (its "automatic" half reversed by R340: the excess is elective)
 
 *(Owner ruling, 2026-08-23, closing CARD-TODO #4 and the R79 "not in scope" note above.)*
 
@@ -6312,6 +6312,9 @@ So a copy of a modded unit inherits the mods' **text**, no mod entity is cloned,
 **counts as modded**, and it is therefore **{Unstable}** — erased instead of binned when it
 dies (R69). This is neither of the two options that were offered; it is what he said.
 
+*(Superseded in part: R336 (2026-10-09) reverses the Unstable half — a fresh copy is not modded and not
+Unstable. R341 (2026-10-10) makes the inherited augment text work as rules, not display only.)*
+
 ### Why it is a layer and not a rewrite
 
 R101 (transform) rewrites `Entity.card` in place and argues *"there is no transform layer
@@ -6342,7 +6345,7 @@ The engine's four public reads:
 | `E.faceName(e)` / `E.nameOf(e)` | the GAME name — `facesOf(e)[0].card` |
 | `E.faceDef(e)` | `getCard(faceName(e))` — where its rules come from |
 | `E.facesWith(e, facet)` | every face contributing that facet, in order |
-| `E.isUnstable(e)` | mods, or R96's stamp, **or** ruling 2's copied-modded face |
+| `E.isUnstable(e)` | mods, or R96's stamp (ruling 2's copied-modded face was removed by R336) |
 
 `E.nameOf` was added the same day for The Everywhere's name-matching static, reserved as
 "the single hook for a copy layer". It is that hook; it is now `faceName`.
@@ -26386,7 +26389,7 @@ given goes to their controller. The default is unchanged: lethal to each, the re
 to the player.
 
 Noncombat Piercing is unchanged: its excess still goes to the controller as part of
-resolution (the owner, 2026-08-23).
+resolution (the owner, 2026-08-23). *(Reversed by R340, 2026-10-10: noncombat Piercing is elective too.)*
 
 ### How it is encoded
 
@@ -26496,8 +26499,10 @@ answers no {Flying} or {Evasive} rule.
 - R295: a blocking half strikes only with an attacker in front of it, so a
   side-block (and an R72 hole) never splits the damage step on its own.
 - The client draws an open side-block column past the attack's right end while
-  blocks are being built (`ui/main.ts` `sideBlockColumns`); the left side is
-  reachable through the engine but not yet from the board.
+  blocks are being built (`ui/main.ts` `sideBlockColumns`), and one before the
+  attack's left end (2026-10-10: `ui.blockLeft` counts the left columns at the
+  front of `ui.columns`; `ui/formation.ts` `planOfBuild`/`buildOfPlan` map them
+  to the engine's negative keys). Guard: `ui/test/407-left-side-blocks.test.ts`.
 - Guards: `engine/test/388-raq-blocks-and-windows.test.ts` ("RAQ Blocked: a
   defender may block where no attacker is"), `engine/test/400-raq-fix-blocks.test.ts`
   (the four R321 tests) and `ui/test/400-side-blocks.test.ts`.
@@ -27029,3 +27034,104 @@ not offer it. Every other X card is still offered at [0].
   the rule reads the field, not the name.
 - Guards: `engine/test/396-raq-timing.test.ts` "RAQ Tides 6:",
   `engine/test/404-raq-fix-tides.test.ts` "R339: an X card that may not be zero".
+
+## R340 — {Piercing} is elective outside combat too (reverses R319's noncombat note and the 2026-08-23 ruling)
+
+*(The owner, 2026-10-10, answering the open question R319 left. The RAQ is the
+authority — "Trust the RAQ over our rulings." Reverses the "automatic, not
+elective" half of R103 and R319's closing note.)*
+
+### The ruling
+
+R103 (the owner, 2026-08-23) sent a Piercing source's noncombat excess to the
+victim's controller "as part of resolution of the damage", and read R7's
+"automatic, not elective" across: "there is no assignment choice to raise". R319
+made combat Piercing elective and said in so many words that noncombat Piercing
+was unchanged.
+
+RAQ "[Solved] Squish/Fight/Battle vs Source of damage & Interactions". `seniek`:
+
+> "Bubb and Good Whale in a column and played Squish/Fight/Battle on Bubb?"
+
+`_passer`:
+
+> "Since Bubb will be the source of damage and he has Piercing, then any excess
+> damage can be dealt to enemy player."
+
+Asked whether "can be" means automatic or a choice, the owner: **"Elective, like
+combat."**
+
+So a Piercing source dealing noncombat damage works like a Piercing strike's last
+victim in R319: the unit must be given lethal first, and then the dealing player
+may keep any of the excess on it. Whatever it is not given goes to its
+controller. The default is unchanged: lethal to the unit, the rest to the player.
+R103 still holds everywhere else: the arithmetic ({Powerful} first, {Vulnerable}
+priced on receipt, the {Deadly} floor of 1, a damage shield ignored when planning),
+and the excess landing in the same R80 batch with nothing on the stack in between.
+
+**Who decides.** The dealing player is the controller of the source unit (R318:
+for Squish, Fight and Battle the unit is the source, not the spell). That is how
+combat works, where each side elects over its own strike. So in a Battle that
+makes an opponent's Piercing unit fight, the opponent places that unit's excess.
+When the source is not a unit in play (a spell, or a unit that has died), the
+effect's controller decides.
+
+### How it is encoded
+
+- `dealEffectDamageAll` handles every noncombat damage source. Its `pierceKeep`
+  closure asks the question at both places the method pierces: a plain hit
+  (`attrsVs(first).has('Piercing')`), and an {Electric} chain that dead-ends on a
+  Piercing source (R103 / R317). In the dead-end case the menu covers the last
+  victim's lethal plus the remainder.
+- The question is raised **only when there is excess** (`pool > floor`). A hit
+  that is exactly lethal or less, or that comes from a source without Piercing,
+  asks nothing, so a game with no noncombat Piercing excess replays exactly as
+  before.
+- It is R120/R319's `assignDamage` decision, raised through `ctx.choose` (a part
+  choice, so R85's rollback-and-replay covers it). The option values are the same
+  as in combat: `'default'` (lethal to the unit, the rest to the player) and then
+  each legal amount from lethal up to the whole hit, labelled with what reaches
+  the player. The prompt names `{Piercing}`. The key is
+  `pierce:<source>:<hit index>`, so the two hits of a Fight ask two questions.
+- The client needs no new UI. `assignSplitStepper` draws its dial from the option
+  values alone. Outside combat there is no column to draw (`assignSplitVictims`
+  needs a `combatAssign` suspension), so the rows are left off. Because the prompt
+  names {Piercing}, the bar reads "N goes to the player".
+- `EffectCtx.choose` and `PartChoice` accept the `'assignDamage'` kind.
+- Guards: `engine/test/405-raq-noncombat-piercing.test.ts` covers the thread's
+  Squish (keep all, default, and a split in between), Fight, Battle (the question
+  goes to the Piercing unit's controller), the Electric + Piercing dead end, and
+  two controls that ask no question (no Piercing; exactly lethal). The tests that
+  pinned the automatic excess now elect the default: `82-attr-interactions` (its
+  direct-ctx `choose` answers `'default'`), `18-earth-c` (Squish with Good Whale)
+  and `388-raq-blocks-and-windows` (the thread's own claim).
+
+## R341 — A copy's copied augments work: it carries each copied mod's [Augment] box (extends R336)
+
+*(RAQ follow-up to CT-219, 2026-10-10. Thread "[Solved & Expanding?] Borrower of Forms - The weird interactions", _passer, quoting Caleb. R118 ruling 2, the owner: "Inherit the mods text".)*
+
+### The ruling
+
+Borrower of Forms: "Erase target unit. I become an exact copy of that unit (I copy all stat changes, counters, card text and mods)." The thread: "it inherits all of the combined text". R336 made the copied **grafts** run. The copied **augments** work too: a copy of a unit with an augment mod has that mod's `[Augment]` box as its own text.
+
+- **Only the box.** An augment gives its host the `[Augment]` box and nothing else (R268), so the copy gets the box and nothing else: type-line attributes, statics and other continuous text, triggered and activated `[Augment]` text. A Borrower that copied a unit with a Chitin Shredder virus is {Powerful}. One that copied a Graxxlid-augmented unit can use Graxxlid's [one] ability.
+- **No mod is cloned (R336).** The copy carries what the mods say, not the cards. It is not modded and not Unstable. When it leaves play, only its own physical card goes anywhere (Borrower of Forms to the bin). Nothing is binned or erased a second time.
+- **[once] is per card per host (R9).** A copied augment's bounded ability uses the budget key a real mod of that card on this host would use (`augment:<card>#<n>`), on the copy.
+- **Stripping.** The copied text is part of the card text the copy became, so it is exactly as old as the copy's printed text (R328). Suppression Field ("loses all attributes and abilities") and Monke or Transmogrifant take it along with the rest. "Erase all of its mods" finds no mod to erase. The copied text is not a mod, and it is already stripped.
+- **A copy of a copy chains.** The copied list already chains (R336), so the second copy carries the first copy's copied augments too.
+- **Ancient One** ("I have all abilities of adjacent allies … this includes modded abilities") borrows a neighbouring copy's copied augments just as it borrows a neighbour's real ones.
+
+### How it is encoded
+
+- `E.copiedAugments(e, facet)` is the **one enumerator**. It returns the augment entries of the identity face's `CopyRef.mods`, by card name in the source's order, gated on the face carrying `facet`. A unit with no `copies` returns a shared empty array on its first read, so a board with no copy layer pays nothing on the hot path.
+- Every channel that reads a real augment mod's box reads its copied twin from that call:
+  - `E.ownAttrs`: `augmentAttrs`, stamped `E.PRINTED`.
+  - `E.behaviorBlocks`, the unit branch: the box is appended as a `{ face: <mod card>, def: augmentBox }` block. This covers every `anchored()` walk: `staticsFor`, cost mods, effect attrs, amount mods and multipliers, permissions, `asYouPlay`, and the replacement hooks through `donorFaces`.
+  - `E.donates`: the presence predicate gains the same arm. It is checked last, so the property reads still answer first.
+  - `E.fireEvent`: triggered `augmentText`, under the `E.PRINTED` strip gate, with no `selfModId`.
+  - `pushActivatedOptions` / `activationSource` (apply.ts): activated `augmentText`. It is addressed `{ face: <mod card>, text: 'augment' }`, the existing additive `ActivateVia` arm, so no action-log shape changes. It is offered once per name and never when a worn face already offers it.
+  - Ancient One's `aoBorrowedFaces` and its triggered relay.
+  - The UI attribute row (`ui/cardtext.ts` `attrLines`), so the row agrees with `ownAttrs`.
+- The copied text reads from the copy itself (holder = anchor = the copy). So "your OTHER units" excludes the copy, and its region and controller are the copy's.
+- `CopyRef.modText` is display only and says so. What the copied mods do is read off `CopyRef.mods`.
+- Guards: `engine/test/406-copied-augments.test.ts`. It covers Powerful copied, the bin after death, Graxxlid offered, used and then refused as already used, the address refused on a copy with no Graxxlid, Dreadspawn Horror's static, Mirage Scuttler's trigger, a no-mod copy unchanged, Suppression Field, Transmogrifant, a copy of a copy, and a copied Glowhaven Elder radiating plus Ancient One borrowing it. With the engine change reverted, 9 of its 11 tests fail. The two that still pass are the bin test and the refusal test, which are invariants that hold either way.

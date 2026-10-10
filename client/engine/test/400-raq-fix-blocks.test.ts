@@ -192,3 +192,25 @@ test('R320 a struck mark moves with its column when a new column opens on the le
   assert.equal(h.state.players[D]!.life, 30 - 5 - 2 - 1,
     'normal sub-step: the new Tiderunner column and the plain one — the 3/3 already struck with its column');
 });
+
+// ── the placement bar numbers columns the way the board does ──
+
+test('R321/R322 a defender\'s "behind" spot is labelled by the column it stands opposite, not its count of blocks', () => {
+  // The browser check (2026-10-10): with side-blocks on the left, the bar said
+  // "column 3, behind Bubb" for the spot the board drew as column 5.
+  const h = new Harness(40008);
+  toDeployment(h);
+  const A = h.state.initiative as Seat, D = (1 - A) as Seat;
+  const a1 = tok(h, A, 1, 5), a2 = tok(h, A, 1, 5);
+  const left = tok(h, D, 1, 1), opp2 = tok(h, D, 1, 1);
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[a1], [a2]] });
+  pass(h); pass(h);
+  // a side-block on the left (column 1 once it opens), nothing opposite a1 (column 2), a block on a2 (column 3)
+  h.do({ type: 'declareBlocks', seat: D, blocks: { [-1]: [left], 1: [opp2] } });
+  assert.deepEqual(Object.keys(h.state.battle!.blocks).map(Number).sort(), [0, 2], 'keys 0 and 2 after the re-key');
+  const labels = new E(h.state).formationSlots(D).map(s => s.label);
+  assert.ok(labels.includes('column 1, behind Unit Token'), labels.join(' | '));
+  assert.ok(labels.includes('column 3, behind Unit Token'), `the block on a2 is column 3, not 2 — ${labels.join(' | ')}`);
+  assert.ok(labels.some(l => /^column 2, blocking it/.test(l)), 'and a1\'s column is the open flash-block spot');
+});
