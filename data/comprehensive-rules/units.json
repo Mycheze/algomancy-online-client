@@ -1,0 +1,29 @@
+{
+  "note": "The drafting units of the comprehensive-rules export, from the project's control table. `sections` are outline section numbers (802.N = 802.1 General, then the engine's attribute order from 802.2); `test` is the unit's CR example test file number (client/engine/test/<test>-cr-<unit>.test.ts). Section 800 belongs to no unit.",
+  "units": [
+    {"id": "U01", "title": "general, golden rules, players, start, end", "rules": "100–104", "sections": ["100", "101", "102", "103", "104"], "test": 412},
+    {"id": "U02", "title": "elements/affinity, resources, numbers/X", "rules": "105–107", "sections": ["105", "106", "107"], "test": 413},
+    {"id": "U03", "title": "cards/tokens/faces/copies, abilities, targets", "rules": "108–110", "sections": ["108", "109", "110"], "test": 414},
+    {"id": "U04", "title": "costs, life/damage/rot/debt, timestamps", "rules": "111–113", "sections": ["111", "112", "113"], "test": 415},
+    {"id": "U05", "title": "parts of a card", "rules": "200–209", "sections": ["200", "201", "202", "203", "204", "205", "206", "207", "208", "209"], "test": 416},
+    {"id": "U06", "title": "card types", "rules": "300–305", "sections": ["300", "301", "302", "303", "304", "305"], "test": 417},
+    {"id": "U07", "title": "zones", "rules": "400–410", "sections": ["400", "401", "402", "403", "404", "405", "406", "407", "408", "409", "410"], "test": 418},
+    {"id": "U08", "title": "turn, planning, resource, draw/draft, haste", "rules": "500–504", "sections": ["500", "501", "502", "503", "504"], "test": 419},
+    {"id": "U09", "title": "battle phase overview, regroup, deployment, initiative", "rules": "505–508", "sections": ["505", "506", "507", "508"], "test": 420},
+    {"id": "U10", "title": "regions, formations, columns/adjacency/edges", "rules": "600–603", "sections": ["600", "601", "602", "603"], "test": 421},
+    {"id": "U11", "title": "attacking, attack window, blocking, block window", "rules": "604–607", "sections": ["604", "605", "606", "607"], "test": 422},
+    {"id": "U12", "title": "combat damage (seed: pilot v2 + its verdicts)", "rules": "608", "sections": ["608"], "test": 423},
+    {"id": "U13", "title": "after combat, counterattacks, later rounds", "rules": "609–610", "sections": ["609", "610"], "test": 424},
+    {"id": "U14", "title": "playing vs applying, casting, stack & priority, resolution/fizzle", "rules": "700–704", "sections": ["700", "701", "702", "703", "704"], "test": 425},
+    {"id": "U15", "title": "activated, triggered, static, replacement/prevention", "rules": "705–708", "sections": ["705", "706", "707", "708"], "test": 426},
+    {"id": "U16", "title": "timestamps, copies, control, stripping, state checks, last-known state", "rules": "709–714", "sections": ["709", "710", "711", "712", "713", "714"], "test": 427},
+    {"id": "U17", "title": "modifications: augment, graft, virus, modular", "rules": "720–724", "sections": ["720", "721", "722", "723", "724"], "test": 428},
+    {"id": "U18", "title": "keyword actions", "rules": "801", "sections": ["801"], "test": 429},
+    {"id": "U19", "title": "attributes (general → Feeble) (seed: pilot 802.3–802.11)", "rules": "802.1–802.12", "sections": ["802.1", "802.2", "802.3", "802.4", "802.5", "802.6", "802.7", "802.8", "802.9", "802.10", "802.11", "802.12"], "test": 430},
+    {"id": "U20", "title": "attributes (Evasive → Modular) (seed: pilot 802.16–802.25)", "rules": "802.13–802.26", "sections": ["802.13", "802.14", "802.15", "802.16", "802.17", "802.18", "802.19", "802.20", "802.21", "802.22", "802.23", "802.24", "802.25", "802.26"], "test": 431},
+    {"id": "U21", "title": "other keyword abilities", "rules": "803", "sections": ["803"], "test": 432},
+    {"id": "U22", "title": "multiplayer & formats", "rules": "900–905", "sections": ["900", "901", "902", "903", "904", "905"], "test": 433},
+    {"id": "U23", "title": "digital conventions: priority/auto-pass/clocks/undo/recap", "rules": "Annex D part 1", "sections": ["D1", "D2", "D3", "D4", "D5"], "test": 434},
+    {"id": "U24", "title": "digital conventions: display/reveal/tutorial/modes/deckbuilding", "rules": "Annex D part 2", "sections": ["D6", "D7", "D8"], "test": 435}
+  ]
+}

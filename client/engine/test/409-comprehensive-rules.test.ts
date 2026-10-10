@@ -10,9 +10,11 @@
  *      needs no new number;
  *  (2) the ledger is append-only against the last commit (`git show HEAD:`);
  *  (3) check.mjs finds no problems;
- *  (4) every supersession candidate is decided        — a PINNED count until
- *  (5) every ruling is classified                      — the register stage
- *      lands its files; then both pins are 0, and a new ruling turns this red;
+ *  (4) every supersession candidate is decided, or held as an `uncertain`
+ *      row (both quotes, for the owner) — only that count is pinned;
+ *  (5) every ruling is classified, so a new ruling turns this red, and the
+ *      reviewed state is mechanically sound: every edge quote verbatim, every
+ *      status agreeing with its edges, every source assigned exactly once;
  *  (6) the stale count (sources changed since drafting) is pinned.
  *
  * Each part passes on an empty rules/ dir, and that would prove nothing on its
@@ -30,7 +32,7 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { readFileSync, existsSync } from 'node:fs';
 import { relative } from 'node:path';
-import { REPO_ROOT, CR_LEDGER } from '../scripts/paths.mjs';
+import { REPO_ROOT, CR_LEDGER, CR_SOURCE_CLASSIFICATION, CR_UNITS } from '../scripts/paths.mjs';
 import { extract } from '../scripts/cr/extract.mjs';
 import type { Extract } from '../scripts/cr/extract.d.mts';
 import { render, loadInputs, OUTPUT_PATHS, type CrInputs } from '../scripts/cr/render.mjs';
@@ -39,7 +41,7 @@ import {
   allocate, appendOnlyProblems, compareNums, emptyLedger, formatLedger, letterFor, letterIndex,
   LedgerError, type Ledger,
 } from '../scripts/cr/ledger.mjs';
-import { recordHash, validateFinding, type RuleRecord } from '../scripts/cr/schema.mjs';
+import { norm, recordHash, validateFinding, type RuleRecord } from '../scripts/cr/schema.mjs';
 import {
   badSpans, buildFeedback, finalize, judge, plant, roundKeys, sameAsVerified, shuffleRank, stamp,
   type Mutant, type RoundFiles,
@@ -48,10 +50,9 @@ import {
 /* ── the pins (4)–(6). Each must EQUAL the measured count: a rise is new
  *    unreviewed work (a new ruling, a new candidate, a changed source) and a
  *    fall means lower the pin, so the number only ever ratchets down. ── */
-/** supersession candidates with no reviewed row in supersession.json */
-const EXPECTED_UNDECIDED = 74;
-/** rulings with no row in classification.json (owner decision 4) */
-const EXPECTED_UNCLASSIFIED = 329;
+/** supersession.json's `uncertain` rows: questions the register review could
+ *  not settle, held undecided for the owner. Resolving one lowers this */
+const EXPECTED_UNCERTAIN = 9;
 /** rules whose cited sources changed since they were drafted */
 const EXPECTED_STALE = 0;
 
@@ -104,15 +105,72 @@ test('(3) check.mjs finds no problems in the committed records', () => {
   assert.deepEqual(lines, [], `${lines.length} problem(s):\n${lines.slice(0, 40).join('\n')}`);
 });
 
-test('(4) every supersession candidate is decided (pinned until supersession.json lands)', () => {
+/* the reviewed state's own shape, beyond what check.mjs reads */
+type Quoted = { quote: string; quoteFrom: string };
+type Edge = { from: string; to: string; relation?: string; scope?: string | null; decision: string } & Partial<Quoted>;
+type Uncertain = { from: string; to: string; kind: string; question: string; quotes: Quoted[] };
+type ClsRow = { status: string; scope: string; units: string[]; staleWarning?: Quoted; uncertain?: string[] };
+const SUP = (INPUTS?.supersession ?? { edges: [] }) as unknown as { edges: Edge[]; uncertain?: Uncertain[] };
+const CLS = (INPUTS?.classification ?? {}) as unknown as Record<string, ClsRow>;
+
+test('(4) every supersession candidate is decided, or held as an uncertain row (only those pinned)', () => {
   const r = result();
-  pinned('undecided supersession candidates', r.undecided.length, EXPECTED_UNDECIDED,
-    r.undecided.slice(0, 10).map((u) => `${u.from}>${u.to}`).join(', '));
+  const held = new Set((SUP.uncertain ?? []).map((u) => `${u.from}>${u.to}`));
+  const loose = r.undecided.map((u) => `${u.from}>${u.to}`).filter((k) => !held.has(k));
+  assert.deepEqual(loose, [], `supersession candidates with no decision in supersession.json: ${loose.slice(0, 10).join(', ')}`);
+  pinned('uncertain supersession rows', (SUP.uncertain ?? []).length, EXPECTED_UNCERTAIN,
+    (SUP.uncertain ?? []).map((u) => `${u.from}>${u.to}`).join(', '));
 });
 
-test('(5) every ruling is classified (pinned until classification.json lands)', () => {
+test('(5) every ruling is classified, and the reviewed state is mechanically sound', () => {
   const r = result();
-  pinned('unclassified rulings', r.unclassified.length, EXPECTED_UNCLASSIFIED, r.unclassified.slice(-10).join(', '));
+  assert.deepEqual(r.unclassified, [], `rulings with no row in classification.json: ${r.unclassified.join(', ')}`);
+  const bad: string[] = [];
+  const text = new Map(EX.rulings.map((x) => [x.id, norm(`${x.heading ?? ''} \n ${x.body ?? ''}`)]));
+  const verbatim = (where: string, q: Partial<Quoted> | undefined) => {
+    if (!q?.quote || !q.quoteFrom) { bad.push(`${where}: no quote`); return; }
+    const raq = /^RAQ (\d+#\d+)$/.exec(q.quoteFrom);
+    const c = raq ? EX.raq.flatMap((t) => t.claims).find((x) => x.id === raq[1]) : null;
+    const t = raq ? (c ? norm(`${c.claim} \n ${c.source}`) : undefined) : text.get(q.quoteFrom);
+    if (t === undefined) bad.push(`${where}: ${q.quoteFrom} does not exist`);
+    else if (!t.includes(norm(q.quote))) bad.push(`${where}: not verbatim in ${q.quoteFrom}: "${q.quote.slice(0, 80)}"`);
+  };
+  const SUPERSEDING = (e: Edge) => e.decision === 'accepted' && !['extends', 'cites', 'confirms', 'applies'].includes(e.relation ?? '');
+  for (const e of SUP.edges) if (e.decision === 'accepted') verbatim(`edge ${e.from}>${e.to}`, e);
+  for (const u of SUP.uncertain ?? []) {
+    if (u.quotes.length < 2) bad.push(`uncertain ${u.from}>${u.to}: needs both sides' quotes`);
+    u.quotes.forEach((q, i) => verbatim(`uncertain ${u.from}>${u.to} quotes[${i}]`, q));
+  }
+  const units = new Set((JSON.parse(readFileSync(CR_UNITS, 'utf8')) as { units: { id: string }[] }).units.map((u) => u.id));
+  for (const [id, c] of Object.entries(CLS)) {
+    const es = SUP.edges.filter((e) => e.to === id && SUPERSEDING(e));
+    const want = !es.length ? ['current'] : es.some((e) => !e.scope) ? ['superseded', 'withdrawn', 'absorbed'] : ['partly-superseded', 'narrowed'];
+    if (!want.includes(c.status)) bad.push(`${id}: status ${c.status}, but its accepted edges make it ${want.join('|')}`);
+    for (const u of c.units) if (!units.has(u)) bad.push(`${id}: unit ${u} is not in units.json`);
+    if (c.staleWarning) verbatim(`${id} staleWarning`, c.staleWarning);
+    for (const k of c.uncertain ?? []) if (!(SUP.uncertain ?? []).some((u) => `${u.from}>${u.to}` === k)) bad.push(`${id}: uncertain ${k} has no row in supersession.json`);
+  }
+  for (const u of SUP.uncertain ?? []) if (!CLS[u.to]?.uncertain?.includes(`${u.from}>${u.to}`)) bad.push(`uncertain ${u.from}>${u.to}: ${u.to}'s classification row does not flag it`);
+  // every RAQ claim and thread and every printed page has exactly one row
+  const SRC = JSON.parse(readFileSync(CR_SOURCE_CLASSIFICATION, 'utf8')) as {
+    raqClaims: Record<string, { units: string[] }>; raqThreads: Record<string, { open: boolean }>;
+    printedPages: Record<string, { units: string[] }>; keywordReminders: { keyword: string; card: string; quote: string; source: string }[];
+  };
+  const same = (what: string, have: string[], want: string[]) => {
+    const h = new Set(have), w = new Set(want);
+    const miss = want.filter((x) => !h.has(x)), extra = have.filter((x) => !w.has(x));
+    if (miss.length || extra.length) bad.push(`${what}: missing ${miss.slice(0, 5).join(', ') || '-'}; not a source ${extra.slice(0, 5).join(', ') || '-'}`);
+  };
+  same('raqClaims', Object.keys(SRC.raqClaims), EX.raq.flatMap((t) => t.claims.map((c) => c.id)));
+  same('raqThreads', Object.keys(SRC.raqThreads), EX.raq.map((t) => String(t.threadId)));
+  same('printedPages', Object.keys(SRC.printedPages), EX.printedPages.map((p) => `${p.doc} p.${p.page}`));
+  for (const [k, a] of [...Object.entries(SRC.raqClaims), ...Object.entries(SRC.printedPages)]) for (const u of a.units) if (!units.has(u)) bad.push(`${k}: unit ${u} is not in units.json`);
+  const cards = new Map(EX.cards.map((c) => [c.name.toLowerCase(), norm(`${c.text} \n ${c.typeLine}`)]));
+  for (const k of SRC.keywordReminders) {
+    if (!k.source.startsWith('cards[]')) continue; // the type-line reminders were read off the scans
+    if (!cards.get(k.card.toLowerCase())?.includes(norm(k.quote))) bad.push(`keyword reminder ${k.keyword}: not verbatim on ${k.card}`);
+  }
+  assert.deepEqual(bad, [], `${bad.length} problem(s) in the reviewed state:\n${bad.slice(0, 30).join('\n')}`);
 });
 
 test('(6) the stale count is pinned', () => {
