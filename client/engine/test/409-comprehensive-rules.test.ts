@@ -595,6 +595,21 @@ test('§9 an empty rules dir renders every section as "No rules drafted yet" and
   assert.deepEqual(check(i, x).problems, []);
 });
 
+test('§9 a {chip:…} in the front matter is the rule\'s own chip in HTML and its plain label in .md and .txt', () => {
+  const x = fixtureExtract();
+  const i = fixtureInputs();
+  i.frontMatter += '\nA {chip:printed} rule; an {chip:owner} rule, {chip:partial}.\n';
+  const { files } = render(i, x);
+  assert.match(files.html, /A <span class="chip b-printed">Printed<\/span> rule; an <span class="chip b-owner">Owner call<\/span> rule, <span class="chip v-partial">Partial<\/span>\./);
+  assert.ok(!/class="legend"/.test(files.html), 'the chips are in the prose: no separate legend row');
+  for (const f of [files.doc, files.txt]) {
+    assert.match(f, /A Printed rule; an Owner call rule, Partial\./);
+    assert.ok(!f.includes('{chip:'), 'no token reaches a text edition');
+  }
+  i.frontMatter += '\n{chip:printd}\n';
+  assert.throws(() => render(i, x), /\{chip:printd\} is neither a basis nor a verdict/);
+});
+
 test('§9 the generator refuses a glossary entry whose "See rule" target is no live rule', () => {
   const x = fixtureExtract();
   const i = fixtureInputs();

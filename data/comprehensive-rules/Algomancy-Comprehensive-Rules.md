@@ -17,15 +17,14 @@ Edition: First generation (draft). Effective 2026-10-10. Engine at commit 76d01f
 Every rule carries its provenance: the sources that state it. In the HTML
 edition it is folded under the rule; in this edition it is the small line
 beneath it. Each rule also carries a **basis**, the strongest kind of source
-that actually states it:
-
-- **Printed**: the Manual, the 2023 Rulebook or a card's printed text, read literally.
-- **Designer**: Caleb Gannon's own answer in the rules-questions threads.
-- **Mixed**: more than one kind of source states it together.
-- **Owner call**: a ruling by this project's owner, with no designer source.
-  It is the client's law, and it may not be the game's.
-- **Engine only**: no source states it; it is what the engine does. These rules
-  are listed in Annex P and await the owner's sign-off.
+that actually states it. A Printed rule is stated by the Manual, the
+2023 Rulebook or a card's printed text, read literally; a Designer rule
+by Caleb Gannon's own answer in the rules-questions threads; a Mixed
+rule by more than one kind of source together. An Owner call rule is a
+ruling by this project's owner, with no designer source: it is the client's
+law, and it may not be the game's. An Engine only rule is stated by no
+source; it is what the engine does, and it is listed in Annex P to await the
+owner's sign-off.
 
 Our own glossary is quoted where it helps, and is never counted as a source.
 
@@ -33,9 +32,11 @@ Where a ruling and the engine disagree, the rule states the ruling and says
 "engine differs", with a link to the finding. The engine is the one that is
 wrong, and the finding is filed as a bug.
 
-Each rule also shows whether an independent verifier confirmed it against the
-engine and its tests, and in which round; how many tests the verifier ran; and
-how many gate test files are bound to the rule through its examples or its
+Each rule also shows what an independent verifier found when it checked the
+rule against the engine and its tests: Confirmed, or Partial
+when it could not confirm all of it, with the verifier's note beneath. Beside
+the verdict are the round it was verified in, how many tests the verifier ran,
+and how many gate test files are bound to the rule through its examples or its
 sources. A gate test is part of the client's test suite and runs on every
 check, so it keeps demonstrating the rule after verification is over. A rule
 that no executed test demonstrates is marked Untested.

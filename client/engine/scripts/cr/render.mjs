@@ -333,9 +333,22 @@ function differsText(rec) {
   return (rec.engineDiffers?.length ? ` (Engine differs, see ${rec.engineDiffers.join(', ')}.)` : '')
     + (rec.untested ? ' (Untested: no executed test demonstrates it.)' : '');
 }
-function fillFront(M, text) {
+/* A chip named in the front matter's prose, `{chip:printed}` or `{chip:confirmed}`:
+ * the HTML editions draw the very chip a rule wears, beside the sentence that says
+ * what it means; the .md and .txt editions read its label as a plain word. A name
+ * that is neither a basis nor a verdict fails the render. */
+const FRONT_CHIP = /\{chip:([a-z]+)\}/g;
+function frontChip(name, html) {
+  const [cls, label] = BASIS_LABEL[name] ? [`b-${name}`, BASIS_LABEL[name]]
+    : VERDICT_LABEL[name] ? [`v-${name}`, VERDICT_LABEL[name]] : [null, null];
+  if (!cls) throw new Error(`front matter: {chip:${name}} is neither a basis nor a verdict`);
+  return html ? `<span class="chip ${cls}">${label}</span>` : label;
+}
+/** the front matter with its placeholders filled; `html` keeps the chip tokens for mdToHtml */
+function fillFront(M, text, { html = false } = {}) {
   const ed = M.outline.edition;
-  return text.replaceAll('{{EDITION}}', ed.name).replaceAll('{{EFFECTIVE}}', ed.effective).replaceAll('{{ENGINE_COMMIT}}', ed.engineCommit);
+  const t = text.replaceAll('{{EDITION}}', ed.name).replaceAll('{{EFFECTIVE}}', ed.effective).replaceAll('{{ENGINE_COMMIT}}', ed.engineCommit);
+  return html ? t : t.replace(FRONT_CHIP, (_, n) => frontChip(n, false));
 }
 
 /* ── Annex P's numbers, computed once for all three editions ───────────── */
@@ -634,7 +647,7 @@ function mdToHtml(M, text) {
     para.push(line.trim());
   }
   flush(); endList();
-  return out.join('\n');
+  return out.join('\n').replace(FRONT_CHIP, (_, n) => frontChip(n, true));
 }
 
 function htmlSources(M, rec) {
@@ -841,7 +854,7 @@ q { quotes: "\\201C" "\\201D" }
 .disc p { margin: 4px 0 } .dh { display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
 .res { font-size: 14px }
 .count { font: 500 13px var(--font-mono); color: var(--muted) }
-.legend { display: flex; flex-wrap: wrap; gap: 8px; font-size: 13px; margin: 8px 0 }
+.front .chip { white-space: nowrap }
 .gloss dt { font-weight: 600; margin-top: 10px } .gloss dd { margin: 2px 0 0 18px }
 a { color: var(--accent) }
 .tw { overflow-x: auto } table { border-collapse: collapse; font-size: 13.5px; margin: 8px 0 }
@@ -874,10 +887,9 @@ ${body}
 `;
 }
 
-/** the introduction: the filled front matter and the basis legend */
+/** the introduction: the filled front matter, its chips drawn in its own sentences */
 const htmlFront = (M, review = false) =>
-  `<div class="front" id="intro"${crt(review, 'front')}>${mdToHtml(M, fillFront(M, M.inputs.frontMatter))}</div>\n`
-  + `<div class="legend">${BASES.map((b) => `<span class="chip b-${b}">${BASIS_LABEL[b]}</span>`).join('')}</div>`;
+  `<div class="front" id="intro"${crt(review, 'front')}>${mdToHtml(M, fillFront(M, M.inputs.frontMatter, { html: true }))}</div>\n`;
 
 const CHANGELOG_LEAD = '<p>Keyed by rule key. A number never moves, so a rule is new, removed or renamed; text changes to a rule are not listed yet.</p>';
 

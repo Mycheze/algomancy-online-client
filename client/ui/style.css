@@ -4612,7 +4612,7 @@ mark.crhl.on { background: rgba(224, 185, 60, .45); }
 /* render's discrepancy resolution line is <p class="res">; the client's .res is a 20px orb */
 .crdoc .res { width: auto; height: auto; border: 0; border-radius: 0; background: none; cursor: auto; font-size: 14px; }
 .crdoc .count { font: 500 13px var(--font-mono); color: var(--muted); }
-.crdoc .legend { display: flex; flex-wrap: wrap; gap: 8px; font-size: 13px; margin: 8px 0; }
+.crdoc .front .chip { white-space: nowrap; }
 .crdoc .gloss dt { font-weight: 600; margin-top: 10px; }
 .crdoc .gloss dd { margin: 2px 0 0 18px; }
 .crdoc .tw { overflow-x: auto; }
