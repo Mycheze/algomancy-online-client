@@ -22,7 +22,8 @@
  * planted per check and require each to fail BY NAME, so a check that went
  * blind is noticed. §7 unit-tests the ledger (the only place a number is born).
  * §10 tests the harness (scripts/cr/harness.mjs): plant, judge, feedback,
- * finalize and stamp, each over a fixture with its defect planted. §11: a
+ * finalize (and the polish round 4: its explicit key list and its merging
+ * finalize) and stamp, each over a fixture with its defect planted. §11: a
  * rule key named inside prose prints as its number, and one that names no live
  * rule fails the check — the committed document carries no raw key.
  *
@@ -45,8 +46,8 @@ import {
 } from '../scripts/cr/ledger.mjs';
 import { norm, recordHash, validateFinding, type RuleRecord } from '../scripts/cr/schema.mjs';
 import {
-  badSpans, buildFeedback, decoyKey, finalize, judge, plant, roundKeys, sameAsVerified, shuffleRank, stamp,
-  type Mutant, type RoundFiles,
+  badSpans, buildFeedback, decoyKey, finalize, finalizePolish, judge, plant, polishKeyList, POLISH_ROUND, roundKeys,
+  roundsIn, sameAsVerified, shuffleRank, stamp, type Mutant, type RoundFiles,
 } from '../scripts/cr/harness.mjs';
 
 /* ── the pins (4)–(6). Each must EQUAL the measured count: a rise is new
@@ -812,6 +813,59 @@ test('§10 finalize takes each key from the latest VALID round, never a mutant o
   assert.deepEqual(only1.report.invalidRounds, [2]);
   assert.ok(only1.verdicts.every((v) => v.round === 1));
   assert.deepEqual(only1.report.unverified, ['combat.four', 'combat.two'], 'mutated in round 1 and never validly verified since');
+});
+
+test('§10 polish round 4 takes an explicit key list alone: nothing carried in, decoys from the rest, one list, no round 5', () => {
+  const records = unitRecords();
+  assert.equal(POLISH_ROUND, 4);
+  const s4 = roundKeys(records, 4, { changed: ['combat.three'], unverified: ['combat.two'], preferred: ['combat.one'] });
+  assert.deepEqual(s4, { keys: ['combat.three'], carried: [], mutable: [], decoyPool: ['combat.one', 'combat.four', 'combat.two'] },
+    'an unverified key of round 3 is not carried into the polish round');
+  assert.throws(() => roundKeys(records, 4, { changed: [], unverified: [] }), /empty/);
+  assert.throws(() => roundKeys(records, 4, { changed: ['combat.three', 'combat.gone'], unverified: [] }), /not a live rule: combat\.gone/);
+  assert.throws(() => roundKeys(records, 5, { changed: ['combat.three'], unverified: [] }), /at most 3 rounds/);
+  assert.deepEqual(polishKeyList(['b', 'a'], null), ['a', 'b'], 'changed-r3.json alone');
+  assert.deepEqual(polishKeyList(null, ['a']), ['a'], '--keys alone');
+  assert.deepEqual(polishKeyList(['a', 'b'], ['b', 'a', 'a']), ['a', 'b'], 'both, agreeing');
+  assert.throws(() => polishKeyList(['a', 'b'], ['a']), /differ/);
+  assert.throws(() => polishKeyList(null, null), /explicit key list/);
+  assert.deepEqual(roundsIn(['mutants-r1.json', 'mutants-r2.json', 'mutants-r4.json', 'mutator-r3.json', 'judge-r3.json']), [1, 2, 4],
+    'a unit verified in two rounds still loads its polish round');
+});
+
+test('§10 finalize --round 4 merges: only the round\'s keys get a verdict, an untested mark and findings; every other committed row stays', () => {
+  const { rounds } = twoRounds();
+  const records = unitRecords();
+  // the committed state: a full finalize, then a hand edit (as the wave-end repairs made)
+  const base = finalize({ unit: U, records, rounds, readText, exists: (p) => p === SPAN_FILE });
+  const committed = structuredClone(base.verdicts);
+  committed.find((v) => v.key === 'combat.one')!.quote_spans.push({ file: SPAN_FILE, text: SPAN_TEXT, note: 'added by hand' } as never);
+  const recs = structuredClone(base.records);
+  recs.find((r) => r.key === 'combat.two')!.untested = true; // as committed
+  recs.find((r) => r.key === 'combat.three')!.text = 'Swift columns strike first.'; // the polish edit
+  const s4 = roundKeys(recs, 4, { changed: ['combat.three'], unverified: [], preferred: ['combat.one'] });
+  const p4 = plant({ unit: U, round: 4, records: recs, sel: s4, mutants: [{ baseKey: 'combat.one', mutant: 'Each column deals its damage as two sources.', why_false: 'one source' }] });
+  const decoy = p4.truth.decoys[0]!.key;
+  const doc = { verdicts: [verdict(decoy, 'contradicted', 'one source'), verdict('combat.three', 'confirmed', '', { tests_run: [] })],
+    bugs: [{ title: 'Swift late', summary: 's', evidence: [], rule: 'combat.three' }, { title: 'Decoy-driven', summary: 's', evidence: [], rule: decoy }] };
+  const r4: RoundFiles = { round: 4, truth: p4.truth, input: p4.input, attempts: [{ attempt: 1, doc }] };
+  const res = finalizePolish({ unit: U, records: recs, round: r4, findings: base.findings, verdicts: committed, readText, exists: (p) => p === SPAN_FILE });
+  const by = new Map(res.verdicts.map((v) => [v.key, v]));
+  assert.deepEqual([...by.keys()], ['combat.four', 'combat.one', 'combat.three', 'combat.two'], 'sorted, and no decoy');
+  assert.deepEqual([by.get('combat.three')!.round, by.get('combat.three')!.verifier], [4, 'U99-r4']);
+  assert.equal(by.get('combat.three')!.textHash, recordHash(recs.find((r) => r.key === 'combat.three')!), 'pinned to the polished text');
+  for (const k of ['combat.one', 'combat.two', 'combat.four']) assert.deepEqual(by.get(k), committed.find((v) => v.key === k), `${k} is left exactly as committed, hand edits and all`);
+  assert.equal(res.records.find((r) => r.key === 'combat.three')!.untested, true, 'the round\'s key is re-marked');
+  assert.equal(res.records.find((r) => r.key === 'combat.two')!.untested, true, 'another key keeps its committed mark');
+  assert.deepEqual(res.records.filter((r) => r.key !== 'combat.three'), recs.filter((r) => r.key !== 'combat.three'));
+  assert.deepEqual(res.findings.map((f) => f.title), [...base.findings.map((f) => f.title), 'Swift late'], 'only the round\'s own bugs, never the decoy\'s');
+  assert.deepEqual([res.report.keys, res.report.unverified, res.report.untested], [['combat.three'], [], ['combat.three']]);
+  assert.ok(!JSON.stringify(res).includes(decoy));
+  // refused: an invalid round, a different --keys list, a round that is not 4
+  const fooled = { ...r4, attempts: [{ attempt: 1, doc: { verdicts: [verdict(decoy, 'confirmed'), verdict('combat.three', 'confirmed')] } }] };
+  assert.throws(() => finalizePolish({ unit: U, records: recs, round: fooled, verdicts: committed, readText }), /no valid attempt/);
+  assert.throws(() => finalizePolish({ unit: U, records: recs, round: r4, verdicts: committed, keys: ['combat.two'], readText }), /not round 4's key list/);
+  assert.throws(() => finalizePolish({ unit: U, records: recs, round: { ...rounds[1]! }, verdicts: committed, readText }), /polish round/);
 });
 
 test('§10 a promoted CR example keeps the verdict; any other example change unverifies it', () => {

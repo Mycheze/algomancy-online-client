@@ -348,28 +348,50 @@
     "key": "combat.regions.exclusive.no-region-zones",
     "parent": "combat.regions.exclusive",
     "order": 1,
-    "text": "The stack, the bins and the cache are not in any region. Whether an effect can reach a player's bin, hand or cache depends on whether that player is present in the effect's region (rule 601.4).",
+    "text": "The stack, the bins, the hands and the caches are bound by the regional rule like everything else (rule concepts.golden.regions). An effect can affect a card or effect on the stack only if it was played in the effect's own region, and can affect a player's bin, hand or cache only while that player is present in that region (rule combat.regions.presence.player-things).",
     "examples": [
       {
         "text": "Example: During deployment, an effect that targets a cached card can reach only its controller's own cache. In battle, where both players are present, it can reach either cache.",
         "test": "421-cr-regions-formations.test.ts::cr:combat.regions.exclusive.no-region-zones — cached and binned cards carry no region, no region holds a stack, and a cache is reachable only where its owner is present"
+      },
+      {
+        "text": "Example: Frosted Denial, cast while battle resolves in one region, cannot negate an effect that was played in another region. (illustrative; the engine lets it: F-U01-2)",
+        "test": null
       }
     ],
     "see": [
       "combat.regions.presence.player-things"
     ],
     "sources": {
-      "printed": [],
-      "designer": [],
+      "printed": [
+        {
+          "ref": "Manual p.19",
+          "quote": "Every single effect is specific to the region it takes"
+        },
+        {
+          "ref": "Manual p.19",
+          "quote": "place in, meaning it will never impact anything in any"
+        },
+        {
+          "ref": "Manual p.19",
+          "quote": "Additionally, if a player enters a region, their bin, hand,"
+        },
+        {
+          "ref": "Manual p.19",
+          "quote": "resources, and even the player themself can be interacted with."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1454169054402314362#0",
+          "quote": "Yes everything in the game is region specific. Just add 'in this region' to every card if it helps."
+        }
+      ],
       "ours": [],
       "rulings": [
         {
-          "ref": "R265",
-          "quote": "Three zones have no region and are deliberately global"
-        },
-        {
-          "ref": "R291",
-          "quote": "True of the zone, wrong about its owner."
+          "ref": "R12",
+          "quote": "affects only that region's battle and stack"
         }
       ],
       "history": [],
@@ -378,13 +400,16 @@
         "421-cr-regions-formations.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "confidence": "medium",
-    "notes": "R265 lists the three zones; R291 says the cache-has-no-region fact does not make an absent owner's cache reachable. B4 adjudicated that R265 rules nothing about which seats' bins an effect reaches. The stack's lack of a region is discussed in D-U10-5.",
+    "notes": "POLISH (2026-10-10): it stated R265's premise (\"Three zones have no region and are deliberately global\") and so contradicted concepts.golden.regions (101.6), which states Manual p.19 and Caleb's RAQ answer. Print and the designer outrank R265 and R250 (D-U01-12, settled; D-U10-5 merged into it). The client keeps the stack, bins and cache regionless, so Frosted Denial, Woodland Warding and Molten Riftbreaker reach across regions: F-U01-2 (CT-234). The cache half of the old text (reachable only where its owner is present, R291) is kept, and the bound 421 example still demonstrates it; that test title also asserts \"no region holds a stack\", which is the engine's divergent behaviour (F-U01-2).",
     "sourceHashes": {
-      "R265": "9f0ae66af8e06b3d710b1ba66aa3f83b7c78f95f228f39fa471b39260be1fd5e",
-      "R291": "dd422fb3df1ded08a2bcb94fa3267d5004856953838adf81a7a68e78b96f0ef2"
-    }
+      "R12": "f6c728716f0fd27850a4344a0498bb1d9607b2f0f9e6a5838dfeeb0ea91292b3",
+      "RAQ 1454169054402314362#0": "4948c1881274500d06ed76c23f405dbebb16d265e89961225a7fdbc579825628"
+    },
+    "engineDiffers": [
+      "F-U01-2"
+    ]
   },
   {
     "key": "combat.regions.arrangement",

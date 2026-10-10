@@ -1521,73 +1521,123 @@
   },
   {
     "key": "concepts.costs.trigger-sacrifice-me",
-    "textHash": "07db22bbccedd07e",
+    "textHash": "5e39b3b7288e4551",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U04-r1",
+    "round": 4,
+    "verifier": "U04-r4",
     "engine": [
       {
-        "loc": "engine.ts:E.canPayCastCost (from self) / chargeCastCost",
-        "agrees": true,
-        "note": "choice-free, charged in the cast window; dead source → unpayable → part skipped"
+        "loc": "client/engine/src/cards/sets/batch-metal-a.ts:Eldritch Dreamtender",
+        "agrees": false,
+        "note": "castCost {kind:'sacrificeUnits', from:'self', n:1}: sacrificed in the cast window as the trigger goes on the stack (R73), not on resolution. The flagged divergence (engineDiffers) is real."
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-dark-c.ts:Cthyrian Rector",
+        "agrees": false,
+        "note": "Same castCost from:'self' — same divergence."
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-light-c.ts:Void Mandible",
+        "agrees": false,
+        "note": "Same castCost from:'self' — same divergence."
+      },
+      {
+        "loc": "client/engine/src/engine.ts:canPayCastCost/chargeCastCost (from:'self')",
+        "agrees": "partly",
+        "note": "Mandatory (no decline), which matches the rule; and a source already dead before stacking skips the part, but a source killed in response cannot happen because there is no window before payment."
       }
     ],
     "tests_run": [
       {
-        "file": "26-metal-a.test.ts",
-        "pattern": "Eldritch Dreamtender: the sacrifice is paid on the way to the stack, not at resolution",
+        "file": "client/engine/test/26-metal-a.test.ts",
+        "pattern": "Eldritch Dreamtender",
         "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "26-metal-a.test.ts",
-        "pattern": "Eldritch Dreamtender: the sacrifice is MANDATORY — no decline is ever offered (R73)",
-        "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "32-cast-costs.test.ts",
-        "pattern": "R73: a source that is already dead makes the cost UNPAYABLE, so the part is skipped",
-        "passed": true,
-        "asserts_claim": true
+        "asserts_claim": "yes for example 3 ('the sacrifice is MANDATORY — no decline is ever offered' asserts no Decline option). 'the sacrifice is paid on the way to the stack, not at resolution' passes and CONFIRMS the divergence: it asserts the Dreamtender is in the bin before the first priority window."
       }
     ],
     "probes": [],
     "source_checks": [
       {
-        "ref": "R73",
+        "ref": "card: Eldritch Dreamtender",
         "supports": "yes",
-        "note": ""
+        "note": "Printed effect prose 'sacrifice me. If you do, …' — no colon cost; the literal reading is a sacrifice on resolution."
+      },
+      {
+        "ref": "card: Cthyrian Rector",
+        "supports": "yes",
+        "note": "Same shape."
+      },
+      {
+        "ref": "card: Void Mandible",
+        "supports": "yes",
+        "note": "Same shape, plus '(This is not optional.)' for the mandatory clause."
+      },
+      {
+        "ref": "calebgannon, rules-questions 1363535826436493614 (2025-04-20) — NOT CITED",
+        "supports": "yes",
+        "note": "The designer, on Eldritch Dreamtender: if the opponent kills it with the trigger on the stack you cannot sacrifice it and nothing is discarded. This is the strongest source for the rule; it is in data/rulings/generated_rulings.jsonl and should be added as a designer ref."
+      },
+      {
+        "ref": "R73 (current, owner call) — NOT CITED",
+        "supports": "no",
+        "note": "R73 rules the opposite (a cast cost paid on the way to the stack). It is outranked by the designer and printed text, but the rule should name it as the ruling it overrides."
+      },
+      {
+        "ref": "26-metal-a.test.ts",
+        "supports": "partly",
+        "note": "Supports only the mandatory clause; its other Dreamtender tests assert the engine's divergent cost timing."
       }
     ],
     "quote_spans": [
       {
+        "file": "data/rulings/generated_rulings.jsonl",
+        "text": "So if the opponent kills it while the trigger is on the stack, for example, you wouldn't be able to sacrifice it, and so wouldn't discard a card from them."
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+        "text": "castCost: { kind: 'sacrificeUnits', from: 'self', n: 1 },"
+      },
+      {
+        "file": "client/engine/test/26-metal-a.test.ts",
+        "text": "assert.ok(!ent(h, dt), 'sacrificed on the way to the stack, not at resolution');"
+      },
+      {
         "file": "client/docs/digital-rules.md",
-        "text": "printed prose as a bracketed cost.**"
+        "text": "## R73 — \"Sacrifice me\" is a CAST COST, paid on the way to the stack"
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "The ruling is right and the divergence is real. The citations are incomplete: add the designer's 2025-04-20 answer on Eldritch Dreamtender (calebgannon, rules-questions msg 1363535826436493614 and the follow-up 1363536741386162508), which states the rule's response case directly. Also name R73 as the current owner ruling this overrides. Examples 1 and 2 are illustrative; the engine cannot reproduce them (no window exists before the sacrifice)."
   },
   {
     "key": "concepts.costs.trigger-sacrifice-me.optional",
-    "textHash": "818b703072604d7e",
+    "textHash": "21f2c60a079cfb03",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U04-r2",
+    "round": 4,
+    "verifier": "U04-r4",
     "engine": [
       {
-        "loc": "engine.ts:E.collectAsYouPlay",
+        "loc": "client/engine/src/engine.ts:collectAsYouPlay",
         "agrees": true,
-        "note": "Maelstrom Charger's 'you may sacrifice me' is an as-you-play option the player may decline, not a mandatory castCost"
+        "note": "Maelstrom Charger's 'you may sacrifice me' is offered as a payOrDecline with an explicit 'Decline' option."
+      },
+      {
+        "loc": "client/engine/src/engine.ts:applyAsYouPlay",
+        "agrees": true,
+        "note": "'skip' logs the decline and returns before pay() and before any copy is recorded: declining gets nothing."
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts:Maelstrom Charger",
+        "agrees": true,
+        "note": "pay destroys the Charger only on 'take'; copySpell only on acceptance."
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/151-copy-and-moved-mods.test.ts",
-        "pattern": "R178 Maelstrom Charger",
+        "pattern": "Maelstrom Charger",
         "passed": true,
-        "asserts_claim": "yes: the option is offered, and declining copies nothing"
+        "asserts_claim": "yes: 'declining the sacrifice says so and copies nothing' asserts 0 copies and the Charger still standing; the others show the sacrifice is the player's choice"
       }
     ],
     "probes": [],
@@ -1595,22 +1645,39 @@
       {
         "ref": "RAQ 1379132904931594372#0",
         "supports": "yes",
-        "note": "\"you can decide to Sacrifice Mael\""
+        "note": "_passer: 'As you play spell you can decide to Sacrifice Mael to put copy of spell effect on stack' — the sacrifice is the player's decision."
       },
       {
         "ref": "R73",
         "supports": "yes",
-        "note": "Maelstrom Charger deliberately not moved to a cost because it is printed as optional"
+        "note": "R73 lists Maelstrom Charger as deliberately NOT moved because it is printed as OPTIONAL."
+      },
+      {
+        "ref": "card: Maelstrom Charger (not cited)",
+        "supports": "yes",
+        "note": "'you may sacrifice me. If you do, copy that spell' — the printed text is the most direct source and should be cited as printed."
       }
     ],
     "quote_spans": [
       {
         "file": "client/docs/digital-rules.md",
         "text": "spell\"*) — printed as OPTIONAL. A choice-free cost would make it mandatory,"
+      },
+      {
+        "file": "client/engine/src/cards/dsl.ts",
+        "text": "cost (but is still optional due to* **may***). As you play spell you can"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "{ label: 'Decline', value: { ayp: 'skip', key: o.key } },"
+      },
+      {
+        "file": "client/engine/test/151-copy-and-moved-mods.test.ts",
+        "text": "assert.equal(copies(h).length, 0, 'a *may* declined is nothing happening');"
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "None of substance. Only one card in the pool prints 'you may sacrifice me' (Maelstrom Charger); the rule cites no printed source or test though both exist (card text; 151-copy-and-moved-mods::declining the sacrifice says so and copies nothing). Note this optional sacrifice is made as the spell is played, not on resolution."
   },
   {
     "key": "concepts.costs.unpayable",

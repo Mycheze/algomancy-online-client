@@ -896,6 +896,16 @@ const OPEN: TodoEntry[] = [
     proof: () => still('engine/src/cards/sets/batch-dark-b.ts', 'if (who !== ctx.controller) g.revealHandTo(ctx.controller, who);'),
     status: 'open',
   },
+  {
+    id: 264, area: "card", severity: "minor",
+    cards: ["Eldritch Dreamtender", "Cthyrian Rector", "Void Mandible"],
+    title: "\"sacrifice me. If you do\" triggers sacrifice their source as the ability goes on the stack, not as it resolves",
+    detail: "(Comprehensive-rules export, polish pass, 2026-10-10.) CR rule concepts.costs.trigger-sacrifice-me states print: Eldritch Dreamtender (\"When my column deals combat damage to an opponent, sacrifice me. If you do, look at that player's hand and discard a card from it.\"), Cthyrian Rector and Void Mandible print the sacrifice as effect prose after the trigger condition, with no [cost] bracket. So the ability goes on the stack with the unit still in play, players may respond, the unit is sacrificed as the ability resolves, and if it is gone by then the \"If you do\" part does nothing. The owner ruling that made it a cast cost reads the prose as a bracket and says itself the card has none; print outranks it (D-U04-2). The engine pays the sacrifice on the way to the stack, and 26-metal-a asserts that.",
+    evidence: "Finding F-U04-5. 26-metal-a.test.ts: \"assert.ok(!ent(h, dt), 'sacrificed on the way to the stack, not at resolution');\". digital-rules.md: \"printed line is effect prose with an if-you-do rider rather than a printed\". Not re-measured against the engine in the polish pass (the drafter does not read engine source).",
+    fix: "Move the three cards' sacrifice back into the effect, made as it resolves and skipped (with its rider) when the source has left play; keep it mandatory. Invert the 26-metal-a Dreamtender timing test, and mark the ruling as outranked by the printed text.",
+    proof: () => still('engine/test/26-metal-a.test.ts', "assert.ok(!ent(h, dt), 'sacrificed on the way to the stack, not at resolution');"),
+    status: 'open',
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader

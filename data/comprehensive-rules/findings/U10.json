@@ -91,5 +91,21 @@
       }
     ],
     "ct": "CT-250"
+  },
+  {
+    "id": "F-U10-8",
+    "title": "Stack-effect targets are not region-filtered",
+    "summary": "pushStackTargets offers every item on the single game stack as a 'target effect'/'target spell effect' with no check of the item's region against the resolving region, contrary to 'every single effect is specific to the region it takes place in'. Already tracked as F-U01-2; probe shows an item stamped with another region is offered in battle. Natural reachability not demonstrated.",
+    "evidence": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "quote": "if (spec.what === 'stackSpell' ? spellish : true) out.push({ stack: it.id });"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "effect (Temporal Rift) affects only that region's battle and stack — other regions resolve"
+      }
+    ],
+    "rule": "combat.regions.exclusive.no-region-zones"
   }
 ]

@@ -733,11 +733,13 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed, round 1, 1 test run · Printed: Manual p.18; Manual p.18 · Rulings: R17 · Tests: 01-planning.test.ts · Key: concepts.resources.prismite</sub>
 
-<a id="r106.8a"></a>**106.8a** During the resource step of the planning phase a player may exchange an active Prismite for another resource (which resources: the element-only rule below). The new resource takes the Prismite's place and keeps its current state. See rules 502, 105.
+<a id="r106.8a"></a>**106.8a** A player may exchange an active Prismite for another resource only in the resource step of the planning phase, never in the haste step (which resources: the element-only rule below). The new resource takes the Prismite's place and keeps its current state, so an exchange never adds mana: an expended Prismite becomes an expended resource. See rules 502, 105.
 
 > *Example (non-normative): An active Prismite is exchanged into a fire resource during planning.* <sub>test: 01-planning.test.ts::R17/prismites: dormant start, no affinity, planning exchange into any element</sub>
 
-<sub>Basis: Mixed · Verified: confirmed, round 2, 1 test run · Printed: Manual p.18; Manual p.18; Manual p.18 · Rulings: R17, R17, R132, R132 · Tests: 01-planning.test.ts, 413-cr-elements-resources.test.ts · Key: concepts.resources.prismite.exchange</sub>
+> *Example (non-normative): An expended active Prismite exchanged into fire becomes an expended fire resource; once the player has finished the resource step, a further exchange is refused.* <sub>test: 413-cr-elements-resources.test.ts::cr:concepts.resources.prismite.exchange — only an active Prismite, only in the resource step, and the new resource keeps its state</sub>
+
+<sub>Basis: Mixed · Verified: confirmed, round 4, 2 tests run · Printed: Manual p.18; Manual p.18; Manual p.18 · Rulings: R17, R17, R132, R132 · Tests: 01-planning.test.ts, 413-cr-elements-resources.test.ts · Key: concepts.resources.prismite.exchange</sub>
 
 <sub>Discrepancies: D-U02-7, D-U08-3 (discrepancies.md)</sub>
 
@@ -1572,19 +1574,21 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed, round 1, 1 test run · Printed: card: Throwing Boulder · Rulings: R77, R77 · Tests: 18-earth-c.test.ts, 415-cr-costs-life-timestamps.test.ts · Key: concepts.costs.activation.gate-first</sub>
 
-<a id="r111.8"></a>**111.8.** When a triggered ability tells its controller to "sacrifice me. If you do, …", the sacrifice is a cost. It is paid as the ability is put on the stack, it cannot be declined, and no player can respond between it and the ability going on the stack. If the source is already gone, the ability does nothing.
+<a id="r111.8"></a>**111.8.** When a triggered ability's effect says "sacrifice me. If you do, …", the sacrifice is part of the effect, not a cost: the ability goes on the stack with its source still in play, players may respond, and the source is sacrificed as the ability resolves. The sacrifice is not optional. If the source is no longer in play when the ability resolves, it cannot be sacrificed, and the "If you do" part does nothing. *(Engine differs, see F-U04-5.)*
 
-> *Example (non-normative): Eldritch Dreamtender's column deals combat damage to an opponent; it is sacrificed as its ability goes on the stack, not when the ability resolves.* <sub>test: 26-metal-a.test.ts::Eldritch Dreamtender: the sacrifice is paid on the way to the stack, not at resolution</sub>
+> *Example (non-normative): Eldritch Dreamtender's column deals combat damage to an opponent. Its ability goes on the stack with Dreamtender still in play; Dreamtender is sacrificed when the ability resolves, and only then is the opponent's hand looked at and a card discarded. (illustrative; the engine sacrifices it as the ability goes on the stack: F-U04-5)*
+
+> *Example (non-normative): Dreamtender is destroyed in response to its ability. When the ability resolves, nothing is sacrificed, so no hand is looked at and nothing is discarded. (illustrative)*
 
 > *Example (non-normative): no decline is offered for that sacrifice.* <sub>test: 26-metal-a.test.ts::Eldritch Dreamtender: the sacrifice is MANDATORY — no decline is ever offered (R73)</sub>
 
-<sub>Basis: Owner call · Verified: confirmed, round 1, 3 tests run · Rulings: R73, R73 · Tests: 26-metal-a.test.ts, 32-cast-costs.test.ts · Key: concepts.costs.trigger-sacrifice-me</sub>
+<sub>Basis: Printed · Verified: confirmed, round 4, 1 test run · Printed: card: Eldritch Dreamtender; card: Cthyrian Rector; card: Void Mandible · Tests: 26-metal-a.test.ts · Key: concepts.costs.trigger-sacrifice-me</sub>
 
 <sub>Discrepancies: D-U04-2, D-U04-8 (discrepancies.md)</sub>
 
-<a id="r111.8a"></a>**111.8a** A sacrifice the text makes optional ("you may sacrifice me. If you do, …") is not made a cost this way. The player chooses whether to make it.
+<a id="r111.8a"></a>**111.8a** A sacrifice the text makes optional ("you may sacrifice me. If you do, …") is the player's choice. A player who declines it gets nothing from the "If you do" part.
 
-<sub>Basis: Mixed · Verified: confirmed, round 2, 1 test run · Designer: RAQ 1379132904931594372#0 · Rulings: R73 · Key: concepts.costs.trigger-sacrifice-me.optional</sub>
+<sub>Basis: Mixed · Verified: confirmed, round 4, 1 test run · Designer: RAQ 1379132904931594372#0 · Rulings: R73 · Key: concepts.costs.trigger-sacrifice-me.optional</sub>
 
 <a id="r111.9"></a>**111.9.** A payment that an effect's text asks for while it resolves ("you may pay [one] to …", "unless its controller pays [x]") is not a cost of putting it on the stack. The ability goes on the stack without it, and the player decides whether to pay when it resolves. See rules 702.5a, 704.
 
@@ -4516,11 +4520,13 @@ order.
 
 <sub>Basis: Mixed · Verified: confirmed, round 2, 1 test run · Printed: Rulebook 2023 p.4 · Rulings: R12 · Tests: 421-cr-regions-formations.test.ts · Key: combat.regions.exclusive</sub>
 
-<a id="r601.2a"></a>**601.2a** The stack, the bins and the cache are not in any region. Whether an effect can reach a player's bin, hand or cache depends on whether that player is present in the effect's region (rule 601.4). See rule 601.4c.
+<a id="r601.2a"></a>**601.2a** The stack, the bins, the hands and the caches are bound by the regional rule like everything else (rule 101.6). An effect can affect a card or effect on the stack only if it was played in the effect's own region, and can affect a player's bin, hand or cache only while that player is present in that region (rule 601.4c). See rule 601.4c. *(Engine differs, see F-U01-2.)*
 
 > *Example (non-normative): During deployment, an effect that targets a cached card can reach only its controller's own cache. In battle, where both players are present, it can reach either cache.* <sub>test: 421-cr-regions-formations.test.ts::cr:combat.regions.exclusive.no-region-zones — cached and binned cards carry no region, no region holds a stack, and a cache is reachable only where its owner is present</sub>
 
-<sub>Basis: Owner call · Verified: confirmed, round 1, 0 tests run · Rulings: R265, R291 · Tests: 421-cr-regions-formations.test.ts · Key: combat.regions.exclusive.no-region-zones</sub>
+> *Example (non-normative): Frosted Denial, cast while battle resolves in one region, cannot negate an effect that was played in another region. (illustrative; the engine lets it: F-U01-2)*
+
+<sub>Basis: Mixed · Verified: confirmed, round 4, 1 test run · Printed: Manual p.19; Manual p.19; Manual p.19; Manual p.19 · Designer: RAQ 1454169054402314362#0 · Rulings: R12 · Tests: 421-cr-regions-formations.test.ts · Key: combat.regions.exclusive.no-region-zones</sub>
 
 <sub>Discrepancies: D-U01-12 (discrepancies.md)</sub>
 
@@ -10266,19 +10272,19 @@ order.
 
 <sub>Basis: Owner call · Verified: confirmed, round 1, 2 tests run · Rulings: R61, R61, R61 · Tests: 40-light-c.test.ts · Key: attr.pure.blocking</sub>
 
-<a id="r802.25e"></a>**802.25e** Pure does not change stats. A Pure unit is destroyed by damage equal to its defense, and Tough, Balanced and Inverted still apply in an interaction involving a Pure card. See rules 802.6, 802.7, 802.8.
+<a id="r802.25e"></a>**802.25e** Pure does not change a unit's printed stats: a Pure 2/3 is destroyed by 3 damage. But Tough, Balanced and Inverted are attributes, so in an interaction involving a Pure card they do not apply (rule 802.1n). See rules 802.6, 802.7, 802.8. *(Engine differs, see F-U19-1.)*
 
-> *Example (non-normative): Example (illustrative): A Tough 0/4 (defense 8) blocks a column containing Just a Unit. It still has 8 defense in that exchange.* <sub>test: 431-cr-attributes-2.test.ts::cr:attr.pure.stat-attributes — a Tough 0/4 still has 8 defense blocking a 5-power Just a Unit, and survives</sub>
+> *Example (non-normative): A Tough 0/4 blocks a column containing Just a Unit (Pure). Tough does not apply in that exchange, so the blocker has 4 defense, not 8. (illustrative; the engine keeps Tough on: F-U19-1)*
 
-<sub>Basis: Owner call · Verified: confirmed, round 1, 0 tests run · Rulings: R61, R289 (its per-pairing ruling) · Our glossary (not a source): Pure · Tests: 431-cr-attributes-2.test.ts · Key: attr.pure.stat-attributes</sub>
+<sub>Basis: Mixed · Verified: confirmed, round 4, 0 tests run · Printed: card: Just a Unit; Manual p.42 · Rulings: R61 · Key: attr.pure.stat-attributes</sub>
 
 <sub>Discrepancies: D-U19-2 (discrepancies.md)</sub>
 
-<a id="r802.25f"></a>**802.25f** In combat, Unaware still applies in an exchange involving a Pure card: if an Unaware card is in the exchange, every unit in it is read at its printed stats. See rule 802.9.
+<a id="r802.25f"></a>**802.25f** Unaware is an attribute, so in combat it does not apply in an exchange involving a Pure card: the units in that exchange are read at their current stats, not their printed ones (rule 802.1n). See rule 802.9. *(Engine differs, see F-U19-2.)*
 
-> *Example (non-normative): Example (illustrative): Bubb (Unaware) blocks a column containing Just a Unit. Both sides of the exchange still use their printed stats.* <sub>test: 431-cr-attributes-2.test.ts::cr:attr.pure.unaware-combat — Bubb (Unaware) blocking a buffed Just a Unit: both sides are read at printed stats</sub>
+> *Example (non-normative): Bubb (Unaware) blocks a column containing Just a Unit (Pure) that has a +1/+1 counter. Unaware does not apply in that exchange, so the counter counts. (illustrative; the engine keeps the Unaware collapse on: F-U19-2)*
 
-<sub>Basis: Owner call · Verified: confirmed, round 1, 0 tests run · Rulings: R106 · Tests: 431-cr-attributes-2.test.ts · Key: attr.pure.unaware-combat</sub>
+<sub>Basis: Printed · Verified: confirmed, round 4, 0 tests run · Printed: card: Just a Unit; Manual p.42 · Key: attr.pure.unaware-combat</sub>
 
 <a id="r802.25g"></a>**802.25g** Outside combat, an interaction is one effect and one recipient of its damage. Pure applies to each such pairing separately.
 
@@ -11247,23 +11253,23 @@ Generated from the records, the verdicts and the ruling classification. Nothing 
 
 | basis | rules |
 |---|---|
-| Printed | 461 |
+| Printed | 463 |
 | Designer | 210 |
-| Owner call | 690 |
+| Owner call | 686 |
 | Engine only | 37 |
-| Mixed | 389 |
+| Mixed | 391 |
 
 ### Verification
 
 | verdict | rules |
 |---|---|
-| confirmed | 1775 |
+| confirmed | 1776 |
 | partial | 8 |
 | contradicted | 0 |
 | unsupported | 0 |
 | untested | 0 |
 | not verified | 1 |
-| text changed | 3 |
+| text changed | 2 |
 
 ### Engine-only rules (awaiting the owner's sign-off)
 
@@ -11324,6 +11330,8 @@ Generated from the records, the verdicts and the ruling classification. Nothing 
 - <a id="F-U04-2"></a>**F-U04-2** An Ambush ignores imposed and "cards" cost modifiers (Arbiter of Armistice, Vengeance), though it is a card played (CT-243). Rule 111.10e. R129 counts an Ambush as a card being played, and Arbiter of Armistice ("Cards played during battle gain [Pay 2 life]") and Vengeance ("Cards your opponents play during battle gain '[Sacrifice a unit]'") print the noun "Cards". Measured by the round-1 verifier: an Ambush played under Arbiter of Armistice pays no life, while a spell card in the same spot is billed 2 life; doAmbush pays only the Ambush line's mana and never consults the card-play cost layer. R122 records the exclusion as an undecided future decision, so this is a divergence from the printed literal, not from a settled ruling. (Measured by a verifier probe; the probe files are not committed.) Also found as F-U04-3, F-U04-4.
 - <a id="F-U04-3"></a>**F-U04-3** An Ambush ignores imposed "cards played" costs (Arbiter of Armistice, Vengeance) (CT-243). Rule 111.10e. doAmbush pays only the Ambush line's mana and never consults lifeToPlay/unitsToPlay, so a card played as an Ambush during battle pays no [Pay 2 life] under Arbiter of Armistice and no [Sacrifice a unit] under an opponent's Vengeance, although R129 rules an Ambush is a card being played and both cards print the noun "Cards". R122 records this as a deliberate, still-open decision, so it is a divergence from the printed literal rather than from a settled ruling. (Measured by a verifier probe; the probe files are not committed.)
 - <a id="F-U04-4"></a>**F-U04-4** An Ambush escapes imposed costs on "cards played" (Arbiter of Armistice) (CT-243). Rule 111.10e. Arbiter prints "Cards played during battle gain [Pay 2 life]". R129 makes an Ambush a card being played, and Manual p.40 says you "play cards as an ambush". But the Ambush path never consults the cost-mod layer, so an Ambush under Arbiter pays no life (measured). R122 calls this deliberate, pending a future decision.
+- <a id="F-U04-5"></a>**F-U04-5** "sacrifice me. If you do" triggers sacrifice their source as the ability goes on the stack; print makes it part of the effect (CT-264). Rule 111.8. Eldritch Dreamtender, Cthyrian Rector and Void Mandible print "When …, sacrifice me. If you do, …" as effect prose with no [cost] bracket, so the sacrifice happens as the ability resolves: players can respond while the unit is still in play, and if it is gone by then the "If you do" part does nothing. R73 (owner) reads the prose as a cast cost, and the engine follows R73: 26-metal-a asserts the sacrifice is paid on the way to the stack. Print outranks R73 (D-U04-2). Suspected from the ruling and the test title; not re-measured against the engine in this pass.
+- <a id="F-U04-6"></a>**F-U04-6** "sacrifice me. If you do, …" triggers are sacrificed as a cast cost, against the designer's ruling. Rule 111.8. Eldritch Dreamtender, Cthyrian Rector and Void Mandible carry castCost {sacrificeUnits, from:'self'} (R73), so the source is sacrificed as the trigger goes on the stack. Caleb Gannon ruled on 2025-04-20, on Eldritch Dreamtender, that the sacrifice happens on resolution: if the opponent kills it with the trigger on the stack, it cannot be sacrificed and nothing is discarded. In the engine the opponent can never respond while the source is still in play, so the opponent loses the interaction the designer describes.
 - <a id="F-U05-1"></a>**F-U05-1** Spells carry power and toughness values in printed.json that the cards do not print (CT-244). Rule 206.2. Spells print no stats (stats mark a unit, Rulebook 2023 p.3), but the oracle transcription has power and toughness fields on spell rows and the extractor copies them: 91 of 138 spells in printed.json have non-zero values (Arc Lightning 1/3, Spectrogenesis 4/5, Interdiction Rift 4/3 in the oracle). Suspected harmless; check that no engine or UI path reads a spell's power or toughness (an "Everything is Deadly" reach onto spells, a copy of a spell, Unaware reading printed stats, a card-stats or search surface). If none does, zero them at extraction so nothing can start to.
 - <a id="F-U05-2"></a>**F-U05-2** 393-raq-mods Borrower/Reconfigure test is vacuous: Reconfigure is never castable in its setup (CT-240). Rule 208.5. The test guards the RAQ answer that a Borrower of Forms that copied an [Augment] unit is not a first target of Reconfigure, but wraps every assertion in `if (legalActions(...) offers Reconfigure)`. The verifier measured that branch as never taken with the test own setup (no real [Augment] unit is available as a first target, so Reconfigure is not castable), so the test asserts nothing. Add a real [Augment] unit to the setup and drop the `if`, so the play is required and the refusal is asserted; a verifier probe (not committed) did exactly that and passed.
 - <a id="F-U06-1"></a>**F-U06-1** Wake the Dead plays a spell unit out of a bin without casting its spell (CT-245). Rule 303.9. R165 rules that Wake the Dead's "Play up to two units" is a real play, and the Hooba-Pon RAQ says playing a spell unit means its spell part happens and the body arrives only if the spell resolves. R165 itself records, under "Left open", that Wake the Dead spawns a spell unit's body and skips the spell. Nothing later in the register or the ledgers closes it. Suspected still live; a test should play a spell unit (Leaping Lillik, Spawntender) through Wake the Dead and assert that its spell effect happens. The verifier measured it (round 1 probe: Jelly played from a bin by Wake the Dead): the body arrives, no target is asked, no spell-played event fires, and the victim stays 7/5. Affects rule 303.5 and rule 303.6 too. Also found as F-U06-3, F-U06-4, F-U14-3, F-U14-6, F-U14-7.
@@ -11353,6 +11361,7 @@ Generated from the records, the verdicts and the ruling classification. Nothing 
 - <a id="F-U10-3"></a>**F-U10-3** Defending formation adjacency ignores unblocked columns between blockers (CT-249). Rule 603.2. adjacentInFormation builds the defender grid from the sorted block keys, so blockers on attacking columns 1 and 3 (column 2 unblocked) are treated as left/right neighbours. Inspiration then buffs across the gap (round-1 verifier probe on rule 603.2). The Manual makes blocking position matter for adjacency, and a blocking column is keyed to the attacking column it faces, so the unblocked column is a gap. The engine's own comment calls its reading an approximation. (Measured by a verifier probe; the probe files are not committed.) Also found as F-U11-3, F-U11-4.
 - <a id="F-U10-6"></a>**F-U10-6** A lone Hooba-Lin killed under its attack trigger makes its 1/1 outside the formation (CT-250). Rule 602.6f. Hooba-Lin attacks alone and is killed with its attack trigger on the stack, before blocks. Its column collapses away, the attacker is offered no position, and the 1/1 is created outside any formation. The designer's [Solved] answer names Hooba-Lin among the effects that 'will remember they were in formation and will work fine', with no exception for a lone attacker; rule 602.6f states that and 602.6k excepts it. The engine applies R75's 'no living unit, no slots' instead. It may be an unruled edge rather than a bug (D-U10-6). (Measured by a verifier probe; the probe files are not committed.) Also found as F-U10-7.
 - <a id="F-U10-7"></a>**F-U10-7** A source that left play places nothing when its remembered formation is now empty (CT-250). Rule 602.6f. R325/RAQ: Hooba-Lin killed with its attack trigger on the stack "will remember [it was] in formation and will work fine". With a lone Hooba-Lin attacking, formationSeatOf returns its last-known seat but formationSlots returns no slot for a grid with no living unit, so the 1/1 is created outside the formation ("no open position in the formation"). Applies to every R75 placer reading a dead source (Hooba-Bot, Hooba-Pon, Hooba-Lin).
+- <a id="F-U10-8"></a>**F-U10-8** Stack-effect targets are not region-filtered. Rule 601.2a. pushStackTargets offers every item on the single game stack as a 'target effect'/'target spell effect' with no check of the item's region against the resolving region, contrary to 'every single effect is specific to the region it takes place in'. Already tracked as F-U01-2; probe shows an item stamped with another region is offered in battle. Natural reachability not demonstrated.
 - <a id="F-U11-1"></a>**F-U11-1** R72 still says the client's block build is not re-seeded when the attack line closes, but rekeyBuild and its tests exist (CT-236). Rule 605.1c. R72's section '⚠ The client's in-progress block assignment is index-keyed too' ends 'the client should re-seed its preview when b.columns.length changes, and it does not yet'. The client now has rekeyBuild (client/ui/formation.ts), and client/ui/test/55-ui-formation.test.ts pins it ('rekeyBuild: a collapse to the LEFT drags the block along with its attacker'). The ⚠ looks resolved and the ruling text is stale. A register fix (mark the ⚠ resolved), not an engine bug; suspected only, since the drafter did not run the tests. Also found as F-U24-2.
 - <a id="F-U11-2"></a>**F-U11-2** R87's open client item (no reachability row for a counterattack with spell tokens) appears done (CT-236). Rule 606.5a. R87's '⚠ Open for the client' says 75-ui-reachability's facetsOf does not tell a declareBlocks that carries spell tokens from one that does not, so the rider has no reachability row, and asks for a declareBlocks:spellTokens facet and ledger entry. client/ui/test/75-ui-reachability.test.ts now has both. The ⚠ in the register is stale. A register fix, not an engine bug.
 - <a id="F-U11-3"></a>**F-U11-3** Blocking-formation adjacency ignores empty blocking columns (CT-249). Rule 606.1f. E.adjacentInFormation builds the defender's grid from the block keys sorted and compressed, so two blockers with an unblocked (empty) blocking column between them read as neighbours. R75 defines adjacency by grid position and the Manual makes the defending formation's empty columns real. Measured by the verifier's probe: blocks {0:[d0], 2:[d2]} gives adjacentInFormation(d0) = [d2]. The engine comment flags it as an approximation.

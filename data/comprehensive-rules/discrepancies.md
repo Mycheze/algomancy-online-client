@@ -324,7 +324,7 @@ Sources are silent on WHEN "attacking alone" is judged. If a Sneaky unit attacks
 
 **Resolution:** Question for the owner. R20 says what "alone" means (the only attacking unit in the formation; spell tokens do not count) but not when it is judged.
 
-## 2. Register and test fixes (51)
+## 2. Register and test fixes (50)
 
 ### D-U01-10 · Other · rule 102.4
 
@@ -351,17 +351,7 @@ The Manual and Caleb say every effect is region-specific and never impacts anyth
 - Manual p.30: "followed by a priority window inside of each region:"
 - R250: "The STACK is not regional and is deliberately left global; narrowing"
 
-**Resolution:** Settled by the authority order: Manual p.19 and Caleb ("everything in the game is region specific") outrank R265 and R250, so rule 101.6 states them, and the client's regionless stack, bins and cache are an engine divergence, F-U01-2 (CT-234, filed as an owner decision on whether to change the engine). Document fix: rule 601.2a still states R265's premise (the stack, the bins and the cache are in no region) and must be redrafted to agree with rule 101.6. In two-player play the difference is small: battle resolves one region at a time (Manual p.21) and each seat has its own deployment stack (R286), so the one stack only ever holds one region's items. Register fix: mark the "deliberately global" sentences of R250 and R265 as outranked by Manual p.19.
-
-### D-U02-7 · Sources disagree · rule 106.8a
-
-What an EXPENDED Prismite exchanges into. The card says the Prismite is erased and a new resource is created and then activated, which reads as a fresh, un-expended resource. R17 says the new resource keeps the Prismite's current state.
-
-- R132: ""Erase me: Create a non-prismite resource, **then activate it**. Do this only"
-- R17: "resource of any element, keeping its current state ("players essentially get to pick"
-- Manual p.18: "Sometimes it can be advantageous to delay exchanging them."
-
-**Resolution:** Settled by printed text, read literally: "Erase me: Create a non-prismite resource, then activate it" makes a new resource and activates it, so the new resource is not expended, whatever the Prismite's state was. R17's "keeping its current state" adds a condition the card does not print, and the Manual's "advantageous to delay exchanging them" fits either. Document fix: rule 106.8a states R17 and must be redrafted to the printed reading. The engine keeps the Prismite's state; that needs a CT ticket (none is filed yet). At the table: a Prismite expended for mana and then exchanged in the same mana step gives a second mana that turn (with D-U08-3, which puts the exchange in the haste step as well).
+**Resolution:** Settled by the authority order: Manual p.19 and Caleb ("everything in the game is region specific") outrank R265 and R250, so rule 101.6 states them, and the client's regionless stack, bins and cache are an engine divergence, F-U01-2 (CT-234, filed as an owner decision on whether to change the engine). Document fix: done 2026-10-10. rule 601.2a stated R265's premise (the stack, the bins and the cache are in no region); it now states the regional rule for the stack, bins, hands and caches and is marked engine-differs (F-U01-2). In two-player play the difference is small: battle resolves one region at a time (Manual p.21) and each seat has its own deployment stack (R286), so the one stack only ever holds one region's items. Register fix: mark the "deliberately global" sentences of R250 and R265 as outranked by Manual p.19.
 
 ### D-U02-8 · Sources disagree · rule 106.8d
 
@@ -411,8 +401,9 @@ Eldritch Dreamtender, Cthyrian Rector and Void Mandible print "sacrifice me. If 
 - card: Eldritch Dreamtender: "sacrifice me. If you do, look at that player's hand and discard a card from it."
 - R73: "`[cost]`; the ruling reads it as a cost anyway."
 - R73: "printed prose as a bracketed cost.**"
+- card: Void Mandible: "sacrifice me. If you do, negate that effect. {i}(This is not optional.)"
 
-**Resolution:** Settled by printed text, read literally: Eldritch Dreamtender, Cthyrian Rector, Void Mandible and Maelstrom Charger print "sacrifice me. If you do, …" as effect text, with no cost brackets, so the sacrifice is a step of the effect, carried out as the ability resolves; a player may respond while the unit is still in play, and if it has gone by then, "If you do" fails. R73 reads the prose as a bracketed cost on the owner's understanding that the unit "needs to be sacrificed for its ability to go on the stack", and says itself that the card has no brackets; print outranks it. Document fix: rule 111.8 states R73 and must be redrafted to the printed reading. The engine pays the sacrifice as the ability is stacked; that needs a CT ticket (none is filed yet). Register fix: mark R73 as outranked by the printed text.
+**Resolution:** Settled by printed text, read literally: Eldritch Dreamtender, Cthyrian Rector and Void Mandible print "sacrifice me. If you do, …" as effect text after a "When …" trigger condition, with no cost brackets, so the sacrifice is a step of the effect, carried out as the ability resolves; a player may respond while the unit is still in play, and if it has gone by then, "If you do" fails. The sacrifice stays mandatory (no "may"; Void Mandible prints "(This is not optional.)"). R73 reads the prose as a bracketed cost on the owner's understanding that the unit "needs to be sacrificed for its ability to go on the stack", and says itself that the card has no brackets; print outranks it. Maelstrom Charger ("As you play a nonunit spell, you may sacrifice me") is a different shape, settled by its own RAQ write-up. Document fix: done 2026-10-10 (rule 111.8 states print, marked engine-differs). The engine pays the sacrifice as the ability is stacked: F-U04-5. Register fix: mark R73 as outranked by the printed text.
 
 ### D-U04-3 · Sources disagree · rule 111.10k
 
@@ -593,7 +584,7 @@ Rulebook 2023 p.7 has a single "mana step" in which players take resources and p
 - R17: "exchange: during planning, an **active** (face-up) Prismite may be swapped for a"
 - Manual p.18: "The resource step of the planning phase is when players have the ability to create and activate resources. During this step, any resource can be created from"
 
-**Resolution:** Settled by the designer and the card. Caleb's own words define the mana step as the time when "you can play haste cards and resources as special actions" (R97), and Rulebook 2023 p.7 agrees; the Manual later split that time into a resource step and a haste step. So the Prismite's "Do this only during the mana step" allows the exchange in either step. R97's "the printed mana step IS this engine's haste step" is too narrow (harmless for Dispatch Courier, whose grant matters only where cards are played), and R17's "during planning" is too broad. Document fix: rule 106.8a and rule 502.2c place the exchange in the resource step only and must add the haste step. The engine refuses an exchange in the haste step; that needs a CT ticket (none is filed yet). Register fix: narrow R97's equation and tighten R17's wording.
+**Resolution:** Settled by the designer: each card's printed "mana step" is the step that card was written for. Caleb (Discord rules-questions, 2024-03-27, calebgannon) was asked about both cards that print it. Of Dispatch Courier ("shouldn't this say "haste step"") he said "Yes". Of the Prismite he said "That should be mana step" and "Unless I used resource step in the rulebook"; told that the rules say resource step, "good catch". So Courier's mana step is the haste step (R97 is right for it, rule 504.7) and the Prismite's is the resource step (the Manual p.18 paragraph that describes the exchange; rule 106.8a and rule 502.2c). Rulebook 2023 p.7's single "mana step" (resources and haste cards together, as in Caleb's 2023 "you can play haste cards and resources as special actions", R97) is the older name for the two steps the Manual later split. The engine agrees: it refuses an exchange once the player has finished the resource step (413). Register fix (wording only): R97's "the printed mana step IS this engine's haste step" holds for Dispatch Courier, not for every card that prints the words, and R17's "during planning" is wider than the card. The first synthesis of this item read the Prismite's mana step as both steps; it had not seen the 2024-03-27 exchange, which is not a RAQ claim and so cannot be checked mechanically: it is in the rules-questions export.
 
 ### D-U09-2 · Register chain wrong · rule 507.5
 
@@ -785,7 +776,7 @@ Pure's printed reminder ignores "all other attributes"; the rulings keep the sta
 - card: Just a Unit: "(Pure cards and cards they are interacting with ignore all other attributes.)"
 - R289: "{Unaware} are all off, against units and against players alike — "its own"
 
-**Resolution:** Settled by printed text, read literally: Pure ignores "all other attributes", and the Manual names Tough as an attribute ("4. Attributes like Tough"), so Tough, Balanced, Inverted and Unaware do not apply in a Pure interaction. R61's "stats are not attributes" is our ruling and does not change what the Manual calls Tough. rule 802.1n states print; the engine keeps the stat attributes on: F-U19-1 (CT-260, filed as an owner decision on whether to change the engine). Document fix: rule 802.25e still states R289 ("Tough, Balanced and Inverted still apply") and contradicts rule 802.1n; it must be redrafted to match. Register fix: mark R289's "still read" sentence and R106's "survives {Pure}" as outranked by the printed reminder.
+**Resolution:** Settled by printed text, read literally: Pure ignores "all other attributes", and the Manual names Tough as an attribute ("4. Attributes like Tough"), so Tough, Balanced, Inverted and Unaware do not apply in a Pure interaction. R61's "stats are not attributes" is our ruling and does not change what the Manual calls Tough. rule 802.1n states print; the engine keeps the stat attributes on: F-U19-1 (CT-260, filed as an owner decision on whether to change the engine). Document fix: done 2026-10-10. rule 802.25e (which stated R289) and rule 802.25f (which stated R106) contradicted rule 802.1n; both now state print and are marked engine-differs (F-U19-1, F-U19-2). Register fix: mark R289's "still read" sentence and R106's "survives {Pure}" as outranked by the printed reminder.
 
 ### D-U19-6 · Register chain wrong · rule 802.9h
 
@@ -1764,7 +1755,7 @@ R78 left one presentation call open: the log line "X resolves." is written when 
 
 **Resolution:** An owner-only presentation call. R78 leaves "X resolves." logged when resolution starts, and asks the owner to rule. No rule states it (rule D6.3 covers only what the board shows). Sign-off: keep the line as the heading of the effect lines under it (today), or log it only once the item has resolved.
 
-## 4. Everything else (122)
+## 4. Everything else (123)
 
 ### D-GL-1 · Other · rule 304.11
 
@@ -1895,6 +1886,16 @@ The 2023 Rulebook gives the affinity Shard when an elemental resource ENTERS PLA
 - Manual p.18: "three affinity towards that resource."
 
 **Resolution:** The printed card face and the later Manual agree; the rule states them. The 2023 Rulebook is kept only for the two points it alone states clearly and does not contradict: the activated resource counts toward the three, and the bonus repeats.
+
+### D-U02-7 · Sources disagree · rule 106.8a
+
+What an EXPENDED Prismite exchanges into. The card says the Prismite is erased and a new resource is created and then activated, which read literally is a fresh, un-expended resource. R17 says the new resource keeps the Prismite's current state.
+
+- R132: ""Erase me: Create a non-prismite resource, **then activate it**. Do this only"
+- R17: "resource of any element, keeping its current state ("players essentially get to pick"
+- Manual p.18: "Sometimes it can be advantageous to delay exchanging them."
+
+**Resolution:** Settled by the designer, for R17. Caleb (Discord rules-questions, 2024-07-23, calebgannon), asked whether Prismites can give 4 mana on turn 1, answered that exchanging a Prismite uses no activation, "However when you do that you're losing the prismite, so you can only ever have 2 total mana on the first turn". A fresh, un-expended resource after an expended Prismite would be a third mana, so the designer's stated intent outranks the literal "then activate it" (authority order: where Caleb states an intent that differs from print, follow Caleb), and R17's "keeping its current state" is the law. rule 106.8a states it (redrafted 2026-10-10 to say so outright). The engine agrees (413 sets an active Prismite expended, exchanges it, and the fire resource is still expended). No engine change, no register change. The first synthesis of this item ruled for the literal print reading; it had not seen Caleb's line, which is not a RAQ claim and so cannot be checked mechanically: it is in the rules-questions export under calebgannon on that date.
 
 ### D-U02-9 · Other · rule 107.1
 

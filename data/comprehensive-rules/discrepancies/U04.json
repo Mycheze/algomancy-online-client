@@ -35,9 +35,13 @@
       {
         "source": "R73",
         "quote": "printed prose as a bracketed cost.**"
+      },
+      {
+        "source": "card: Void Mandible",
+        "quote": "sacrifice me. If you do, negate that effect. {i}(This is not optional.)"
       }
     ],
-    "resolution": "Settled by printed text, read literally: Eldritch Dreamtender, Cthyrian Rector, Void Mandible and Maelstrom Charger print \"sacrifice me. If you do, …\" as effect text, with no cost brackets, so the sacrifice is a step of the effect, carried out as the ability resolves; a player may respond while the unit is still in play, and if it has gone by then, \"If you do\" fails. R73 reads the prose as a bracketed cost on the owner's understanding that the unit \"needs to be sacrificed for its ability to go on the stack\", and says itself that the card has no brackets; print outranks it. Document fix: concepts.costs.trigger-sacrifice-me states R73 and must be redrafted to the printed reading. The engine pays the sacrifice as the ability is stacked; that needs a CT ticket (none is filed yet). Register fix: mark R73 as outranked by the printed text."
+    "resolution": "Settled by printed text, read literally: Eldritch Dreamtender, Cthyrian Rector and Void Mandible print \"sacrifice me. If you do, …\" as effect text after a \"When …\" trigger condition, with no cost brackets, so the sacrifice is a step of the effect, carried out as the ability resolves; a player may respond while the unit is still in play, and if it has gone by then, \"If you do\" fails. The sacrifice stays mandatory (no \"may\"; Void Mandible prints \"(This is not optional.)\"). R73 reads the prose as a bracketed cost on the owner's understanding that the unit \"needs to be sacrificed for its ability to go on the stack\", and says itself that the card has no brackets; print outranks it. Maelstrom Charger (\"As you play a nonunit spell, you may sacrifice me\") is a different shape, settled by its own RAQ write-up. Document fix: done 2026-10-10 (concepts.costs.trigger-sacrifice-me states print, marked engine-differs). The engine pays the sacrifice as the ability is stacked: F-U04-5. Register fix: mark R73 as outranked by the printed text."
   },
   {
     "id": "D-U04-3",

@@ -933,51 +933,71 @@
   },
   {
     "key": "annexd.auto-pass.open-decision.both-seats",
-    "textHash": "512ce4825ce16bb3",
+    "textHash": "a2e433f4d61d687d",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U23-r1",
+    "round": 4,
+    "verifier": "U23-r4",
     "engine": [
       {
-        "loc": "client/ui/main.ts:promptHtml/doneRow (R170)",
+        "loc": "client/server/view.ts:viewFor",
         "agrees": true,
-        "note": "two bars; the free seat keeps its controls"
+        "note": "If v.decision.seat !== seat, decision and suspension are nulled; only a pendingAsk stub (the asker's seat + an already-public source id) is sent."
+      },
+      {
+        "loc": "client/engine/src/apply.ts:legalActions/legalDecisionActions",
+        "agrees": true,
+        "note": "When the decision blocks the asker, its legal list is only `decide` actions from the decision's options."
       }
     ],
     "tests_run": [
       {
         "file": "client/ui/test/144-both-seats-decision-gate.test.ts",
-        "pattern": "R170 §1: ending the free seat's deployment goes through, from the button on screen",
+        "pattern": "R170 §5: ONLINE the state that drives this branch cannot even reach the client",
         "passed": true,
-        "asserts_claim": true,
-        "note": "ran the file; all tests pass"
+        "asserts_claim": "yes - viewFor(state,1).decision and .suspension are null while viewFor(state,0).decision.seat is 0"
+      },
+      {
+        "file": "client/ui/test/144-both-seats-decision-gate.test.ts",
+        "pattern": "R170 §2: the seat being asked still gets its own decision bar, and no way around it",
+        "passed": true,
+        "asserts_claim": "yes - the asked seat gets its decision bar and no done-deploying button; its hand is inert"
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U23/open-decision-own-seat.test.ts",
+        "title": "annexd.auto-pass.open-decision.both-seats: the other seat gets no decision/suspension; the asker gets it and only decide actions",
+        "passed": true,
+        "demonstrates": "yes - in a battle target decision, the non-asked seat's view has decision=null, suspension=null, pendingAsk.seat=asker; the asker's legal action types are exactly ['decide']"
+      }
+    ],
     "source_checks": [
       {
         "ref": "R170",
         "supports": "yes",
-        "note": "quote found in digital-rules.md"
-      },
-      {
-        "ref": "R170",
-        "supports": "yes",
-        "note": "quote found in digital-rules.md"
+        "note": "States view.ts nulls a decision that is not yours (and its suspension); judgement 2 and test §2 state the asked seat is given no way past its question."
       }
     ],
     "quote_spans": [
       {
         "file": "client/docs/digital-rules.md",
-        "text": "1. **Two bars, not one instead of the other.** `promptHtml` splits: the"
+        "text": "`server/view.ts` nulls a decision that is not yours (and the suspension"
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "2. **`doneRow` never offers a button `apply()` would throw on.** The seat being"
+        "file": "client/server/view.ts",
+        "text": "  // a pending decision (and the suspension carrying its private options) is"
+      },
+      {
+        "file": "client/server/view.ts",
+        "text": "  if (v.decision && v.decision.seat !== seat) {"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "  if (s.decision && decisionBlocks(s, seat)) return legalDecisionActions(e, seat);"
       }
     ],
     "basis_ok": true,
-    "problem": "R170 was written for hotseat, which was removed 2026-09-23; the both-seats screen survives only off the online path (R170 §5: online the state cannot reach the client). Still true where such a screen exists."
+    "problem": "None material. Nuances the text omits: the other seat IS told that a question is owed (R247 pendingAsk stub: the asker's seat and, if already public, the source entity), and the 144 §2 test notes concede also gets past your own question. 'Has only the question' is accurate for the legal action list."
   },
   {
     "key": "annexd.auto-pass.open-decision.concede",

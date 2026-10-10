@@ -82,5 +82,42 @@
       }
     ],
     "ct": "CT-243"
+  },
+  {
+    "id": "F-U04-5",
+    "rule": "concepts.costs.trigger-sacrifice-me",
+    "title": "\"sacrifice me. If you do\" triggers sacrifice their source as the ability goes on the stack; print makes it part of the effect",
+    "summary": "Eldritch Dreamtender, Cthyrian Rector and Void Mandible print \"When …, sacrifice me. If you do, …\" as effect prose with no [cost] bracket, so the sacrifice happens as the ability resolves: players can respond while the unit is still in play, and if it is gone by then the \"If you do\" part does nothing. R73 (owner) reads the prose as a cast cost, and the engine follows R73: 26-metal-a asserts the sacrifice is paid on the way to the stack. Print outranks R73 (D-U04-2). Suspected from the ruling and the test title; not re-measured against the engine in this pass.",
+    "evidence": [
+      {
+        "file": "client/engine/test/26-metal-a.test.ts",
+        "quote": "assert.ok(!ent(h, dt), 'sacrificed on the way to the stack, not at resolution');"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "printed line is effect prose with an if-you-do rider rather than a printed"
+      }
+    ],
+    "ct": "CT-264"
+  },
+  {
+    "id": "F-U04-6",
+    "title": "\"sacrifice me. If you do, …\" triggers are sacrificed as a cast cost, against the designer's ruling",
+    "summary": "Eldritch Dreamtender, Cthyrian Rector and Void Mandible carry castCost {sacrificeUnits, from:'self'} (R73), so the source is sacrificed as the trigger goes on the stack. Caleb Gannon ruled on 2025-04-20, on Eldritch Dreamtender, that the sacrifice happens on resolution: if the opponent kills it with the trigger on the stack, it cannot be sacrificed and nothing is discarded. In the engine the opponent can never respond while the source is still in play, so the opponent loses the interaction the designer describes.",
+    "evidence": [
+      {
+        "file": "data/rulings/generated_rulings.jsonl",
+        "quote": "So if the opponent kills it while the trigger is on the stack, for example, you wouldn't be able to sacrifice it, and so wouldn't discard a card from them."
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+        "quote": "castCost: { kind: 'sacrificeUnits', from: 'self', n: 1 },"
+      },
+      {
+        "file": "client/engine/test/26-metal-a.test.ts",
+        "quote": "assert.ok(!ent(h, dt), 'sacrificed on the way to the stack, not at resolution');"
+      }
+    ],
+    "rule": "concepts.costs.trigger-sacrifice-me"
   }
 ]

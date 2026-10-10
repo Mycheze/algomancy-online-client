@@ -162,7 +162,7 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <a id="rD2.1f"></a>**D2.1f** Each player's screen shows only that player's own open question: the other player's question and its options are never sent to it. The player being asked has only the question.
 
-<sub>Basis: Owner call · Verified: not verified (the text changed after verification) · Rulings: R170 · Key: annexd.auto-pass.open-decision.both-seats</sub>
+<sub>Basis: Owner call · Verified: confirmed, round 4, 2 tests run · Rulings: R170 · Key: annexd.auto-pass.open-decision.both-seats</sub>
 
 <a id="rD2.2"></a>**D2.2.** When a player holds priority, the client offers up to three ways to pass: Pass, Pass through stack and Pass all. Pass through stack and Pass all are standing passes: promises the client keeps on the player's behalf in later windows. See rule 703.
 

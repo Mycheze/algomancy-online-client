@@ -127,8 +127,8 @@
     "id": "D-U02-7",
     "kind": "a-sources-disagree",
     "rule": "concepts.resources.prismite.exchange",
-    "tier": 2,
-    "summary": "What an EXPENDED Prismite exchanges into. The card says the Prismite is erased and a new resource is created and then activated, which reads as a fresh, un-expended resource. R17 says the new resource keeps the Prismite's current state.",
+    "tier": 4,
+    "summary": "What an EXPENDED Prismite exchanges into. The card says the Prismite is erased and a new resource is created and then activated, which read literally is a fresh, un-expended resource. R17 says the new resource keeps the Prismite's current state.",
     "sides": [
       {
         "source": "R132",
@@ -143,7 +143,7 @@
         "quote": "Sometimes it can be advantageous to delay exchanging them."
       }
     ],
-    "resolution": "Settled by printed text, read literally: \"Erase me: Create a non-prismite resource, then activate it\" makes a new resource and activates it, so the new resource is not expended, whatever the Prismite's state was. R17's \"keeping its current state\" adds a condition the card does not print, and the Manual's \"advantageous to delay exchanging them\" fits either. Document fix: concepts.resources.prismite.exchange states R17 and must be redrafted to the printed reading. The engine keeps the Prismite's state; that needs a CT ticket (none is filed yet). At the table: a Prismite expended for mana and then exchanged in the same mana step gives a second mana that turn (with D-U08-3, which puts the exchange in the haste step as well)."
+    "resolution": "Settled by the designer, for R17. Caleb (Discord rules-questions, 2024-07-23, calebgannon), asked whether Prismites can give 4 mana on turn 1, answered that exchanging a Prismite uses no activation, \"However when you do that you're losing the prismite, so you can only ever have 2 total mana on the first turn\". A fresh, un-expended resource after an expended Prismite would be a third mana, so the designer's stated intent outranks the literal \"then activate it\" (authority order: where Caleb states an intent that differs from print, follow Caleb), and R17's \"keeping its current state\" is the law. concepts.resources.prismite.exchange states it (redrafted 2026-10-10 to say so outright). The engine agrees (413 sets an active Prismite expended, exchanges it, and the fire resource is still expended). No engine change, no register change. The first synthesis of this item ruled for the literal print reading; it had not seen Caleb's line, which is not a RAQ claim and so cannot be checked mechanically: it is in the rules-questions export under calebgannon on that date."
   },
   {
     "id": "D-U02-8",

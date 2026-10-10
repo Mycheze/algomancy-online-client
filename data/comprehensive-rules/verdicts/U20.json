@@ -4372,93 +4372,157 @@
   },
   {
     "key": "attr.pure.stat-attributes",
-    "textHash": "5dffc9db3fd46f9b",
+    "textHash": "54b3debeb75b70b6",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U20-r1",
+    "round": 4,
+    "verifier": "U20-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:victimShare",
-        "agrees": true,
-        "note": "effStats unaffected by pure"
-      }
-    ],
-    "tests_run": [],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
-        "title": "attr.pure.stat-attributes: a Tough 1/4 still has 8 defense blocking Just a Unit (5 power): it survives",
-        "passed": true,
-        "demonstrates": true
-      }
-    ],
-    "source_checks": [
-      {
-        "ref": "glossary: Pure (ours)",
-        "supports": "yes",
-        "note": "not an authority"
+        "loc": "client/engine/src/engine.ts:effStats",
+        "agrees": false,
+        "note": "layer 4 applies Tough/Balanced via statLayerAttrs with no Pure check, so Tough still doubles defense in a Pure exchange (the flagged divergence F-U19-1 is real)"
       },
-      {
-        "ref": "R61",
-        "supports": "yes",
-        "note": ""
-      },
-      {
-        "ref": "R289",
-        "supports": "yes",
-        "note": ""
-      }
-    ],
-    "quote_spans": [
-      {
-        "file": "client/docs/digital-rules.md",
-        "text": "Stats are not attributes: a Pure 2/3 still dies to 3 damage."
-      }
-    ],
-    "basis_ok": true,
-    "problem": ""
-  },
-  {
-    "key": "attr.pure.unaware-combat",
-    "textHash": "ba786f5a4ae5ddd9",
-    "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U20-r1",
-    "engine": [
       {
         "loc": "client/engine/src/engine.ts:exchangeAt",
         "agrees": true,
-        "note": "`collapsed` is computed from Unaware without a Pure gate"
+        "note": "Pure empties the exchange's attribute SETS only (atkAttrs/blkAttrs), stats untouched -> a Pure 2/3 dies to 3"
       }
     ],
     "tests_run": [],
     "probes": [
       {
-        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
-        "title": "attr.pure.unaware-combat: Bubb (Unaware) blocking a buffed Just a Unit — both read at printed stats",
+        "file": "data/comprehensive-rules/build/probes/U20/u20-r4-probes.test.ts",
+        "title": "attr.pure.stat-attributes: a Tough 0/4 blocking Just a Unit (5 power) survives — the engine keeps Tough on (defense 8)",
         "passed": true,
-        "demonstrates": true
+        "demonstrates": "yes - the divergence is real: Tough 0/4 survives 5 from Just a Unit (8 defense), while the plain 0/4 control dies"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-r4-probes.test.ts",
+        "title": "attr.pure.stat-attributes (control): a plain 0/4 blocking the same 5-power Just a Unit dies",
+        "passed": true,
+        "demonstrates": "yes - control"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-r4-probes.test.ts",
+        "title": "attr.pure.stat-attributes: a Pure 2/3 (Just a Unit) blocking a 3-power unit dies — stats still count",
+        "passed": true,
+        "demonstrates": "yes - first sentence: a Pure 2/3 dies to 3"
       }
     ],
     "source_checks": [
       {
-        "ref": "R106",
+        "ref": "card: Just a Unit",
         "supports": "yes",
-        "note": ""
+        "note": "'ignore all other attributes' - no carve-out for stat-layer attributes; Tough/Balanced/Inverted are bracketed attributes on cards"
+      },
+      {
+        "ref": "Manual p.42",
+        "supports": "yes",
+        "note": "'4. Attributes like Tough, 5. Inverted' names Tough as an attribute; the same page's Q&A calls Tough and Balanced attributes ('Attributes apply in order')"
+      },
+      {
+        "ref": "R61",
+        "supports": "partly",
+        "note": "supports only the first sentence (stats are not attributes). Our own R289 says the OPPOSITE of the second sentence ('{Tough}, {Balanced} and {Inverted} still read (they are stat layers, R61)'); the rule does not cite or acknowledge it. Printed literal outranks R-rulings, so the rule stands, but the divergence is ruling-backed, not an engine slip"
       }
     ],
     "quote_spans": [
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "(Pure cards and cards they are interacting with ignore all other attributes.)"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "counters, 4. Attributes like Tough, 5. Inverted, 6.Unaware"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "A: Attributes apply in order from top to bottom. So if"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Stats are not attributes: a Pure 2/3 still dies to 3 damage."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "{Tough}, {Balanced} and {Inverted} still read (they are stat layers, R61)."
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Ruling follows printed literal and the engineDiffers flag is real (probe). Caveat: R289 explicitly rules that Tough/Balanced/Inverted still read under Pure; the rule should cite that ruling as the superseded/contrary reading rather than present the divergence as engine-only."
+  },
+  {
+    "key": "attr.pure.unaware-combat",
+    "textHash": "effdf8c3ebb2db1a",
+    "verdict": "confirmed",
+    "round": 4,
+    "verifier": "U20-r4",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:exchangeAt",
+        "agrees": false,
+        "note": "`collapsed` is computed from unaware(u) independently of `pure`; its docstring says the collapse survives Pure - the flagged divergence F-U19-2 is real"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:victimShare",
+        "agrees": false,
+        "note": "collapsed -> printedStats even when pure is true"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-r4-probes.test.ts",
+        "title": "attr.pure.unaware-combat: Bubb (Unaware) blocks Just a Unit with one +1/+1 counter — the engine reads printed power 2, not 3",
+        "passed": true,
+        "demonstrates": "yes - divergence real: Bubb takes 2 (printed), the +1/+1 counter is ignored under Pure"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Just a Unit",
+        "supports": "yes",
+        "note": "'ignore all other attributes'; Unaware is a bracketed attribute (Bubb attrs ['Unaware'])"
+      },
+      {
+        "ref": "Manual p.42",
+        "supports": "partly",
+        "note": "lists Unaware as stat layer 6 next to 'Attributes like Tough'; shows Unaware acts as a stat layer, does not itself say it is switched off by Pure"
+      },
+      {
+        "ref": "R106 (uncited, contrary)",
+        "supports": "no",
+        "note": "our current ruling says 'The collapse survives {Pure}' - the divergence is ruling-backed. R289 meanwhile switches a Pure recipient's own Unaware OFF outside combat, so our rulings are internally inconsistent; the printed-literal reading the rule takes matches R289's"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "(Pure cards and cards they are interacting with ignore all other attributes.)"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "counters, 4. Attributes like Tough, 5. Inverted, 6.Unaware"
+      },
       {
         "file": "client/docs/digital-rules.md",
         "text": "The collapse survives {Pure}: R61 switches the ATTRIBUTE layer off for an exchange, and"
       },
       {
+        "file": "client/docs/digital-rules.md",
+        "text": "  are off against it, and so are its own {Vulnerable} and {Unaware}."
+      },
+      {
         "file": "client/engine/src/engine.ts",
-        "text": "const collapsed = [...atk, ...blk].some(id => {"
+        "text": "   * {Pure}: Pure switches the ATTRIBUTE layer off for the exchange (R61), and"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "    const [, t] = collapsed ? this.printedStats(u) : this.effStats(u);"
       }
     ],
     "basis_ok": true,
-    "problem": ""
+    "problem": "Ruling follows printed literal; divergence confirmed by probe. Caveat: R106 explicitly rules the opposite ('The collapse survives {Pure}') and should be named as the contrary reading; R289 already treats Unaware as switched off by Pure outside combat, so the engine is inconsistent between combat and noncombat."
   },
   {
     "key": "attr.reaping",

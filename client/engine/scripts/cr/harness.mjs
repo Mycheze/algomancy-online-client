@@ -5,11 +5,11 @@
  * round. Every subcommand prints ONE JSON object on stdout (`{error}` and exit 1
  * on failure).
  *
- *   node client/engine/scripts/cr/harness.mjs plant    --unit U12 --round K --mutants <file> [--force]
- *   node client/engine/scripts/cr/harness.mjs keys     --unit U12 --round K [--decoy-pool]
- *   node client/engine/scripts/cr/harness.mjs judge    --unit U12 --round K [--attempt A]
- *   node client/engine/scripts/cr/harness.mjs feedback --unit U12 --round K
- *   node client/engine/scripts/cr/harness.mjs finalize --unit U12
+ *   node client/engine/scripts/cr/harness.mjs plant    --unit U12 --round K --mutants <file> [--force] [--keys k1,k2]
+ *   node client/engine/scripts/cr/harness.mjs keys     --unit U12 --round K [--decoy-pool] [--keys k1,k2]
+ *   node client/engine/scripts/cr/harness.mjs judge    --unit U12 --round K [--attempt A] [--keys k1,k2]
+ *   node client/engine/scripts/cr/harness.mjs feedback --unit U12 --round K [--keys k1,k2]
+ *   node client/engine/scripts/cr/harness.mjs finalize --unit U12 [--round 4 [--keys k1,k2]]
  *   node client/engine/scripts/cr/harness.mjs stamp    --unit U12 [--refresh]
  *   node client/engine/scripts/cr/harness.mjs status   [--unit U12]
  *
@@ -45,6 +45,16 @@
  * contradicted, partial or unsupported, with a non-empty problem. A batch that
  * confirms (or misses) any mutant is discarded whole and re-run by a fresh
  * verifier as attempt A+1 on the same input.
+ *
+ * THE POLISH ROUND (4). After the last revision round (3) a later edit to a
+ * few rules is re-verified in one more round over an EXPLICIT key list: the
+ * keys in build/harness/U/changed-r3.json, or `--keys k1,k2` (when both are
+ * given they must agree). Round 3 need not exist. Nothing is carried in: no
+ * earlier round's unverified key joins it. It plants decoys like any round ≥2.
+ * `finalize --round 4` MERGES: only the round's keys get a new verdict and a
+ * new `untested` mark, and only its bugs become findings — every other row of
+ * verdicts/U.json, rules/U.json and findings/U.json is left as committed (the
+ * wave-end and repair hands edited those; a full finalize would undo them).
  */
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
@@ -91,6 +101,22 @@ export const says = (x) => x === true || /^\s*yes\b/i.test(String(x ?? ''));
 
 /* ── pure: which keys a round takes ────────────────────────────────────── */
 
+/** the last draft/verify/revise round, and the one polish round after it */
+export const MAX_ROUND = 3;
+export const POLISH_ROUND = MAX_ROUND + 1;
+
+/**
+ * The polish round's key list, from changed-r3.json (`fileKeys`) and/or
+ * `--keys` (`cliKeys`); null = not given. Both given must name the same keys.
+ */
+export function polishKeyList(fileKeys, cliKeys) {
+  const set = (xs) => (xs ? [...new Set(xs.map((k) => String(k).trim()).filter(Boolean))].sort() : null);
+  const f = set(fileKeys), c = set(cliKeys);
+  if (!f && !c) fail(`polish round ${POLISH_ROUND} verifies an explicit key list: give --keys k1,k2 or write build/harness/<U>/changed-r${MAX_ROUND}.json`);
+  if (f && c && JSON.stringify(f) !== JSON.stringify(c)) fail(`--keys (${c.join(', ')}) and changed-r${MAX_ROUND}.json (${f.join(', ')}) differ: the polish round has one key list`);
+  return c ?? f;
+}
+
 /**
  * → {keys, carried, mutable, decoyPool}. `prev` is null for round 1, else
  * {changed: [keys], unverified: [keys], preferred?: [keys]} — `preferred` the
@@ -101,12 +127,20 @@ export const says = (x) => x === true || /^\s*yes\b/i.test(String(x ?? ''));
  */
 export function roundKeys(records, round, prev) {
   const live = new Set(liveRules(records).map((r) => r.key));
+  if (!(round >= 1 && round <= POLISH_ROUND)) fail(`round ${round}: there are at most ${MAX_ROUND} rounds, and the polish round ${POLISH_ROUND}`);
   if (round === 1) {
     const keys = [...live].sort();
     return { keys, carried: [], mutable: keys, decoyPool: [] };
   }
   if (!prev) fail(`round ${round} needs the previous round's changed and unverified keys`);
-  const carried = [...new Set(prev.unverified)].filter((k) => live.has(k)).sort();
+  const polish = round === POLISH_ROUND;
+  if (polish) {
+    if (!prev.changed.length) fail(`polish round ${POLISH_ROUND} verifies an explicit key list, and it is empty`);
+    const dead = prev.changed.filter((k) => !live.has(k));
+    if (dead.length) fail(`polish round ${POLISH_ROUND}: not a live rule: ${[...new Set(dead)].join(', ')}`);
+  }
+  // the polish round takes its list alone: nothing is carried in
+  const carried = polish ? [] : [...new Set(prev.unverified)].filter((k) => live.has(k)).sort();
   const keys = [...new Set([...prev.changed, ...carried])].filter((k) => live.has(k)).sort();
   const pref = new Set((prev.preferred ?? []).filter((k) => live.has(k)));
   const outside = [...live].filter((k) => !keys.includes(k)).sort();
@@ -470,6 +504,56 @@ export function finalize({ unit, records, rounds, findings = [], readText, exist
   };
 }
 
+/**
+ * `finalize --round 4`: the polish round MERGED into the committed state.
+ * → {verdicts, records, findings, report}. Only the round's keys change:
+ *   verdicts  the committed rows, with each key the round verified replaced
+ *             (a key it did not verify keeps its old row, reported unverified)
+ *   records   `untested` set or cleared for the round's keys only
+ *   findings  the committed ones plus the round's own bugs (dedup by title)
+ * `keys` (the --keys list), when given, must be the round's keys.
+ */
+export function finalizePolish({ unit, records, round: r, findings = [], verdicts = [], keys = null, readText, exists = () => true, repoRoot = REPO_ROOT }) {
+  if (!r || r.round !== POLISH_ROUND) fail(`finalize --round ${POLISH_ROUND} merges the polish round, and round ${POLISH_ROUND} of ${unit} was never planted`);
+  sameKeys(r.truth, keys);
+  if (!usableRound(r, readText)) fail(`polish round ${POLISH_ROUND} of ${unit} has no valid attempt (${r.attempts.length} tried): re-run the verifier`);
+  const res = finalize({ unit, records, rounds: [r], findings, readText, exists, repoRoot });
+  const round = new Set(r.truth.keys);
+  const fresh = new Map(res.verdicts.map((v) => [v.key, v]));
+  const outVerdicts = [...verdicts.filter((v) => !fresh.has(v.key)).map((v) => structuredClone(v)), ...fresh.values()]
+    .sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
+  const marked = new Map(res.records.map((x) => [x?.key, x]));
+  const outRecords = records.map((x0) => {
+    const x = structuredClone(x0);
+    if (!x || !round.has(x.key)) return x;
+    if (marked.get(x.key)?.untested) x.untested = true; else delete x.untested;
+    return x;
+  });
+  const byVerdict = {};
+  for (const v of fresh.values()) byVerdict[v.verdict] = (byVerdict[v.verdict] ?? 0) + 1;
+  return {
+    verdicts: outVerdicts, records: outRecords, findings: res.findings,
+    report: {
+      unit, round: POLISH_ROUND, keys: [...round].sort(), verdicts: fresh.size, byVerdict,
+      untested: res.report.untested.filter((k) => round.has(k)),
+      stale: res.report.stale.filter((k) => round.has(k)),
+      unverified: [...round].filter((k) => !fresh.has(k)).sort(),
+      findingsAdded: res.report.findingsAdded,
+    },
+  };
+}
+
+/** `--keys` given to a round already planted must name exactly its keys */
+export function sameKeys(truth, keys) {
+  if (!keys) return;
+  const want = [...new Set(keys)].sort(), have = [...truth.keys].sort();
+  if (JSON.stringify(want) !== JSON.stringify(have)) fail(`--keys (${want.join(', ')}) is not round ${truth.round}'s key list (${have.join(', ')})`);
+}
+
+/** the round numbers planted, from a unit's harness file names (gaps allowed:
+ *  a unit verified in two rounds can still have the polish round 4) */
+export const roundsIn = (names) => [...new Set(names.map((n) => /^mutants-r(\d+)\.json$/.exec(n)).filter(Boolean).map((m) => Number(m[1])))].sort((a, b) => a - b);
+
 /* ── pure: stamp ───────────────────────────────────────────────────────── */
 
 /**
@@ -552,7 +636,7 @@ function loadRules(unit) {
 export function loadRounds(unit) {
   const F = files(unit);
   const out = [];
-  for (let k = 1; existsSync(F.truth(k)); k++) {
+  for (const k of existsSync(F.harness) ? roundsIn(readdirSync(F.harness)) : []) {
     const attempts = [];
     if (existsSync(F.out(k, 1))) attempts.push({ attempt: 1, doc: readJson(F.out(k, 1)) });
     const dir = CR_VERIFY_OUTPUT_DIR;
@@ -569,9 +653,20 @@ export function loadRounds(unit) {
 }
 
 /** the previous round's changed / unverified keys, and the keys that may host a mutant */
-function prevOf(unit, round, records) {
+function prevOf(unit, round, records, cliKeys = null) {
   const F = files(unit);
   const k = round - 1;
+  if (round > POLISH_ROUND) fail(`round ${round}: there are at most ${MAX_ROUND} rounds, and the polish round ${POLISH_ROUND}`);
+  if (round === POLISH_ROUND) {
+    // an explicit list; round 3 need not exist, and nothing is carried in
+    const fileKeys = existsSync(F.changed(k)) ? readJson(F.changed(k)) : null;
+    if (fileKeys !== null && !Array.isArray(fileKeys) && !Array.isArray(fileKeys?.keys)) fail(`${rel(F.changed(k))} must be a list of keys`);
+    const changed = polishKeyList(fileKeys === null ? null : Array.isArray(fileKeys) ? fileKeys : fileKeys.keys, cliKeys);
+    const fin = finalize({ unit, records, rounds: loadRounds(unit), readText: readSpanFile });
+    const preferred = fin.verdicts.filter((v) => v.verdict === 'confirmed' && !fin.report.stale.includes(v.key)).map((v) => v.key);
+    return { changed, unverified: [], preferred };
+  }
+  if (cliKeys) fail(`--keys names the polish round's list; round ${round} takes the reviser's changed-r${k}.json`);
   if (!existsSync(F.truth(k))) fail(`round ${k} of ${unit} was never planted`);
   if (!existsSync(F.changed(k))) fail(`${rel(F.changed(k))} is missing: the reviser writes it after round ${k}`);
   const ch = readJson(F.changed(k));
@@ -600,29 +695,30 @@ function numOfFn() {
 /* ── the subcommands ───────────────────────────────────────────────────── */
 
 const cmd = {
-  keys({ unit, round, decoyPool }) {
+  keys({ unit, round, decoyPool, keyList }) {
     const records = loadRules(unit);
     if (decoyPool && round === 1) fail('round 1 replaces rules in place (pick from `mutable`); decoys are planted from round 2 on');
-    const sel = roundKeys(records, round, round > 1 ? prevOf(unit, round, records) : null);
+    const sel = roundKeys(records, round, round > 1 ? prevOf(unit, round, records, keyList) : null);
     const { decoyPool: pool, ...rest } = sel;
     return { unit, round, ...rest, ...(decoyPool ? { decoyPool: pool } : {}) };
   },
 
-  plant({ unit, round, mutants: mfile, force }) {
+  plant({ unit, round, mutants: mfile, force, keyList }) {
     if (!mfile) fail('--mutants <file> is required');
     const F = files(unit);
     if (!force && (existsSync(F.out(round, 1)) || loadRounds(unit).find((r) => r.round === round)?.attempts.length)) fail(`round ${round} of ${unit} already has verdicts: replanting would change what they judged (--force to do it anyway)`);
     const records = loadRules(unit);
-    const sel = roundKeys(records, round, round > 1 ? prevOf(unit, round, records) : null);
+    const sel = roundKeys(records, round, round > 1 ? prevOf(unit, round, records, keyList) : null);
     const { input, truth } = plant({ unit, round, records, sel, mutants: readJson(resolve(mfile), null), numOf: numOfFn() });
     writeJson(F.input(round), input);
     writeJson(F.truth(round), truth);
     return { unit, round, input: rel(F.input(round)), records: input.length, mutants: truth.mutants.length, decoys: truth.decoys.length, carried: sel.carried.length };
   },
 
-  judge({ unit, round, attempt }) {
+  judge({ unit, round, attempt, keyList }) {
     const F = files(unit);
     const r = loadRounds(unit).find((x) => x.round === round) ?? fail(`round ${round} of ${unit} was never planted`);
+    sameKeys(r.truth, keyList);
     const a = r.attempts.find((x) => x.attempt === attempt) ?? fail(`${rel(F.out(round, attempt))} is missing`);
     const j = judge({ truth: r.truth, input: r.input, doc: a.doc, readText: readSpanFile });
     const out = { ...j, attempt };
@@ -630,9 +726,10 @@ const cmd = {
     return out;
   },
 
-  feedback({ unit, round }) {
+  feedback({ unit, round, keyList }) {
     const F = files(unit);
     const r = loadRounds(unit).find((x) => x.round === round) ?? fail(`round ${round} of ${unit} was never planted`);
+    sameKeys(r.truth, keyList);
     const valid = [...r.attempts].reverse().map((a) => ({ a, j: judge({ truth: r.truth, input: r.input, doc: a.doc, readText: readSpanFile }) })).find((x) => x.j.batchValid);
     if (!valid) fail(`round ${round} of ${unit} has no valid attempt (${r.attempts.length} tried): re-run the verifier`);
     const fb = { ...buildFeedback({ truth: r.truth, input: r.input, doc: valid.a.doc, judged: valid.j }), attempt: valid.a.attempt };
@@ -640,9 +737,21 @@ const cmd = {
     return { unit, round, attempt: valid.a.attempt, feedback: rel(F.feedback(round)), items: fb.items.length, unverified: fb.unverified.length, bugs: fb.bugs.length };
   },
 
-  finalize({ unit }) {
+  finalize({ unit, round, keyList }) {
     const F = files(unit);
     const records = loadRules(unit);
+    if (round || keyList) {
+      if (round !== POLISH_ROUND) fail(`finalize takes --round only for the polish round (${POLISH_ROUND}); a full finalize takes none`);
+      const res = finalizePolish({
+        unit, records, round: loadRounds(unit).find((x) => x.round === POLISH_ROUND), keys: keyList,
+        findings: readJson(F.findings, []), verdicts: readJson(F.verdicts, []),
+        readText: readSpanFile, exists: (p) => existsSync(join(REPO_ROOT, p)),
+      });
+      writeJson(F.verdicts, res.verdicts);
+      writeJson(F.findings, res.findings);
+      writeJson(F.rules, res.records);
+      return res.report;
+    }
     const res = finalize({
       unit, records, rounds: loadRounds(unit), findings: readJson(F.findings, []),
       readText: readSpanFile, exists: (p) => existsSync(join(REPO_ROOT, p)),
@@ -709,15 +818,19 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       options: {
         unit: { type: 'string' }, round: { type: 'string' }, attempt: { type: 'string' },
         mutants: { type: 'string' }, force: { type: 'boolean' }, refresh: { type: 'boolean' },
-        'decoy-pool': { type: 'boolean' },
+        'decoy-pool': { type: 'boolean' }, keys: { type: 'string' },
       },
     });
+    const keyList = values.keys === undefined ? null : values.keys.split(',').map((k) => k.trim()).filter(Boolean);
+    if (keyList && !keyList.length) fail('--keys names no key');
     if (!cmd[sub]) fail(`usage: harness.mjs plant|keys|judge|feedback|finalize|stamp|status --unit U [--round K] …`);
     if (sub !== 'status' && !values.unit) fail('--unit is required');
     if (['plant', 'keys', 'judge', 'feedback'].includes(sub) && !(Number(values.round) >= 1)) fail('--round K (≥1) is required');
+    if (sub === 'finalize' && values.round !== undefined && !(Number(values.round) >= 1)) fail('--round K (≥1)');
     const out = await cmd[sub]({
       unit: values.unit, round: Number(values.round), attempt: values.attempt ? Number(values.attempt) : 1,
       mutants: values.mutants, force: !!values.force, refresh: !!values.refresh, decoyPool: !!values['decoy-pool'],
+      keyList,
     });
     console.log(JSON.stringify(out));
   } catch (e) {

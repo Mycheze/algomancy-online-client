@@ -1477,11 +1477,15 @@
     "key": "concepts.resources.prismite.exchange",
     "parent": "concepts.resources.prismite",
     "order": 1,
-    "text": "During the resource step of the planning phase a player may exchange an active Prismite for another resource (which resources: the element-only rule below). The new resource takes the Prismite's place and keeps its current state.",
+    "text": "A player may exchange an active Prismite for another resource only in the resource step of the planning phase, never in the haste step (which resources: the element-only rule below). The new resource takes the Prismite's place and keeps its current state, so an exchange never adds mana: an expended Prismite becomes an expended resource.",
     "examples": [
       {
         "text": "An active Prismite is exchanged into a fire resource during planning.",
         "test": "01-planning.test.ts::R17/prismites: dormant start, no affinity, planning exchange into any element"
+      },
+      {
+        "text": "An expended active Prismite exchanged into fire becomes an expended fire resource; once the player has finished the resource step, a further exchange is refused.",
+        "test": "413-cr-elements-resources.test.ts::cr:concepts.resources.prismite.exchange — only an active Prismite, only in the resource step, and the new resource keeps its state"
       }
     ],
     "see": [
@@ -1531,8 +1535,8 @@
       ]
     },
     "basis": "mixed",
-    "confidence": "medium",
-    "notes": "The printed Prismite card is not in printed.json; its text is known only from R132's quote. The step: the card says \"only during the mana step\" and the Manual describes the exchange inside the resource step; R17's \"during planning\" is broader and would also admit the haste step. The rule states the printed sources (authority order); the verifier measured that the engine agrees (refused once a player finishes the resource step): D-U02-6. \"then activate it\" vs \"keeping its current state\" for an expended Prismite: D-U02-7 (question for the owner). The game's-elements limit is D-U02-3.",
+    "confidence": "high",
+    "notes": "POLISH (2026-10-10). The printed card (\"Erase me: Create a non-prismite resource, then activate it. Do this only during the mana step.\", quoted by R132; the scan is data/cards/Prismite.jpg, not in printed.json) read literally would make a fresh, unexpended resource and would admit the haste step, since Rulebook 2023 p.7's \"mana step\" covers both. The designer settles both the other way, and the designer outranks print (authority order): Caleb, Discord rules-questions, 2024-07-23 (calebgannon), on whether a Prismite can give 4 mana on turn 1: \"but using it to make a different resource doesn't. However when you do that you're losing the prismite, so you can only ever have 2 total mana on the first turn\"; and Caleb, Discord rules-questions, 2024-03-27 (calebgannon), asked about the Prismite's printed \"mana step\": \"That should be mana step\" / \"Unless I used resource step in the rulebook\"; told the rules say resource step: \"good catch\". In the same exchange Dispatch Courier's \"mana step\" should say \"haste step\": \"Yes\". Neither line is a RAQ claim, so neither can be cited as a checked designer source; R17 (\"keeping its current state\") and the Manual p.18 resource-step paragraph carry the checkable evidence, and agree. D-U02-7 and D-U08-3 (D-U02-6 merged into it) record it. The engine agrees (413). The game's-elements limit is D-U02-3.",
     "sourceHashes": {
       "R132": "422c58626eb4235e480a9a0253166d55631ccd2b6ed80e703cc36d4d43ef2321",
       "R17": "c78170a2f331384beebbcde66f1a2516c8e755a0394858386cbe11aaddd93980"

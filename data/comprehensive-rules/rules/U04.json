@@ -605,11 +605,15 @@
     "key": "concepts.costs.trigger-sacrifice-me",
     "parent": "111",
     "order": 8,
-    "text": "When a triggered ability tells its controller to \"sacrifice me. If you do, …\", the sacrifice is a cost. It is paid as the ability is put on the stack, it cannot be declined, and no player can respond between it and the ability going on the stack. If the source is already gone, the ability does nothing.",
+    "text": "When a triggered ability's effect says \"sacrifice me. If you do, …\", the sacrifice is part of the effect, not a cost: the ability goes on the stack with its source still in play, players may respond, and the source is sacrificed as the ability resolves. The sacrifice is not optional. If the source is no longer in play when the ability resolves, it cannot be sacrificed, and the \"If you do\" part does nothing.",
     "examples": [
       {
-        "text": "Example: Eldritch Dreamtender's column deals combat damage to an opponent; it is sacrificed as its ability goes on the stack, not when the ability resolves.",
-        "test": "26-metal-a.test.ts::Eldritch Dreamtender: the sacrifice is paid on the way to the stack, not at resolution"
+        "text": "Example: Eldritch Dreamtender's column deals combat damage to an opponent. Its ability goes on the stack with Dreamtender still in play; Dreamtender is sacrificed when the ability resolves, and only then is the opponent's hand looked at and a card discarded. (illustrative; the engine sacrifices it as the ability goes on the stack: F-U04-5)",
+        "test": null
+      },
+      {
+        "text": "Example: Dreamtender is destroyed in response to its ability. When the ability resolves, nothing is sacrificed, so no hand is looked at and nothing is discarded. (illustrative)",
+        "test": null
       },
       {
         "text": "Example: no decline is offered for that sacrifice.",
@@ -618,38 +622,42 @@
     ],
     "see": [],
     "sources": {
-      "printed": [],
-      "designer": [],
-      "ours": [],
-      "rulings": [
+      "printed": [
         {
-          "ref": "R73",
-          "quote": "printed prose as a bracketed cost.**"
+          "ref": "card: Eldritch Dreamtender",
+          "quote": "sacrifice me. If you do, look at that player's hand and discard a card from it."
         },
         {
-          "ref": "R73",
-          "quote": "- **a total skip when the source is already dead** — no hand is looked at and"
+          "ref": "card: Cthyrian Rector",
+          "quote": "When you trash another card, sacrifice me. If you do, recall that card from your bin."
+        },
+        {
+          "ref": "card: Void Mandible",
+          "quote": "sacrifice me. If you do, negate that effect. {i}(This is not optional.)"
         }
       ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
       "history": [],
       "engine": [],
       "tests": [
-        "26-metal-a.test.ts",
-        "32-cast-costs.test.ts"
+        "26-metal-a.test.ts"
       ]
     },
-    "basis": "owner",
+    "basis": "printed",
     "confidence": "medium",
-    "notes": "The printed words are effect prose (\"sacrifice me. If you do,\"), not a bracket; R73 reads them as a cost (question D-U04-2).",
-    "sourceHashes": {
-      "R73": "27f9b2f47259a99db39c7686c8318a2ee13fff5bccf45b755848de6a75c412c5"
-    }
+    "notes": "POLISH (2026-10-10), D-U04-2. Printed text read literally: the three cards print \"sacrifice me. If you do, …\" as effect prose, with no [cost] bracket, after a \"When …\" trigger condition, so the sacrifice is a step of the effect. R73 (owner, tier 3) reads the prose as a bracketed cost paid on the way to the stack and says itself that \"the printed line is effect prose with an if-you-do rider\"; print outranks it. \"Not optional\": the cards print no \"may\", and Void Mandible prints \"(This is not optional.)\". Maelstrom Charger is a different shape (\"As you play a nonunit spell, you may sacrifice me\"), settled by its RAQ write-up: the child rule. The engine follows R73 (pays the sacrifice as the ability is stacked; 26-metal-a asserts it): F-U04-5.",
+    "sourceHashes": {},
+    "engineDiffers": [
+      "F-U04-5"
+    ]
   },
   {
     "key": "concepts.costs.trigger-sacrifice-me.optional",
     "parent": "concepts.costs.trigger-sacrifice-me",
     "order": 1,
-    "text": "A sacrifice the text makes optional (\"you may sacrifice me. If you do, …\") is not made a cost this way. The player chooses whether to make it.",
+    "text": "A sacrifice the text makes optional (\"you may sacrifice me. If you do, …\") is the player's choice. A player who declines it gets nothing from the \"If you do\" part.",
     "examples": [],
     "see": [],
     "sources": {
@@ -673,7 +681,7 @@
     },
     "basis": "mixed",
     "confidence": "medium",
-    "notes": "Maelstrom Charger is R73's named example of the optional shape.",
+    "notes": "POLISH (2026-10-10): reworded because its parent no longer makes the mandatory shape a cost (\"not made a cost this way\" no longer had a referent). Maelstrom Charger is the pool's one card of this shape; its RAQ write-up makes the sacrifice a choice made as the spell is played.",
     "sourceHashes": {
       "R73": "27f9b2f47259a99db39c7686c8318a2ee13fff5bccf45b755848de6a75c412c5",
       "RAQ 1379132904931594372#0": "2489487aa78cede9d246f72cbe06a1c3b09758133ee0236ea6286d0992027c07"

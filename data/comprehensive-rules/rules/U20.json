@@ -4743,11 +4743,11 @@
     "key": "attr.pure.stat-attributes",
     "parent": "attr.pure",
     "order": 5,
-    "text": "Pure does not change stats. A Pure unit is destroyed by damage equal to its defense, and Tough, Balanced and Inverted still apply in an interaction involving a Pure card.",
+    "text": "Pure does not change a unit's printed stats: a Pure 2/3 is destroyed by 3 damage. But Tough, Balanced and Inverted are attributes, so in an interaction involving a Pure card they do not apply (rule attr.general.pure).",
     "examples": [
       {
-        "text": "Example (illustrative): A Tough 0/4 (defense 8) blocks a column containing Just a Unit. It still has 8 defense in that exchange.",
-        "test": "431-cr-attributes-2.test.ts::cr:attr.pure.stat-attributes — a Tough 0/4 still has 8 defense blocking a 5-power Just a Unit, and survives"
+        "text": "Example: A Tough 0/4 blocks a column containing Just a Unit (Pure). Tough does not apply in that exchange, so the blocker has 4 defense, not 8. (illustrative; the engine keeps Tough on: F-U19-1)",
+        "test": null
       }
     ],
     "see": [
@@ -4756,74 +4756,77 @@
       "802.8"
     ],
     "sources": {
-      "printed": [],
-      "designer": [],
-      "ours": [
+      "printed": [
         {
-          "ref": "glossary: Pure",
-          "quote": "Stat layers are untouched — {Tough}, {Balanced} and {Inverted} still read."
+          "ref": "card: Just a Unit",
+          "quote": "(Pure cards and cards they are interacting with ignore all other attributes.)"
+        },
+        {
+          "ref": "Manual p.42",
+          "quote": "counters, 4. Attributes like Tough, 5. Inverted, 6.Unaware"
         }
       ],
+      "designer": [],
+      "ours": [],
       "rulings": [
         {
           "ref": "R61",
           "quote": "Stats are not attributes: a Pure 2/3 still dies to 3 damage."
-        },
-        {
-          "ref": "R289 (its per-pairing ruling)",
-          "quote": "{Tough}, {Balanced} and {Inverted} still read (they are stat layers, R61)."
         }
       ],
       "history": [],
       "engine": [],
-      "tests": [
-        "431-cr-attributes-2.test.ts"
-      ]
+      "tests": []
     },
-    "basis": "owner",
-    "confidence": "low",
-    "notes": "Question for the owner (D-U20-14): the printed text says \"ignore all other attributes\", and Tough, Balanced and Inverted are attributes (Manual p.42 lists \"Attributes like Tough\" among the stat layers). R61/R289 keep them; the literal print would not.",
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "POLISH (2026-10-10): it contradicted attr.general.pure (802.1n), which states print. The printed reminder ignores \"all other attributes\", and the Manual names Tough as an attribute (\"4. Attributes like Tough\"); R289's \"{Tough}, {Balanced} and {Inverted} still read (they are stat layers, R61)\" is our ruling and print outranks it (D-U19-2, settled; CT-260 asks the owner whether to change the engine). R61's first sentence still holds: printed stats are not attributes. The engine keeps the three on: F-U19-1. The 431 example that asserted the old reading is no longer bound here.",
     "sourceHashes": {
-      "R289": "81a5ae74249706f28fe64de238210a9a0ff35fa09a5ed556ac5c6dedd648781e",
       "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
-    }
+    },
+    "engineDiffers": [
+      "F-U19-1"
+    ]
   },
   {
     "key": "attr.pure.unaware-combat",
     "parent": "attr.pure",
     "order": 6,
-    "text": "In combat, Unaware still applies in an exchange involving a Pure card: if an Unaware card is in the exchange, every unit in it is read at its printed stats.",
+    "text": "Unaware is an attribute, so in combat it does not apply in an exchange involving a Pure card: the units in that exchange are read at their current stats, not their printed ones (rule attr.general.pure).",
     "examples": [
       {
-        "text": "Example (illustrative): Bubb (Unaware) blocks a column containing Just a Unit. Both sides of the exchange still use their printed stats.",
-        "test": "431-cr-attributes-2.test.ts::cr:attr.pure.unaware-combat — Bubb (Unaware) blocking a buffed Just a Unit: both sides are read at printed stats"
+        "text": "Example: Bubb (Unaware) blocks a column containing Just a Unit (Pure) that has a +1/+1 counter. Unaware does not apply in that exchange, so the counter counts. (illustrative; the engine keeps the Unaware collapse on: F-U19-2)",
+        "test": null
       }
     ],
     "see": [
       "802.9"
     ],
     "sources": {
-      "printed": [],
-      "designer": [],
-      "ours": [],
-      "rulings": [
+      "printed": [
         {
-          "ref": "R106",
-          "quote": "The collapse survives {Pure}: R61 switches the ATTRIBUTE layer off for an exchange, and"
+          "ref": "card: Just a Unit",
+          "quote": "(Pure cards and cards they are interacting with ignore all other attributes.)"
+        },
+        {
+          "ref": "Manual p.42",
+          "quote": "counters, 4. Attributes like Tough, 5. Inverted, 6.Unaware"
         }
       ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
       "history": [],
       "engine": [],
-      "tests": [
-        "431-cr-attributes-2.test.ts"
-      ]
+      "tests": []
     },
-    "basis": "owner",
-    "confidence": "low",
-    "notes": "R106 (combat) and R289 (outside combat, Unaware listed among the attributes Pure switches off) disagree, and the printed reminder would switch it off: D-U20-14.",
-    "sourceHashes": {
-      "R106": "fcdf4679f553417968ef6edaa505171e1cd1a4ecbcacaea97f6fb17fce6f0e83"
-    }
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "POLISH (2026-10-10): the same contradiction as attr.pure.stat-attributes, found beside it. attr.general.pure (802.1n) states print (\"Tough, Balanced, Inverted and Unaware do not apply\"); this rule stated R106 (\"The collapse survives {Pure}\"), which print outranks (D-U19-2). Outside combat R289 already switches Unaware off (attr.pure.noncombat.recipient). The engine keeps the collapse on in combat: F-U19-2 (CT-260).",
+    "sourceHashes": {},
+    "engineDiffers": [
+      "F-U19-2"
+    ]
   },
   {
     "key": "attr.pure.noncombat",

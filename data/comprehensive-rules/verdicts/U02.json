@@ -2494,15 +2494,25 @@
   },
   {
     "key": "concepts.resources.prismite.exchange",
-    "textHash": "0d9917474d593dc0",
+    "textHash": "867d53137a76d7cb",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U02-r2",
+    "round": 4,
+    "verifier": "U02-r4",
     "engine": [
       {
         "loc": "client/engine/src/apply.ts:doExchangePrismite",
         "agrees": true,
-        "note": "planning && !planningDone (resource step only), dormant refused, r.kind replaced in place so state is kept"
+        "note": "Requires phase planning and !planningDone[seat] (so refused once the seat's resource step is done and throughout the haste step), refuses a dormant Prismite, and changes only r.kind - the state is kept, so no mana is added."
+      },
+      {
+        "loc": "client/engine/src/apply.ts:planning legal actions",
+        "agrees": true,
+        "note": "Offered only for a prismite with state !== 'dormant', for each element of the game."
+      },
+      {
+        "loc": "client/engine/src/apply.ts:doDonePlanning",
+        "agrees": true,
+        "note": "planningDone is set before debt/haste, so every resource action incl. exchange is structurally closed afterwards."
       }
     ],
     "tests_run": [
@@ -2510,46 +2520,69 @@
         "file": "client/engine/test/01-planning.test.ts",
         "pattern": "R17/prismites: dormant start",
         "passed": true,
-        "asserts_claim": "yes: active Prismite -> fire, state open kept, dormant refused"
+        "asserts_claim": "yes - active Prismite exchanged into fire during planning; state kept (open); dormant refused"
+      },
+      {
+        "file": "client/engine/test/413-cr-elements-resources.test.ts",
+        "pattern": "cr:concepts\\.resources\\.prismite\\.exchange —",
+        "passed": true,
+        "asserts_claim": "yes - expended Prismite becomes expended fire; after the seat's donePlanning a further exchange throws"
       }
     ],
     "probes": [
       {
-        "file": "data/comprehensive-rules/build/probes/U02/u02-r2-verify-probes.test.ts",
-        "title": "concepts.resources.prismite.exchange: only active, only in the resource step, and the state is kept",
+        "file": "data/comprehensive-rules/build/probes/U02/u02-r4-verify-probes.test.ts",
+        "title": "concepts.resources.prismite.exchange: in the haste step (both players done with the resource step) an active Prismite cannot be exchanged",
         "passed": true,
-        "demonstrates": "yes: expended state kept; refused after Done planning (haste step)"
+        "demonstrates": "yes - with the haste step engaged (hasteDone set), no exchange is offered and an exchange action throws IllegalAction"
       }
     ],
     "source_checks": [
       {
-        "ref": "Manual p.18",
+        "ref": "Manual p.18 (resource step)",
         "supports": "yes",
-        "note": "resource step and active Prismites exchange"
+        "note": "The exchange is described inside the resource-step paragraph; the haste step paragraph allows only haste cards."
+      },
+      {
+        "ref": "Manual p.18 (Active Prismites may be / exchanged for other resources)",
+        "supports": "yes",
+        "note": "Only ACTIVE Prismites; exchange for other resources."
       },
       {
         "ref": "R17",
         "supports": "yes",
-        "note": ""
+        "note": "'during planning ... keeping its current state' - the state-kept clause rests on this ruling."
       },
       {
         "ref": "R132",
-        "supports": "partly",
-        "note": "the printed card reads \"Create ... then activate it\", which does not itself say the state carries over; \"keeps its current state\" is R17 (owner) + engine"
+        "supports": "no",
+        "note": "Merely on-topic: it is about the exchange counting as an activation for the affinity Shard, which the rule text does not state."
       }
     ],
     "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "exchanged for other resources, meaning players essentially get to pick their two"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "exchange: during planning, an **active** (face-up) Prismite may be swapped for a"
+      },
       {
         "file": "client/docs/digital-rules.md",
         "text": "resource of any element, keeping its current state (\"players essentially get to pick"
       },
       {
         "file": "client/engine/src/apply.ts",
-        "text": "e.need(r.state !== 'dormant', 'a dormant prismite cannot be exchanged');"
+        "text": "  e.need(e.s.phase === 'planning' && !e.s.planningDone[seat], 'not your planning');"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "  e.need(r.state !== 'dormant', 'a dormant prismite cannot be exchanged');"
       }
     ],
     "basis_ok": true,
-    "problem": "Minor: the printed card (\"Create a non-prismite resource, then activate it\") would on a literal reading give a fresh unexpended resource; the \"keeps its state\" clause rests on R17. Moot in practice (resources refresh before the resource step)."
+    "problem": "None in the text. The R132 citation is on-topic only (it concerns the affinity Shard owed on exchange) and does not support any clause stated."
   },
   {
     "key": "concepts.resources.prismite.exchange.activation",
