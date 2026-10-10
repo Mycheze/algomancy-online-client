@@ -30,7 +30,11 @@ Where a ruling and the engine disagree, the rule states the ruling and says
 wrong, and the finding is filed as a bug.
 
 Each rule also shows whether an independent verifier confirmed it against the
-engine and its tests, and in which round.
+engine and its tests, and in which round; how many tests the verifier ran; and
+how many gate test files are bound to the rule through its examples or its
+sources. A gate test is part of the client's test suite and runs on every
+check, so it keeps demonstrating the rule after verification is over. A rule
+that no executed test demonstrates is marked Untested.
 
 ### Examples are not rules
 

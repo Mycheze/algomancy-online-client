@@ -277,15 +277,48 @@ function seeSentence(nums) {
 function exampleText(t) {
   return String(t).replace(/^\s*Example:\s*/i, '');
 }
-function verdictWords(v) {
-  if (!v) return 'not verified';
-  if (v.stale) return 'not verified (the text changed after verification)';
-  const ran = (v.tests_run ?? []).filter((t) => t.passed).length;
-  return `${v.verdict}, round ${v.round}, ${ran} test${ran === 1 ? '' : 's'} run`;
+const plural = (n, one, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+/**
+ * The test files that demonstrate a rule on every run of the gate: the files
+ * its examples are bound to and the files its sources cite (an entry may be
+ * `file::title`; the file is what the gate runs).
+ */
+export function gateTestFiles(rec) {
+  const file = (t) => String(t).split('::')[0].trim();
+  const out = new Set();
+  for (const x of rec.examples ?? []) if (x.test) out.add(file(x.test));
+  for (const t of rec.sources?.tests ?? []) out.add(file(t));
+  out.delete('');
+  return [...out].sort();
+}
+/**
+ * What a rule's evidence line says: the verification round, how many tests
+ * the verifier ran (the gate's, and probes it wrote itself) and whether they
+ * passed, and how many gate test files are bound to the rule. The three
+ * editions and the review page all say it with these phrases.
+ */
+function evidence(M, rec, v = verdictOf(M, rec)) {
+  let ran = null;
+  if (v && !v.stale) {
+    const runs = [...(v.tests_run ?? []), ...(v.probes ?? [])].filter((t) => t.passed === true || t.passed === false);
+    const probes = (v.probes ?? []).filter((t) => t.passed === true || t.passed === false).length;
+    const fail = runs.filter((t) => t.passed === false).length;
+    ran = !runs.length ? 'verifier ran no tests'
+      : `verifier ran ${plural(runs.length, 'test')}${probes ? ` (${probes === 1 ? 'a probe it wrote' : `${probes} probes it wrote`})` : ''}, ${
+        !fail ? (runs.length === 1 ? 'passed' : 'all passed') : `${fail} failed`}`;
+  }
+  const g = gateTestFiles(rec).length;
+  return { v, round: v && !v.stale ? v.round : null, ran, gate: g ? plural(g, 'gate test file') : 'no gate test' };
+}
+/** md and txt: "confirmed in round 1; verifier ran 2 tests, all passed; 1 gate test file" */
+function verdictWords(M, rec) {
+  const { v, round, ran, gate } = evidence(M, rec);
+  const head = !v ? 'not verified' : v.stale ? 'not verified (the text changed after verification)' : `${v.verdict} in round ${round}`;
+  return [head, ran, gate].filter(Boolean).join('; ');
 }
 function provenanceBits(M, rec) {
   const s = rec.sources ?? {};
-  const bits = [`Basis: ${BASIS_LABEL[rec.basis] ?? rec.basis}`, `Verified: ${verdictWords(verdictOf(M, rec))}`];
+  const bits = [`Basis: ${BASIS_LABEL[rec.basis] ?? rec.basis}`, `Verified: ${verdictWords(M, rec)}`];
   if (s.printed?.length) bits.push(`Printed: ${s.printed.map((x) => x.ref).join('; ')}`);
   if (s.designer?.length) bits.push(`Designer: ${s.designer.map((x) => x.ref).join('; ')}`);
   if (s.rulings?.length) bits.push(`Rulings: ${s.rulings.map(rulingLabel).join(', ')}`);
@@ -435,9 +468,13 @@ function renderMd(M, P) {
   return out.join('\n').replace(/\n{3,}/g, '\n\n');
 }
 
+/** Annex D's lead paragraph, which no section holds: the .md bytes and the html */
+const mdAnnexDLead = (M) => `## Precedence\n\n${M.outline.annexD.precedence ?? ''}\n`;
+const htmlAnnexDLead = (M) => `<p>${E(M.outline.annexD.precedence ?? '')}</p>`;
+
 function renderAnnexD(M) {
   const o = M.outline;
-  const out = [`# ${o.annexD.title}`, '', `*${o.title}. ${o.subtitle ?? ''}*`, '', '## Precedence', '', o.annexD.precedence ?? '', ''];
+  const out = [`# ${o.annexD.title}`, '', `*${o.title}. ${o.subtitle ?? ''}*`, '', mdAnnexDLead(M)];
   for (const s of o.annexD.sections) out.push(mdSection(M, s));
   return out.join('\n').replace(/\n{3,}/g, '\n\n');
 }
@@ -616,12 +653,15 @@ function htmlSources(M, rec) {
   return `<ul class="src">${rows.join('')}</ul>`;
 }
 
-function htmlVerdict(M, v) {
-  if (!v) return ['<span class="chip v-none">Not verified</span>', ''];
-  if (v.stale) return ['<span class="chip v-none">Not verified: text changed</span>', ''];
-  const ran = (v.tests_run ?? []).filter((t) => t.passed).length;
+const EVIDENCE_TITLE = 'gate test files: the test files bound to this rule through its examples or sources, which run on every check of the client';
+function htmlVerdict(M, rec) {
+  const v = verdictOf(M, rec);
+  const { round, ran, gate } = evidence(M, rec, v);
+  const words = [round !== null ? `verified in round ${round}` : null, ran, gate].filter(Boolean).join(' · ');
+  const meta = `<span class="meta" title="${EVIDENCE_TITLE}">${E(words)}</span>`;
+  if (!v) return ['<span class="chip v-none">Not verified</span>' + meta, ''];
+  if (v.stale) return ['<span class="chip v-none">Not verified: text changed</span>' + meta, ''];
   const chip = `<span class="chip v-${E(v.verdict)}">${VERDICT_LABEL[v.verdict] ?? E(v.verdict)}</span>`;
-  const meta = `<span class="meta">round ${v.round} · ${ran} test${ran === 1 ? '' : 's'} run</span>`;
   const note = v.verdict !== 'confirmed' && v.problem ? `<p class="vnote"><strong>Verifier:</strong> ${E(M.refText(v.problem))}</p>` : '';
   return [chip + meta, note];
 }
@@ -650,7 +690,7 @@ function htmlRule(M, v, review = false) {
   const differs = r.engineDiffers?.length ? ` <span class="differs">engine differs, see ${r.engineDiffers.map((f) => `<a href="#${E(f)}">${E(f)}</a>`).join(', ')}</span>` : '';
   const untested = r.untested ? ' <span class="chip v-untested">Untested</span>' : '';
   const ex = (r.examples ?? []).map((x) => `<p class="ex"><span class="exl">Example (non-normative).</span> ${inline(M, M.refText(exampleText(x.text)))}${x.test ? ` <span class="tb">test: ${E(x.test)}</span>` : ''}</p>`).join('');
-  const [chip, vnote] = htmlVerdict(M, verdictOf(M, r));
+  const [chip, vnote] = htmlVerdict(M, r);
   const ds = M.discByNum.get(v.num) ?? [];
   const dl = ds.length ? ` <span class="meta">${ds.map((d) => `<a href="#${E(d.id)}">${E(d.id)}</a>`).join(' ')}</span>` : '';
   return `<article class="rule ${lvl}" id="r${v.num}"${mark}>
@@ -859,7 +899,7 @@ function renderHtml(M, P) {
   body.push(htmlAnnexP(M, P));
   body.push(`<h2 id="glossary">${E(o.glossary.title)}</h2>`, htmlGlossary(M));
   body.push(`<h2 id="changelog">${E(o.changelog.title)}</h2>`, CHANGELOG_LEAD, htmlChangelog(M));
-  body.push(`<h2 id="annex-d">${E(o.annexD.title)}</h2>`, `<p>${E(o.annexD.precedence ?? '')}</p>`);
+  body.push(`<h2 id="annex-d">${E(o.annexD.title)}</h2>`, htmlAnnexDLead(M));
   for (const s of o.annexD.sections) body.push(htmlSection(M, s));
   body.push('<h2 id="discrepancies">Discrepancy report</h2>', '<p>Every place where the sources disagree, the register contradicts itself, or a rule rests only on the engine or on an owner call. Each quote is checked to be verbatim. Only the first tier needs a decision.</p>', htmlDisc(M));
   return htmlPage(E(o.title), rail, body.join('\n'));
@@ -929,8 +969,9 @@ function reviewOf(M, P, inputs) {
     md: front.trimEnd() + '\n', txt: txtClean(front.replace(/^#+ /gm, '').trimEnd() + '\n'),
   }];
   const toc = [{ id: 'front', title: 'Introduction' }];
-  const chapter = (id, title, chapterNum, sections) => {
-    toc.push({ id, title, sections: sections.map((s) => ({ num: s.num, title: s.title, part: `s${s.num}` })) });
+  const chapter = (id, title, chapterNum, sections, lead = null) => {
+    toc.push({ id, title, ...(lead ? { lead: lead.id } : {}), sections: sections.map((s) => ({ num: s.num, title: s.title, part: `s${s.num}` })) });
+    if (lead) parts.push({ ...lead, kind: 'lead', chapter: chapterNum, txt: txtClean(txtOfMd(lead.md)) });
     for (const s of sections) {
       parts.push({
         id: `s${s.num}`, kind: 'section', num: s.num, chapter: chapterNum, title: s.title,
@@ -949,7 +990,10 @@ function reviewOf(M, P, inputs) {
   prose('glossary', 'glossary', o.glossary.title, `<h2 id="glossary">${E(o.glossary.title)}</h2>\n${htmlGlossary(M, true)}`, mdGlossary(M));
   prose('changelog', 'changelog', o.changelog.title,
     `<h2 id="changelog">${E(o.changelog.title)}</h2>\n<div${crt(true, 'changelog')}>\n${CHANGELOG_LEAD}\n${htmlChangelog(M)}\n</div>`, mdChangelog(M, false));
-  chapter('chD', o.annexD.title, 'D', o.annexD.sections);
+  // Annex D opens with its precedence paragraph, which is in no section
+  chapter('chD', o.annexD.title, 'D', o.annexD.sections, {
+    id: 'annexD', title: 'Precedence', html: `<div${crt(true, 'annexD')}>\n${htmlAnnexDLead(M)}\n</div>`, md: mdAnnexDLead(M) + '\n',
+  });
 
   const disc = [];
   for (const t of [1, 2, 3, 4]) {

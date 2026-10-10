@@ -320,7 +320,8 @@ function partsFor(r: CrReview, part: string): { name: string; title: string; par
     const entry = r.toc.find(t => t.id === `ch${ch}`);
     if (!entry?.sections) return null;
     const byId = new Map(r.parts.map(p => [p.id, p]));
-    const parts = entry.sections.map(s => byId.get(s.part)).filter((p): p is CrPartFull => !!p);
+    const ids = [...(entry.lead ? [entry.lead] : []), ...entry.sections.map(s => s.part)];
+    const parts = ids.map(id => byId.get(id)).filter((p): p is CrPartFull => !!p);
     return parts.length ? { name: `chapter-${ch}`, title: `${r.title}: ${entry.title}`, parts } : null;
   }
   return null;

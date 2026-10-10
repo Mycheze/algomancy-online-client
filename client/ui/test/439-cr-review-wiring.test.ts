@@ -20,6 +20,8 @@
  *   §6 the URL is written with replaceState only.
  *   §7 the way in: one profile button for an admin or a judge, a deep link
  *      for everyone else, and a sign-in that comes back to the page.
+ *   §8 an owner's answer is not an open thread: answering a question must
+ *      not raise "Comments n open", and every open count goes through isOpen.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -179,4 +181,20 @@ test('§7 the way in: a profile button for an admin or a judge, and a sign-in th
   // and a report filed from the page says where it came from
   assert.match(page, /app\.innerHTML = `<div class="crpage">/);
   assert.equal(pageOf('<div class="crpage"><div class="crbar"></div></div>'), 'cr');
+});
+
+test('§8 an owner\'s answer is not an open thread, and every open count goes through isOpen', () => {
+  const p = code(page);
+  const m = /const isOpen = \(th: Thread\): boolean => ([^;]+);/.exec(p);
+  assert.ok(m, 'isOpen is one arrow expression');
+  // run the page's own predicate (it has no TS syntax past the signature)
+  const isOpen = new Function('th', `return ${m![1]};`) as (th: unknown) => boolean;
+  const th = (root: Record<string, unknown>): unknown => ({ root: { ...root }, replies: [] });
+  assert.equal(isOpen(th({})), true, 'positive control: a plain comment is open');
+  assert.equal(isOpen(th({ kind: 'answer', reading: 'A' })), false, 'an answer settles a question; it is not open');
+  assert.equal(isOpen(th({ resolved: { by: 'x', at: '' } })), false);
+  assert.equal(isOpen(th({ deleted: true })), false);
+  // the tab's count, the rail's counts and the ＋ counts all read it
+  assert.match(p, /const n = threads\(\)\.filter\(isOpen\)\.length;/);
+  assert.ok(!/root\.resolved && !th\.root\.deleted(?! && th\.root\.kind)/.test(p), 'no second, answer-blind copy of the test');
 });

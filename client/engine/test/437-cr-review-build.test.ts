@@ -61,9 +61,9 @@ test('every ledger rule, live or tombstoned, is marked exactly once; keys, remov
 test('targets are the marks in the html, in document order, each once; every glossary row, finding and discrepancy has one', () => {
   assert.deepEqual(R.targets, ALL_HTML.flatMap(marksIn), 'targets must be derived from the html, in part order');
   assert.equal(new Set(R.targets).size, R.targets.length, 'a target is marked twice');
-  for (const t of R.targets) assert.match(t, /^(front|annexP|changelog|(sec|rule|gloss|disc|finding):[^\s"<>]+)$/, `not a CrTarget: ${t}`);
+  for (const t of R.targets) assert.match(t, /^(front|annexP|changelog|annexD|(sec|rule|gloss|disc|finding):[^\s"<>]+)$/, `not a CrTarget: ${t}`);
   const has = new Set(R.targets);
-  for (const id of ['front', 'annexP', 'changelog']) assert.ok(has.has(id as never), `${id} is not marked`);
+  for (const id of ['front', 'annexP', 'changelog', 'annexD']) assert.ok(has.has(id as never), `${id} is not marked`);
   for (const g of INPUTS.glossary) assert.ok(has.has(`gloss:${g.key}`), `glossary row ${g.key} is not marked`);
   for (const f of INPUTS.findings) assert.ok(has.has(`finding:${f.id}`), `finding ${f.id} is not marked`);
   assert.equal(R.disc.length, INPUTS.discrepancies.length);
@@ -76,11 +76,20 @@ test('targets are the marks in the html, in document order, each once; every glo
 });
 
 test('the contents list every part once: chapters by their sections, then Annex P, the glossary, the changelog, Annex D', () => {
-  const listed = R.toc.flatMap(e => (e.sections ? e.sections.map(s => s.part) : [e.id]));
+  const listed = R.toc.flatMap(e => (e.sections ? [...(e.lead ? [e.lead] : []), ...e.sections.map(s => s.part)] : [e.id]));
   assert.deepEqual(listed, R.parts.map(p => p.id), 'the toc and the parts disagree on what is in the document or its order');
   assert.deepEqual(R.toc.map(e => e.id), [
     'front', ...INPUTS.outline.chapters.map((c: { num: string }) => `ch${c.num}`), 'annexP', 'glossary', 'changelog', 'chD',
   ]);
+  // Annex D opens with its precedence paragraph, which is in no section: the
+  // page painted Annex D from D1 until 2026-10-10
+  const d = R.toc.find(e => e.id === 'chD')!;
+  assert.equal(d.lead, 'annexD');
+  const lead = R.parts.find(p => p.id === 'annexD')!;
+  assert.equal(lead.kind, 'lead');
+  assert.equal(lead.chapter, 'D');
+  assert.ok(lead.html.includes(INPUTS.outline.annexD.precedence.slice(0, 60)), 'the lead holds the precedence paragraph');
+  assert.equal(R.toc.filter(e => e.lead).length, 1, 'only Annex D has a lead');
   for (const e of R.toc) {
     for (const s of e.sections ?? []) {
       const p = R.parts.find(x => x.id === s.part)!;
@@ -98,11 +107,11 @@ test('each part is the editions own text: html with only the marks added, md and
       assert.ok(html.includes(unmark(p.html)), `${p.id}: the html is not the edition fragment plus marks`);
     }
     assert.ok(md.includes(p.md) || annexD.includes(p.md), `${p.id}: the md is not bytes of the .md edition or Annex D`);
-    // the .txt edition has no Annex D
+    // the .txt edition has no Annex D (the lead's md is its Precedence block, which only Annex D's file has)
     if (p.chapter !== 'D') assert.ok(txt.includes(p.kind === 'section' ? p.txt : p.txt.trimEnd()), `${p.id}: the txt is not bytes of the .txt edition`);
   }
   // annexP, glossary, changelog: unmarking leaves the edition with at most a wrapper element around it
-  for (const id of ['annexP', 'glossary', 'changelog']) {
+  for (const id of ['annexP', 'glossary', 'changelog', 'annexD']) {
     const bare = unmark(R.parts.find(p => p.id === id)!.html).replace(/<div>\n?|\n?<\/div>(?=<div>|<\/dl>|$)/g, '');
     for (const line of bare.split('\n')) assert.ok(html.includes(line), `${id}: "${line.slice(0, 80)}" is not in the html edition`);
   }

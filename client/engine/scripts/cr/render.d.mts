@@ -32,6 +32,8 @@ export interface ProseRef { ref: string; kind: 'key' | 'num'; num: string | unde
 export function refResolver(ledger: Ledger, I?: any): { refsIn: (s: string) => ProseRef[]; refText: (s: string) => string };
 export function verdictOf(M: any, rec: RuleRecord): (Verdict & { stale: boolean }) | null;
 export function citedRulings(rec: RuleRecord): string[];
+/** the test files bound to a rule through its examples and sources, which the gate runs */
+export function gateTestFiles(rec: RuleRecord): string[];
 export function provenance(M: any): any;
 export function toTxt(s: string): string;
 export function render(inputs: CrInputs, ex: Extract): { ledger: Ledger; born: { num: string; key: string }[]; files: RenderedFiles };

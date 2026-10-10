@@ -330,6 +330,7 @@ function labelOf(target: string): string {
   if (kind === 'gloss') return `glossary: ${rest}`;
   if (kind === 'front') return 'the introduction';
   if (kind === 'annexP') return 'Annex P';
+  if (kind === 'annexD') return 'Annex D';
   if (kind === 'changelog') return 'the changelog';
   return target;
 }
@@ -368,6 +369,8 @@ function threads(): Thread[] {
 /** the html of the part an item is painted in, for a thread whose item is not
  * on screen right now */
 function htmlHolding(target: string): string | null {
+  const own = partById.get(target);
+  if (own) return own.html;
   const p = place?.ofTarget(target);
   if (!p || !doc) return null;
   if (p.tab === 'disc') return doc.disc.find(d => d.id === p.anchor)?.html ?? null;
@@ -396,8 +399,10 @@ function isOutdated(th: Thread): boolean {
   return text === null || locate(text, a) === null;
 }
 
-/** the threads that count as "open": unresolved and not deleted */
-const isOpen = (th: Thread): boolean => !th.root.resolved && !th.root.deleted;
+/** the threads that count as "open": unresolved, not deleted, and not an
+ * owner's answer — an answer settles a question, so answering one must not
+ * raise the "n open" count (seen on the page, 2026-10-10) */
+const isOpen = (th: Thread): boolean => !th.root.resolved && !th.root.deleted && th.root.kind !== 'answer';
 
 function badges(c: CrComment): string {
   return acct.badgeChipsHtml({
@@ -521,7 +526,8 @@ function viewHtml(id: string): string {
     const html = partById.get(e.id)?.html ?? '';
     return /^\s*<h2/.test(html) ? html : `<h2>${esc(e.title)}</h2>${html}`;
   }
-  return `<h2 id="${esc(e.id)}">${esc(e.title)}</h2>${e.sections.map(s => partById.get(s.part)?.html ?? '').join('\n')}`;
+  const lead = e.lead ? partById.get(e.lead)?.html ?? '' : '';
+  return `<h2 id="${esc(e.id)}">${esc(e.title)}</h2>${lead}${e.sections.map(s => partById.get(s.part)?.html ?? '').join('\n')}`;
 }
 
 function discHtml(): string {

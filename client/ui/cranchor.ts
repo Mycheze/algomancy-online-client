@@ -205,6 +205,7 @@ export function placer(doc: Pick<CrReviewDoc, 'toc' | 'parts' | 'disc' | 'keys' 
     switch (kind) {
       case 'front': case 'annexP': case 'changelog':
         return { tab: 'doc', view: kind, anchor: null };
+      case 'annexD': return { tab: 'annexD', view: 'chD', anchor: null };
       case 'sec': return ofRef(`r${rest}`);
       case 'rule': {
         let key = rest;

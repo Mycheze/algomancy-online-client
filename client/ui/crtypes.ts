@@ -27,6 +27,7 @@
  */
 export type CrTarget =
   | 'front' | 'annexP' | 'changelog'
+  | 'annexD'               // Annex D's precedence paragraph, which no section holds
   | `sec:${string}`        // a section heading: `sec:608`, `sec:D3`
   | `rule:${string}`       // a rule (or a tombstone): `rule:combat.damage.split.unsplit`
   | `gloss:${string}`      // a glossary row, by its record key
@@ -42,15 +43,18 @@ export interface CrEdition { name: string; effective: string; engineCommit: stri
 export interface CrTocEntry {
   id: string;
   title: string;
+  /** a part painted under the chapter's heading, before its sections: Annex
+   * D's precedence paragraph (`annexD`) */
+  lead?: string;
   /** a chapter's sections, in document order; absent for a single-part entry */
   sections?: { num: string; title: string; part: string }[];
 }
 
-export type CrPartKind = 'front' | 'section' | 'annexP' | 'glossary' | 'changelog';
+export type CrPartKind = 'front' | 'section' | 'lead' | 'annexP' | 'glossary' | 'changelog';
 
 /**
- * One paintable piece of the document: a section (`s608`, `sD3`), or one of
- * `front`, `annexP`, `glossary`, `changelog`. `html` is the renderer's own
+ * One paintable piece of the document: a section (`s608`, `sD3`), a chapter's
+ * lead (`annexD`), or one of `front`, `annexP`, `glossary`, `changelog`. `html` is the renderer's own
  * fragment, with `data-crt` added to each commentable item and nothing else
  * changed. It is trusted only because the renderer escapes every record
  * string; the page injects it as-is and never splices comment text into it.
