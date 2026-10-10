@@ -1,0 +1,3808 @@
+[
+  {
+    "key": "annexd.general.not-rules",
+    "parent": "D1",
+    "order": 1,
+    "text": "The pacing and concurrency conventions in this annex are not rules changes: none of them changes what is legal.",
+    "examples": [
+      {
+        "text": "The pacing conventions change no legality: a standing pass, a playback hold and full control leave the offered actions equal to the engine, and an action offered during the opponent decision is legal by the engine once it closes.",
+        "test": "434-cr-digital-1.test.ts::cr:annexd.general.not-rules — the pacing conventions change no legality: a standing pass, a playback hold and full control leave the offered actions equal to the engine, and an action offered during the opponent decision is legal by the engine once it closes"
+      }
+    ],
+    "see": [
+      "D3",
+      "annexd.clocks.out-of-time",
+      "annexd.clocks.idle-rooms.no-result"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R150 (its CT-28 pacing half)",
+          "quote": "**CT-32** (#98). Both are pacing/concurrency, neither is a rules change, and"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R150 says this of its own pacing/concurrency reports, and the text is narrowed to that. No source says the same of the annex's presentation or confirmation conventions (D-U23-20). The clock (D3) is not a pacing convention: a clock running out decides the game (annexd.clocks.out-of-time) and an idle close voids it (annexd.clocks.idle-rooms.no-result); both are engine-derived (D-U23-2). Round 2: the clock-exception sentence was dropped from this rule because R150 does not support it.",
+    "sourceHashes": {
+      "R150": "23e8fffad20cb75af69c7f23f67ad8d165a5acae3dc689c06558b2649e85b069"
+    }
+  },
+  {
+    "key": "annexd.general.not-rules.warn-not-refuse",
+    "parent": "annexd.general.not-rules",
+    "order": 1,
+    "text": "A warning or a confirmation never removes a legal option. Where a choice looks like a misclick, the client may ask the player; it does not refuse the choice.",
+    "examples": [
+      {
+        "text": "Fight aimed at two of the caster's own units asks \"did you mean to target allies?\"; answering yes resolves the spell exactly as chosen (illustrative).",
+        "test": null
+      }
+    ],
+    "see": [
+      "annexd.auto-pass.misclick-confirm"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R288",
+          "quote": "**IT IS A QUESTION, NEVER A FILTER.** The owner says it twice — *\"we shouldn't"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R288 states this for its own family; R194 makes the same choice for the token loss (announce, not prevent).",
+    "sourceHashes": {
+      "R288": "dbf6942a32dbedcabb8808a3b45534465217b2bc16e168bbdbfcda93beef3940"
+    }
+  },
+  {
+    "key": "annexd.general.player-decides",
+    "parent": "D1",
+    "order": 2,
+    "text": "The client never makes a choice that belongs to a player. A real choice is always put to the player who makes it.",
+    "examples": [
+      {
+        "text": "Every action answered for a player is the only move either seat has, so no real choice is ever taken.",
+        "test": "434-cr-digital-1.test.ts::cr:annexd.general.player-decides — every action answered for a player is the only move either seat has, so no real choice is ever taken"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R120 (its default-split option)",
+          "quote": "project rule — **the engine must never decide for the player** — is what this closes: with"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R120 calls this 'the standing project rule'.",
+    "sourceHashes": {
+      "R120": "031593f655a8323fa0f718e8c5a55727d6843359937f85d752fc77de445a4230"
+    }
+  },
+  {
+    "key": "annexd.general.player-decides.unoffered",
+    "parent": "annexd.general.player-decides",
+    "order": 1,
+    "text": "An option the rules would refuse is not offered. The client shows only legal options; it does not show an option and then refuse it.",
+    "examples": [
+      {
+        "text": "Every option the engine offers is accepted when taken; none is shown and then refused.",
+        "test": "434-cr-digital-1.test.ts::cr:annexd.general.player-decides.unoffered — every option the engine offers is accepted when taken; none is shown and then refused"
+      }
+    ],
+    "see": [
+      "annexd.general.one-opinion"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R120 (its default-split option)",
+          "quote": "while anything would go behind it (the R64 doctrine: illegal options are unoffered, not"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R120 names this as R64's doctrine; R64 itself was not in the pack.",
+    "sourceHashes": {
+      "R120": "031593f655a8323fa0f718e8c5a55727d6843359937f85d752fc77de445a4230"
+    }
+  },
+  {
+    "key": "annexd.general.player-decides.forced",
+    "parent": "annexd.general.player-decides",
+    "order": 2,
+    "text": "The game takes an action for a player only where the battle leaves them nothing to decide: an attacker with no unit able to attack has the empty attack declared for them, and a defender with no unit in the battle region has the empty block declared for them. These forced actions are logged like any other. A player holding full control is not forced: the window is left to them.",
+    "examples": [
+      {
+        "text": "A battle on an empty board steps itself through to deployment by forced actions.",
+        "test": "21-fixes.test.ts::a whole empty-board battle drains through forced actions to deployment"
+      },
+      {
+        "text": "An attacker with a unit is not forced: declaring is a real choice.",
+        "test": "21-fixes.test.ts::forcedAction is null whenever a real choice exists"
+      },
+      {
+        "text": "With full control on, the drain stops and the player is left the window.",
+        "test": "273-full-control-both-seats.test.ts::BL-18 §2 with full control ON the drain stops and the player is left the window"
+      }
+    ],
+    "see": [
+      "610",
+      "annexd.general.player-decides.forced.lone-counterattacker",
+      "annexd.general.player-decides.forced-target",
+      "annexd.general.player-decides.one-subject",
+      "annexd.auto-pass.full-control"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R36",
+          "quote": "action, logged like any other). Rationale: the player already committed the"
+        },
+        {
+          "ref": "R287",
+          "quote": "automatics are decided, and the server's `forcedAction` drain reads one per-seat"
+        }
+      ],
+      "history": [],
+      "engine": [
+        "apply.ts:forcedAction"
+      ],
+      "tests": [
+        "21-fixes.test.ts",
+        "273-full-control-both-seats.test.ts",
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "high",
+    "notes": "Which actions are forced is engine-only (D-U23-21): the verifier measured apply.ts forcedAction forcing only the empty declareAttack (no eligible attacker) and the empty declareBlocks (defender has no unit in the region), and main.ts drainForced applying them through applyToRoom (logged) and stopping for a seat under full control ('if (room.fullControl[f.seat as Seat]) break;'). R36 supports 'logged like any other'; R287 supports full control outranking the drain. R36's own case, the lone round-2 counterattacker, is the sub-rule and is stated as R36 rules it (engine differs, F-U23-4). Other one-option choices are not forced actions: a lone target is still a click (forced-target) and a lone non-target subject is recorded without asking (one-subject). Round 2: narrowed from 'where a player has only one possible action', which the verifier's probe forced-target.test.ts disproved. Engine location outside engine/src: client/server/main.ts drainForced.",
+    "sourceHashes": {
+      "R287": "b819800a2eee7591249628decb755dc115aa32d4aae157e9608c10179b60c0fa",
+      "R36": "8ac3f534b5ec7d557221980784d3acd028bad035a99a8743a56658b3c5c34b42"
+    }
+  },
+  {
+    "key": "annexd.general.player-decides.forced.lone-counterattacker",
+    "parent": "annexd.general.player-decides",
+    "order": 2.5,
+    "text": "In round 2, a counterattack pool that holds exactly one unit, and no spell token that could ride along, declares the one-unit formation by itself. Engine differs, see F-U23-4.",
+    "examples": [
+      {
+        "text": "A player who sent one unit to counterattack and no spell token is not asked to form it (illustrative).",
+        "test": null
+      },
+      {
+        "text": "Today the engine still asks: a player who sent one unit and no spell token gets no forced declare in round 2, and is offered both declining and attacking with it (F-U23-4).",
+        "test": "434-cr-digital-1.test.ts::cr:annexd.general.player-decides.forced.lone-counterattacker — the engine still asks a lone sent counterattacker with no token to declare (engine differs)"
+      }
+    ],
+    "see": [
+      "610"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R36",
+          "quote": "When a round-2 counterattack pool holds EXACTLY one unit and no spell token"
+        },
+        {
+          "ref": "R36",
+          "quote": "that could ride along, the only-unit formation is auto-declared (a forced"
+        }
+      ],
+      "history": [],
+      "engine": [
+        "apply.ts:forcedAction"
+      ],
+      "tests": [
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "States R36, which the register still shows as current. The verifier measured that the engine removed this branch on 2026-08-24 (decisions-for-the-player audit: declining is a real choice). F-U23-4, D-U23-17.",
+    "engineDiffers": [
+      "F-U23-4"
+    ],
+    "sourceHashes": {
+      "R36": "8ac3f534b5ec7d557221980784d3acd028bad035a99a8743a56658b3c5c34b42"
+    }
+  },
+  {
+    "key": "annexd.general.player-decides.identical-triggers",
+    "parent": "annexd.general.player-decides",
+    "order": 3,
+    "text": "When all of one player's simultaneously queued triggers are identical (the same card, the same ability and the same composed parts), the player is not asked to order them. They go on in the order they fired. Triggers from different cards or abilities, or composites whose parts differ, are still ordered by the player.",
+    "examples": [
+      {
+        "text": "Flourishing Flora queuing three copies of its trigger asks nothing (illustrative).",
+        "test": null
+      }
+    ],
+    "see": [
+      "706"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R34",
+          "quote": "When ALL of a seat's simultaneously queued triggers are identical — same"
+        },
+        {
+          "ref": "R34",
+          "quote": "text) — the ordering decision (R2) is skipped and they enqueue in the order"
+        },
+        {
+          "ref": "R34",
+          "quote": "from different cards/abilities, or composites whose parts differ (a spent"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R34": "d53cdb31b93cc333293b7634d491841d540dd1ad4a72f91e85ebfb9908892a09"
+    }
+  },
+  {
+    "key": "annexd.general.player-decides.one-subject",
+    "parent": "annexd.general.player-decides",
+    "order": 4,
+    "text": "A non-target choice that an ability makes as it goes on the stack (such as the ally a Wraith's start-of-deployment trigger aims at) is recorded without asking when there is only one candidate. With two or more candidates the player is asked.",
+    "examples": [
+      {
+        "text": "A lone Wraith aims at its only ally without asking; with a second ally the player is asked.",
+        "test": "434-cr-digital-1.test.ts::cr:annexd.general.player-decides.one-subject — a lone Wraith aims at its only ally without asking; with a second ally the player is asked"
+      }
+    ],
+    "see": [
+      "507",
+      "706"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R144 (its half (b))",
+          "quote": "- **≥ 2 candidates** — one decision, in the stack window, `stage: 'subject'`."
+        },
+        {
+          "ref": "R144 (its half (b))",
+          "quote": "- **1 candidate** — recorded without asking. A lone Wraith is not asked which"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R144",
+          "relation": "its half (a) and its flash amended by R286; half (b) stands"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Contrast with annexd.general.player-decides.forced-target: R67 keeps a forced TARGET as a click, R144 records a forced SUBJECT silently. Both are current; R67 gives the replay reason for its choice.",
+    "sourceHashes": {
+      "R144": "d38299227d982a9c48914d31fdd2feb7a885638dcd002cfafeadc2572bdf3061"
+    }
+  },
+  {
+    "key": "annexd.general.player-decides.forced-target",
+    "parent": "annexd.general.player-decides",
+    "order": 5,
+    "text": "A target is asked for even when exactly one candidate is legal. A forced target is still a click.",
+    "examples": [
+      {
+        "text": "Divine Foresight (\"target opponent\") cast in battle opens a target question with exactly one option, and no forced action answers it.",
+        "test": "434-cr-digital-1.test.ts::cr:annexd.general.player-decides.forced-target — a target with exactly one legal candidate is still a decision put to the caster"
+      }
+    ],
+    "see": [
+      "110"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R67",
+          "quote": "**A consequence worth knowing:** the collector asks even when exactly one"
+        },
+        {
+          "ref": "R67",
+          "quote": "candidate is legal, so a forced \"target opponent\" is now a click. That is the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R67: auto-filling a forced target would drop a decide from the action log and break replay of saved games.",
+    "sourceHashes": {
+      "R67": "4668406f8842ecc2cba8813e5abfecd927864ad9a6bde08c8a56525f270a4880"
+    }
+  },
+  {
+    "key": "annexd.general.player-decides.default-first",
+    "parent": "annexd.general.player-decides",
+    "order": 6,
+    "text": "Where a choice has a usual answer, the client may offer it as the first option, but it never picks it. The elective combat-damage split leads with \"default — share front-to-back\", and no automatic action answers that question.",
+    "examples": [
+      {
+        "text": "The elective damage split leads with the default share, and nothing picks it for the player.",
+        "test": "434-cr-digital-1.test.ts::cr:annexd.general.player-decides.default-first — the elective damage split leads with the default share, and nothing picks it for the player"
+      }
+    ],
+    "see": [
+      "608"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R120 (its default-split option)",
+          "quote": "The **first** question leads with `default — share front-to-back (…)`: one click reproduces"
+        },
+        {
+          "ref": "R120 (its default-split option)",
+          "quote": "is still the player's. `forcedAction` never answers it (it returns null under any pending"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R120",
+          "relation": "its Piercing exclusion reversed by R319; the default-first option stands"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R120": "031593f655a8323fa0f718e8c5a55727d6843359937f85d752fc77de445a4230"
+    }
+  },
+  {
+    "key": "annexd.general.player-decides.burst-order",
+    "parent": "annexd.general.player-decides",
+    "order": 7,
+    "text": "The caster always chooses the order of a Burst group, one token at a time; the client offers no automatic order. A lone token is not asked to be ordered.",
+    "examples": [
+      {
+        "text": "A single Fireball token cast alone goes on the stack with no ordering question.",
+        "test": "358-burst-order.test.ts::R309: a lone token is not asked to be ordered"
+      }
+    ],
+    "see": [
+      "803"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R309",
+          "quote": "wanted no \"auto\" shortcut: *\"Just force them to choose the order.\"*"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "358-burst-order.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "The Burst rule itself is U21's (803).",
+    "sourceHashes": {
+      "R309": "e49e87895134f608900e0c840a7d68bcdb1cd0ba07dfc2b9e8b67e7123c8c06f"
+    }
+  },
+  {
+    "key": "annexd.general.one-opinion",
+    "parent": "D1",
+    "order": 3,
+    "text": "The client holds no opinion of its own about legality. Wherever the client decides something the engine also decides, the client's answer is derived from the engine's, in one place.",
+    "examples": [],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R245",
+          "quote": "**Wherever the client decides something the engine also decides, the client's"
+        },
+        {
+          "ref": "R245",
+          "quote": "answer must be DERIVED from the engine's — by asking it, or by mirroring one"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R245": "5424da09f4540997e4a59a617cf20777fdd8948582c6d1db0327568dcb1ba500"
+    },
+    "untested": true,
+    "untestableReason": "a claim about where the client code takes its legality answers from (one place, derived from the engine), not about anything a game state, view or action shows"
+  },
+  {
+    "key": "annexd.general.one-opinion.affordances",
+    "parent": "annexd.general.one-opinion",
+    "order": 1,
+    "text": "A highlighted card, a clickable unit, a drop target or a one-click shortcut claims that the engine will take the action. The client draws one only where the engine would accept it.",
+    "examples": [
+      {
+        "text": "A unit the engine would refuse for a counterattack is not ringed, and clicking it does nothing.",
+        "test": "223-client-legality.test.ts::[127] a unit the engine would refuse is not ringed and does not pick up on a click"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R245",
+          "quote": "A ring, a clickable unit, a drop target and a one-click \"attack all\" all say"
+        },
+        {
+          "ref": "R245",
+          "quote": "\"the engine will take this\". If the engine would refuse it, the affordance is a"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "223-client-legality.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R245": "5424da09f4540997e4a59a617cf20777fdd8948582c6d1db0327568dcb1ba500"
+    }
+  },
+  {
+    "key": "annexd.general.hidden-segment",
+    "parent": "D1",
+    "order": 4,
+    "text": "A hidden simultaneous segment is a part of the turn in which both players act at once and neither sees what the other does until both are done. The resource step, the haste step and deployment are hidden simultaneous segments.",
+    "examples": [
+      {
+        "text": "The resource step, the haste step and deployment are hidden simultaneous segments; battle is not.",
+        "test": "434-cr-digital-1.test.ts::cr:annexd.general.hidden-segment — the resource step, the haste step and deployment are hidden simultaneous segments; battle is not"
+      }
+    ],
+    "see": [
+      "501",
+      "504",
+      "507",
+      "D6"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R18 (its hidden-segment half)",
+          "quote": "false: the haste step is a **hidden simultaneous segment** — nobody sees the"
+        },
+        {
+          "ref": "R18 (its hidden-segment half)",
+          "quote": "other side's haste plays until everyone is done, exactly as the planning phase"
+        },
+        {
+          "ref": "R310",
+          "quote": "round: a glimpse waits for the reveal in every hidden step (the resource step,"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R18",
+          "relation": "its skip and auto-done reversed by R224 and R228; the hidden segment stands"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R312 lists the same three as 'planning, haste, deployment'; R310 names the resource step. Read as the same set.",
+    "sourceHashes": {
+      "R18": "173a218909c8fb0ad90ca065574c7c87e7bc161a123c016e913e2ebd2bc3efc8",
+      "R310": "b026f1a777d5fb5d118b9486d9ac26b12a425835f8105f7f3be2090fdaeea801"
+    }
+  },
+  {
+    "key": "annexd.general.hidden-segment.redaction",
+    "parent": "annexd.general.hidden-segment",
+    "order": 1,
+    "text": "The hiding is done by the server's view of the game, the same way hands are hidden. The rules engine itself hides nothing.",
+    "examples": [
+      {
+        "text": "The engine state holds the hidden play; only the server per-seat view leaves it out.",
+        "test": "434-cr-digital-1.test.ts::cr:annexd.general.hidden-segment.redaction — the engine state holds the hidden play; only the server per-seat view leaves it out"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R18 (its hidden-segment half)",
+          "quote": "the whole state and answers every query truthfully — so the concealment is done"
+        },
+        {
+          "ref": "R18 (its hidden-segment half)",
+          "quote": "where every other concealment is done, in the **server's view redaction**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R18": "173a218909c8fb0ad90ca065574c7c87e7bc161a123c016e913e2ebd2bc3efc8"
+    }
+  },
+  {
+    "key": "annexd.general.hidden-segment.barrier",
+    "parent": "annexd.general.hidden-segment",
+    "order": 2,
+    "text": "A segment ends at a barrier, when every player is done. At the barrier each player is shown what the other did, in the recap.",
+    "examples": [
+      {
+        "text": "The step ends only when every player is done, and then each is played back what the other did.",
+        "test": "434-cr-digital-1.test.ts::cr:annexd.general.hidden-segment.barrier — the step ends only when every player is done, and then each is played back what the other did"
+      }
+    ],
+    "see": [
+      "D5",
+      "D6"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R310",
+          "quote": "that step produces. The other seat gets it at the barrier, in the recap"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "The resource step's close arrives whole rather than as a playback (annexd.recap.what.resource-step).",
+    "sourceHashes": {
+      "R310": "b026f1a777d5fb5d118b9486d9ac26b12a425835f8105f7f3be2090fdaeea801"
+    }
+  },
+  {
+    "key": "annexd.general.hidden-segment.battle-open",
+    "parent": "annexd.general.hidden-segment",
+    "order": 3,
+    "text": "Battle is not a hidden segment. Nothing that happens in battle is held back from either player.",
+    "examples": [
+      {
+        "text": "In battle nothing is held: a cast is on the opponent view and in their events at once.",
+        "test": "434-cr-digital-1.test.ts::cr:annexd.general.hidden-segment.battle-open — in battle nothing is held: a cast is on the opponent view and in their events at once"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R310",
+          "quote": "- **Battle.** Nothing is held in battle, so a battle glimpse (Premonition,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R310": "b026f1a777d5fb5d118b9486d9ac26b12a425835f8105f7f3be2090fdaeea801"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.open-decision",
+    "parent": "D2",
+    "order": 1,
+    "text": "While a decision is open for a player (a question the game is waiting on them to answer), that player must answer it, or concede, before taking any other action.",
+    "examples": [
+      {
+        "text": "A seat with its own question open cannot play a card until it answers.",
+        "test": "130-seat-aware-gate.test.ts::R154 §4: your own question still gates your own input"
+      }
+    ],
+    "see": [
+      "104.4a"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R154 (its decision gate)",
+          "quote": "1. **It is your own question.** You must answer it, or concede (R65)."
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R154",
+          "relation": "its deployment settle() hold amended by R286; the decision gate stands"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "130-seat-aware-gate.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R154": "9cf0cf4c3a9ba5eb8dbfa24a2312b1ee1c22d43f506f875e68f88eaea62f47b1"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.open-decision.battle",
+    "parent": "annexd.auto-pass.open-decision",
+    "order": 1,
+    "text": "In battle, a decision open for one player stops the other player too: nobody may act until it is answered.",
+    "examples": [
+      {
+        "text": "A real battle decision for one seat leaves the other seat with nothing it may do.",
+        "test": "130-seat-aware-gate.test.ts::R154 §4: a REAL battle decision blocks the other seat"
+      }
+    ],
+    "see": [
+      "703"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R154 (its decision gate)",
+          "quote": "2. **You are not inside a hidden simultaneous segment** — i.e. you are in"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "130-seat-aware-gate.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R154": "9cf0cf4c3a9ba5eb8dbfa24a2312b1ee1c22d43f506f875e68f88eaea62f47b1"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.open-decision.segment",
+    "parent": "annexd.auto-pass.open-decision",
+    "order": 2,
+    "text": "Inside a hidden simultaneous segment, a decision open for one player does not stop the other player, who keeps every action they had, except as described in the next sub-rule.",
+    "examples": [
+      {
+        "text": "While one seat answers its pile of Wraith triggers at the start of deployment, the other seat goes on deploying.",
+        "test": "130-seat-aware-gate.test.ts::R154 §1: every kind of action seat 0 had is still theirs"
+      }
+    ],
+    "see": [
+      "annexd.general.hidden-segment"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R154 (its decision gate)",
+          "quote": "> **A decision belonging to another seat stops you only where the engine cannot"
+        },
+        {
+          "ref": "R154 (its decision gate)",
+          "quote": "> prove it is none of your business — outside a hidden simultaneous segment, or"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "130-seat-aware-gate.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R286 extends this to the deployment stack draining (U09/U14).",
+    "sourceHashes": {
+      "R154": "9cf0cf4c3a9ba5eb8dbfa24a2312b1ee1c22d43f506f875e68f88eaea62f47b1"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.open-decision.rewind",
+    "parent": "annexd.auto-pass.open-decision",
+    "order": 3,
+    "text": "Exception: when answering the open decision would rewind the game to before the other player acted (a resolution that stopped halfway), the other player is stopped as in battle. Online, an action they send meanwhile waits and is applied when the decision closes; they are told it is waiting, not that it is illegal.",
+    "examples": [
+      {
+        "text": "A mid-resolution question for one seat still blocks the other seat's deployment play.",
+        "test": "130-seat-aware-gate.test.ts::R154 §3: a mid-resolution suspension still blocks the other seat"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R154 (its decision gate)",
+          "quote": "3. **Answering it will rewind the world.** See below."
+        },
+        {
+          "ref": "R154 (its decision gate)",
+          "quote": "player is told \"waiting\", never \"illegal\"."
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R150",
+          "relation": "its server shadow state and blanket deferral narrowed by R154 to this rewind case"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "130-seat-aware-gate.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R154": "9cf0cf4c3a9ba5eb8dbfa24a2312b1ee1c22d43f506f875e68f88eaea62f47b1"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.open-decision.no-disturb",
+    "parent": "annexd.auto-pass.open-decision",
+    "order": 4,
+    "text": "Only one decision can be open at a time. An action that would change what the other player's open decision reads when it is answered is refused, and the game stays as it was before the action.",
+    "examples": [
+      {
+        "text": "Seat 0 cannot raise a question of its own while seat 1's question is open.",
+        "test": "130-seat-aware-gate.test.ts::R154 §2: seat 0 may not overwrite seat 1's open decision"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R154 (its decision gate)",
+          "quote": "* If it changed, `apply()` throws `IllegalAction` with `disturbs = true` and the"
+        },
+        {
+          "ref": "R170",
+          "quote": "**Nothing — it cannot happen.** `GameState.decision` is a single slot and"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "130-seat-aware-gate.test.ts",
+        "144-both-seats-decision-gate.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Online, such a refusal is routed into the waiting queue (R154 deferrableRefusal).",
+    "sourceHashes": {
+      "R154": "9cf0cf4c3a9ba5eb8dbfa24a2312b1ee1c22d43f506f875e68f88eaea62f47b1",
+      "R170": "6b38685bb5354dbc82a3f69c2071d2ba9b0fe66226067077f8fee9723dbe0d63"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.open-decision.concede",
+    "parent": "annexd.auto-pass.open-decision",
+    "order": 5,
+    "text": "Conceding is never blocked by an open decision, whichever player it belongs to.",
+    "examples": [
+      {
+        "text": "Either seat may concede while a question is open.",
+        "test": "130-seat-aware-gate.test.ts::R154 §4: concede is always reachable, from either seat"
+      }
+    ],
+    "see": [
+      "104.4a"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R154 (its decision gate)",
+          "quote": "* `dispatch()` — was `if (e.s.decision && type !== 'decide' && type !== 'concede')`"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "130-seat-aware-gate.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "The quoted line shows concede exempt from the old gate; the 'either seat' half is the test's.",
+    "sourceHashes": {
+      "R154": "9cf0cf4c3a9ba5eb8dbfa24a2312b1ee1c22d43f506f875e68f88eaea62f47b1"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.open-decision.both-seats",
+    "parent": "annexd.auto-pass.open-decision",
+    "order": 6,
+    "text": "On a screen that shows both players' sides at once, the open question stays on top, and the player who is not being asked keeps their own phase controls beneath it. The player being asked has only the question.",
+    "examples": [
+      {
+        "text": "The free seat can still end its deployment from the button on screen.",
+        "test": "144-both-seats-decision-gate.test.ts::R170 §1: ending the free seat's deployment goes through, from the button on screen"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R170",
+          "quote": "1. **Two bars, not one instead of the other.** `promptHtml` splits: the"
+        },
+        {
+          "ref": "R170",
+          "quote": "2. **`doneRow` never offers a button `apply()` would throw on.** The seat being"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "144-both-seats-decision-gate.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Hotseat is gone (R170's 2026-09-23 amendment); the both-seats view survives in the replay viewer, Learn to Play and the test driver.",
+    "sourceHashes": {
+      "R170": "6b38685bb5354dbc82a3f69c2071d2ba9b0fe66226067077f8fee9723dbe0d63"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.pass-buttons",
+    "parent": "D2",
+    "order": 2,
+    "text": "When a player holds priority, the client offers up to three ways to pass: Pass, Pass through stack and Pass all. Pass through stack and Pass all are standing passes: promises the client keeps on the player's behalf in later windows.",
+    "examples": [],
+    "see": [
+      "703"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R251",
+          "quote": "> \"I think there need to be three options: Pass, Pass through stack, and Pass"
+        },
+        {
+          "ref": "R251",
+          "quote": "**A standing pass is a promise, a promise has a SCOPE, and the scope is fixed at"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "230-pass-modes.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R251": "2595495f4c3bdca1cde2b4e7912081e7ea2a140ce26686fdad8dc7bda25620ef"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.pass-buttons.pass",
+    "parent": "annexd.auto-pass.pass-buttons",
+    "order": 1,
+    "text": "Pass passes priority once. It sets up nothing for later windows.",
+    "examples": [
+      {
+        "text": "Pass sends one pass and arms nothing: the next window the seat holds is left to them.",
+        "test": "434-cr-digital-1.test.ts::cr:annexd.auto-pass.pass-buttons.pass — Pass sends one pass and arms nothing: the next window the seat holds is left to them"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R251",
+          "quote": "* **Pass** — one `passPriority`. Arms nothing. Unchanged."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R251": "2595495f4c3bdca1cde2b4e7912081e7ea2a140ce26686fdad8dc7bda25620ef"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.pass-buttons.through-stack",
+    "parent": "annexd.auto-pass.pass-buttons",
+    "order": 2,
+    "text": "Pass through stack passes for the player until the stack items that were there when it was clicked have resolved, and then ends. It hands priority back sooner if a stack item outside that set appears, or if the player is offered an option they did not have when they clicked.",
+    "examples": [
+      {
+        "text": "A spell the opponent casts in answer is outside the armed set, so priority comes back to the player.",
+        "test": "230-pass-modes.test.ts::[123] a stack item outside the armed scope hands priority back"
+      },
+      {
+        "text": "Once the stack it was clicked on has resolved, the promise is over.",
+        "test": "230-pass-modes.test.ts::[123] pass through stack finishes when the stack it was armed on has resolved"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R251",
+          "quote": "stack items that were there when it was clicked (`AutoPassArm.armedItems`)."
+        },
+        {
+          "ref": "R251",
+          "quote": "Every release clause is live, and the promise ENDS when the scope has resolved"
+        },
+        {
+          "ref": "R251",
+          "quote": "(identity on the stack, options by exclusion, the #66 token guard) and gains the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "230-pass-modes.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R251": "2595495f4c3bdca1cde2b4e7912081e7ea2a140ce26686fdad8dc7bda25620ef"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.pass-buttons.through-stack.offered",
+    "parent": "annexd.auto-pass.pass-buttons",
+    "order": 3,
+    "text": "Pass through stack is offered only while there is a stack to pass through.",
+    "examples": [
+      {
+        "text": "With an empty stack the battle bar shows Pass and Pass all only.",
+        "test": "230-pass-modes.test.ts::[123] the battle bar offers pass through stack only while there is a stack"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R251",
+          "quote": "(`'done'`). Offered only while there is a stack to pass through: a \"pass"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "230-pass-modes.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R251": "2595495f4c3bdca1cde2b4e7912081e7ea2a140ce26686fdad8dc7bda25620ef"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.pass-buttons.all",
+    "parent": "annexd.auto-pass.pass-buttons",
+    "order": 4,
+    "text": "Pass all passes for the player until the phase it was clicked in ends. A new stack item or a new option does not hand priority back.",
+    "examples": [
+      {
+        "text": "The opponent casting a spell does not stop Pass all.",
+        "test": "230-pass-modes.test.ts::[123] pass all does not hand priority back for a new item or a new option"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R251",
+          "quote": "* **Pass all** (`'all'`) — scoped to the PHASE it was armed in"
+        },
+        {
+          "ref": "R251",
+          "quote": "(`AutoPassArm.armedPhase`). The two \"something changed\" clauses are not asked"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "230-pass-modes.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R251": "2595495f4c3bdca1cde2b4e7912081e7ea2a140ce26686fdad8dc7bda25620ef"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.pass-buttons.token-stop",
+    "parent": "annexd.auto-pass.pass-buttons",
+    "order": 5,
+    "text": "Both standing passes still stop before the one pass that would end the battle phase while the player holds spell tokens they could cast, so that that pass is the player's own click.",
+    "examples": [
+      {
+        "text": "Pass all armed with a castable Fireball token runs through the battle and hands the last pass back.",
+        "test": "230-pass-modes.test.ts::[123] pass all still stops on the one pass that would erase castable spell tokens"
+      }
+    ],
+    "see": [
+      "annexd.auto-pass.regroup-confirm",
+      "506"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R251",
+          "quote": "`'tokens'` — the pass that would reach Regroup with castable spell tokens still"
+        },
+        {
+          "ref": "R251",
+          "quote": "in hand (R11, report #66) — is still asked in `'all'` mode. It is not a"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "230-pass-modes.test.ts",
+        "77-playtest-round17.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "The owner's words for Pass all are 'doesn't want priority until the next phase'; R251 argues the token stop is at that boundary, so not a narrowing.",
+    "sourceHashes": {
+      "R251": "2595495f4c3bdca1cde2b4e7912081e7ea2a140ce26686fdad8dc7bda25620ef"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.pass-buttons.baseline",
+    "parent": "annexd.auto-pass.pass-buttons",
+    "order": 6,
+    "text": "What counts as new for a standing pass is measured against the moment it was clicked. An option the player already had then is not new when it comes back later.",
+    "examples": [
+      {
+        "text": "An activated ability on offer at the click, gone for a window and back again, does not stop the pass.",
+        "test": "230-pass-modes.test.ts::[123] an option that was on offer at the arm is not news several windows later"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R251",
+          "quote": "the moment the player clicks. Two scopes, two buttons, and exactly one release"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "230-pass-modes.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R251": "2595495f4c3bdca1cde2b4e7912081e7ea2a140ce26686fdad8dc7bda25620ef"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.pass-buttons.revocable",
+    "parent": "annexd.auto-pass.pass-buttons",
+    "order": 7,
+    "text": "A standing pass is set up only by a click and can be cancelled at any time: one stop control drops whichever is running. The client shows which promise is running and how it ends.",
+    "examples": [
+      {
+        "text": "Each pass button arms a chip naming its own promise, and one stop drops it.",
+        "test": "230-pass-modes.test.ts::[123] each pass button arms a chip that names its own promise, and one stop drops it"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R251",
+          "quote": "Both promises stay opt-in and revocable: nothing arms without a click, one `✕"
+        },
+        {
+          "ref": "R251",
+          "quote": "stop` in the top bar drops whichever is running, and the chip names the promise"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "230-pass-modes.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "A standing pass also stops the player's clock: annexd.clocks.running.standing-pass.",
+    "sourceHashes": {
+      "R251": "2595495f4c3bdca1cde2b4e7912081e7ea2a140ce26686fdad8dc7bda25620ef"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.no-retain",
+    "parent": "D2",
+    "order": 9,
+    "text": "This client has no way to keep priority after acting: when a player puts something on the stack in battle, priority goes to the opponent. A player can still respond to their own spell, once priority comes back to them with it still on the stack.",
+    "examples": [
+      {
+        "text": "The defender casts a spell, the attacker passes, and the defender casts a second spell on top of the first.",
+        "test": "272-full-control.test.ts::BL-18 §4 you can respond to your own spell with the first still on the stack"
+      }
+    ],
+    "see": [
+      "703"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "272-full-control.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "medium",
+    "notes": "ENGINE-ONLY. The test's own comment calls priority passing to the opponent on a cast 'the finding' and says retaining priority would be an engine change. U14's F-U14-2 suspects this differs from the Manual's rule that a player who acts may keep priority. D-U23-16.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.auto-pass.preference",
+    "parent": "D2",
+    "order": 3,
+    "text": "A player may turn on auto-pass. With it on, the client passes priority for the player only in a window where passing is the only thing they could do. Auto-pass never passes through an open decision.",
+    "examples": [
+      {
+        "text": "With a castable card in hand the window is put to the player even with auto-pass on.",
+        "test": "70-playtest-round15.test.ts::[59] the C4 toggle passes only when passing is the ONLY thing I could do"
+      },
+      {
+        "text": "A pending decision is never answered by auto-pass.",
+        "test": "70-playtest-round15.test.ts::[59] a pending decision is never passed through, by any of the three"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "70-playtest-round15.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "medium",
+    "notes": "ENGINE-ONLY (client). No ruling in the pack states when auto-pass passes; R150 says only that auto-pass means the player does not want these windows put to them. D-U23-9.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.auto-pass.automatic-answers",
+    "parent": "D2",
+    "order": 4,
+    "text": "An answer the client sends without a click (an automatic pass, or the automatic haste-step ready) is sent once for each time it is owed. It is latched by being unanswered, not by counting game updates, so updates that arrive while it is outstanding do not send it again. Engine differs, see F-U23-2.",
+    "examples": [
+      {
+        "text": "However many states arrive inside the haste step, one automatic ready goes out per unanswered send.",
+        "test": "223-client-legality.test.ts::[122] one automatic doneHaste per unanswered send, however many states arrive"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R245",
+          "quote": "### (b) An automatic answer is latched by the FACT of being unanswered, never"
+        },
+        {
+          "ref": "R245",
+          "quote": "The client sends intents the player did not: the haste-step ready (R236) and"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "223-client-legality.test.ts",
+        "70-playtest-round15.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "engineDiffers": [
+      "F-U23-2"
+    ],
+    "notes": "R245(b) names both the haste-step ready and the automatic pass. R258 and 70-playtest-round15 [59] say the automatic pass is latched once per actionCount (a state counter). D-U23-6.",
+    "sourceHashes": {
+      "R245": "5424da09f4540997e4a59a617cf20777fdd8948582c6d1db0327568dcb1ba500"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.automatic-answers.refusal",
+    "parent": "annexd.auto-pass.automatic-answers",
+    "order": 1,
+    "text": "If the server refuses an action the client sent on its own, the refusal is not shown as the player's error. It goes to the log and to a plain notice that says the client sent it.",
+    "examples": [
+      {
+        "text": "A refused automatic ready does not light the red error bar.",
+        "test": "223-client-legality.test.ts::[122] a refusal of an action the CLIENT chose to send is not the player refusal"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R245",
+          "quote": "It must not wear the red bar and the error cue a refused click uses — and it"
+        },
+        {
+          "ref": "R245",
+          "quote": "the log and a plain toast, saying who sent it."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "223-client-legality.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R245": "5424da09f4540997e4a59a617cf20777fdd8948582c6d1db0327568dcb1ba500"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.haste-ready",
+    "parent": "D2",
+    "order": 5,
+    "text": "When the haste step opens and the only legal action a player has in it is to finish the step, the client finishes it for them at once, unless they have turned on bluff haste.",
+    "examples": [
+      {
+        "text": "With bluff haste off and nothing hasteable, the client sends the ready by itself.",
+        "test": "205-haste-auto-ready.test.ts::R236 §2a: with the preference OFF and nothing hasteable, the client sends doneHaste by itself"
+      }
+    ],
+    "see": [
+      "504.5",
+      "504.5a"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R236",
+          "quote": "> **\"If the player doesn't have a haste card or doesn't have haste bluff"
+        },
+        {
+          "ref": "R236",
+          "quote": "of the legal list is **\"is `doneHaste` the only thing on it?\"** — nothing about"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "205-haste-auto-ready.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "The owner's words are 'doesn't have a haste card'; the encoded test is 'finishing is the only legal action', which also covers granted plays, cache releases and haste mods (R236 §1). Not a disagreement: the encoding is the wider reading of 'a haste card'.",
+    "sourceHashes": {
+      "R236": "fe2fe7688676d9518cc043d157c8a4c21c47a2c8a2dab36dca0d3a2ea557f99a"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.haste-ready.any-play",
+    "parent": "annexd.auto-pass.haste-ready",
+    "order": 1,
+    "text": "If the player has any legal play in the haste step, the client never finishes the step for them.",
+    "examples": [
+      {
+        "text": "A playable haste card in hand keeps the player in the step, bluff haste on or off.",
+        "test": "205-haste-auto-ready.test.ts::R236 §2d: with something playable the client never answers, preference or not"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R236",
+          "quote": "of the legal list is **\"is `doneHaste` the only thing on it?\"** — nothing about"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "205-haste-auto-ready.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R236": "fe2fe7688676d9518cc043d157c8a4c21c47a2c8a2dab36dca0d3a2ea557f99a"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.haste-ready.bluff",
+    "parent": "annexd.auto-pass.haste-ready",
+    "order": 2,
+    "text": "Bluff haste is a preference, off by default and remembered by the browser. With it on, the client never finishes the haste step for the player; they stay in the step until they finish it themselves, whether or not they hold anything to play.",
+    "examples": [
+      {
+        "text": "With bluff haste on, the client sits in the step and offers the button.",
+        "test": "205-haste-auto-ready.test.ts::R236 §2c: with the preference ON the client sits in the step and offers the button"
+      }
+    ],
+    "see": [
+      "504.5a"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R236",
+          "quote": "`algoBluffHaste`, default OFF, `localStorage`, toggled by a `🎭 bluff haste`"
+        },
+        {
+          "ref": "R236",
+          "quote": "me\": the player sits in the step deliberately, which is exactly the point of"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "205-haste-auto-ready.test.ts",
+        "200-haste-step-is-unconditional.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R236": "fe2fe7688676d9518cc043d157c8a4c21c47a2c8a2dab36dca0d3a2ea557f99a"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.haste-ready.server-never",
+    "parent": "annexd.auto-pass.haste-ready",
+    "order": 3,
+    "text": "The server never finishes the haste step for a player. The automatic ready, when there is one, comes from the player's own client.",
+    "examples": [
+      {
+        "text": "Both seats have to close the step; neither is marked done for them.",
+        "test": "200-haste-step-is-unconditional.test.ts::R228 §5: no seat is auto-done, and BOTH have to close the step"
+      }
+    ],
+    "see": [
+      "504.5a"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R228",
+          "quote": "names. ⚠ `forcedAction` was NOT taught to close the step, and must not be: an"
+        },
+        {
+          "ref": "R228",
+          "quote": "automatic `doneHaste` is a broadcast that the seat holds no haste play, which"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R18",
+          "relation": "its auto-done marking reversed by R224 and R228"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "200-haste-step-is-unconditional.test.ts",
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R228 calls an automatic doneHaste a broadcast; R236 then sends one from the client, and makes it safe by hiding readiness (next sub-rule).",
+    "sourceHashes": {
+      "R228": "16bea3f046e8e094455935cda2136af98531afe99ccc1b19d5d897918137a179"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.haste-ready.readiness-hidden",
+    "parent": "annexd.auto-pass.haste-ready",
+    "order": 4,
+    "text": "While the haste step is open, neither player is shown whether the other has finished it. Each player sees their own readiness, and the end of the step is shown to both.",
+    "examples": [
+      {
+        "text": "The opponent's view of my readiness reads not-done until the step ends.",
+        "test": "205-haste-auto-ready.test.ts::R236 §3a: the opponent is not served my haste readiness while the step is open"
+      },
+      {
+        "text": "The step's end still reaches both seats.",
+        "test": "205-haste-auto-ready.test.ts::R236 §3b: the step's END is still public"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R236",
+          "quote": "if (v.hasteDone) v.hasteDone = v.hasteDone.map((done, s) => (s === seat ? done : false));"
+        },
+        {
+          "ref": "R236",
+          "quote": "* **The step's END is still public** and that is the thing that must never be"
+        },
+        {
+          "ref": "R236",
+          "quote": "* **Your own flag is untouched** — you must be able to see that you are done."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "205-haste-auto-ready.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R236": "fe2fe7688676d9518cc043d157c8a4c21c47a2c8a2dab36dca0d3a2ea557f99a"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.haste-ready.residual",
+    "parent": "annexd.auto-pass.haste-ready",
+    "order": 5,
+    "text": "The game's action counter is still sent to both players and rises on every action, in every hidden segment, so a modified client can tell that its opponent acted and when. The shipped client shows nothing from it.",
+    "examples": [
+      {
+        "text": "Across the haste step the only field that moves for the other seat is the action counter.",
+        "test": "205-haste-auto-ready.test.ts::R236 §3d: the residual, named and measured"
+      }
+    ],
+    "see": [
+      "annexd.general.hidden-segment"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R236",
+          "quote": "`GameState.actionCount` is served live to both seats and increments on **every**"
+        },
+        {
+          "ref": "R236",
+          "quote": "action, so a *modified* client can still see that its opponent did something,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "205-haste-auto-ready.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "A measured, named leak against annexd.general.hidden-segment ('nobody sees'), left open as an owner call by R236. D-U23-5, F-U23-3.",
+    "sourceHashes": {
+      "R236": "fe2fe7688676d9518cc043d157c8a4c21c47a2c8a2dab36dca0d3a2ea557f99a"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.regroup-confirm",
+    "parent": "D2",
+    "order": 6,
+    "text": "When passing would end the battle phase while the player still holds spell tokens they could cast, the client asks before sending the pass, because moving to regroup erases them. It asks on that pass only, not in the battle's other windows.",
+    "examples": [
+      {
+        "text": "The Pass button asks before the pass that reaches Regroup, and only that one.",
+        "test": "77-playtest-round17.test.ts::[66] the Pass button asks before the pass that reaches Regroup, and only that one"
+      }
+    ],
+    "see": [
+      "506"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R194",
+          "quote": "has. It should only warn right before moving to Regroup ('You're about to move"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "77-playtest-round17.test.ts",
+        "165-token-loss-warning.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R194": "b5a45cc0ecccdb7c3471030b213cc8593ef622de9c332ff7da3863ef327b11c9"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.regroup-confirm.announced",
+    "parent": "annexd.auto-pass.regroup-confirm",
+    "order": 1,
+    "text": "When the battle phase ends with no pass to ask on (an attack declined with no window left, or a whole battle declined), the loss is announced instead: as regroup starts, each player who loses unused spell tokens is told which. Nothing is announced when nothing is lost.",
+    "examples": [
+      {
+        "text": "A battle both players decline opens no priority window, and the token loss is still announced.",
+        "test": "165-token-loss-warning.test.ts::[CT-55] a battle both players decline opens no priority window at all, and the loss is still announced"
+      },
+      {
+        "text": "The announcement is per seat, in a fixed order, and silent when nothing is lost.",
+        "test": "165-token-loss-warning.test.ts::[CT-55] the announcement is per seat, in a fixed order, and silent when there is nothing to lose"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R194",
+          "quote": "`E.startRegroup` now emits one `erased` event per seat, naming that seat's own"
+        },
+        {
+          "ref": "R194",
+          "quote": "It is deliberately silent when nothing is lost. #66 is a report about being"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "165-token-loss-warning.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R194": "b5a45cc0ecccdb7c3471030b213cc8593ef622de9c332ff7da3863ef327b11c9"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.regroup-confirm.card-ended",
+    "parent": "annexd.auto-pass.regroup-confirm",
+    "order": 2,
+    "text": "A battle ended by a card while it resolves (Temporal Rift) cannot be warned about before the pass, since that cannot be known when the pass is made. The announcement covers it, as it covers every way a battle ends.",
+    "examples": [
+      {
+        "text": "The pass under Temporal Rift does not read as ending the battle, yet the regroup announcement still fires when the Rift ends it.",
+        "test": "434-cr-digital-1.test.ts::cr:annexd.auto-pass.regroup-confirm.card-ended — the pass under Temporal Rift does not read as ending the battle, yet the regroup announcement still fires when the Rift ends it"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R213",
+          "quote": "cannot fire on the Temporal Rift path, and that is not a bug."
+        },
+        {
+          "ref": "R213",
+          "quote": "had: **every exit from `endBattleRound` funnels through `startRegroup`**, which"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R213's guard is a source scan of call sites; no indexed test title names it.",
+    "sourceHashes": {
+      "R213": "e1448bdd7ad4d14f73a9ac4b97da0041787ea1aed797402a528ae5128531e035"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.full-control",
+    "parent": "D2",
+    "order": 7,
+    "text": "Full control is held, not set. While a player holds the Control key, the client gives them every stop: auto-pass, standing passes, auto-yields and the automatic haste-step ready all stand down. When they let go, everything returns to how it was.",
+    "examples": [
+      {
+        "text": "With full control held, the auto-pass preference sends nothing.",
+        "test": "272-full-control.test.ts::BL-18 §2 with full control ON, the auto-pass preference sends nothing"
+      },
+      {
+        "text": "Letting go restores the previous behaviour in one keyup.",
+        "test": "272-full-control.test.ts::CT-183 §6 letting go goes right back to the way it was"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R287",
+          "quote": "> given every single stop, regardless of your settings (auto pass) or yields or"
+        },
+        {
+          "ref": "R287",
+          "quote": "> automatically resolve if you're holding ctrl. When you let go, it goes right"
+        },
+        {
+          "ref": "R287",
+          "quote": "**MOMENTARY, NOT PERSISTENT.** It is a modifier you hold for the beat you want"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "272-full-control.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R287": "b819800a2eee7591249628decb755dc115aa32d4aae157e9608c10179b60c0fa"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.full-control.deployment",
+    "parent": "annexd.auto-pass.full-control",
+    "order": 1,
+    "text": "This includes deployment: while a player holds full control, nothing on their deployment stack resolves automatically. Engine differs, see F-U23-1.",
+    "examples": [],
+    "see": [
+      "507"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R287",
+          "quote": "> the haste step or anything. Even during deployment, nothing will"
+        },
+        {
+          "ref": "R287",
+          "quote": "⚠ **THE DEPLOYMENT CLAUSE IS NOT BUILT.** *\"Even during deployment, nothing"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "engineDiffers": [
+      "F-U23-1"
+    ],
+    "notes": "R287 records the clause as unbuilt and filed as CT-185, 'the owner's call'. R286 names full control as the case that makes the per-seat deployment stack visible. D-U23-4. engine differs: F-U23-1 (the deployment stack drains itself inside settle(); the engine has no full-control hold, CT-185 open).",
+    "sourceHashes": {
+      "R287": "b819800a2eee7591249628decb755dc115aa32d4aae157e9608c10179b60c0fa"
+    },
+    "untested": true
+  },
+  {
+    "key": "annexd.auto-pass.full-control.latency",
+    "parent": "annexd.auto-pass.full-control",
+    "order": 2,
+    "text": "The client's own automatic actions stop at once when Control is pressed. The server's automatic actions stop only once the message reaches it, and an automatic action already sent is not recalled, so full control should be held before acting, not after.",
+    "examples": [
+      {
+        "text": "The switch reaches the server on the join and on every change.",
+        "test": "272-full-control.test.ts::BL-18 §3 the switch reaches the SERVER, on the join and on every change"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R287",
+          "quote": "1. **Relay latency splits in two.** The three CLIENT automatics — auto-pass,"
+        },
+        {
+          "ref": "R287",
+          "quote": "honest instruction is **hold Ctrl before you act, not after.**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "272-full-control.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R287": "b819800a2eee7591249628decb755dc115aa32d4aae157e9608c10179b60c0fa"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.full-control.release",
+    "parent": "annexd.auto-pass.full-control",
+    "order": 3,
+    "text": "Leaving the window (switching away, hiding the page) releases full control, as if the key had been let go.",
+    "examples": [
+      {
+        "text": "Alt-tabbing away is letting go.",
+        "test": "272-full-control.test.ts::CT-183 §6 (b) alt-tabbing away is letting go"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R287",
+          "quote": "doors close it: `blur`, `pagehide`, and a hidden document."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "272-full-control.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R287": "b819800a2eee7591249628decb755dc115aa32d4aae157e9608c10179b60c0fa"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.full-control.chord",
+    "parent": "annexd.auto-pass.full-control",
+    "order": 4,
+    "text": "Pressing another key while Control is down (Ctrl+Z, or a browser shortcut) makes a chord, not full control: it drops the hold until Control is released.",
+    "examples": [
+      {
+        "text": "Ctrl+Z is undo, not full control.",
+        "test": "272-full-control.test.ts::CT-183 §6 (c) Ctrl+Z is undo, not full control"
+      }
+    ],
+    "see": [
+      "D4"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R287",
+          "quote": "Ctrl+T are the browser's. Any other key pressed while Control is down"
+        },
+        {
+          "ref": "R287",
+          "quote": "LATCHES the press as a chord and drops the hold, and the latch does not"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "272-full-control.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R287": "b819800a2eee7591249628decb755dc115aa32d4aae157e9608c10179b60c0fa"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.full-control.not-persisted",
+    "parent": "annexd.auto-pass.full-control",
+    "order": 5,
+    "text": "Full control is not remembered between sessions. The client shows whether it is being held.",
+    "examples": [
+      {
+        "text": "The hold is not written to the browser.",
+        "test": "272-full-control.test.ts::CT-183 §6 the hold is not written to the browser"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R287",
+          "quote": "**NOT PERSISTED, and the removal is part of the ruling.** A held key has no"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "272-full-control.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R287": "b819800a2eee7591249628decb755dc115aa32d4aae157e9608c10179b60c0fa"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.misclick-confirm",
+    "parent": "D2",
+    "order": 8,
+    "text": "When a spell has one target slot that must be an ally and another that may be any unit, and the player picks an ally for the second slot, the client asks whether they meant to target their own unit. It never refuses: yes resolves exactly as chosen, and no returns to the same target pick with nothing sent.",
+    "examples": [
+      {
+        "text": "Fight with both picks on the caster's own units asks once before the cast goes out (illustrative).",
+        "test": null
+      }
+    ],
+    "see": [
+      "D7",
+      "annexd.general.not-rules.warn-not-refuse"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R288",
+          "quote": "literally \"target ally AND target unit on the same card\". Fight is"
+        },
+        {
+          "ref": "R288",
+          "quote": "**WHAT \"NO\" DOES.** Nothing has been sent, so there is nothing to undo: the"
+        },
+        {
+          "ref": "R288",
+          "quote": "question closes and the same target pick is still open. BL-30 asks for \"back to"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Belongs with confirmations (D7, U24) by topic; R288 was in this unit's pack only. R288 names guard 278; no 278 title was in the pack, so no example is bound.",
+    "sourceHashes": {
+      "R288": "dbf6942a32dbedcabb8808a3b45534465217b2bc16e168bbdbfcda93beef3940"
+    }
+  },
+  {
+    "key": "annexd.auto-pass.misclick-confirm.family",
+    "parent": "annexd.auto-pass.misclick-confirm",
+    "order": 1,
+    "text": "The cards that ask are found from their target slots, not listed by name. Today they are Fight and Squish. Organic Exchange, which targets two units with no ally slot, does not ask.",
+    "examples": [
+      {
+        "text": "Reading every card's target slots over the whole pool finds exactly Fight and Squish; Organic Exchange is not among them.",
+        "test": "434-cr-digital-1.test.ts::cr:annexd.auto-pass.misclick-confirm.family — the family derived from target slots over the whole pool is exactly Fight and Squish"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R288",
+          "quote": "and the derived family today is **Fight and Squish**."
+        },
+        {
+          "ref": "R288",
+          "quote": "⚠ **THE OWNER'S TWO MESSAGES DISAGREE ABOUT ORGANIC EXCHANGE, and the later one"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "The owner's first message named Organic Exchange; his later derivation excludes it, and R288 follows the later one. D-U23-10.",
+    "sourceHashes": {
+      "R288": "dbf6942a32dbedcabb8808a3b45534465217b2bc16e168bbdbfcda93beef3940"
+    }
+  },
+  {
+    "key": "annexd.clocks.banks",
+    "parent": "D3",
+    "order": 1,
+    "text": "A game may be played with a chess clock, in which each player has a bank of time. The home screen offers three settings: no clock, 45 minutes and 60 minutes.",
+    "examples": [
+      {
+        "text": "The picker offers Off, 45m and 60m.",
+        "test": "271-clock-picker-and-warning.test.ts::BL-26 §4 the home screen offers the owner's three banks, including no clock at all"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "271-clock-picker-and-warning.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "medium",
+    "notes": "ENGINE-ONLY. The owner's choice is in client/docs/questions-round36.md Q4 (an answered question sheet, not an R-ruling) and quoted in the test's comment. D-U23-1.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.clocks.banks.default",
+    "parent": "annexd.clocks.banks",
+    "order": 1,
+    "text": "Unless the player chooses otherwise, the bank is 45 minutes for a constructed game and 60 minutes for a live draft.",
+    "examples": [
+      {
+        "text": "The default is looked up by mode when the game is created.",
+        "test": "271-clock-picker-and-warning.test.ts::BL-26 §4 the default follows the MODE"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "271-clock-picker-and-warning.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "medium",
+    "notes": "ENGINE-ONLY; owner answer in questions-round36 Q4. D-U23-1.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.clocks.banks.off",
+    "parent": "annexd.clocks.banks",
+    "order": 2,
+    "text": "A game with no clock shows no clocks.",
+    "examples": [
+      {
+        "text": "A client never sent a clock draws none.",
+        "test": "271-clock-picker-and-warning.test.ts::BL-26 §1 a client that was never sent a clock draws no clocks at all"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "271-clock-picker-and-warning.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "high",
+    "notes": "ENGINE-ONLY.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.clocks.banks.not-custom",
+    "parent": "annexd.clocks.banks",
+    "order": 3,
+    "text": "Choosing a clock setting does not make a game a custom game.",
+    "examples": [
+      {
+        "text": "Changing the clock leaves the game standard.",
+        "test": "366-clock-in-options.test.ts::366 changing the clock does not make the game custom"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "366-clock-in-options.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "high",
+    "notes": "ENGINE-ONLY.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.clocks.banks.critical",
+    "parent": "annexd.clocks.banks",
+    "order": 4,
+    "text": "A player's clock is shown as critical when it is down to a tenth of the game's bank or to one minute, whichever is less.",
+    "examples": [
+      {
+        "text": "On a ninety-second bank the warning comes at nine seconds; on a ten-hour bank five minutes left is not yet critical, because the threshold stops at one minute.",
+        "test": "271-clock-picker-and-warning.test.ts::BL-27 §2 the threshold is a tenth of the ROOM'S bank, not a constant"
+      },
+      {
+        "text": "On the 45- and 60-minute banks the warning comes at one minute (illustrative).",
+        "test": null
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "271-clock-picker-and-warning.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "medium",
+    "notes": "ENGINE-ONLY. Cap measured by the verifier (main.ts clockWarnAt: Math.min(60_000, start / 10)) and asserted by the same 271 test. Below vs at-or-below not stated. D-U23-19. Engine location (client/ui, outside engine/src): main.ts clockWarnAt.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.clocks.running",
+    "parent": "D3",
+    "order": 2,
+    "text": "A player's clock runs only while the game is waiting on that player, and only while both players are connected.",
+    "examples": [
+      {
+        "text": "A clock runs only for a seat the game is waiting on, and only while both players are connected.",
+        "test": "434-cr-digital-1.test.ts::cr:annexd.clocks.running — a clock runs only for a seat the game is waiting on, and only while both players are connected"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "suite.test.ts",
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "medium",
+    "notes": "ENGINE-ONLY. Stated by client/server/e2e/test-clock.ts (run through e2e/suite.test.ts; its checks are not in the title index). D-U23-2.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.clocks.running.simultaneous",
+    "parent": "annexd.clocks.running",
+    "order": 1,
+    "text": "In a step both players take at once, both clocks run; a player's clock stops when that player finishes the step.",
+    "examples": [
+      {
+        "text": "After one player finishes the resource step, the haste step or deployment, that player has nothing left to do while the other still has legal actions.",
+        "test": "434-cr-digital-1.test.ts::cr:annexd.clocks.running.simultaneous — in planning and the haste step both seats are waited on, and a seat that has finished has no legal action left"
+      }
+    ],
+    "see": [
+      "annexd.general.hidden-segment"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "suite.test.ts",
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "medium",
+    "notes": "ENGINE-ONLY: e2e/test-clock.ts (both clocks running in planning; seat 0's stops on donePlanning). D-U23-2.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.clocks.running.standing-pass",
+    "parent": "annexd.clocks.running",
+    "order": 2,
+    "text": "A player's clock does not run in a priority window that their standing pass is answering, and the other player, who has nothing to do there, is not billed either. A real choice is billed even while a standing pass is set. If the client's pass has not arrived within a short backstop, the server passes for the player, and that pass is logged like any other.",
+    "examples": [
+      {
+        "text": "The armed seat is not billed in the window its pass answers, the other seat neither, and the backstop pass after the delay goes in the log.",
+        "test": "434-cr-digital-1.test.ts::cr:annexd.clocks.running.standing-pass — the armed seat is not billed in the window its pass answers, the other seat neither, and the backstop pass after the delay goes in the log"
+      }
+    ],
+    "see": [
+      "annexd.auto-pass.pass-buttons"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "suite.test.ts",
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "medium",
+    "notes": "ENGINE-ONLY: client/server/e2e/test-passall-clock.ts, whose header quotes the owner (2026-09-28, 'their timer should never go down'). No R-ruling. D-U23-3.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.clocks.running.playback",
+    "parent": "annexd.clocks.running",
+    "order": 3,
+    "text": "A player watching a recap is off the clock until the playback ends or the server's hold on it lapses. Acting ends the hold.",
+    "examples": [
+      {
+        "text": "A seat watching a playback is not billed.",
+        "test": "360-playback-frames.test.ts::§8 a seat watching a playback is off the clock until it is done, or the hold lapses"
+      },
+      {
+        "text": "The hold starts when the playback is sent and ends when the client says so or the seat acts.",
+        "test": "360-playback-frames.test.ts::§8b the server holds the clock when it sends a playback"
+      }
+    ],
+    "see": [
+      "D5"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "360-playback-frames.test.ts",
+        "372-recap-end-pause.test.ts",
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "high",
+    "notes": "ENGINE-ONLY. D-U23-2.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.clocks.out-of-time",
+    "parent": "D3",
+    "order": 3,
+    "text": "A player whose clock runs out loses the game, and the log says they ran out of time. This happens even if neither player acts.",
+    "examples": [
+      {
+        "text": "A seat whose clock runs out loses with no move made, and the log says they ran out of time.",
+        "test": "434-cr-digital-1.test.ts::cr:annexd.clocks.out-of-time — a seat whose clock runs out loses with no move made, and the log says they ran out of time"
+      }
+    ],
+    "see": [
+      "104"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "suite.test.ts",
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "medium",
+    "notes": "ENGINE-ONLY: e2e/test-clock.ts §BL-27. Not in the ending rules (104) because no source but the engine says it. D-U23-2.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.clocks.idle-rooms",
+    "parent": "D3",
+    "order": 4,
+    "text": "A game is closed when nobody has moved in it for an hour, if fewer than five actions have been taken, or for twelve hours otherwise, and nobody (no player and no watcher) has been connected to it for the five-minute reconnect grace. An open tab keeps an idle game open.",
+    "examples": [
+      {
+        "text": "A short game left alone closes after an hour.",
+        "test": "367-idle-rooms-close.test.ts::367 §1 a room with fewer than five actions closes after an hour without a move, not before"
+      },
+      {
+        "text": "A longer game left alone closes after twelve hours.",
+        "test": "367-idle-rooms-close.test.ts::367 §2 a room with five or more actions closes after twelve hours without a move, not before"
+      },
+      {
+        "text": "A connected seat or a watcher keeps an idle room open; an empty one gets a grace to reconnect.",
+        "test": "367-idle-rooms-close.test.ts::367 §3 a connected seat or a watcher keeps an idle room open, and an empty one gets a grace to reconnect"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "367-idle-rooms-close.test.ts",
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "high",
+    "notes": "ENGINE-ONLY. D-U23-2. Round 2: the nobody-connected condition was added; the verifier measured rooms.ts idleDue ('if (roomAttended(room)) { room.unattendedSince = null; return false; }', RECONNECT_GRACE_MS = 5 min) and idleWindowMs ('actions < IDLE_FEW_ACTIONS ? IDLE_SHORT_MS : IDLE_LONG_MS;', counted from lastActionAt). Its probe showed an attended room three days idle stays open. The sub-rule kept-open restates the attended half on its own. Engine location: client/server/rooms.ts idleDue, idleWindowMs.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.clocks.idle-rooms.kept-open",
+    "parent": "annexd.clocks.idle-rooms",
+    "order": 1,
+    "text": "A connected player or a watcher keeps an idle game open, and an empty game is given a grace period for a player to reconnect.",
+    "examples": [
+      {
+        "text": "A connected seat or a watcher keeps the room open.",
+        "test": "367-idle-rooms-close.test.ts::367 §3 a connected seat or a watcher keeps an idle room open"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "367-idle-rooms-close.test.ts",
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "high",
+    "notes": "ENGINE-ONLY.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.clocks.idle-rooms.no-result",
+    "parent": "annexd.clocks.idle-rooms",
+    "order": 2,
+    "text": "A game closed for being idle has no winner, is not rated, and is recorded as unfinished.",
+    "examples": [
+      {
+        "text": "A closed game reads as unfinished.",
+        "test": "367-idle-rooms-close.test.ts::367 §6 a closed game has no winner, is not rated and reads as unfinished"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "367-idle-rooms-close.test.ts",
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "high",
+    "notes": "ENGINE-ONLY.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.undo.hidden-step",
+    "parent": "D4",
+    "order": 1,
+    "text": "Inside a hidden simultaneous segment, a player may undo their own actions, one at a time, back toward the start of the step, within the limits of the rules below.",
+    "examples": [
+      {
+        "text": "An earlier deployment play can be undone when nothing hidden has been seen since.",
+        "test": "374-undo-locks-on-reveal.test.ts::R312 §2: an undo of an earlier play BEFORE any glimpse still works"
+      }
+    ],
+    "see": [
+      "annexd.general.hidden-segment"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R312",
+          "quote": "Undo inside a hidden step (planning, haste, deployment) used to walk back any"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "374-undo-locks-on-reveal.test.ts",
+        "suite.test.ts",
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R312 states the baseline in the past tense, as what it narrows; the baseline itself has no ruling of its own. The owner's words are in client/server/e2e/test-undo-segment.ts's header. D-U23-7.",
+    "sourceHashes": {
+      "R312": "78850afa07bfa40503b80c01ac6420a57ab56c5489b7939683d9e7efa711d6fb"
+    }
+  },
+  {
+    "key": "annexd.undo.hidden-step.opponent",
+    "parent": "annexd.undo.hidden-step",
+    "order": 1,
+    "text": "The opponent acting in the same step does not stop a player's undo.",
+    "examples": [
+      {
+        "text": "The opponent acting in the same step does not stop my undo.",
+        "test": "434-cr-digital-1.test.ts::cr:annexd.undo.hidden-step.opponent — the opponent acting in the same step does not stop my undo"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "suite.test.ts",
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "medium",
+    "notes": "ENGINE-ONLY: e2e/test-undo-segment.ts §1-§4b (ledger #37/#76). D-U23-7.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.undo.hidden-step.floor",
+    "parent": "annexd.undo.hidden-step",
+    "order": 2,
+    "text": "An undo cannot go back past what the step itself did as it began, such as a payment or an ability that happens at the start of the step.",
+    "examples": [
+      {
+        "text": "An undo stops at what the step did as it began: the answer to a start-of-deployment trigger cannot be taken back.",
+        "test": "434-cr-digital-1.test.ts::cr:annexd.undo.hidden-step.floor — an undo stops at what the step did as it began: the answer to a start-of-deployment trigger cannot be taken back"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "suite.test.ts",
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "low",
+    "notes": "ENGINE-ONLY: e2e/test-undo-segment.ts §4c 'the FLOOR: what the phase itself started is not yours to take back'; the owner's words (debt, 'at the beginning of deployment') are quoted there. D-U23-7.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.undo.hidden-step.battle",
+    "parent": "annexd.undo.hidden-step",
+    "order": 3,
+    "text": "Actions taken in battle are not undone. For that reason an irreversible activated ability asks for confirmation in battle, while in deployment it activates on the click and undo is the safety net.",
+    "examples": [
+      {
+        "text": "In deployment an irreversible ability activates on the click.",
+        "test": "373-no-confirm-where-undo-works.test.ts::in deployment, an irreversible ability activates on the click"
+      },
+      {
+        "text": "In battle the same ability asks \"Yes, activate\" first.",
+        "test": "373-no-confirm-where-undo-works.test.ts::in battle, the same ability still asks"
+      }
+    ],
+    "see": [
+      "D7"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "373-no-confirm-where-undo-works.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "medium",
+    "notes": "ENGINE-ONLY. No ruling in the pack says battle actions cannot be undone; only 373's title ('nothing there is undone'). A cast not yet on the stack can still be cancelled in battle (annexd.undo.cast-cancel). D-U23-11.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.undo.cast-cancel",
+    "parent": "D4",
+    "order": 2,
+    "text": "A cast that has not yet gone on the stack, while its X, costs or targets are still being chosen, may be cancelled. A Burst group is cancelled whole.",
+    "examples": [
+      {
+        "text": "A cast still choosing its targets is cancelled: the card is back in hand and nothing went on the stack.",
+        "test": "434-cr-digital-1.test.ts::cr:annexd.undo.cast-cancel — a cast still choosing its targets is cancelled: the card is back in hand and nothing went on the stack"
+      }
+    ],
+    "see": [
+      "702",
+      "803"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R312",
+          "quote": "- The pre-commit cast chain (X, costs, targets) gets no floor. Every stage"
+        },
+        {
+          "ref": "R309",
+          "quote": "- Cancel works on the whole burst: the `burstPick` step counts as a"
+        },
+        {
+          "ref": "R309",
+          "quote": "pre-commit cast for the client's cast-cancel and the server's undo."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R312 says the pre-commit chain gets no reveal floor; R309 that a burst cancels whole. That a pre-commit cast is cancellable at all is presupposed by both.",
+    "sourceHashes": {
+      "R309": "e49e87895134f608900e0c840a7d68bcdb1cd0ba07dfc2b9e8b67e7123c8c06f",
+      "R312": "78850afa07bfa40503b80c01ac6420a57ab56c5489b7939683d9e7efa711d6fb"
+    }
+  },
+  {
+    "key": "annexd.undo.seen-cards",
+    "parent": "D4",
+    "order": 3,
+    "text": "An action that showed a player hidden cards cannot be undone, and neither can anything that player did before it.",
+    "examples": [
+      {
+        "text": "A Glimpse in deployment cannot be undone.",
+        "test": "374-undo-locks-on-reveal.test.ts::R312 §1: a Glimpse in deployment cannot be undone"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R312",
+          "quote": "An action that showed you hidden cards cannot be taken back, and neither can"
+        },
+        {
+          "ref": "R312",
+          "quote": "anything you did before it. The owner: *\"once you've seen the cards, it"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "374-undo-locks-on-reveal.test.ts",
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R312": "78850afa07bfa40503b80c01ac6420a57ab56c5489b7939683d9e7efa711d6fb"
+    }
+  },
+  {
+    "key": "annexd.undo.seen-cards.after",
+    "parent": "annexd.undo.seen-cards",
+    "order": 1,
+    "text": "Actions the player took after that one can still be undone, back to just after it.",
+    "examples": [
+      {
+        "text": "A spawn after the glimpse is undoable back to the glimpse, and not past it.",
+        "test": "374-undo-locks-on-reveal.test.ts::R312 §3: a plain spawn after the glimpse is undoable back to the glimpse"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R312",
+          "quote": "Now an undo walks back no further than just after the latest action in the"
+        },
+        {
+          "ref": "R312",
+          "quote": "step that showed **you** a hidden card. A play after that action can still be"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "374-undo-locks-on-reveal.test.ts",
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R312": "78850afa07bfa40503b80c01ac6420a57ab56c5489b7939683d9e7efa711d6fb"
+    }
+  },
+  {
+    "key": "annexd.undo.seen-cards.message",
+    "parent": "annexd.undo.seen-cards",
+    "order": 2,
+    "text": "The refusal reads \"you've seen those cards — that can't be taken back\".",
+    "examples": [
+      {
+        "text": "The refusal reads: you have seen those cards and that cannot be taken back.",
+        "test": "434-cr-digital-1.test.ts::cr:annexd.undo.seen-cards.message — the refusal reads: you have seen those cards and that cannot be taken back"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R312",
+          "quote": "reads: *\"you've seen those cards — that can't be taken back\"*."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "374-undo-locks-on-reveal.test.ts",
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R312": "78850afa07bfa40503b80c01ac6420a57ab56c5489b7939683d9e7efa711d6fb"
+    }
+  },
+  {
+    "key": "annexd.undo.seen-cards.only-seer",
+    "parent": "annexd.undo.seen-cards",
+    "order": 3,
+    "text": "Only the player who saw the cards is locked. The opponent looking at a shared deck does not lock a player's undo, since inside a hidden step it shows that player nothing.",
+    "examples": [
+      {
+        "text": "The opponent's glimpse of the shared deck leaves my undo free.",
+        "test": "374-undo-locks-on-reveal.test.ts::R312 §5: the opponent's glimpse of the SHARED deck does not lock your undo"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R312",
+          "quote": "**Who it locks: only the seat that saw.** The deck may be shared, and your"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "374-undo-locks-on-reveal.test.ts",
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R312": "78850afa07bfa40503b80c01ac6420a57ab56c5489b7939683d9e7efa711d6fb"
+    }
+  },
+  {
+    "key": "annexd.undo.seen-cards.opponent-shown",
+    "parent": "annexd.undo.seen-cards",
+    "order": 4,
+    "text": "An undo is refused if it would change cards the opponent has already been shown.",
+    "examples": [
+      {
+        "text": "Taking back a shuffle after the opponent glimpsed the deck it shuffled is refused (illustrative).",
+        "test": null
+      },
+      {
+        "text": "My undo is refused when it would change the cards the opponent has since been shown.",
+        "test": "434-cr-digital-1.test.ts::cr:annexd.undo.seen-cards.opponent-shown — my undo is refused when it would change the cards the opponent has since been shown"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R312",
+          "quote": "undo may not change the cards your opponent has already been shown. If"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R312": "78850afa07bfa40503b80c01ac6420a57ab56c5489b7939683d9e7efa711d6fb"
+    }
+  },
+  {
+    "key": "annexd.undo.seen-cards.measured",
+    "parent": "annexd.undo.seen-cards",
+    "order": 5,
+    "text": "Whether an action showed a player hidden cards is measured, not listed: an action counts if what it shows the player depends on the order of hidden cards. A glimpse, a draw, a reveal or a look at a hand counts. Playing a card from hand, recycling, or putting a card on the bottom of a deck does not. In a Single Card Duel nothing locks, since every card in the deck is the same.",
+    "examples": [
+      {
+        "text": "A spawn trigger's Glimpse 1 in the haste step locks too.",
+        "test": "374-undo-locks-on-reveal.test.ts::R312 §6: measured, not listed"
+      }
+    ],
+    "see": [
+      "D8"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R312",
+          "quote": "events or cards. A glimpse, a draw, Tides of the Cosmos's reveal, Bripp's"
+        },
+        {
+          "ref": "R312",
+          "quote": "spawn from hand, a recycle or a card put on the bottom of a deck shows the"
+        },
+        {
+          "ref": "R312",
+          "quote": "never locks, because reordering 30 copies of one card changes nothing."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "374-undo-locks-on-reveal.test.ts",
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R312": "78850afa07bfa40503b80c01ac6420a57ab56c5489b7939683d9e7efa711d6fb"
+    }
+  },
+  {
+    "key": "annexd.undo.seen-cards.restart",
+    "parent": "annexd.undo.seen-cards",
+    "order": 6,
+    "text": "The lock survives a server restart and an undo.",
+    "examples": [
+      {
+        "text": "A restored room measures the lock again.",
+        "test": "374-undo-locks-on-reveal.test.ts::R312 §4: the lock survives a restart"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R312",
+          "quote": "again after a restart or an undo, so the floor survives both."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "374-undo-locks-on-reveal.test.ts",
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R312": "78850afa07bfa40503b80c01ac6420a57ab56c5489b7939683d9e7efa711d6fb"
+    }
+  },
+  {
+    "key": "annexd.undo.learn-to-play",
+    "parent": "D4",
+    "order": 4,
+    "text": "In Learn to Play, undo works in every phase, under the same lock: a turn's draw, a glimpse or a look at the Bot's hand ends the undo of whatever came before it. Starting a turn again after a loss is a fresh attempt, not an undo.",
+    "examples": [
+      {
+        "text": "A turn's draw ends the undo of the turn before.",
+        "test": "374-undo-locks-on-reveal.test.ts::R312 §7: Learn to Play applies the same floor"
+      }
+    ],
+    "see": [
+      "D8"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R312",
+          "quote": "Learn to Play's undo follows the same rule in every phase, because it has no"
+        },
+        {
+          "ref": "R312",
+          "quote": "phase gate. A turn's draw, a glimpse or a look at the Bot's hand ends the"
+        },
+        {
+          "ref": "R312",
+          "quote": "is a fresh attempt, not an undo, and this rule does not cover it."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "374-undo-locks-on-reveal.test.ts",
+        "306-solo-backend.test.ts",
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R312": "78850afa07bfa40503b80c01ac6420a57ab56c5489b7939683d9e7efa711d6fb"
+    }
+  },
+  {
+    "key": "annexd.recap.what",
+    "parent": "D5",
+    "order": 1,
+    "text": "When the haste step or deployment ends, each player is shown what the other did there as a playback (the recap): one frame per move, in the order the moves were made.",
+    "examples": [
+      {
+        "text": "A haste step closes into frames the same way as deployment.",
+        "test": "360-playback-frames.test.ts::§7 a haste step closes into frames the same way"
+      }
+    ],
+    "see": [
+      "annexd.general.hidden-segment.barrier"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R310",
+          "quote": "(playback), at the moment it happened, with its card popup. The glimpser still"
+        },
+        {
+          "ref": "R310",
+          "quote": "haste or deployment close plays that frame, and the client's playback branch"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "360-playback-frames.test.ts",
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "No ruling defines the recap as such; R310 describes it in passing. The frame rules below are engine-only. D-U23-8.",
+    "sourceHashes": {
+      "R310": "b026f1a777d5fb5d118b9486d9ac26b12a425835f8105f7f3be2090fdaeea801"
+    }
+  },
+  {
+    "key": "annexd.recap.what.no-effect",
+    "parent": "annexd.recap.what",
+    "order": 1,
+    "text": "The recap changes nothing in the game. A game played with recap frames is the same game, action for action, as one without them.",
+    "examples": [
+      {
+        "text": "Frames do not alter the action log.",
+        "test": "360-playback-frames.test.ts::§1 a game with frames is the same game without them"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "360-playback-frames.test.ts",
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "high",
+    "notes": "ENGINE-ONLY.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.recap.what.opponent-frame",
+    "parent": "annexd.recap.what",
+    "order": 2,
+    "text": "A frame of the opponent's move shows that move on their side, their hand still face down, and the player's own side as the player left it.",
+    "examples": [
+      {
+        "text": "Their move on their half, their hand face down, your half as you left it.",
+        "test": "360-playback-frames.test.ts::§3 an opponent frame"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "360-playback-frames.test.ts",
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "high",
+    "notes": "ENGINE-ONLY.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.recap.what.nothing-to-show",
+    "parent": "annexd.recap.what",
+    "order": 3,
+    "text": "A move with nothing to show is not given a frame, but its log line is kept.",
+    "examples": [
+      {
+        "text": "An empty move is not a step, and its line is not lost.",
+        "test": "360-playback-frames.test.ts::§4 a move with nothing to show is not a step"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "360-playback-frames.test.ts",
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "high",
+    "notes": "ENGINE-ONLY.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.recap.what.end-of-turn",
+    "parent": "annexd.recap.what",
+    "order": 4,
+    "text": "The end of turn is played as one frame per trigger, in order.",
+    "examples": [
+      {
+        "text": "Each end-of-turn trigger gets its own frame.",
+        "test": "360-playback-frames.test.ts::§2 the end of turn is a frame per trigger"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "360-playback-frames.test.ts",
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "high",
+    "notes": "ENGINE-ONLY.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.recap.what.resource-step",
+    "parent": "annexd.recap.what",
+    "order": 5,
+    "text": "The resource step is not played back: its close arrives whole, in one update.",
+    "examples": [
+      {
+        "text": "The resource step close is sent whole in one update, with no playback.",
+        "test": "434-cr-digital-1.test.ts::cr:annexd.recap.what.resource-step — the resource step close is sent whole in one update, with no playback"
+      }
+    ],
+    "see": [
+      "502"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R310",
+          "quote": "pops the notice again. A resource-step close still arrives whole, without a"
+        },
+        {
+          "ref": "R310",
+          "quote": "playback, and its glimpse pops from that update's events as before."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R310": "b026f1a777d5fb5d118b9486d9ac26b12a425835f8105f7f3be2090fdaeea801"
+    }
+  },
+  {
+    "key": "annexd.recap.what.undo",
+    "parent": "annexd.recap.what",
+    "order": 6,
+    "text": "Undoing a move inside the step removes that move's frame and keeps the others.",
+    "examples": [
+      {
+        "text": "An undone move leaves no frame behind.",
+        "test": "360-playback-frames.test.ts::§6 undoing a move inside the step takes its frame with it"
+      }
+    ],
+    "see": [
+      "D4"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "360-playback-frames.test.ts",
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "high",
+    "notes": "ENGINE-ONLY.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.recap.glimpse",
+    "parent": "D5",
+    "order": 2,
+    "text": "A Glimpse made in a hidden step is shown to the opponent in the recap, exactly once, in the frame of the action that made it, with its card notice. The player who glimpsed sees their own reveal at once. A Glimpse in battle reaches the opponent at once.",
+    "examples": [
+      {
+        "text": "The opponent's glimpse notice pops when its recap frame plays, not before.",
+        "test": "371-glimpse-in-the-recap.test.ts::R310 §1: the opponent's glimpse notice pops when its recap frame plays, not before"
+      },
+      {
+        "text": "The reveal plays in the frame of the Oracle play and nowhere else.",
+        "test": "203-reveal-waits-for-the-barrier.test.ts::R310 §3: the reveal plays in the recap"
+      }
+    ],
+    "see": [
+      "D6",
+      "801"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R310",
+          "quote": "- **Barrier and recap.** The glimpse is flushed exactly once, inside the"
+        },
+        {
+          "ref": "R310",
+          "quote": "sees their own reveal live, because it is their own action."
+        },
+        {
+          "ref": "R310",
+          "quote": "- **Battle.** Nothing is held in battle, so a battle glimpse (Premonition,"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R235",
+          "relation": "reversed by R310: a reveal in a hidden step was public immediately"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "371-glimpse-in-the-recap.test.ts",
+        "203-reveal-waits-for-the-barrier.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "The reveal-timing rule as such is D6 (U24). Stated here from the recap's side only.",
+    "sourceHashes": {
+      "R310": "b026f1a777d5fb5d118b9486d9ac26b12a425835f8105f7f3be2090fdaeea801"
+    }
+  },
+  {
+    "key": "annexd.recap.stops",
+    "parent": "D5",
+    "order": 3,
+    "text": "The deployment recap pauses after the opponent's moves and again after the end of turn; the haste step's recap pauses the same way. Skip jumps to the next pause, never past it. A quiet end of turn does not pause twice.",
+    "examples": [
+      {
+        "text": "The deployment recap stops after their moves and after the end of turn.",
+        "test": "383-recap-stops.test.ts::report #198: the deployment recap stops after their moves"
+      },
+      {
+        "text": "Skip jumps to the next stop, never past it.",
+        "test": "383-recap-stops.test.ts::report #198: Skip jumps to the next stop, never past it"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "383-recap-stops.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "high",
+    "notes": "ENGINE-ONLY (owner report #198). D-U23-8.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.recap.stops.watch-again",
+    "parent": "annexd.recap.stops",
+    "order": 1,
+    "text": "A recap can be watched again. Watching again pauses at the same places, shows the glimpse notices again, and hands back the board.",
+    "examples": [
+      {
+        "text": "Watch again stops at the same places and hands back the board.",
+        "test": "383-recap-stops.test.ts::report #198: \"watch again\" stops at the same places"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R310",
+          "quote": "absorb. \"Watch again\" and Learn to Play use the same branch: watching again"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "383-recap-stops.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R310 supplies the watch-again glimpse notice; the stop placement is 383's.",
+    "sourceHashes": {
+      "R310": "b026f1a777d5fb5d118b9486d9ac26b12a425835f8105f7f3be2090fdaeea801"
+    }
+  },
+  {
+    "key": "annexd.recap.stops.end-pause",
+    "parent": "annexd.recap.stops",
+    "order": 2,
+    "text": "The hand-over to the next turn at the end of a recap pauses longer than a frame. Every recap, live, watched again or in Learn to Play, is paced by the same rule.",
+    "examples": [
+      {
+        "text": "The hand-over waits longer than a frame.",
+        "test": "372-recap-end-pause.test.ts::the hand-over to the next turn waits PLAYBACK_END_MS, longer than a frame"
+      },
+      {
+        "text": "Live, watch-again and Learn to Play use one gap rule.",
+        "test": "372-recap-end-pause.test.ts::every playback goes through the one gap rule"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "372-recap-end-pause.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "high",
+    "notes": "ENGINE-ONLY.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "annexd.recap.tempo",
+    "parent": "D5",
+    "order": 4,
+    "text": "The client shows play no faster than one step per second. This one tempo paces both the updates the client receives and the steps within a single update.",
+    "examples": [
+      {
+        "text": "The beat tempo is the client-wide ceiling.",
+        "test": "218-one-tempo.test.ts::§1a the beat tempo IS the client-wide ceiling"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R150 (its CT-28 pacing half)",
+          "quote": "- `PACE_MS = 1000` is the single named interval; nothing else spells a number."
+        },
+        {
+          "ref": "R242",
+          "quote": "**There is one tempo, and it is `PACE_MS`.** `ui/pace.ts` already declared"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "218-one-tempo.test.ts",
+        "128-ui-pace.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R150": "23e8fffad20cb75af69c7f23f67ad8d165a5acae3dc689c06558b2649e85b069",
+      "R242": "d326979c6cb8b121e746b17b9bae0dbc4953691013f0f87f83f7f01e931f8d7b"
+    }
+  },
+  {
+    "key": "annexd.recap.tempo.cascade",
+    "parent": "annexd.recap.tempo",
+    "order": 1,
+    "text": "Items that happen at the same time under the rules arrive on screen together, then leave one at a time, in resolution order, one tempo step apart. The next group waits until this one has finished.",
+    "examples": [
+      {
+        "text": "A simultaneous batch shares one arrival.",
+        "test": "218-one-tempo.test.ts::§2a \"all at once\": a simultaneous batch shares ONE arrival"
+      },
+      {
+        "text": "They leave in resolution order.",
+        "test": "218-one-tempo.test.ts::§2c they leave in RESOLUTION order"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R242",
+          "quote": "> go onto the stack (in the right order, all at once) and then slowly resolve."
+        },
+        {
+          "ref": "R242",
+          "quote": "A group now has **one arrival and N departures**, one tempo-step apart, in"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "218-one-tempo.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R242 amends R189's shared departure.",
+    "sourceHashes": {
+      "R242": "d326979c6cb8b121e746b17b9bae0dbc4953691013f0f87f83f7f01e931f8d7b"
+    }
+  },
+  {
+    "key": "annexd.recap.tempo.held",
+    "parent": "annexd.recap.tempo",
+    "order": 2,
+    "text": "Only an update the player cannot act on is held back to keep the tempo. A decision for the player, the echo of the player's own action and the end of the game are never held, and an update with legal actions is never held unless auto-pass will answer it.",
+    "examples": [
+      {
+        "text": "A decision of mine is never held.",
+        "test": "128-ui-pace.test.ts::R150 #94: a decision of MINE is never held"
+      },
+      {
+        "text": "The game ending is never held.",
+        "test": "128-ui-pace.test.ts::R150 #94: the game ending is never held"
+      }
+    ],
+    "see": [
+      "annexd.auto-pass.preference"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R150 (its CT-28 pacing half)",
+          "quote": "narrow: an update is eligible **only** when it is not the echo of something"
+        },
+        {
+          "ref": "R150 (its CT-28 pacing half)",
+          "quote": "ending, and either offers **zero** legal actions or arrives with auto-pass"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "128-ui-pace.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R150": "23e8fffad20cb75af69c7f23f67ad8d165a5acae3dc689c06558b2649e85b069"
+    }
+  },
+  {
+    "key": "annexd.recap.tempo.flush",
+    "parent": "annexd.recap.tempo",
+    "order": 3,
+    "text": "When an update the player can act on arrives, everything held before it is released with it, in order, so the player is never asked a question over an old board.",
+    "examples": [
+      {
+        "text": "An urgent arrival flushes the backlog rather than jumping it.",
+        "test": "128-ui-pace.test.ts::R150 #94: an urgent arrival FLUSHES the backlog rather than jumping it"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R150 (its CT-28 pacing half)",
+          "quote": "- **An un-holdable update FLUSHES the backlog rather than jumping it.** This is"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "128-ui-pace.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R150": "23e8fffad20cb75af69c7f23f67ad8d165a5acae3dc689c06558b2649e85b069"
+    }
+  },
+  {
+    "key": "annexd.recap.tempo.input",
+    "parent": "annexd.recap.tempo",
+    "order": 4,
+    "text": "The player's own input is never delayed by the tempo.",
+    "examples": [
+      {
+        "text": "My own action's echo is never held.",
+        "test": "128-ui-pace.test.ts::R150 #94: my OWN action's echo is never held"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R150 (its CT-28 pacing half)",
+          "quote": "- Input is never delayed: `NetBackend.do()` sends immediately and marks the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "128-ui-pace.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R150": "23e8fffad20cb75af69c7f23f67ad8d165a5acae3dc689c06558b2649e85b069"
+    }
+  },
+  {
+    "key": "annexd.recap.tempo.lag-bound",
+    "parent": "annexd.recap.tempo",
+    "order": 5,
+    "text": "The screen never falls more than a fixed number of tempo steps behind the live game.",
+    "examples": [
+      {
+        "text": "The queue never falls further than its bound behind.",
+        "test": "128-ui-pace.test.ts::R150 #94: the queue never falls further than PACE_MAX_HELD intervals behind"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R242",
+          "quote": "**The lag bound is counted in beats, not milliseconds.** `MAX_LEAD_MS` becomes"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "128-ui-pace.test.ts",
+        "218-one-tempo.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "A recap playback is exempt from this clamp (361 §2: 'a long playback is not cut short by the lag clamp').",
+    "sourceHashes": {
+      "R242": "d326979c6cb8b121e746b17b9bae0dbc4953691013f0f87f83f7f01e931f8d7b"
+    }
+  },
+  {
+    "key": "annexd.recap.skip",
+    "parent": "D5",
+    "order": 5,
+    "text": "Outside a recap playback, while play is being held back, the S key jumps to the live state. Skipping drops pending animations but still delivers the held log lines. No skip control is drawn for this.",
+    "examples": [
+      {
+        "text": "Several held arrivals draw nothing on screen, and S releases them all.",
+        "test": "237-live-while-held.test.ts::R258 several held arrivals still draw nothing, and S releases them all"
+      },
+      {
+        "text": "Skipping releases the beats rather than dropping them.",
+        "test": "218-one-tempo.test.ts::§4b skipping RELEASES the beats rather than dropping them"
+      }
+    ],
+    "see": [
+      "annexd.recap.skip.in-playback",
+      "annexd.recap.stops"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R150 (its CT-28 pacing half)",
+          "quote": "the `S` key. `paceFlush` spends the whole queue in one step. Deliberately not"
+        },
+        {
+          "ref": "R242",
+          "quote": "- pending **flashes** are dropped outright; the board underneath is already the"
+        },
+        {
+          "ref": "R242",
+          "quote": "- pending **beats** are brought forward, not dropped: a beat is holding back"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "237-live-while-held.test.ts",
+        "218-one-tempo.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R150's 'catching up (n) — skip' chip was removed by the owner on 2026-09-28 (main.ts comment; test 237 asserts it absent: 'assert.equal(ui.has({ btn: 'paceskip' }), false, 'the owner cut the chip: no skip button');'). R150 and R242 still state the S key and the flush/beat behaviour. D-U23-18. Round 2: scoped to 'outside a recap playback'; in a playback Skip goes to the next stop and a button is drawn (annexd.recap.skip.in-playback, D-U23-22). The 128 example ('skip flushes the whole queue') was unbound: it tests paceFlush, while the live S path now calls paceToStop, equal only with no stop queued.",
+    "sourceHashes": {
+      "R150": "23e8fffad20cb75af69c7f23f67ad8d165a5acae3dc689c06558b2649e85b069",
+      "R242": "d326979c6cb8b121e746b17b9bae0dbc4953691013f0f87f83f7f01e931f8d7b"
+    }
+  },
+  {
+    "key": "annexd.recap.skip.live",
+    "parent": "annexd.recap.skip",
+    "order": 1,
+    "text": "While play is held, whether the opponent is connected, and the clocks, stay current; nothing else on the board changes until the held updates are released.",
+    "examples": [
+      {
+        "text": "A disconnect that arrives while play is held is on screen at once.",
+        "test": "237-live-while-held.test.ts::R258 a disconnect that arrives while the throttle is holding is on screen at once"
+      },
+      {
+        "text": "A plain held update moves nothing on screen.",
+        "test": "237-live-while-held.test.ts::R258 a held update moves the live slots and NOTHING else on the board"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R258",
+          "quote": "- **the opponent's presence.** A disconnect reaches the client as an ordinary"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "237-live-while-held.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R258's chip half is obsolete (owner removed the chip 2026-09-28; D-U23-18). That the clock is painted live is the verifier's measurement of main.ts paintLive, not a ruling. Engine location: client/ui/main.ts paintLive.",
+    "sourceHashes": {
+      "R258": "42c4c44a546f02e271f1a04ff83d69df04d7d969bc7496d498030fb9afa98db8"
+    }
+  },
+  {
+    "key": "annexd.recap.skip.disconnect",
+    "parent": "annexd.recap.skip",
+    "order": 2,
+    "text": "A disconnect is shown at once, not queued behind held updates, and showing it does not release them.",
+    "examples": [
+      {
+        "text": "A disconnect that arrives while the throttle is holding is on screen at once.",
+        "test": "237-live-while-held.test.ts::R258 a disconnect that arrives while the throttle is holding is on screen at once"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R258",
+          "quote": "**Presence is applied ahead of the hold gate**, beside `m.clock`, `m.names` and"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "237-live-while-held.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R258 rejected making a disconnect un-holdable because that would flush the backlog.",
+    "sourceHashes": {
+      "R258": "42c4c44a546f02e271f1a04ff83d69df04d7d969bc7496d498030fb9afa98db8"
+    }
+  },
+  {
+    "key": "annexd.recap.skip.in-playback",
+    "parent": "annexd.recap.skip",
+    "order": 3,
+    "text": "During a recap playback, skipping does not jump to the live state. Skip (the S key, Space, or the Skip button drawn on the play bar) jumps to the next stop, and on a stop it continues the playback.",
+    "examples": [
+      {
+        "text": "Skip jumps to the next stop, never past it.",
+        "test": "383-recap-stops.test.ts::report #198: Skip jumps to the next stop, never past it"
+      }
+    ],
+    "see": [
+      "annexd.recap.stops",
+      "annexd.recap.skip"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "383-recap-stops.test.ts",
+        "434-cr-digital-1.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "high",
+    "notes": "ENGINE-ONLY (owner report #198). D-U23-22. Measured by the round-2 verifier: main.ts skipPacing 'if (NET?.playbackStopped()) { NET.continuePlayback(); return; }' then NET.skipToStop(); the play bar draws '<button data-btn=\"playskip\" ...>Skip <span class=\"kh\">(space)</span></button>'. Player-facing line in client/ui/updates.ts: 'Skip jumps to the next stop.' Engine location (client/ui, outside engine/src): main.ts skipPacing, playbar.",
+    "sourceHashes": {}
+  }
+]

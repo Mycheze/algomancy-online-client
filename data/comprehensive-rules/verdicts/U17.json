@@ -1,0 +1,5916 @@
+[
+  {
+    "key": "effects.augment.by-effect",
+    "textHash": "a49feba86a60f996",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U17-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:augmentWraith",
+        "agrees": true,
+        "note": "attachMod(host, Wraith, …, 'augment', {token:true}) — created directly as a mod"
+      },
+      {
+        "loc": "client/engine/src/cards/registry.ts:Wraith death trigger",
+        "agrees": true,
+        "note": "calls g.augmentWraith(ally, …)"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-hybrids-ld-b.ts:Blight's End",
+        "agrees": true,
+        "note": "calls g.augmentWraith per target"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/37-attrs-wight.test.ts",
+        "pattern": "R71: \"augment a Wraith onto a unit\" makes the same token",
+        "passed": true,
+        "asserts_claim": "yes: kind mod, appliedAs augment, token true"
+      },
+      {
+        "file": "client/engine/test/37-attrs-wight.test.ts",
+        "pattern": "R71: an augmented Wraith donates BOTH",
+        "passed": true,
+        "asserts_claim": "yes: 4/4 host is 3/3 after the next deployment start"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Wraith",
+        "supports": "yes",
+        "note": "Prints 'Augment a Wraith onto an ally'."
+      },
+      {
+        "ref": "card: Blight's End",
+        "supports": "yes",
+        "note": "Prints 'Augment a Wight onto X target units' (Wight = Wraith)."
+      },
+      {
+        "ref": "card: Xzydris",
+        "supports": "yes",
+        "note": "Prints augmenting a Wraith onto a unit."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/37-attrs-wight.test.ts",
+        "text": "  assert.deepEqual(effStats(h, host), [3, 3], 'line 1 travelled: it shrank an ally');"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "    return this.attachMod(host, E.WRAITH, byPlayer, 'augment', undefined, { token: true });"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.augment.hosts",
+    "textHash": "9bf2c4e920cf29b3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doAugment",
+        "agrees": true,
+        "note": "deploy branch: host.region === homeRegion(seat); battle branch: battleAugmentAllowed (Virus or ModPermission)"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.32",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.32",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.15",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "augmenting is typically only possible to do with a player’s own"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "units - unless the mod being applied is a Virus (see page 34"
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "own units (unless the card is a virus, more on that later)."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.augment.hosts.spell",
+    "textHash": "771a0d52abbda5a7",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:stackAugmentAttrs/stackModAttrs",
+        "agrees": true,
+        "note": "read augmentAttrs only"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "78-round17-core.test.ts",
+        "pattern": "R89: a text-only augment on a token grants nothing, and says so",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "91-modular.test.ts",
+        "pattern": "R105: an [Augment]-TEXT mod is accepted and does nothing",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R79 (its stack-host half)",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R79 (its stack-host half)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> **A:** \"Yes. **This notably only works with attributes.**\" (Caleb 2025-04-06)"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "cannot gain static abilities like that, so the only useful thing you can do is"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.augment.hosts.spell-token",
+    "textHash": "acc13206dd838a58",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doAugment",
+        "agrees": true,
+        "note": "tokenHost: deploy phase, kind 'spellToken', controller === seat; any [Augment] card"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "78-round17-core.test.ts",
+        "pattern": "R89: a spell token is a legal augment host during deployment",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "78-round17-core.test.ts",
+        "pattern": "R89: only ATTRIBUTES transfer",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R89",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R89",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R89",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> deployment but currently that would only be possible with spell tokens. Also"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> you can only do this with attributes.**\" (calebgannon, rules-questions"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "That is the axis the restriction runs along: **{Virus} buys you the TIMING, not"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.augment.procedure",
+    "textHash": "16c6a2cb4375f6c4",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doAugment",
+        "agrees": true,
+        "note": "sourcePrice/modAffordable (affinity+mana) → zoneTake → payCard → targeted → attachMod"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "408-raq-new-threads.test.ts",
+        "pattern": "RAQ Mods are NOT Played: an augment from hand needs its affinity and pays its cost",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.32",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.32",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.32",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.32",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "To apply an augment, the player must first meet its affinity"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "requirement, followed by paying its mana cost and selecting"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "a target to apply the augment onto. Place the augment card"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "beneath the targeted card, with the textbox visible beneath it"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.augment.reconfigure",
+    "textHash": "025dd9a32b223c16",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "batch-hybrids-wm-a.ts:Reconfigure",
+        "agrees": true,
+        "note": "slotRestricts first target isAugment; moves unit and mods"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "29-hybrids-wm-a.test.ts",
+        "pattern": "Reconfigure: moves target augment unit AND its mods onto another target unit",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Reconfigure",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Reconfigure",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Augment target unit and all of its mods onto another target unit."
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "(The first target must have{/i} [Augment] {i}to be able to be augmented.)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.augment.reconfigure.copy",
+    "textHash": "35d4df304e5f099c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "batch-hybrids-wm-a.ts:Reconfigure",
+        "agrees": true,
+        "note": "isAugment(t.card) reads the printed card, not the face (R336)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Borrower of Forms: a Borrower that copied an [Augment] unit cannot be the first target of Reconfigure",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1372468222158180424#6",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R336",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Q: Can BoFy (which copied augmentable unit) be 1st target of Reconfigure? A: No. True BoFy doesn't have :augment: symbol on him"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Reconfigure's `[Augment]` check also stays printed, because the thread says \"True BoFy doesn't have :augment: symbol on him\"."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.augment.reconfigure.each-applied",
+    "textHash": "17dcd75a0cb5bf68",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "batch-hybrids-wm-a.ts:Reconfigure",
+        "agrees": true,
+        "note": "one modApplied per moved mod (R332)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Reconfigure onto Perpetual Construct",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353856176558706769#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R332",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "3 Triggers land on the stack: Create 1/1, Create 3/3, Create 4/4"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Reconfigure is the exception, because its printed text says the mods are augmented."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.augment.what",
+    "textHash": "41e6887fbb4326d8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:attachMod",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.32",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.32",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.15",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "The Augment mechanic allows players to take all of the text"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "in the paragraph following the augment symbol and add it"
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "Some cards have a little “+” symbol (1) at the beginning of a line in their text box (or"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.augment.what.box-only",
+    "textHash": "8c4619d53c892819",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "cards/dsl.ts:augmentBox",
+        "agrees": true,
+        "note": "only the [Augment] box radiates from a mod (R268)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "248-augment-box-scope.test.ts",
+        "pattern": "§3 GUARD: a card that prints both halves radiates its body clause from play, never from a mod",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "04-mods.test.ts",
+        "pattern": "virus augment during battle: on the stack, donated to an enemy, text-only transfer",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R268",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R268",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**The ruling.** When a card is applied as an augment, only the text printed"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "inside its `[Augment]` box is live. Its body text — statics, cost modifiers,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.augment.what.despawn",
+    "textHash": "12c94336704d5df1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:fireEvent",
+        "agrees": true,
+        "note": "despawned fired before the mod entities are deleted (R167)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "141-despawn-mods.test.ts",
+        "pattern": "R167 (i): a donated \"[Augment] When I despawn\" fires on a RECALL",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "141-despawn-mods.test.ts",
+        "pattern": "R167 (ii): a donated \"[Augment] When I despawn\" fires on a CACHE",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R167",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "## R167 — a printed \"when I despawn\" means it whichever way the unit leaves play"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.augment.what.kind-kept",
+    "textHash": "c8a7538f22e71727",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "cards/sets:Aetherflux Golem",
+        "agrees": true,
+        "note": "StaticMod in augmentBox, nothing on the stack"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "142-static-conformance.test.ts",
+        "pattern": "R168: Aetherflux Golem is a STATIC",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R168",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R168",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "It is a `StaticMod` on the anchor now, and the ruling is that the printed"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "sentence decides the mechanism — the same rule 88 already runs on. Three things"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.augment.what.played",
+    "textHash": "8b910424e8ff784d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:fireEvent",
+        "agrees": true,
+        "note": "a card's own [Augment] text is collected when it is played normally"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "248-augment-box-scope.test.ts",
+        "pattern": "§5 PIN: a card played normally still reads its own [Augment] box",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.43",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.35",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R268",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Cards with the augment and graft abilities still function as written, even"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**And it is NOT symmetric.** A card that is PLAYED reads its whole text box, its"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.augment.what.text-box",
+    "textHash": "7ecfddecdd0e743d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:fireEvent",
+        "agrees": true,
+        "note": "collects the mods' augmentText triggers on the host"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "23-wood-a.test.ts",
+        "pattern": "Growing Plague: draws on spawn; despawn (as augment) makes each other player draw two",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.32",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.32",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "in the paragraph following the augment symbol and add it"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "unit’s ability text box or before attributes in the type line."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.augment.what.type-line",
+    "textHash": "ecad20093d1cf6fa",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:ownAttrs",
+        "agrees": true,
+        "note": "augmentAttrs donated; stats untouched"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "16-earth-a.test.ts",
+        "pattern": "Bubb: 5/6 Unaware; type-line [Augment] donates Unaware (attrs only, no stats)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.32",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Chitin Shredder",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "unit’s ability text box or before attributes in the type line."
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Augment] {Powerful} Insect {Virus} Unit"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.augment.which-cards",
+    "textHash": "1cdbdd797ec4f694",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "cards/dsl.ts:isAugment",
+        "agrees": true,
+        "note": "augmentAttrs || augmentText || augmentable; R55 guard asserts every printed marker"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.32",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R55",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "onto other cards. The Augment symbol can appear either in a"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "If a card prints the `[Augment]` marker in its text box, it **can be applied as"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.graft.applying",
+    "textHash": "b252297a375db402",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doGraft",
+        "agrees": true,
+        "note": "hand/bin/cache source, deploy-only gate, sourcePrice + modAffordable"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 point 3",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.33",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.33",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.33",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1355115946032889914#2",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Applying a graft follows the same cost and timing"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "setup as augments (play from hand or bin during"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "deployment, pay the card’s cost and meet affinity"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "You still must pay the cost and meet Affinity threshold"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.graft.applying.deployment-only",
+    "textHash": "76755740210ec83e",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U17-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doGraft",
+        "agrees": true,
+        "note": "deploying(seat) || hasteModAllowed(…,'graft')"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:collectModular",
+        "agrees": true,
+        "note": "graft cards offered on Spellbind as it is played, battle included"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 point 1:",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "client/engine/test/40-light-c.test.ts",
+        "pattern": "a GRAFT lands during",
+        "passed": true,
+        "asserts_claim": "yes: graft lands in the haste step under Slurpr"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U17/u17-r2-probes.test.ts",
+        "title": "effects.mods.special-action.timing-icons: a {Battle} graft card is not applied as a mod in battle, but IS offered to a Spellbind ({Modular}) cast in battle",
+        "passed": true,
+        "demonstrates": "yes: a graft card offered to Spellbind in battle"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355115946032889914#0",
+        "supports": "yes",
+        "note": "_passer verbatim, both quotes."
+      },
+      {
+        "ref": "card: Slurpr",
+        "supports": "yes",
+        "note": "Printed haste-step exception."
+      },
+      {
+        "ref": "card: Spellbind",
+        "supports": "yes",
+        "note": "Printed Modular window."
+      },
+      {
+        "ref": "R105",
+        "supports": "yes",
+        "note": "Anything may be applied to a Modular card."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "text": "test('RAQ Graft 101 point 1: a graft is offered in deployment and never in the haste step or in battle, even for a Haste card', () => {"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "    'grafting is a deployment action');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.graft.applying.not-by-rook",
+    "textHash": "b86674a0f6cbd822",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doGraft",
+        "agrees": true,
+        "note": "no battle branch; only deploying(seat) || hasteModAllowed"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Rook",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R95 (its Rook-grant half)",
+        "supports": "partly",
+        "note": "an open question answered by recommendation ('the recommendation is no'); the printed word 'augment' carries it"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "You may augment cards from hand and bin during battle as if they were [Virus]."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "3. **Does it cover GRAFT?** Printed text says \"augment\", `doGraft` is deployment-only,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.graft.applying.position",
+    "textHash": "6ee24d44e80b34bb",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doGraft",
+        "agrees": true,
+        "note": "position 0..mods.length; no reorder action exists"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 point 10",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "04-mods.test.ts",
+        "pattern": "graft insert position: below the base, order controls resolution",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.33",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.33",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.43",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1355115946032889914#9",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "insert the new effect at any position within the graft"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "stack below the original card, but you may not re-order"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "You cannot change the order of the Grafts already applied, but new Grafts can be 'slided' between existing ones."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.graft.applying.targets",
+    "textHash": "dd23fbf17baf1418",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U17-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doGraft",
+        "agrees": true,
+        "note": "fires 'targeted' on the host before attachMod; Mohruung's trigger is queued (parts composed) before the graft attaches"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 point 5",
+        "passed": true,
+        "asserts_claim": "yes for 'targets' (Crystal made); does not assert ordering"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U17/u17-r2-probes.test.ts",
+        "title": "effects.graft.applying.targets: grafting onto Mohruung fires its targeted trigger BEFORE the graft attaches",
+        "passed": true,
+        "demonstrates": "yes: event order targeted < triggered < modApplied"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355115946032889914#4",
+        "supports": "yes",
+        "note": "_passer verbatim: grafting targets, Mohruung triggers first."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "text": "// 5. \"Applying Graft is 'targeting' effect, so if you try to Graft something"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "  e.fireEvent('targeted', ev);   // grafting is targeting (Graft 101 §5)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "'Triggers first' = the trigger fires before attachment; it still resolves after the graft is on (graft is a special action)."
+  },
+  {
+    "key": "effects.graft.bounded",
+    "textHash": "6b41263bee7cb39b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:composeParts",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "17-earth-b.test.ts",
+        "pattern": "Plodding Pebble: dealt damage → a +1/+1 counter, once per turn ([Switch1])",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.33",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.33",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.16",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "trigger once per turn."
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "called a limited graft, which means that ability only triggers once per turn."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.graft.bounded.bounded-cause",
+    "textHash": "0c7ba1884b645bbc",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:composeParts",
+        "agrees": true,
+        "note": "bounded cause returns null on second attempt"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 point 12: a bounded host triggers once per turn",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.33",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1355115946032889914#14",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "it can only trigger once per turn, meaning any Unbounded Graft … will only happen once."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.graft.bounded.new-object",
+    "textHash": "410fa5665dfede59",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:composeParts",
+        "agrees": true,
+        "note": "budgets live on the entity; a new entity starts clean"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 calebgannon",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355115946032889914#16",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "play engorged caudex, graft flame juggle onto the caudex, play a unit and trigger the caudex"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.graft.bounded.per-mod",
+    "textHash": "b9901725eb2cca43",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U17-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:composeParts",
+        "agrees": true,
+        "note": "bounded rider budget kept on the mod entity (mod.budgets['graft'])"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/94-bounded-uses.test.ts",
+        "pattern": "the bounded budget of a graft rider is per MOD",
+        "passed": true,
+        "asserts_claim": "yes: both copies compose the first time, neither the second"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R113",
+        "supports": "yes",
+        "note": "Per mod entity; two copies each get their own use."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "The budget is per *card* (R9), which for the rider means per **mod entity** — two copies of"
+      },
+      {
+        "file": "client/engine/test/94-bounded-uses.test.ts",
+        "text": "    'both copies compose the first time — each mod holds its own use');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.graft.bounded.unbounded-cause",
+    "textHash": "747954a3c4a464f3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:composeParts",
+        "agrees": true,
+        "note": "bounded riders skipped once mod.budgets['graft'] set"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 point 12: an unbounded host activated twice",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.33",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1355115946032889914#13",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Any Unbounded Grafts underneath will be included on every resolution, but Bounded Grafts underneath will be included only on 1st resolution."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.graft.composite",
+    "textHash": "ccdaef7921ca08e7",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:composeParts",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "04-mods.test.ts",
+        "pattern": "graft composition: composite fires as ONE stack item, top-to-bottom",
+        "passed": true,
+        "asserts_claim": "yes — the Manual's Oracle + Accelerated Germination example"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.33",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.33",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.16",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "“Cause — effect1 AND effect2 AND effect3... etc.”"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.graft.composite.fizzle",
+    "textHash": "4da9c74952b3bbdd",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:resolveItem",
+        "agrees": true,
+        "note": "untargeted parts do not vote; a targeted item with no live target fizzles whole (R86)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "78-round17-core.test.ts",
+        "pattern": "R86: a graft composite that loses its ONLY target fizzles whole",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "78-round17-core.test.ts",
+        "pattern": "R86: one surviving target carries the untargeted grafts through",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "78-round17-core.test.ts",
+        "pattern": "R86: an item that declares NO target anywhere never fizzles",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R86",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R86",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R86",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> **A:** \"**If effect loses ALL of its targets and wants to resolve.**\""
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> when resolving **(yielding no card draw from 2nd and 3rd graft)**."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "1 target must remain for whole effect to be carried out\"*, and *\"in order for"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Basis 'owner' understates: R86 is designer-backed (RAQ 'When does effect fizzles?')."
+  },
+  {
+    "key": "effects.graft.composite.no-target",
+    "textHash": "a9c6ac73274ea684",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U17-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:queueTrigger/R86 fizzle",
+        "agrees": false,
+        "note": "the composite IS pushed to the stack and then fizzles whole (R86); same observable outcome, wrong mechanism — the declared divergence is real"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "pattern": "a graft trigger with a required target and none available",
+        "passed": true,
+        "asserts_claim": "yes for 'no Poison 5'; does not assert the item never reached the stack"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U17/u17-r2-probes.test.ts",
+        "title": "effects.graft.composite.no-target: DIVERGENCE — the targetless composite IS pushed to the stack, then makes nothing",
+        "passed": true,
+        "demonstrates": "yes: 1 item pushed on attack, then no Poison"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "RAQ 1410252965276684418#2",
+        "supports": "yes",
+        "note": "_passer verbatim: can't be put on the stack unless such a unit is targeted."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "text": "  // the stack unless you target such unit in your bin.\""
+      },
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "text": "  assert.equal(poison.length, 0, 'no Poison 5 either: the whole graft effect goes, not just its targeted half');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Ruling sound; engineDiffers is real: the engine stacks the item and fizzles it (see bugs)."
+  },
+  {
+    "key": "effects.graft.composite.one-ability",
+    "textHash": "683eaaacea463fc5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:composeParts",
+        "agrees": true,
+        "note": "one item, one negate"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 point 8",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "04-mods.test.ts",
+        "pattern": "composite is ONE stack item in battle",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.33",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.33",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.16",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1355115946032889914#7",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "The resulting ability is treated as a single ability, so it"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "entire effect can be negated by a single spell. There"
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "to bottom, and the entire thing can be countered by a single spell."
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Triggered/Activated Graft is SINGLE effect on the stack"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.graft.composite.order",
+    "textHash": "b74c8f627bde1ae5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:composeParts",
+        "agrees": true,
+        "note": "base part first, then grafts in host.mods order"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 point 9",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.33",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.33",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1355115946032889914#8",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "will all resolve at once, from top to bottom, and the"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Grafted effects resolve as one ability from top to"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Graft Effect will be resolved from top to bottom."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.graft.composite.targets",
+    "textHash": "ee2403915cfc3491",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:collectTargets",
+        "agrees": true,
+        "note": "targets for every part declared on the way to the stack; required target must be taken"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 Plodding Pebble example",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355115946032889914#15",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1355115946032889914#15",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "player must at that time delcare targets for all things"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "If there wasn't Voltwrath Behemoth in the first place, player would still need to target something to be deleted"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.graft.composite.tax",
+    "textHash": "a49f5d7aba1d0bae",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:composeParts",
+        "agrees": true,
+        "note": "a graft composite is an ordinary triggered/activated item; CostMod tax gate applies"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ Crevice Lurker: a graft trigger is taxed like any other",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355103348378042515#1",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "this INCLUDES Graft triggers like for Bellowing Boulder"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.graft.composite.top-cause",
+    "textHash": "cf75c71b80c56987",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:composeParts",
+        "agrees": true,
+        "note": "grafts join only the host's graft cause"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "04-mods.test.ts",
+        "pattern": "graft composition: composite fires as ONE stack item, top-to-bottom",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355115946032889914#6",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Once Grafts are attached, the original 'top' units Graft Cause dictates when the whole effect is triggered/activated."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.graft.copies",
+    "textHash": "053726d93231a0de",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:composeParts",
+        "agrees": true,
+        "note": "copied grafts (CopyRef.mods) composed first, real grafts after (R336)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Borrower of Forms: a Borrower that copied a Bellowing Boulder",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Borrower of Forms: a graft added to a Borrower",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1372468222158180424#4",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1372468222158180424#5",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R336",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "it inherits all of the combined text"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Yes, BUT only 'underneath' original copied grafts."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **Copied grafts run.** \"It inherits all of the combined text\": a copy of a grafted unit runs its graft cause with the copied grafts."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.graft.costs",
+    "textHash": "4a3bd6af57a3d96d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:collectCastCosts",
+        "agrees": true,
+        "note": "no \"Don't pay\" option (R334)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 point 11: a payable [cost] graft must be paid",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "32-cast-costs.test.ts",
+        "pattern": "grafted Immolate: the carrier must pay the cost at composite cast time",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355115946032889914#11",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R334",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "non-optional (you MUST pay it, you can't opt out)"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- A grafted `[cost]` cannot be declined."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.graft.costs.instant",
+    "textHash": "67d1afb0742ddd17",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:collectCastCosts",
+        "agrees": true,
+        "note": "costs collected before the item is pushed"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "17-earth-b.test.ts",
+        "pattern": "graft under Lost Guardian pays its cost TWICE and resolves twice",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355115946032889914#12",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "This Additional cost must be paid instantly in order for Effect to go on stack"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.graft.costs.unpayable",
+    "textHash": "f1e74a7f2507d4d9",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:gateGraftCosts",
+        "agrees": true,
+        "note": "withholdComposite marks every part spent before any target is asked"
+      },
+      {
+        "loc": "apply.ts:doActivateAbility",
+        "agrees": true,
+        "note": "graftCostUnpayable refuses an activated cause"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 point 11: an unpayable [cost] graft keeps the whole composite off the stack",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "403-raq-fix-mods.test.ts",
+        "pattern": "R334: an activated graft cause whose grafted [cost] cannot be paid is not offered at all",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355115946032889914#10",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R334",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "if you can't pay it (no units to sacrifice) then the whole Graft Effect won't go on the stack."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- If it cannot be paid, the **whole composite** stays off the stack: the graft cause's own effect and every other graft with it."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.graft.multiplier",
+    "textHash": "0f7c78a1de6188f9",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:composeParts",
+        "agrees": true,
+        "note": "graftCopies 2 (Lost Guardian) / 3 (Amphivore, Witness) materialized in ONE item"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "14-water-a.test.ts",
+        "pattern": "Amphivore: combat damage to an opponent triggers grafts thrice (one trigger)",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "17-earth-b.test.ts",
+        "pattern": "Lost Guardian: after combat, each attached graft triggers twice as one trigger",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "40-light-c.test.ts",
+        "pattern": "Witness of the Crossing: life becoming 13 in battle triggers three copies of each graft",
+        "passed": true,
+        "asserts_claim": "yes — three copies for Witness"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Lost Guardian",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Amphivore",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Witness of the Crossing",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1353859961855148103#0",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "(Trigger two copies of this graft ability as one single trigger.)"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "(Trigger three copies of this graft ability as one single trigger)"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "When your life total becomes 1 or 13 during battle, [Switch1][Switch1][Switch1]"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "It creates single effect on the stack with doubled/tripled Grafts Effect."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.graft.multiplier.as-far-as-possible",
+    "textHash": "e529a07e018c72c9",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:composeParts",
+        "agrees": true,
+        "note": "graftCopies repeats parts; Ralph's later copies find the host no longer yours"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Amphivore with Ralph grafted",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353859961855148103#3",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "You just can't give Ralph, but that's okay - rest of graft still happens."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.graft.multiplier.bounded",
+    "textHash": "18ac1c5bd44f1ccc",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:composeParts",
+        "agrees": true,
+        "note": "bounded graft budget spent once, part repeated N times"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "14-water-a.test.ts",
+        "pattern": "R110: Amphivore triples a BOUNDED [Switch1] graft",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "17-earth-b.test.ts",
+        "pattern": "R110: Lost Guardian repeats a BOUNDED [Switch1] graft too",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353859961855148103#2",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Any Bounded Grafts will be repeated."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.graft.multiplier.costs",
+    "textHash": "c2a16bd2420e345c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:gateGraftCosts",
+        "agrees": true,
+        "note": "N-fold cost checked once; unpayable withholds the composite"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "17-earth-b.test.ts",
+        "pattern": "R110: all or nothing — one card in hand cannot pay a doubled [Discard a card]",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353859961855148103#4",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1353859961855148103#5",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R334",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Cost must be paid twice (Lost Guardian) or trice (Amphivore)."
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "No Sacrifice at all and you don't get the effect."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "That covers paying it N times (R110's multiplied grafts) as well."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.graft.multiplier.order",
+    "textHash": "844f8a35a0d0b8bf",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:composeParts",
+        "agrees": true,
+        "note": "rounds push every graft again in order"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Amphivore: a tripled composite runs its grafts top to bottom",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353859961855148103#1",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Order of Effects is 'top to bottom' and then 'top to bottom' again (Graft 1 -> Graft 2 -> Graft 3 -> Graft 1 …)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.graft.multiplier.targets",
+    "textHash": "ce444724ef379364",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:composeParts",
+        "agrees": true,
+        "note": "each copy a separate part with its own targets"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "14-water-a.test.ts",
+        "pattern": "R110: a TARGETED graft under Amphivore aims each of its three copies separately",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R110 (its copy-targeting half)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- A targeted graft aims each copy separately (each part collects its own"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.graft.requirements",
+    "textHash": "dff1266260244022",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doGraft",
+        "agrees": true,
+        "note": "isGraftable(name), host.kind === 'unit', graftCauseIndex(faceName(host)) >= 0"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "04-mods.test.ts",
+        "pattern": "grafting requires the graft symbol on both cards and a cause on the host",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 point 2",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.33",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.16",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1355115946032889914#1",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "graft card, because there is no cause to trigger that effect. Grafts can only go"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "You need unit in play which will be target of the Grafts. That unit must have it's own Graft Cause"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.graft.what",
+    "textHash": "378fdc20b20ebf13",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "cards/dsl.ts:isGraftable",
+        "agrees": true,
+        "note": "[Switch]/[Switch1] marker"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.33",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.33",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Oracle of the Flame",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "symbol on a card, is a modification that allows for"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "the combination of multiple effects into a single cause,"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Sacrifice me: [Switch] Create a Fireball 1."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.graft.what.after-symbol",
+    "textHash": "bad2e489f97833e6",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "cards/dsl.ts:graftEffect",
+        "agrees": true,
+        "note": "only the post-symbol effect joins; the cause and its cost are not"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 point 6",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355115946032889914#5",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "When attaching Grafts, you ignore everything that is written before the Graft symbol"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.graft.what.cause-effect",
+    "textHash": "64d622eca152a990",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "cards/dsl.ts",
+        "agrees": true,
+        "note": "graftCause / graftEffect split"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.33",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.33",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.16",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "All graft cards follow the template of cause and effect,"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Flame, the cause is “Sacrifice me” and the effect is"
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "All graft cards follow the template of “Cause ->(Graft) Effect”."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.graft.what.played",
+    "textHash": "c85b59de47ec994e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doGraft",
+        "agrees": true,
+        "note": "bin is a graft source"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 point 4",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.35",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1355115946032889914#3",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Cards with the augment and graft abilities still function as written, even"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Spells or Spell-Units with Graft icon … later can be used as Graft from Bin"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.mods.applied-triggers",
+    "textHash": "a43afca2e7c8a8f5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:attachMod",
+        "agrees": true,
+        "note": "one modApplied per mod"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "17-earth-b.test.ts",
+        "pattern": "Perpetual Construct: an applied mod creates an X/X, X = the mod's cost",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Reconfigure onto Perpetual Construct",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Perpetual Construct",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1353856176558706769#0",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Whenever a mod is applied to me, create"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Perpetual Construct will trigger separetly for each of the Mods"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.mods.cost",
+    "textHash": "452fc715aaaf004f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:modAffordable",
+        "agrees": true,
+        "note": "affinity + mana at purpose mod, every zone"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "408-raq-new-threads.test.ts",
+        "pattern": "RAQ Mods are NOT Played: an augment from hand needs its affinity and pays its cost",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "408-raq-new-threads.test.ts",
+        "pattern": "RAQ Mods are NOT Played: a Virus in battle needs its affinity and pays its cost",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.32",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.32",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1537748882501668934#1",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "To apply an augment, the player must first meet its affinity"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "requirement, followed by paying its mana cost and selecting"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "When you use them you still need to pay the cost & meet affinity requirements."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.mods.cost.cache",
+    "textHash": "256b015642a8e6cd",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:sourcePrice",
+        "agrees": true,
+        "note": "prophecy → free; glimpse → mana, ignoreAffinity; else null"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "315-cache-mod-permission.test.ts",
+        "pattern": "R303: a LIVE glimpse grafts for the card's mana, ignoring affinity",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "315-cache-mod-permission.test.ts",
+        "pattern": "R303: a FULFILLED prophecy still grafts for free, affinity and all",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "315-cache-mod-permission.test.ts",
+        "pattern": "R303: the glimpse waives the pips, NOT the mana",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R303",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R303",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R303",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "| prophecy fulfilled (R42) | free, ignoring affinity | free, ignoring affinity |"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "| glimpse, this turn only (R45) | the card's mana, ignoring affinity | the card's mana, ignoring affinity |"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "yes you can graft or augment for free if the prophecy is completed"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.mods.cost.not-taxed",
+    "textHash": "dadf2fbad344b804",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U17-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:manaToPlay",
+        "agrees": true,
+        "note": "play CostMods apply only at purpose 'play'; mod payments pass purpose 'mod'"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:doAugment/doGraft",
+        "agrees": true,
+        "note": "payCard(..., {purpose:'mod'})"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/16-earth-a.test.ts",
+        "pattern": "applying an augment during battle is NOT taxed",
+        "passed": true,
+        "asserts_claim": "yes: Lurker's ability tax does not reach a Virus application"
+      },
+      {
+        "file": "client/engine/test/49-playtest-round6.test.ts",
+        "pattern": "R59: applying a mod is not playing",
+        "passed": true,
+        "asserts_claim": "yes: Tranquility's spell-play tax does not reach a mod"
+      },
+      {
+        "file": "client/engine/test/40-light-c.test.ts",
+        "pattern": "Slurpr: R37",
+        "passed": true,
+        "asserts_claim": "yes: mod billed at printed cost under Tranquility"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R303",
+        "supports": "yes",
+        "note": "States the play-modifier exemption."
+      },
+      {
+        "ref": "R121 (its mod-not-taxed half)",
+        "supports": "yes",
+        "note": "States applying a mod is not taxed by the ability tax."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "(R37/R59 — applying a mod is not playing, so a \"spells cost more to play\" modifier must"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "activated abilities — applying a mod is not taxed (`purpose: 'mod'`)."
+      },
+      {
+        "file": "client/engine/test/16-earth-a.test.ts",
+        "text": "  assert.equal(openMana(h, D), 0, 'exactly the printed [3] — the tax does not touch a mod application');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.mods.erase-off-host",
+    "textHash": "b35081d0ad5aea88",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U17-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:eraseMod",
+        "agrees": true,
+        "note": "unlinks, deletes, files 'erased' under mod.controller (R262); caller owns checkDeaths"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:payCastCost (eraseMod branch)",
+        "agrees": true,
+        "note": "Slag Spewer's cost erase goes through eraseMod"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-earth-b.ts:Return to Nature",
+        "agrees": false,
+        "note": "groups by m.owner, not m.controller — the declared divergence is real"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/17-earth-b.test.ts",
+        "pattern": "Return to Nature: negates everything",
+        "passed": true,
+        "asserts_claim": "yes: mods erased, not binned"
+      },
+      {
+        "file": "client/engine/test/246-zones-follow-control.test.ts",
+        "pattern": "erased pile files a stolen mod",
+        "passed": true,
+        "asserts_claim": "yes: eraseMod files under the thief"
+      },
+      {
+        "file": "client/engine/test/178-played-item-and-erased-mods.test.ts",
+        "pattern": "R208",
+        "passed": true,
+        "asserts_claim": "yes: cost-erase and Suppression Field file the erased pile with the host surviving (test title still says 'Q3 is OPEN', stale)"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U17/u17-r2-probes.test.ts",
+        "title": "effects.mods.erase-off-host: a host kept alive only by a +2/+2 mod dies when Return to Nature erases the mod",
+        "passed": true,
+        "demonstrates": "yes: host with -2 counters and Aetherflux Golem dies once the mod is erased"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U17/u17-r2-probes.test.ts",
+        "title": "effects.mods.erase-off-host: DIVERGENCE — Return to Nature files a mod on a stolen host under its OWNER, not its controller",
+        "passed": true,
+        "demonstrates": "yes: the erased event names the owner seat"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R219",
+        "supports": "yes",
+        "note": "Owner: an erased card ends up in the erased zone."
+      },
+      {
+        "ref": "R208 (its primitive half)",
+        "supports": "yes",
+        "note": "Caller owns checkDeaths; a host losing a +X/+X mod can die."
+      },
+      {
+        "ref": "R262",
+        "supports": "yes",
+        "note": "eraseMod's erased pile follows control."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> **\"Obviously the card says where it should end up. It's erased… It should just"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "| `eraseMod` → **R65 erased pile** | `{ seat: mod.owner }` | `{ seat: mod.controller }` |"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "afterwards, exactly as `moveMod` leaves it, because a host that loses a +X/+X"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-earth-b.ts",
+        "text": "          const list = byOwner.get(m.owner) ?? [];"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Ruling sound; engineDiffers is real: Return to Nature files by mod owner, contrary to R262 (see bugs)."
+  },
+  {
+    "key": "effects.mods.erase-off-host.token",
+    "textHash": "92203bb428542494",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U17-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:eraseMod",
+        "agrees": true,
+        "note": "`!mod.token` guard: a token mod emits no 'erased' event"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-earth-b.ts:Return to Nature",
+        "agrees": false,
+        "note": "files every mod, token mods included, in its own grouped 'erased' line before calling eraseMod(alreadyFiled) — the declared divergence is real"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U17/u17-r2-probes.test.ts",
+        "title": "effects.mods.erase-off-host.token: eraseMod files no token mod; DIVERGENCE — Return to Nature does file it",
+        "passed": true,
+        "demonstrates": "yes: eraseMod files nothing for a Wraith mod; Return to Nature emits an erased event naming Wraith"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R219",
+        "supports": "yes",
+        "note": "States verbatim that a token mod is not filed (R133: a token is not a card)."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **A token mod is not filed.** R133: a token is not a card, and R65's pile is a"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "    if (opts.leavesGame !== false && !opts.alreadyFiled && !mod.token) {"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-earth-b.ts",
+        "text": "        // this every card would be listed twice. This site also files TOKEN"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Ruling sound; engineDiffers is real: Return to Nature files token mods on the erased pile (see bugs)."
+  },
+  {
+    "key": "effects.mods.moving",
+    "textHash": "12bf2dc3392f0db2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:moveMod",
+        "agrees": true,
+        "note": "re-points modOf; no despawn, no zone change"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Reconfigure vs Despawn",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353847640214999170#0",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Does Reconfigure causes units Despawn effect to trigger? No. The Unit never switch zones"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.mods.moving.control",
+    "textHash": "1ecfabc1616cc31b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:moveMod",
+        "agrees": true,
+        "note": "controller follows the new host"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "151-copy-and-moved-mods.test.ts",
+        "pattern": "R178 Rotbeast: a moved augment takes {Unstable} and its static with it",
+        "passed": true,
+        "asserts_claim": "yes — asserts modsOn(enemy)[0].controller === D"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R178 (its §4 controller half)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **Controller** follows the new host, exactly as `attachMod` sets it. That is"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.mods.moving.not-applying",
+    "textHash": "305f4cba1bc34214",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:moveMod",
+        "agrees": true,
+        "note": "fires no modApplied"
+      },
+      {
+        "loc": "batch-hybrids-wm-a.ts:Reconfigure",
+        "agrees": true,
+        "note": "fires modApplied per moved mod (R332)"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R178 (its §4 no-event half)",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R332",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **No `modApplied` event.** Moving is not applying (R37's spirit), so nothing"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "R178 says moving is not applying, and that holds in general."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.mods.moving.once",
+    "textHash": "11faf325aa64b3ca",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:moveMod",
+        "agrees": true,
+        "note": "copies spent augment:<card># marks to the new host (R331)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Reconfigure vs Once per Turn",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "403-raq-fix-mods.test.ts",
+        "pattern": "R331: a moved mod carries its spent augment budget",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353848722974445658#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R331",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Since Graxxlid was already Activated this turn, you CANNOT use his Ability again."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Reconfigure moves a mod. It does not refresh it."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.mods.not-played",
+    "textHash": "f225c5aa8f2dfc37",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doAugment/doGraft",
+        "agrees": true,
+        "note": "no spellPlayed/cardPlayed event for a mod"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "105-semantics-playwatch.test.ts",
+        "pattern": "Stalwart Sentinel: R96/R123",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "105-semantics-playwatch.test.ts",
+        "pattern": "Origon: a virus applied during battle is not a spell",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1537748882501668934#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R37",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "elsewhere). Applying a modification — attaching a Virus, graft, or augment,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.mods.one-card",
+    "textHash": "773d0b5f55a05edb",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:attachMod",
+        "agrees": true,
+        "note": "mod becomes an entity on host.mods; donated text read from the host"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.32",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.15",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R244 (its part-of-the-unit half)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "When a card is augmented, it is treated as if it were a single"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> \"When a mod goes onto a unit, it becomes PART of that unit. Here, it says"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.mods.one-card.control",
+    "textHash": "ea8d40a022b0c5d1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:attachMod",
+        "agrees": true,
+        "note": "mod.controller = host.controller"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "23-wood-a.test.ts",
+        "pattern": "Corrupting Blight: defects after combat when played normally; steals the host as a Virus",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.34",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.34",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.15",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R244 (its trasher half)",
+        "supports": "partly",
+        "note": "on who trashes a mod; only on-topic for control"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "When a card is augmented onto an opposing unit, they"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "will control the augment and its new ability."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**1. Where a mod IS trashed, the HOST'S CONTROLLER trashes it.** Not the mod's"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.mods.one-card.control-change",
+    "textHash": "23fc0a35e570bc2c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:giveControl",
+        "agrees": true,
+        "note": "unit and its mods change controller"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "26-metal-a.test.ts",
+        "pattern": "Download steals a MODDED unit token",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R112",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R148",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "the unit, so yes, they go with them to the unit's new controller. That's the"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> \"a stolen unit's mods are part of the unit, so yes, they go with them to the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.mods.one-card.me",
+    "textHash": "be818eb047451f72",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:anchored",
+        "agrees": true,
+        "note": "mod text anchored on its host"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "40-light-c.test.ts",
+        "pattern": "Life Leech: donated as a Virus, \"I\" is the HOST",
+        "passed": true,
+        "asserts_claim": "yes — the host gets +3/+3 (applied in deployment, not as a battle Virus)"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R131",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "being worn as a mod, and \"my\" means the HOST — which is exactly why the trigger"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Minor: the example says Life Leech is 'applied as a Virus', but the bound test augments it in deployment; the claim tested ('I' = host) is the same."
+  },
+  {
+    "key": "effects.mods.one-card.no-limit",
+    "textHash": "be93d03d7af6e8c7",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doGraft",
+        "agrees": true,
+        "note": "position <= host.mods.length; no cap on mod count"
+      },
+      {
+        "loc": "apply.ts:doAugment",
+        "agrees": true,
+        "note": "no cap on mod count"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.32",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.33",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.15",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "restriction on the number of times a card can be augmented."
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "is no limit to how many effects can be grafted onto a"
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "There is no restriction on the number of times a card can be augmented, so go wild!"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.mods.one-card.other",
+    "textHash": "a378f522d85b75c2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:fireEvent",
+        "agrees": true,
+        "note": "selfModId excludes only that entity (R131)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "121-another-identity.test.ts",
+        "pattern": "R131 Rotbeast: a SECOND Rotbeast augment is \"another\"",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R131",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "So an \"other\"/\"another\" clause **never** filters by CARD NAME. Two copies of a"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.mods.one-card.you",
+    "textHash": "7f17b22a10583219",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:attachMod",
+        "agrees": true,
+        "note": "mod controller = host controller; donated text reads \"you\" as that seat"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "17-earth-b.test.ts",
+        "pattern": "Oorblak: as a Virus, \"me\" is the HOST",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R216",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R157 (its §6)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> **On text donated by a mod, \"you\" is the controller of the HOST, not the"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> *\"The unit's controller. But why would that be a problem for Doot? You virus"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.mods.special-action",
+    "textHash": "d0fa01b743d3ac87",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doAugment/doGraft",
+        "agrees": true,
+        "note": "'modding is a deployment action (or a battle Virus)'"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 point 1:",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.32",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.32",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1357483405276614856#1",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "together in certain ways. Modification is a special action that"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "players can perform during the deployment phase."
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "No because augment in general is a special action"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.mods.special-action.exceptions",
+    "textHash": "51965dcff3a72143",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:battleAugmentAllowed",
+        "agrees": true,
+        "note": "Virus from hand/cache, else ModPermission"
+      },
+      {
+        "loc": "apply.ts:hasteModAllowed",
+        "agrees": true,
+        "note": "Slurpr grant only"
+      },
+      {
+        "loc": "engine.ts:collectModular",
+        "agrees": true,
+        "note": "{Modular} cast window"
+      },
+      {
+        "loc": "cards/sets:modPermissions",
+        "agrees": true,
+        "note": "only Rook and Slurpr declare modPermissions in the pool"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "40-light-c.test.ts",
+        "pattern": "without a Slurpr the [Haste] refusal is unchanged",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Rook",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Slurpr",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.34",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R95 (its opt-in permission half)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "You may augment cards from hand and bin during battle as if they were [Virus]."
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "You can apply other mods during [Haste] as if it was deployment."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "So the seam is opt-in per card, never a general widening of the battle window."
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-light-c.ts",
+        "text": "    modPermissions: [{"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts",
+        "text": "    modPermissions: [{"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.mods.special-action.tides",
+    "textHash": "28bfa97c640c40ed",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "batch-water-a.ts:inlineModes/playInlineMode",
+        "agrees": true,
+        "note": "only a 'virus' mode is offered; no graft/augment"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "RAQ Tides 4:",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "404-raq-fix-tides.test.ts",
+        "pattern": "R337: a Virus card played by Tides as a Virus augments a unit and never enters play",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1396955380000755795#3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1357483405276614856#1",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1537748882501668934#2",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R337",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "You cannot use cards to apply Mods (other than Viruses). So no Grafting or non-virus augments."
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "No because augment in general is a special action"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "are not plays, and Tides cannot apply them (Caleb: \"augment in general is a"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.mods.special-action.timing-icons",
+    "textHash": "091a7306983b1098",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U17-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:battleAugmentAllowed",
+        "agrees": true,
+        "note": "battle augment only for c.virus from hand/cache, or via mayAugmentInBattle (Rook's opt-in grant)"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:doGraft",
+        "agrees": true,
+        "note": "graft requires deploying(seat) or hasteModAllowed (Slurpr); never battle"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:hasteModAllowed",
+        "agrees": true,
+        "note": "no base case: a {Haste} card gets no haste-step mod window without a grant"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:collectModular",
+        "agrees": true,
+        "note": "no phase gate: in battle Spellbind's menu is filtered only by canPayCard(purpose 'mod'), so {Battle} cards are offered"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/29-hybrids-wm-a.test.ts",
+        "pattern": "Rook: a NON-virus augment from HAND during battle",
+        "passed": true,
+        "asserts_claim": "yes: non-virus refused in battle without Rook, legal with it"
+      },
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 point 1:",
+        "passed": true,
+        "asserts_claim": "yes: Haste graft card not offered in haste step or battle"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U17/u17-r2-probes.test.ts",
+        "title": "effects.mods.special-action.timing-icons: a {Haste} non-virus augment card is not offered in the haste step (no Slurpr)",
+        "passed": true,
+        "demonstrates": "yes: Hooba-Lin ({Haste}) neither offered nor accepted as a mod in the haste step"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U17/u17-r2-probes.test.ts",
+        "title": "effects.mods.special-action.timing-icons: a {Battle} graft card is not applied as a mod in battle, but IS offered to a Spellbind ({Modular}) cast in battle",
+        "passed": true,
+        "demonstrates": "yes: Burning Vengeance ({Battle}) not offered as a mod in battle, but on Spellbind's {Modular} menu in battle"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.32",
+        "supports": "yes",
+        "note": "Literal: timing modifiers other than virus don't change modding; battle cards can't be mods during battle."
+      },
+      {
+        "ref": "card: Rook",
+        "supports": "yes",
+        "note": "Prints the as-if-Virus battle permission (from hand and bin)."
+      },
+      {
+        "ref": "card: Spellbind",
+        "supports": "yes",
+        "note": "Prints the as-it-is-played window; Spellbind is itself {Battle}, so the window opens in battle."
+      },
+      {
+        "ref": "R105",
+        "supports": "yes",
+        "note": "Anything payable may be applied to a Modular card."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Modification is independent of timing modifiers that aren’t virus, so battle cards"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "cannot be used as mods during battle, for example."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> \"I think it's legal to apply ANYTHING to a Modular card. But many cards wont"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "  if (c.virus && (from === 'hand' || from === 'cache')) return true;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.mods.timestamps",
+    "textHash": "a37ce1615ad892fd",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:strippersOf",
+        "agrees": true,
+        "note": "a stripper takes only what arrived before it (R328)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ timestamps: a virus applied AFTER Monke still gives its attribute",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1357965714807586897#0",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Since both Chitin Shredder and Graxxlid apply to the same layer as Monke, but were played after Monke, their bonuses aren't affected by it"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.mods.trash",
+    "textHash": "3fd3e5fcba53d201",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:disposeToBin",
+        "agrees": true,
+        "note": "left-behind nontoken mods trashed by host controller (R244)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "224-mod-trash.test.ts",
+        "pattern": "R244: a mod trashed on a recall is trashed by the host controller, not by its owner",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "224-mod-trash.test.ts",
+        "pattern": "R244: a cached host attributes its left-behind mods the same way a recalled one does",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R244 (its trasher half)",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R244 (its trasher half)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**1. Where a mod IS trashed, the HOST'S CONTROLLER trashes it.** Not the mod's"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "LEFT BEHIND in a bin, where it stays. It is a card in a bin. It is trashed."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.mods.trash.erased-with-host",
+    "textHash": "5b0d71b2b2d3d5d7",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:disposeToBin",
+        "agrees": true,
+        "note": "no trash event for a mod swept with its Unstable host (R244)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "224-mod-trash.test.ts",
+        "pattern": "R244: a nontoken mod erased with its Unstable host is not trashed at all",
+        "passed": true,
+        "asserts_claim": "yes — a nontoken enemy-applied mod erased with its host is not trashed (the mod is Ignis Sprite, not a Virus)"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R244 (its erased-with-host half)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**2. A nontoken mod erased with its {Unstable} host is not trashed at all.** It"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Minor: the example says 'A Virus'; the bound test uses an enemy-applied Ignis Sprite augment (white-box) — same nontoken-mod behaviour."
+  },
+  {
+    "key": "effects.mods.unstable",
+    "textHash": "479c45dae7e1099e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:isUnstable",
+        "agrees": true,
+        "note": "derived from mods.length"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "04-mods.test.ts",
+        "pattern": "augments: type-line attribute grant, unstable erasure",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.35",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.15",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "As long as a card is modded, it has the unstable attrib-"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "  isUnstable(e: Entity): boolean {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.mods.unstable.cache",
+    "textHash": "e17a58c638126acc",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:cacheUnit",
+        "agrees": true,
+        "note": "mods left behind in the bin"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "36-cache-prophecy.test.ts",
+        "pattern": "R46: caching a unit sheds its mods to the bin",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R46",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "When a unit in play is cached, the mods attached to it go to the bin rather"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.mods.unstable.copy",
+    "textHash": "8e70df1ffe34bb2b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:isUnstable",
+        "agrees": true,
+        "note": "CopyRef.modded flag deleted (R336); a copy is Unstable only from real mods"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Borrower of Forms: a mod attached to it after it resolved makes it Unstable",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "403-raq-fix-mods.test.ts",
+        "pattern": "R336: a Borrower that copied a modded unit dies to the bin",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1372468222158180424#3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R336",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Q: What if I attach some mods to him AFTER he resolved? A: Then he becomes Unstable"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **A fresh copy of a modded unit is NOT Unstable.** This reverses the second half of R118 ruling 2"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.mods.unstable.leave-play",
+    "textHash": "d6443a62795fd7bc",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:disposeToBin",
+        "agrees": true,
+        "note": "recall/cache leave nontoken mods in the host controller bin"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "141-despawn-mods.test.ts",
+        "pattern": "R167 (iv): a nontoken mod is binned and trashed exactly once on all three routes",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.35",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.35",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.35",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "If a modded card would leave play but did not die or"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "hand from play, all of its mods are put back into the"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "bin, while the base card goes to the hand."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.mods.unstable.moves",
+    "textHash": "04f3fd3fc0b615de",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:moveMod",
+        "agrees": true,
+        "note": "isUnstable reads mods.length on each host"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "151-copy-and-moved-mods.test.ts",
+        "pattern": "R178 Rotbeast: a moved augment takes {Unstable} and its static with it",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R178 (its §4 Unstable half)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Unstable is just an attribute granted to all entities that are modded."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.mods.unstable.token-mod",
+    "textHash": "df214f8d7b942499",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:disposeToBin",
+        "agrees": true,
+        "note": "token mod filed on the erased pile once, never binned"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "141-despawn-mods.test.ts",
+        "pattern": "R167 (v): a token mod reaches the erased pile exactly once",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R156 (its announce-on-every-route half)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "has no card of its own, so it can never enter a bin — whichever way its host"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.mods.what",
+    "textHash": "64a9da2f80797bc1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "cards/dsl.ts:isAugment/isGraftable",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.32",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.32",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Some cards have one of two modification (or mod) symbols,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.mods.what.virus-modular",
+    "textHash": "83208e39178bab57",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "cards/dsl.ts",
+        "agrees": true,
+        "note": "virus flag and {Modular} attribute, not mod kinds"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.34",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Spellbind",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "You can apply mods to a modular card from your hand and/or bin as it is played. You still pay their costs."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.mods.zones",
+    "textHash": "163a745642c1ba6b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:zoneTake/sourcePrice",
+        "agrees": true,
+        "note": "hand and bin sources"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "04-mods.test.ts",
+        "pattern": "grafts can be applied from the bin",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Graft 101 point 3",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.32",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.32",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.15",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1355115946032889914#2",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Modifications can be applied from"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "the bin as well as from your hand."
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "apply augments both from your hand and from your discard."
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "You can either use Grafts from your Bin or Hand"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.mods.zones.cache",
+    "textHash": "d3710415c754d989",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:sourcePrice",
+        "agrees": true,
+        "note": "null without a live permission"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "315-cache-mod-permission.test.ts",
+        "pattern": "R303: an expired glimpse is not a graft, not an augment, not anything",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "315-cache-mod-permission.test.ts",
+        "pattern": "R303: an UNFULFILLED prophecy cannot be grafted",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1537748882501668934#4",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R303",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R303",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "OR 'play' regular mods like Augment / Graft during Deployment phase."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**grafting or augmenting with it is gated on that same permission, at that same price.**"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "do that. You can only play cached cards that allow you to play them (like glimpse). But"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.modular.any-card",
+    "textHash": "99a660f0146205a5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:collectModular",
+        "agrees": true,
+        "note": "offers every hand/bin card whose cost is payable"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "91-modular.test.ts",
+        "pattern": "R105: the {Modular} menu offers every card you can pay for",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "91-modular.test.ts",
+        "pattern": "R105: a card in the BIN is offered beside the hand, and an unaffordable one is not",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R105",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R105",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> \"I think it's legal to apply ANYTHING to a Modular card. But many cards wont"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "So **the cost is the whole filter**: every card in your hand and bin whose cost"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.modular.any-card.cost",
+    "textHash": "4b6c270af60764a6",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:payModularMod",
+        "agrees": true,
+        "note": "charges the mod at cast; no spawned/played event"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "91-modular.test.ts",
+        "pattern": "R105: \"you still pay their costs\"",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Spellbind",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "You still pay their costs."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.modular.any-card.no-op",
+    "textHash": "8016d81bd604d038",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:payModularMod",
+        "agrees": true,
+        "note": "charged and attached though it donates nothing"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "91-modular.test.ts",
+        "pattern": "R105: an [Augment]-TEXT mod is accepted and does nothing",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R105",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**A mod that does nothing is a legal play.** That is the half of the ruling that"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.modular.effects",
+    "textHash": "4ab7fe5ca88b1eb0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:payModularMod",
+        "agrees": true,
+        "note": "a graft mod joins item.parts as graft:<card>"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "91-modular.test.ts",
+        "pattern": "R105: a GRAFT mod still contributes its [Switch] effect as an extra part",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "91-modular.test.ts",
+        "pattern": "R105: the flashback line",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R105",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "| a `[Switch]` graft effect | joins the item as an **extra part** |"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.modular.effects.attributes",
+    "textHash": "cba1feac539982bc",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:stackModAttrs",
+        "agrees": true,
+        "note": "unions the mods' augmentAttrs into the item's grantedAttrs"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "91-modular.test.ts",
+        "pattern": "R105: a type-line [Augment] mod really donates",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R105",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "| a **type-line** `[Augment]` attribute | is **donated to the resolving effect** | R79's channel, by a different timing. |"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.modular.effects.graft-cost",
+    "textHash": "228a465c575856e4",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:collectCastCosts",
+        "agrees": true,
+        "note": "no decline offered; a {Modular} graft part with an unpayable cost is skipped alone (probes)"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U17/u17-probes.test.ts",
+        "title": "effects.modular.effects.graft-cost: an unpayable grafted cost on a Spellbind part skips only that part",
+        "passed": true,
+        "demonstrates": "yes — Immolate applied, no unit to sacrifice: no draw, Spellbind still gives its rot"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U17/u17-probes.test.ts",
+        "title": "effects.modular.effects.graft-cost: a payable grafted cost on a Spellbind part must be paid (no decline offered)",
+        "passed": true,
+        "demonstrates": "yes — no decline offered, the unit is sacrificed and the card drawn"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R334",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- A played **spell** that carries a `{Modular}` graft part keeps the per-part skip. Withholding a card already paid for would strand it."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.modular.effects.text",
+    "textHash": "58c0d4188be518e4",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:payModularMod",
+        "agrees": true,
+        "note": "augmentText donates no part"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "91-modular.test.ts",
+        "pattern": "R105: an [Augment]-TEXT mod is accepted and does nothing",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R105",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R105",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "| **text-box** `[Augment]` text, statics | **nothing** |"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A spell has no body for a triggered ability or a static to live on."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.modular.unstable",
+    "textHash": "e3756f51ddbc3522",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:payModularMod",
+        "agrees": true,
+        "note": "item.unstable stamped; dischargeItem/negate erase"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "91-modular.test.ts",
+        "pattern": "R105: the flashback line",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "91-modular.test.ts",
+        "pattern": "R105: a NEGATED modded Spellbind is erased too",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "91-modular.test.ts",
+        "pattern": "R105 = R79",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.35",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R105",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> \"A modded Spellbind should also have unstable. It basically works as a"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.modular.unstable.unmodded",
+    "textHash": "3cf6b3b0a6387da8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:dischargeItem",
+        "agrees": true,
+        "note": "no item.unstable stamp → bin"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "91-modular.test.ts",
+        "pattern": "R105: an UNMODDED {Modular} spell is not Unstable",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R105",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**Unmodded, nothing changes.** A `{Modular}` spell nobody applied anything to is"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.modular.what",
+    "textHash": "4fd5c69bbe850601",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:collectModular",
+        "agrees": true,
+        "note": "cast-time mod window, hand and bin, paid"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "37-attrs-wight.test.ts",
+        "pattern": "{Modular}: mods are applied at cast time, paid for, and ride on the stack item",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Spellbind",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "You can apply mods to a modular card from your hand and/or bin as it is played. You still pay their costs."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.modular.what.pool",
+    "textHash": "508b60848572cd95",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "cards/printed.json",
+        "agrees": true,
+        "note": "only Spellbind prints {Modular}"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Spellbind",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R105",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "{Battle} {Modular} Arcane Spell"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "`{Modular}` is printed on exactly one card, **Spellbind** — *\"(You can apply"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.modular.when",
+    "textHash": "1cea4d8199d3f7ee",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:collectModular",
+        "agrees": true,
+        "note": "\"No more mods\" always offered; non-Modular never asked"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "37-attrs-wight.test.ts",
+        "pattern": "{Modular}: the caster may decline, and a non-modular spell is never asked",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Spellbind",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R105",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "You can apply mods to a modular card from your hand and/or bin as it is played."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "offered was the bug**, and it was one line: `if (!isGraftable(name) …) return;`"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.virus.battle",
+    "textHash": "08e2c248661fecfc",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doAugment",
+        "agrees": true,
+        "note": "battle branch: priority, host.region === battle.region, either controller"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "04-mods.test.ts",
+        "pattern": "virus augment during battle: on the stack, donated to an enemy, text-only transfer",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.34",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.34",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R79 (its stack-host half)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Since they can be augmented during combat, viruses"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "also are able to augment onto opposing units. This is"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "modifier taxes it. The battle branch of `doAugment` already required priority"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.virus.battle.cache",
+    "textHash": "06bf1bd8f8556007",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:battleAugmentAllowed",
+        "agrees": true,
+        "note": "c.virus && (from === 'hand' || from === 'cache')"
+      },
+      {
+        "loc": "apply.ts:sourcePrice",
+        "agrees": true,
+        "note": "live permission gate"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "370-cached-virus-in-battle.test.ts",
+        "pattern": "R311: a glimpsed Virus in the cache goes onto an ENEMY unit in battle",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "370-cached-virus-in-battle.test.ts",
+        "pattern": "R311: a Virus whose prophecy is fulfilled augments in battle for FREE",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "370-cached-virus-in-battle.test.ts",
+        "pattern": "R311: an EXPIRED glimpse is still nothing in battle",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1537748882501668934#3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R311",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Glimpse which would allow you to 'play' Viruses during Battle"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "functions 100% like the hand* except *for the fact that it's not considered your"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.virus.battle.control",
+    "textHash": "e5b739efaaf1a1d1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:attachMod",
+        "agrees": true,
+        "note": "mod.controller = host.controller"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "04-mods.test.ts",
+        "pattern": "virus augment during battle: on the stack, donated to an enemy, text-only transfer",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.34",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.34",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.34",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "will control the augment and its new ability."
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Augment Smouldering"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "unit to force it to sacrifice"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.virus.battle.not-bin",
+    "textHash": "958fbb99f59aabde",
+    "verdict": "confirmed",
+    "round": 3,
+    "verifier": "U17-r3",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:battleAugmentAllowed",
+        "agrees": true,
+        "note": "base battle window is c.virus && from hand/cache; the bin is reachable only through e.mayAugmentInBattle (Rook's modPermission)"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:legalBattlePriorityActions",
+        "agrees": true,
+        "note": "pushBattleAugments walks hand, bin, cache through the same predicate"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:legalDeployActions",
+        "agrees": true,
+        "note": "pushMods offers hand, bin and cache in deployment"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts:Rook",
+        "agrees": true,
+        "note": "augmentInBattle permits from 'hand' or 'bin'"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:collectModular",
+        "agrees": true,
+        "note": "{Modular} offers every payable card from hand and bin, viruses included, at cast (any phase the spell is cast in)"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-light-c.ts:Slurpr",
+        "agrees": true,
+        "note": "applyAtHaste; pushHasteMods shares pushMods (hand, bin, cache)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/418-cr-zones.test.ts",
+        "pattern": "cr:zones\\.bin\\.mods-from-bin\\.virus",
+        "passed": true,
+        "asserts_claim": "yes: Bumblecrab offered from hand but not bin in battle; offered from bin in deployment"
+      },
+      {
+        "file": "client/engine/test/29-hybrids-wm-a.test.ts",
+        "pattern": "Rook: augmenting from the BIN",
+        "passed": true,
+        "asserts_claim": "yes: with Rook in region, a card (non-Virus Emberflame Enlightener) is augmented out of the bin in battle"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U17/u17-r3-verify-probes.test.ts",
+        "title": "effects.virus.battle.not-bin: a Virus in the bin is offered to a {Modular} spell cast in battle (Spellbind)",
+        "passed": true,
+        "demonstrates": "yes: Chitin Shredder in bin is not a battle augment, but is offered from bin to Spellbind cast in battle"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U17/u17-r3-verify-probes.test.ts",
+        "title": "effects.virus.battle.not-bin: under Slurpr a Virus in the bin is offered as a mod in the haste step, and not without Slurpr",
+        "passed": true,
+        "demonstrates": "yes: bin Virus offered in [Haste] only with Slurpr"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.34",
+        "supports": "yes",
+        "note": "'If a virus is in a bin, it can be applied as normal during deployment but cannot be used as a mod during battle.'"
+      },
+      {
+        "ref": "card: Rook",
+        "supports": "yes",
+        "note": "hand and bin during battle as if Virus"
+      },
+      {
+        "ref": "card: Spellbind",
+        "supports": "yes",
+        "note": "mods from hand and/or bin as it is played; Spellbind is {Battle}-timed"
+      },
+      {
+        "ref": "card: Slurpr",
+        "supports": "yes",
+        "note": "other mods during [Haste] as if deployment"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "If a virus is in a bin, it can be applied as normal during deployment but"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (c.virus && (from === 'hand' || from === 'cache')) return true;"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts",
+        "text": "ctx.seat === self.controller && (ctx.from === 'hand' || ctx.from === 'bin'),"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-light-c.ts",
+        "text": "applyAtHaste: (g, self, ctx) => ctx.seat === self.controller,"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "for (const from of ['hand', 'bin'] as const) {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None. Minor: the Rook example's test uses a non-Virus card (Emberflame Enlightener), which matches the example's wording ('a card'). The cited section numbers (723.5, 724, 504.8a) were not checked (rules/ is off-limits)."
+  },
+  {
+    "key": "effects.virus.permission",
+    "textHash": "4c73a98dd1d34472",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:mayAugmentInBattle",
+        "agrees": true,
+        "note": "Rook ModPermission"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "29-hybrids-wm-a.test.ts",
+        "pattern": "Rook: a NON-virus augment from HAND during battle",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "29-hybrids-wm-a.test.ts",
+        "pattern": "Rook: augmenting from the BIN during battle takes the card out of the BIN, not the hand",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Rook",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "You may augment cards from hand and bin during battle as if they were [Virus]."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.virus.permission.confers",
+    "textHash": "011199bc002f84b3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:battleAugmentAllowed",
+        "agrees": true,
+        "note": "same predicate guards unit and stack hosts; either side"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "136-triggers-and-modes.test.ts",
+        "pattern": "R157 §26: a Rook-enabled augment lands on an ENEMY unit during battle",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "136-triggers-and-modes.test.ts",
+        "pattern": "R157 §26: a Rook-enabled augment reaches a SPELL ON THE STACK",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R157 (its §26)",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R161",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> *\"(a) yes it does. and for (b) yes it can also go to an enemy. That's the"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "### §26 — Rook grants {Virus} itself, and reaches stack hosts"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.virus.permission.region",
+    "textHash": "cb3b9ef9c9192f6c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:mayAugmentInBattle",
+        "agrees": true,
+        "note": "OR-fold over anchored grantors, R12 region scope, self = anchor (host for a mod)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "29-hybrids-wm-a.test.ts",
+        "pattern": "Rook: the permission is REGION-scoped, and does not reach the opponent",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "29-hybrids-wm-a.test.ts",
+        "pattern": "Rook: the [Augment] half works, and the permission belongs to the HOST",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R95 (its Rook-grant half)",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R95 (its Rook-grant half)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "`self` is the ANCHOR, so the `[Augment]` half is free: augmented onto a host, the"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "the rules'. Region scoping is not a convenience either; on this exact card, rodanaw in"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.virus.permission.zones",
+    "textHash": "eafddcceac15b39d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "cards/sets/batch-hybrids-wm-a.ts:Rook",
+        "agrees": true,
+        "note": "augmentInBattle false for from === 'cache'"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "29-hybrids-wm-a.test.ts",
+        "pattern": "Rook: it prints \"hand and bin\", so the CACHE stays shut",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Rook",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R311",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "You may augment cards from hand and bin during battle as if they were [Virus]."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "they were [Virus]\", still names its own zones. A non-Virus card in the cache"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.virus.spell-host",
+    "textHash": "072776d84ab13253",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doAugment",
+        "agrees": true,
+        "note": "hostStack branch, either controller; stackAugmentAttrs reads attributes only"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "67-resolving-and-stack-viruses.test.ts",
+        "pattern": "R79: the powerful guy on a giant fireball",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "67-resolving-and-stack-viruses.test.ts",
+        "pattern": "R79: you can hit an ENEMY spell",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R79 (its stack-host half)",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R79 (its stack-host half)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> \"It's very similar to how regular viruses work, so **you can hit enemy spells"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> **A:** \"Yes. **This notably only works with attributes.**\" (Caleb 2025-04-06)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.virus.spell-host.erased",
+    "textHash": "5b429e6ba221869d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:dischargeItem",
+        "agrees": true,
+        "note": "augmented carrier and its viruses erased on every exit"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "67-resolving-and-stack-viruses.test.ts",
+        "pattern": "R79 ⚠: a spell that carried a virus is Unstable",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "67-resolving-and-stack-viruses.test.ts",
+        "pattern": "R79: negating the CARRIER erases it too",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.35",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R79 (its stack-host half)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> and the spell gets erased on resolution**. You can augment spells during"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.virus.spell-host.not-hosts",
+    "textHash": "ba31f840e18852d4",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U17-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:STACK_VIRUS_HOSTS",
+        "agrees": true,
+        "note": "set is {spell, spellUnit, spellToken}; triggered, activated, virus, unit, ambush excluded; doAugment needs it"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/67-resolving-and-stack-viruses.test.ts",
+        "pattern": "R79: only SPELLS are legal hosts",
+        "passed": true,
+        "asserts_claim": "yes for triggered (not offered, refused); other kinds rest on the engine Set (test title says 'units mid-cast' but body does not exercise it)"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R79 (its stack-host half)",
+        "supports": "yes",
+        "note": "The exclusions are listed and openly flagged as judgement calls; basis 'engine' is honest."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "The four ⚠ are judgement calls, not sourced answers. **Bena to rule** if any of"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "const STACK_VIRUS_HOSTS = new Set<StackItem['kind']>(['spell', 'spellUnit', 'spellToken']);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.virus.spell-host.resolving",
+    "textHash": "d677cefec07ecb1f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doAugment",
+        "agrees": true,
+        "note": "host looked up in s.stack only; a resolving item is not there"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "67-resolving-and-stack-viruses.test.ts",
+        "pattern": "R78: a resolving item cannot be responded to, negated or targeted",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R79 (its stack-host half)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "you cannot virus a spell that is RESOLVING.**"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.virus.spell-host.spell-unit",
+    "textHash": "e2c671a95681bdbe",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:dischargeItem",
+        "agrees": true,
+        "note": "spellUnit viruses ride in via attachMod"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "67-resolving-and-stack-viruses.test.ts",
+        "pattern": "R79: a spell UNIT carries its virus into play as an augment mod",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R79 (its stack-host half)",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R79 (its stack-host half)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**The spell UNIT exception.** A `spellUnit` does not *leave* on resolution — it"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "they always were, via `attachMod` — which makes the **body** Unstable, exactly"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.virus.spell-host.which",
+    "textHash": "2b690254d5171aa8",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U17-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:STACK_VIRUS_HOSTS",
+        "agrees": true,
+        "note": "spell, spellUnit, spellToken"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/67-resolving-and-stack-viruses.test.ts",
+        "pattern": "R79: a spell TOKEN is a legal host",
+        "passed": true,
+        "asserts_claim": "yes: Fireball token doubled by Powerful"
+      },
+      {
+        "file": "client/engine/test/67-resolving-and-stack-viruses.test.ts",
+        "pattern": "R79: a spell UNIT carries its virus",
+        "passed": true,
+        "asserts_claim": "yes: spell unit is a legal host"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R79 (its stack-host half)",
+        "supports": "yes",
+        "note": "Names spells and spell tokens (Caleb 2025-04-06/03-06 via rules-questions); spellUnit is in the set."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "`STACK_VIRUS_HOSTS = { spell, spellUnit, spellToken }`. The ruling names spells"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.virus.stack",
+    "textHash": "a8f6809c7fea4a2a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doAugment",
+        "agrees": true,
+        "note": "pushItem(kind 'virus', hostId) after a 'targeted' event"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "16-earth-a.test.ts",
+        "pattern": "Graxxlid: a Virus being applied to me IS an effect targeting me",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.34",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.34",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R88",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Augmenting with viruses uses the stack, just like any other card and"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "effect, so it can be interacted with and negated. If a virus is negated or"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> **calebgannon:** \"You can redirect a virus, it is a targeted effect\""
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.virus.stack.negated",
+    "textHash": "d4be8788aef5422b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:dischargeItem",
+        "agrees": true,
+        "note": "a negated or host-less virus item takes the bin branch"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "67-resolving-and-stack-viruses.test.ts",
+        "pattern": "R79: a virus whose host leaves the stack first fizzles to the bin",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "67-resolving-and-stack-viruses.test.ts",
+        "pattern": "R79: negating the CARRIER erases it too; negating the VIRUS ITSELF bins it",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.34",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.34",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "its target becomes invalid, it is placed into the bin, and cannot be used"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "as a virus again, since the virus ability only works from hand."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.virus.stack.not-a-spell",
+    "textHash": "f648854bbd36ed36",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doAugment",
+        "agrees": true,
+        "note": "pushes kind 'virus', not 'spell'; no spellPlayed/cardPlayed event"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "04-mods.test.ts",
+        "pattern": "a virus is not a \"spell effect\" (negation scoping); a negated virus does not mod",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "105-semantics-playwatch.test.ts",
+        "pattern": "Origon: a virus applied during battle is not a spell",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1537748882501668934#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R37",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "elsewhere). Applying a modification — attaching a Virus, graft, or augment,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.virus.what",
+    "textHash": "b532f71c02a76a16",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:battleAugmentAllowed",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.34",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.34",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.3",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "They are marked by the virus symbol in the top right of the card."
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "▪ The virus icon (4) allows you to augment cards from hand during"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.virus.what.augment",
+    "textHash": "5c8e344aac9f26d8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doAugment",
+        "agrees": true,
+        "note": "virus resolves via attachMod(... 'augment'), firing modApplied/augment-applied listeners"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "17-earth-b.test.ts",
+        "pattern": "Morphic Mentor: your battle augment gives +2/+2 until regroup; an enemy augment does not",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.34",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Morphic Mentor",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Since they can be augmented during combat, viruses"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Whenever you apply an augment during battle, [Switch] I gain +2/+2 until regroup."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.virus.what.timing-not-host",
+    "textHash": "1d93ec09c386fb24",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U17-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doAugment",
+        "agrees": true,
+        "note": "deploy branch does not read c.virus"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.34",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R89",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "That is the axis the restriction runs along: **{Virus} buys you the TIMING, not"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  }
+]

@@ -1,0 +1,146 @@
+[
+  {
+    "id": "F-U23-1",
+    "rule": "annexd.auto-pass.full-control.deployment",
+    "title": "Holding full control does not stop the deployment stack from resolving itself",
+    "summary": "R287 rules that while full control (Ctrl) is held, nothing resolves automatically, 'even during deployment'. R287 records that clause as not built: the deployment stack drains inside settle(), and the engine has no flag for the hold. Already filed by R287 as CT-185 (owner's call); listed here so the export's marker has a target. The verifier confirmed: the engine has no full-control flag, and CT-185 (a holdStack action) is still open.",
+    "evidence": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "⚠ **THE DEPLOYMENT CLAUSE IS NOT BUILT.** *\"Even during deployment, nothing"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "that currently drains itself inside `settle()`, in the engine, which has never"
+      },
+      {
+        "file": "client/ledgers/card-todo.ts",
+        "quote": "+ 'be IN that log or the replay diverges. So: a `holdStack` action carrying the seat '"
+      }
+    ]
+  },
+  {
+    "id": "F-U23-2",
+    "rule": "annexd.auto-pass.automatic-answers",
+    "title": "The automatic pass is latched per state counter, which R245(b) rules out",
+    "summary": "R245(b) rules that an automatic answer (it names the haste-step ready and the automatic pass) is latched by being unanswered, never by a state counter, because states keep arriving while an intent is outstanding. R258 says the automatic pass is latched once per actionCount via takeAutoPass, and test 70 [59] asserts that a new state number re-opens the latch. If a state with a new actionCount reaches a seat while its automatic pass is still outstanding, a second pass could go out and come back refused. The verifier confirmed it in the client: the haste ready was converted (hasteAutoOut), but the automatic pass still goes through takeAutoPass, keyed on actionCount.",
+    "evidence": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "[59]/R245 latch it to one send per `actionCount` (`takeAutoPass` in"
+      },
+      {
+        "file": "client/ui/test/70-playtest-round15.test.ts",
+        "quote": "assert.equal(takeAutoPass(plan, 41, latch), true, 'a new state is a new window');"
+      },
+      {
+        "file": "client/ui/inspect.ts",
+        "quote": "if (latch.autoAt === actionCount || latch.sentFor === actionCount) return false;"
+      }
+    ]
+  },
+  {
+    "id": "F-U23-3",
+    "rule": "annexd.auto-pass.haste-ready.residual",
+    "title": "The live action counter tells the opponent when you act inside every hidden simultaneous segment",
+    "summary": "A hidden simultaneous segment is meant to show nobody the other side's plays until everyone is done (R18). R236 measured that GameState.actionCount is served live to both seats and rises on every action, so a modified client sees when its opponent acts in the resource step, the haste step and deployment. The shipped client renders nothing from it. R236 names the fix (a per-seat action counter in the engine or rooms.ts) and leaves it as the owner's call. Pinned by 205 §3d.",
+    "evidence": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "`GameState.actionCount` is served live to both seats and increments on **every**"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "and freezing only the opponent's contribution is not derivable from a single"
+      }
+    ]
+  },
+  {
+    "id": "F-U23-4",
+    "rule": "annexd.general.player-decides.forced.lone-counterattacker",
+    "title": "R36 still stands in the register, but the engine removed the one-unit round-2 auto-declare",
+    "summary": "R36 rules that a round-2 counterattack pool of exactly one unit, with no spell token that could ride along, is auto-declared as a forced action. The verifier found that apply.ts forcedAction removed that branch on 2026-08-24 (decisions-for-the-player audit), because declining is a real choice. R36's heading carries no reversed or superseded marker, so the register and the engine disagree. Either R36 gets a reversal mark (if the audit was the owner's call) or the engine is wrong.",
+    "evidence": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "## R36 — A lone sent counterattacker auto-forms in round 2"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "quote": "// There used to be a second branch here: a round-2 counterattack with"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "quote": "// (decisions-for-the-player audit): sending a counterattacker and"
+      },
+      {
+        "file": "client/engine/test/32-cast-costs.test.ts",
+        "quote": "test('forcedAction: a single sent counterattacker is NOT auto-formed — attacking is still a choice', () => {"
+      }
+    ]
+  },
+  {
+    "id": "F-U23-5",
+    "title": "The automatic pass is latched on actionCount, which R245(b) forbids",
+    "summary": "R245(b) says an automatic answer (the haste ready AND the automatic pass) is latched by the fact of being unanswered, never by a state counter. The haste ready was converted (hasteAutoOut); the automatic pass still goes through takeAutoPass, keyed on actionCount.",
+    "evidence": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "### (b) An automatic answer is latched by the FACT of being unanswered, never"
+      },
+      {
+        "file": "client/ui/inspect.ts",
+        "quote": "if (latch.autoAt === actionCount || latch.sentFor === actionCount) return false;"
+      }
+    ],
+    "rule": "annexd.auto-pass.automatic-answers"
+  },
+  {
+    "id": "F-U23-6",
+    "title": "R287's deployment clause (full control holds the deployment stack) is not built",
+    "summary": "The owner ruled that while Control is held nothing resolves automatically even in deployment. The engine drains the deployment stack inside settle() and has no full-control flag; CT-185 (a holdStack action) is still open.",
+    "evidence": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "⚠ **THE DEPLOYMENT CLAUSE IS NOT BUILT.** *\"Even during deployment, nothing"
+      },
+      {
+        "file": "client/ledgers/card-todo.ts",
+        "quote": "+ 'be IN that log or the replay diverges. So: a `holdStack` action carrying the seat '"
+      }
+    ],
+    "rule": "annexd.auto-pass.full-control.deployment"
+  },
+  {
+    "id": "F-U23-7",
+    "title": "Lone round-2 counterattacker is not auto-formed, against R36",
+    "summary": "R36 (no amendment in the register) says a round-2 counterattack pool of exactly one unit and no ridable spell token auto-declares the one-unit formation. forcedAction's branch for it was removed 2026-08-24 and the engine offers decline/attack as a choice. Either R36 should be amended in the register or the engine restored. Already flagged by the rule as F-U23-4.",
+    "evidence": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "When a round-2 counterattack pool holds EXACTLY one unit and no spell token"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "quote": "(decisions-for-the-player audit): sending a counterattacker and"
+      }
+    ],
+    "rule": "annexd.general.player-decides.forced.lone-counterattacker"
+  },
+  {
+    "id": "F-U23-8",
+    "title": "R36 still registers a forced lone-counterattacker formation the engine deleted",
+    "summary": "R36 (unamended, no reversal marker) says a round-2 pool of exactly one sent unit with no ridable token auto-declares its attack as a forced action. forcedAction's branch was removed 2026-08-24 in the decisions-for-the-player audit and 32-cast-costs asserts it is NOT forced. Either R36 needs an amendment entry or the engine contradicts a current ruling.",
+    "evidence": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "When a round-2 counterattack pool holds EXACTLY one unit and no spell token"
+      },
+      {
+        "file": "client/engine/test/32-cast-costs.test.ts",
+        "quote": "'one sent counterattacker is still a real choice: attack, or decline');"
+      }
+    ],
+    "rule": "annexd.general.player-decides.forced"
+  }
+]

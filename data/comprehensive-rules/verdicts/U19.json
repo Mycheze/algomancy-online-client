@@ -1,0 +1,3893 @@
+[
+  {
+    "key": "attr.balanced",
+    "textHash": "0ea11a5da84a688c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:effStats",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "08-cards2.test.ts",
+        "pattern": "Child of Aether: Balanced (power & defense = max) keeps a 2/0 alive",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Brough",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "(The power and defense of balanced units are equal to the greater of the two.)"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "else if (a === 'Balanced') { const m = Math.max(p, t); p = m; t = m; }"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.balanced.after-changes",
+    "textHash": "4b3bdcdf50ff4e5e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:effStats",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "79-round17-layers.test.ts",
+        "pattern": "R93 layer 5: Caleb's worked example",
+        "passed": true,
+        "asserts_claim": "yes: asserts 1/8 after Tough, then 8/8 after Balanced"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U19/u19-probes.test.ts",
+        "title": "attr.balanced.after-changes — Balanced reads after counters: a 1/3 with two +1/+1 counters and Balanced is a 5/5",
+        "passed": true,
+        "demonstrates": "yes: 1/3 + two +1/+1 counters + Balanced = 5/5"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.42",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R93",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "else if (a === 'Balanced') { const m = Math.max(p, t); p = m; t = m; }"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.deadly",
+    "textHash": "50c3056dcf04fd38",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "nonzero damage from a Deadly source destroys"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Rotspore Herald",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.25",
+        "supports": "partly",
+        "note": "Swift+Deadly combo sentence; on-topic"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "(Any damage from a deadly source will kill a unit.)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.deadly.any-amount",
+    "textHash": "e3c7e11f689e7a63",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": ""
+      },
+      {
+        "loc": "client/engine/src/engine.ts:victimShare",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "82-attr-interactions.test.ts",
+        "pattern": "Deadly: 2 points of NON-COMBAT damage kills a 5/6 outright",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "82-attr-interactions.test.ts",
+        "pattern": "Deadly: ZERO damage kills nothing",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Rotspore Herald",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R21",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Any **nonzero** damage from a Deadly source kills the damaged unit, regardless of"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.deadly.combat-share",
+    "textHash": "17baca3102197946",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:victimShare",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Excessive: Deadly + Piercing over two blockers",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "100-elective-assign.test.ts",
+        "pattern": "R120 (e)",
+        "passed": true,
+        "asserts_claim": "yes: Deadly floors are 1"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353888077625561108#3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1353888077625561108#6",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R23",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (deadly && recvCap > 0) poolNeed = 1;"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "With Deadly you need to assign atleast 1 damage to front unit"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.deadly.no-cap",
+    "textHash": "d012f805db1906db",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:victimShare",
+        "agrees": true,
+        "note": "Deadly 1 is a floor on the pass-along share, not a cap"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "134-column-and-substep.test.ts",
+        "pattern": "R157 §11 — a 10-power {Deadly} column deals all 10 to a 1/1 blocker",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R157 §11",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Deadly doesn't have a cap?? A 10/10 deadly unit still deals 10 damage to"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.deadly.noncombat",
+    "textHash": "dd3da85dfa83bd36",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "206-deadly-everywhere.test.ts",
+        "pattern": "R237: a plain {Deadly} effect source kills a unit",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R237",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R21",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Yes, deadly works on spell effects and everything. Just like powerful. So a"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.deadly.players",
+    "textHash": "4cd51a01d9855fe0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "Deadly destroys units only"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U19/u19-probes.test.ts",
+        "title": "attr.deadly.players — an unblocked Deadly unit deals ordinary damage to a player",
+        "passed": true,
+        "demonstrates": "yes: an unblocked 3/3 Deadly costs exactly 3 life"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R21",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "damage too, and Deadly kills count for Reaping draws. Players don't \"die\" to Deadly —"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.deadly.poisonous",
+    "textHash": "9a1ee09f037e43c1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "206-deadly-everywhere.test.ts",
+        "pattern": "R237: {Deadly} + {Poisonous} effect damage still kills",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R237",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "yeah it'll get instakilled by deadly but also trigger to"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.deadly.prevention",
+    "textHash": "7cbf5a0ec6355fda",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "82-attr-interactions.test.ts",
+        "pattern": "Deadly + Poisonous: PREVENTION still stops both halves",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "423-cr-combat-damage.test.ts",
+        "pattern": "cr:combat.damage.dealing.prevention — a shielded blocker dealt COMBAT damage gets no damage event, nothing marked, and no Deadly kill",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R98",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**no {Deadly} kill**"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.deadly.pure",
+    "textHash": "d92125385900d30e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": ""
+      },
+      {
+        "loc": "client/engine/src/engine.ts:exchangeAt",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "40-light-c.test.ts",
+        "pattern": "Just a Unit: {Pure} switches off Deadly",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "290-pure-outside-combat.test.ts",
+        "pattern": "§2 a Pure recipient: the source's Powerful and Deadly do nothing to it",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Just a Unit",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R61",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R289",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "exchange: no Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.deadly.spells",
+    "textHash": "00b0fe6e90a57fff",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "206-deadly-everywhere.test.ts",
+        "pattern": "R237: \"a fireball 1 with deadly would kill any unit\"",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "206-deadly-everywhere.test.ts",
+        "pattern": "R237: a {Deadly} donated to a SPELL on the stack kills through the spell",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R237",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R125",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "fireball 1 with deadly would kill any unit."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.deadly.timing",
+    "textHash": "f457801522cbe4f4",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:combat sub-step (deaths settle per sub-step)",
+        "agrees": true,
+        "note": "probe: blocker killed in the Swift sub-step"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U19/u19-probes.test.ts",
+        "title": "attr.deadly.timing — a Deadly+Swift column kills its blocker in the Swift sub-step, before the blocker strikes",
+        "passed": true,
+        "demonstrates": "yes: a Deadly+Swift column destroys a 5/9 blocker before it strikes back"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.25",
+        "supports": "partly",
+        "note": "the Swift+Deadly combo sentence implies it"
+      },
+      {
+        "ref": "R21",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "the same damage sub-step, before the next sub-step's recalc. Deadly works on effect"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.feeble",
+    "textHash": "d1fdc9cae2b6f6a8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:declareBlocks legality",
+        "agrees": true,
+        "note": ""
+      },
+      {
+        "loc": "client/engine/src/apply.ts:canBlockAlone",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "08-cards2.test.ts",
+        "pattern": "Spectrogenesis: three Wisps; Feeble means they cannot block",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "86-ui-block-refusal.test.ts",
+        "pattern": "#77: {Feeble} — the unit that cannot block is the one that is named",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U19/u19-probes.test.ts",
+        "title": "attr.feeble.pure — a Feeble unit that is Pure may block; Bripp really prints Feeble",
+        "passed": true,
+        "demonstrates": "yes: Bripp carries Feeble, so the 86 ui test is not vacuous"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Spectrogenesis",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R294",
+        "supports": "partly",
+        "note": "about column sharing of Feeble, not the base rule"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(!e.ownAttrs(u).has('Feeble') || e.ownAttrs(u).has('Pure'),"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.feeble.lured",
+    "textHash": "ec56da3b45f0856d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:canBlockAlone",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "53-playtest-round7.test.ts",
+        "pattern": "R84: a {Feeble} lured unit is not able, so it is not compelled",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R84",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (own.has('Feeble') && !own.has('Pure')) return false;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.feeble.own",
+    "textHash": "c4bbafac7b8ca0a7",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:declareBlocks legality",
+        "agrees": true,
+        "note": "ownAttrs(u), not effAttrs"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "298-column-attrs-outside-combat.test.ts",
+        "pattern": "R294 §4 {Feeble} block legality is still the unit's own question",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R294",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(!e.ownAttrs(u).has('Feeble') || e.ownAttrs(u).has('Pure'),"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.feeble.pure",
+    "textHash": "28c932909b48741e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:declareBlocks legality",
+        "agrees": true,
+        "note": ""
+      },
+      {
+        "loc": "client/engine/src/apply.ts:canBlockAlone",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "177-glossary-conformance.test.ts (client/ui)",
+        "pattern": "ENGINE-ROW COHERENCE R61 {Feeble}",
+        "passed": true,
+        "asserts_claim": "partly: static check that the apply.ts gate carves out Pure"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U19/u19-probes.test.ts",
+        "title": "attr.feeble.pure — a Feeble unit that is Pure may block; Bripp really prints Feeble",
+        "passed": true,
+        "demonstrates": "yes: a Pure unit granted Feeble is accepted as a blocker"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Just a Unit",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R61",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R206",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(!e.ownAttrs(u).has('Feeble') || e.ownAttrs(u).has('Pure'),"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.flying",
+    "textHash": "8c1228a1849c50bc",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:declareBlocks legality",
+        "agrees": true,
+        "note": "Flying column requires a Flying blocking column"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Air Plant",
+        "supports": "yes",
+        "note": "printed reminder verbatim"
+      },
+      {
+        "ref": "Manual p.24",
+        "supports": "partly",
+        "note": "on-topic (sharing/blocking), not the reminder itself"
+      },
+      {
+        "ref": "glossary: Flying",
+        "supports": "yes",
+        "note": "ours; not authority"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "(Only flying units can block flying units.)"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (atkAttrs.has('Flying')) e.need(e.colAttrs(col).has('Flying'), 'only flying units can block flying units');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.flying.blocking",
+    "textHash": "0a2957f24934d3b9",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:declareBlocks legality",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "02-combat.test.ts",
+        "pattern": "combat math: columns, flying, piercing overflow, deaths",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "40-light-c.test.ts",
+        "pattern": "Just a Unit: {Pure} blocks a Flying column, and only it can",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Greed Angel",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.24",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (atkAttrs.has('Flying')) e.need(e.colAttrs(col).has('Flying'), 'only flying units can block flying units');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.flying.column",
+    "textHash": "cbaa4a509c4d4f26",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:effAttrs/colAttrs",
+        "agrees": true,
+        "note": ""
+      },
+      {
+        "loc": "client/engine/src/apply.ts:declareBlocks legality",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "421-cr-regions-formations.test.ts",
+        "pattern": "cr:combat.columns.definition.shared-attributes — Flying on the front unit of a column is shared",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.24",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.12",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Ghost attacks with another unit in front or behind it, both of those units have the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.flying.lured",
+    "textHash": "3a03d024d81cc79b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:canBlockAlone",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "53-playtest-round7.test.ts",
+        "pattern": "R84: a lured unit with no {Flying} is not able against a Flying column",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R84",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (atkAttrs.has('Flying') && !own.has('Flying')) return false;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.flying.pure",
+    "textHash": "c00b931ab0e93ba9",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:declareBlocks legality",
+        "agrees": true,
+        "note": "pure(atkCol, col) empties the attacking attrs"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "40-light-c.test.ts",
+        "pattern": "Just a Unit: {Pure} blocks a Flying column, and only it can",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Just a Unit",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R61",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "const atkAttrs = pure ? new Set<string>() : e.colAttrs(atkCol.filter(id => e.entity(id)));"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.flying.removed",
+    "textHash": "4d4ef87782c28cbe",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:effAttrs/colAttrs",
+        "agrees": true,
+        "note": ""
+      },
+      {
+        "loc": "client/engine/src/apply.ts:declareBlocks legality",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U19/u19-probes.test.ts",
+        "title": "attr.flying.removed — after the Flying unit leaves the attacking column, a ground unit may block the rest",
+        "passed": true,
+        "demonstrates": "yes: Skywalker destroyed before blocks; the token loses Flying and a ground unit blocks it"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.12",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.24",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "with Smoke Ghost and a plain 1/1 token, if the opponent kills the Smoke Ghost before"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.general",
+    "textHash": "2a901ca8bcb34356",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.12",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.24",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Some units have attributes, which can modify how they"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Definition is combat-centred while 802-adjacent rules also name non-combat attributes; acceptable as printed."
+  },
+  {
+    "key": "attr.general.application-order",
+    "textHash": "76f1ea7523f2b48c",
+    "verdict": "partial",
+    "round": 3,
+    "verifier": "U19-r3",
+    "engine": [
+      {
+        "loc": "engine.ts:statLayerAttrs",
+        "agrees": false,
+        "note": "order = own attrs (printed, then temp, statics, augment mods in e.mods order) then column-mates in column order; a printed Balanced therefore applies BEFORE an augmented Tough — opposite of the Manual sentence (flagged engineDiffers F-U19-5)."
+      },
+      {
+        "loc": "engine.ts:effStats layer 4",
+        "agrees": true,
+        "note": "applies Tough/Balanced one after the other in that list order; duplicates deduped at first occurrence."
+      },
+      {
+        "loc": "engine.ts:attachMod",
+        "agrees": true,
+        "note": "augments always push to the end of host.mods (only grafts take a position), so augment order = order gained in the engine."
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "08-cards2.test.ts",
+        "pattern": "layer-4 application order",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U19/u19-probes.test.ts",
+        "title": "attr.general.application-order — Tough augmented onto a printed-Balanced unit: the printed Balanced applies first",
+        "passed": true,
+        "demonstrates": "yes: divergence real — Child of Aether + Rampart Guardian is 2/4 in the engine, 2/2 per the Manual"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U19/u19-r3-probes.test.ts",
+        "title": "attr.general.application-order — a Tough unit attacking with a Balanced unit behind it: doubled, then balanced",
+        "passed": true,
+        "demonstrates": "yes: Rampart Guardian with Child of Aether behind is 8/8 (doubled then balanced), as the Manual says"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.42 (six lines)",
+        "supports": "yes",
+        "note": "verbatim; supports the first three sentences."
+      },
+      {
+        "ref": "R19",
+        "supports": "partly",
+        "note": "supports mod-stack order, column front-to-back, and the duplicate rule, but R19 itself marks the ordering an engine call ('\"order gained\" is the engine's reading'); no printed or designer source states 'first attached first'."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Attributes apply in order from top to bottom. So if"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "will have its defense doubled, then its stats balanced."
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "No, but you can place new mods in-between old"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "\"order gained\" is the engine's reading. (Engine 2026-07-16.)"
+      },
+      {
+        "file": "client/engine/test/08-cards2.test.ts",
+        "text": "'Tough then Balanced: 3/1 → 3/2 → 3/3'"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (appliedAs === 'graft' && position !== undefined) host.mods.splice(position, 0, mod.id);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "The clause 'Attributes granted by a unit's augments apply in the order the mods were gained, the first attached first' rests only on R19, which labels it the engine's reading. The printed rule is positional ('from top to bottom'), and Manual p.43 lets a player 'place new mods in-between old ones', so on the table a later mod can sit above an earlier one, and order gained is not the same as order on the card. Augments are placed beneath the card (Manual p.32). Better wording: 'in the order the mods sit on the card, top to bottom', and the clause should be marked as a digital reading. The Manual sentences, the column front-to-back clause, the duplicate clause and the flagged divergence (F-U19-5: the engine applies printed Balanced before augmented Tough, 2/4 not 2/2) all check out."
+  },
+  {
+    "key": "attr.general.kinds",
+    "textHash": "9268e5a4770a73cc",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.24",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.25",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Combat attributes (denoted in gold text) are shared by"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Some attributes, like burst and unstable, are written in a"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.general.noncombat-not-shared",
+    "textHash": "94f7e84042c49f36",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:isUnstable / colAttrs",
+        "agrees": true,
+        "note": "Unstable and Burst are not in ownAttrs; Modular is in attrs but printed only on a spell (298 §5c guards that)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "298-column-attrs-outside-combat.test.ts",
+        "pattern": "R294 §5b a modded (therefore Unstable) unit does not make its column-mate Unstable",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "298-column-attrs-outside-combat.test.ts",
+        "pattern": "R294 §5c {Modular} is an object attribute too",
+        "passed": true,
+        "asserts_claim": "partly: a static guard that no unit prints Modular"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.25",
+        "supports": "yes",
+        "note": "Burst and Unstable named; Modular comes from the owner in R294"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "These attributes are not shared in formation, and simply"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.general.present-or-not",
+    "textHash": "e0123cff75143282",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:statLayerAttrs",
+        "agrees": true,
+        "note": "dedupes on the way in"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "79-round17-layers.test.ts",
+        "pattern": "R93 layer 5: {Inverted} applies ONCE however many sources grant it",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R19",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R84",
+        "supports": "partly",
+        "note": "an analogy (no flying flying)"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "&& !out.includes(a)) out.push(a);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.general.pure",
+    "textHash": "7ee0eb0d4f559ec1",
+    "verdict": "confirmed",
+    "round": 3,
+    "verifier": "U19-r3",
+    "engine": [
+      {
+        "loc": "engine.ts:effStats (layer 4) / victimShare",
+        "agrees": false,
+        "note": "Tough and Balanced are stat layers read regardless of Pure (R61/R289); divergence from the printed reading is real and flagged (engineDiffers)."
+      },
+      {
+        "loc": "engine.ts:dealEffectDamageAll (collapsed = !pureWith(u) && ...)",
+        "agrees": true,
+        "note": "for effect damage a Pure pairing does switch Unaware off — matches the rule for that site."
+      },
+      {
+        "loc": "engine.ts:exchangeAt",
+        "agrees": false,
+        "note": "in combat 'collapsed' is computed regardless of 'pure' (R106: the collapse survives Pure), so Unaware still applies in a Pure combat exchange — a second real divergence."
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U19/u19-probes.test.ts",
+        "title": "attr.general.pure — Tough still applies to a unit in an interaction with a Pure card (engine)",
+        "passed": true,
+        "demonstrates": "yes: the divergence in the example is real (Rampart Guardian survives 5 from a Pure source as a 0/8)"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U19/u19-r2-probes.test.ts",
+        "title": "attr.general.pure — Balanced still applies to a unit in an interaction with a Pure source (engine)",
+        "passed": true,
+        "demonstrates": "yes: Balanced also stays on (divergence)"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U19/u19-r2-probes.test.ts",
+        "title": "attr.general.pure — Unaware is off in a Pure pairing (engine): an Unaware source does not collapse a pumped Pure recipient to its printed stats",
+        "passed": true,
+        "demonstrates": "yes: engine agrees for effect damage"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U19/u19-r3-probes.test.ts",
+        "title": "attr.general.pure — in COMBAT, Tough still doubles a blocker whose exchange holds a Pure attacker (engine)",
+        "passed": true,
+        "demonstrates": "yes: divergence also in combat"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U19/u19-r3-probes.test.ts",
+        "title": "attr.general.pure — in COMBAT, Unaware still collapses an exchange that holds a Pure attacker (engine)",
+        "passed": true,
+        "demonstrates": "yes: in combat the engine keeps Unaware on against Pure (divergence), unlike effect damage"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Just a Unit",
+        "supports": "yes",
+        "note": "verbatim reminder in the oracle; literal 'ignore all other attributes' includes Tough/Balanced/Inverted/Unaware (all type-line attributes)."
+      },
+      {
+        "ref": "Manual p.42 (layers list)",
+        "supports": "partly",
+        "note": "on-topic: it names Tough an attribute ('Attributes like Tough') and lists Inverted/Unaware as stat layers; says nothing about Pure."
+      },
+      {
+        "ref": "R289",
+        "supports": "partly",
+        "note": "supports only the Unaware half for effect damage; the same ruling says Tough, Balanced and Inverted STILL read against Pure, and R106 says the Unaware collapse survives Pure in combat. These are the overruled readings, honestly flagged as engineDiffers."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "{i}(Pure cards and cards they are interacting with ignore all other attributes.)"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "{Tough}, {Balanced} and {Inverted} still read (they are stat layers, R61)."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "The collapse survives {Pure}: R61 switches the ATTRIBUTE layer off for an exchange, and"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const collapsed = (u: Entity): boolean => !pureWith(u) && (srcUnaware || this.unaware(u));"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "4. Attributes like Tough, 5. Inverted"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None in the ruling, which is the literal printed reminder (printed outranks R61/R289/R106). Divergence confirmed real: engine keeps Tough/Balanced (and Inverted per R289) on against Pure everywhere, and keeps Unaware on in a Pure COMBAT exchange (R106) while switching it off for effect damage (R289). The Manual p.42 citation is only on-topic."
+  },
+  {
+    "key": "attr.general.reminder",
+    "textHash": "37c8ad2df60203f1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.24",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "italics to help players remember what each attribute"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.general.shared",
+    "textHash": "69d27f6fc4d8229a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:effAttrs/colAttrs",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "421-cr-regions-formations.test.ts",
+        "pattern": "cr:combat.columns.definition.shared-attributes — Flying on the front unit of a column is shared",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.24",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.12",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R93",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "return col ? this.colAttrs(col) : this.ownAttrs(e);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.general.shared.all-purposes",
+    "textHash": "21b60beb4f25effc",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": ""
+      },
+      {
+        "loc": "client/engine/src/engine.ts:effAttrs/colAttrs",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "298-column-attrs-outside-combat.test.ts",
+        "pattern": "R294 §1 the report",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ dead unit: Bellowing Boulder in a column with a Deadly unit pings with Deadly",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353895783266516992#5",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R294",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "The whole card gets the attributes while it's in the column. And so when it"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.general.shared.combat-only",
+    "textHash": "07322b8da06426f7",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:effAttrs/colAttrs",
+        "agrees": true,
+        "note": "columnOf returns null outside battle"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "298-column-attrs-outside-combat.test.ts",
+        "pattern": "R294 §3 outside battle there are no columns at all",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R294",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "return col ? this.colAttrs(col) : this.ownAttrs(e);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.general.shared.leaving",
+    "textHash": "bd20ed662b5e2700",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:effAttrs/colAttrs",
+        "agrees": true,
+        "note": "colAttrs is recomputed from live column members"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "423-cr-combat-damage.test.ts",
+        "pattern": "cr:combat.damage.substeps.column-attributes — a unit leaving a column takes the Swift it shared with it",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ dead unit: once the Deadly partner leaves the column, the Boulder ping is not Deadly",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.24",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.12",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1353895783266516992#5",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "When a unit with attributes is removed from a column,"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "However if Deadly unit is removed before Bellowing Boulder dies, BB loses Deadly"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.general.shared.not-sideways",
+    "textHash": "cd2efd7c56c82c9a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:effAttrs/colAttrs",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "421-cr-regions-formations.test.ts",
+        "pattern": "cr:combat.columns.definition.shared-attributes — Flying on the front unit of a column is shared",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.24",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.12",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "Combat attributes are not shared by units to the left or to the right, they"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "return col ? this.colAttrs(col) : this.ownAttrs(e);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.general.stat-attributes",
+    "textHash": "d5e6dc486fc54e16",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:effStats",
+        "agrees": true,
+        "note": ""
+      },
+      {
+        "loc": "client/engine/src/engine.ts:statLayerAttrs",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "79-round17-layers.test.ts",
+        "pattern": "R93 layer 5: Caleb's worked example — a 1/4 Tough Balanced Inverted is a -6/0",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "92-unaware.test.ts",
+        "pattern": "{Inverted} and {Unaware} on one unit: layer 6 goes last, so Bubb is a 5/6",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.42",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R19",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "counters, 4. Attributes like Tough, 5. Inverted, 6.Unaware"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if ((a === 'Tough' || a === 'Balanced' || a === 'Inverted' || a === 'Unaware')"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.general.stats-then-death",
+    "textHash": "302ffbc22712ea35",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:effStats",
+        "agrees": true,
+        "note": "effStats is atomic; checkDeaths runs after"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "79-round17-layers.test.ts",
+        "pattern": "R93 layer 5: hitting 0 mid-calculation is not death",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "08-cards2.test.ts",
+        "pattern": "Child of Aether: Balanced (power & defense = max) keeps a 2/0 alive",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R93",
+        "supports": "yes",
+        "note": "calebgannon quoted"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "So a 1/1 with a -1/-1 counter and {Inverted} is a live 2/2, never a dead 0/0."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.inverted",
+    "textHash": "8cac738ff9d5d6b5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:effStats",
+        "agrees": true,
+        "note": "layer 5: 2*base - current"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "43-dark-c.test.ts",
+        "pattern": "Its Dark Bubb: the printed reminder text, verbatim",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Its Dark Bubb",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.25",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "(Invert the stat changes of inverted units. For example, -1/+2 would become +1/-2.)"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "p = 2 * base[0]! - p;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.inverted.attributes",
+    "textHash": "a49f16b6d989247c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:effStats",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "79-round17-layers.test.ts",
+        "pattern": "R93 layer 5: Caleb's worked example — a 1/4 Tough Balanced Inverted is a -6/0",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R93",
+        "supports": "yes",
+        "note": "calebgannon quoted"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "So Tough inverted is not \"halve the defense\", it is \"lose the +0/+4 you gained\""
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.inverted.base",
+    "textHash": "568b82553a3123e1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:effStats",
+        "agrees": true,
+        "note": "base = layers 1-2, so a base rewrite is what Inverted inverts from"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "79-round17-layers.test.ts",
+        "pattern": "R93 layer 5: a base REWRITE is the thing inverted FROM, never inverted itself",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R93",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "* `base` here is layers 1-2, which is exactly right: a base REWRITE"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Owner call. Note: the guarding test records that _passer argued the opposite in rules-questions (not in a RAQ thread); if that ever reaches a RAQ it outranks R93."
+  },
+  {
+    "key": "attr.inverted.net",
+    "textHash": "daa5c0b1cc96a77e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:effStats",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "79-round17-layers.test.ts",
+        "pattern": "R93 layer 5: the owner's Malformed Monstrosity",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "43-dark-c.test.ts",
+        "pattern": "Its Dark Bubb: MULTI-SOURCE — layer 5 negates the NET change, not each source on its own",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.25",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R93",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "attribute, which reverses its stat changes. It’s -7/-7"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "p = 2 * base[0]! - p;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.inverted.tough",
+    "textHash": "fff48db40d21e610",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:effStats",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "79-round17-layers.test.ts",
+        "pattern": "R226: the TWO-attribute case, in either grant order",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "79-round17-layers.test.ts",
+        "pattern": "R226: the special case his wording misses",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "79-round17-layers.test.ts",
+        "pattern": "R226: the column wipe",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R226",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> ### **final defense = −2Δ.** The base cancels out completely."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.powerful",
+    "textHash": "5fa54c37eb1a4b1f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:colPower doubling (line ~12347)",
+        "agrees": true,
+        "note": ""
+      },
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Emberflame Enlightener",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "(Powerful sources deal double damage)"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (n > 0 && attrsVs(hitUnit).has('Powerful')) n *= 2;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.powerful.additive",
+    "textHash": "606da9f560fb6d90",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "amountDelta (Conduit) applied before the Powerful doubling"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Resonant: Conduit adds its 1 BEFORE Powerful doubles",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1362838395298119912#4",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R316",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "* ORDER: the additive modifiers come FIRST, then {Powerful} doubles the"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "(1+1)x2 damage to each unit = 4 damage to each unit"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.powerful.combat",
+    "textHash": "27e0b02fa1f0eeec",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:colPower doubling (line ~12347)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "09-attrs.test.ts",
+        "pattern": "Powerful: Chitin Shredder deals double combat damage to a player",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "09-attrs.test.ts",
+        "pattern": "Powerful: column-shares",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1362838395298119912#2",
+        "supports": "partly",
+        "note": "shows doubling of combat damage, not the before-division point"
+      },
+      {
+        "ref": "R23",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "return this.colPower(ids, collapsed) * (attrs.has('Powerful') ? 2 : 1);"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**Powerful** doubles the source's total damage once, **before** assignment/overflow (a"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.powerful.noncombat",
+    "textHash": "9565465489424cb9",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U19-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:E.dealEffectDamageAll",
+        "agrees": true,
+        "note": "`if (n > 0 && attrsVs(hitUnit).has('Powerful')) n *= 2;` — comment \"to units and players alike\"; a Powerful SPELL that is not the source does not double (Squish RAQ), consistent with \"its source\""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "09-attrs.test.ts",
+        "pattern": "Powerful: doubles effect damage from a Powerful source",
+        "passed": true,
+        "asserts_claim": "yes: 2 effect damage from Chitin Shredder lands as 4 on a unit"
+      },
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "Resonant + Powerful + Conduit",
+        "passed": true,
+        "asserts_claim": "yes (players half): the Resonant effect to the face is doubled, (4+1)x2 = 10"
+      },
+      {
+        "file": "206-deadly-everywhere.test.ts",
+        "pattern": "(whole file)",
+        "passed": true,
+        "asserts_claim": "partly: \"{Powerful} and {Deadly} reach the same effect-damage sites\""
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1362838395298119912#4",
+        "supports": "yes",
+        "note": "Powerful doubles Bellowing Boulder's ability damage to units"
+      },
+      {
+        "ref": "RAQ 1362838395298119912#3",
+        "supports": "yes",
+        "note": "Powerful doubles the Resonant effect to the enemy face (players)"
+      },
+      {
+        "ref": "R237",
+        "supports": "partly",
+        "note": "\"Just like powerful\" — an aside in a Deadly ruling; on-topic, weak"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "A: (1+1)x2 damage to each unit = 4 damage to each unit"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "put effect on stack to deal (4+1)x2 = 10 damage to enemy face"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "      // Powerful source: double the damage dealt (to units and players alike),"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> **\"Yes, deadly works on spell effects and everything. Just like powerful. So a"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.powerful.pure",
+    "textHash": "1acf487c38aecf64",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": ""
+      },
+      {
+        "loc": "client/engine/src/engine.ts:exchangeAt",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "290-pure-outside-combat.test.ts",
+        "pattern": "§1 a Pure source: its own Powerful does not double",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Just a Unit",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R61",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "(Pure cards and cards they are interacting with ignore all other attributes.)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.powerful.spells",
+    "textHash": "b71df67fd2e59113",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "grantedAttrs (effectAttrs) unioned into the source"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "12-fire-a.test.ts",
+        "pattern": "Emberflame Enlightener: your SPELLS gain {Powerful} too",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Emberflame Enlightener",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R94",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "[Augment] Your units and spells gain {g}powerful."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.powerful.unit-source",
+    "textHash": "9e2c42a4adc84b58",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "388-raq-blocks-and-windows.test.ts",
+        "pattern": "RAQ Squish: the unit is the source",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "388-raq-blocks-and-windows.test.ts",
+        "pattern": "RAQ Squish: a Powerful Squish does not double",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U19/u19-probes.test.ts",
+        "title": "attr.powerful.unit-source — Squish on a unit that SHARES Powerful from its column deals double",
+        "passed": true,
+        "demonstrates": "yes: column-shared Powerful doubles a Squish (3 -> 6)"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "RAQ 1402292180499955884#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1402292180499955884#1",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "you would need to target ally unit which is Powerful to deal double damage"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "It doesn't matter if Squish is Powerful"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.sluggish",
+    "textHash": "6cef0b8c2e9614a6",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:scheduled",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Rime Wraith",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "(Swift units deal combat damage first. Sluggish units deal combat damage last.)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.sluggish.after-normal",
+    "textHash": "72db744eb32e961c",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U19-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:E.strikes",
+        "agrees": true,
+        "note": "Sluggish barred only by a normal mark; a Swift mark bars only normal, so a Swift column that gains Sluggish strikes again"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "388-raq-blocks-and-windows.test.ts",
+        "pattern": "RAQ Swift: a column that dealt normal damage deals no Sluggish damage",
+        "passed": true,
+        "asserts_claim": "yes: plain column granted Sluggish after striking deals nothing more"
+      },
+      {
+        "file": "388-raq-blocks-and-windows.test.ts",
+        "pattern": "RAQ Swift: a Swift column that gains Sluggish strikes again",
+        "passed": true,
+        "asserts_claim": "yes: Dune Drifter column strikes in Swift and again in Sluggish"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1363298910528864318#3",
+        "supports": "yes",
+        "note": "verbatim"
+      },
+      {
+        "ref": "RAQ 1363298910528864318#2",
+        "supports": "yes",
+        "note": "verbatim"
+      },
+      {
+        "ref": "R320",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "it's marked with 'I did Regular damage' which means it won't be able to deal sluggish-combat-damage; even if it were to gain Sluggish"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "It's still possible to give this column Sluggish attribute and it will deal damage during sluggish-combat-damage (for effective doublestrike)"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (sub === 'Sluggish' && done.includes('normal')) return false;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.sluggish.after-triggers",
+    "textHash": "551e224c8887932f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:combat sub-step pump (struckNow && moreLater)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "297-damage-substeps-are-steps.test.ts",
+        "pattern": "R295 §1 the report",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1540678747953569832#2",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R295",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "so that it gets its counters BEFORE dealing damage. So there should have been 6"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.sluggish.pure",
+    "textHash": "88426e32686f9960",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:scheduled",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U19/u19-probes.test.ts",
+        "title": "attr.sluggish.pure — a Sluggish attacker blocked by a Pure unit strikes in the normal sub-step",
+        "passed": true,
+        "demonstrates": "yes: damageSubs = [normal]"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Just a Unit",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R61",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const attrs = suppressed ? new Set<string>() : this.colAttrs(colIds);"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Swift or Sluggish in it, the exchange strikes in the normal sub-step."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.sluggish.schedule",
+    "textHash": "51ca88b17e90fd27",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:scheduled",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "423-cr-combat-damage.test.ts",
+        "pattern": "cr:combat.damage.substeps — Swift, then normal, then Sluggish",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Rime Wraith",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (sub === 'Sluggish') return attrs.has('Sluggish');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.swift",
+    "textHash": "300b948cb56d8f23",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:scheduled",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Rime Wraith",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.25",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "(Swift units deal combat damage first. Sluggish units deal combat damage last.)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.swift.kill-first",
+    "textHash": "be7365bf2ab926ee",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:combat sub-steps",
+        "agrees": true,
+        "note": "dead units are filtered (aliveInCol) before the next sub-step"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "423-cr-combat-damage.test.ts",
+        "pattern": "cr:combat.damage.overview.simultaneous — a Swift attacker deals its damage first",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.25",
+        "supports": "partly",
+        "note": "stated for the Swift+Deadly pairing: \"instantly kill anything before it has a chance to fight back\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "anything before it has a chance to fight back."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.swift.pure",
+    "textHash": "69ab829597b34b47",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:scheduled",
+        "agrees": true,
+        "note": "suppressed (pure) -> empty attrs -> normal"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U19/u19-probes.test.ts",
+        "title": "attr.swift.pure — a Swift attacker blocked by a Pure unit strikes in the normal sub-step",
+        "passed": true,
+        "demonstrates": "yes: damageSubs = [normal]; both sides strike together"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Just a Unit",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R61",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const attrs = suppressed ? new Set<string>() : this.colAttrs(colIds);"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Afflicting or Thieving, and the victim's Vulnerable is off too. With no"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.swift.schedule",
+    "textHash": "e51bdd3ffe12a881",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:scheduled",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "423-cr-combat-damage.test.ts",
+        "pattern": "cr:combat.damage.substeps — Swift, then normal, then Sluggish",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Rime Wraith",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.25",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (sub === 'Swift') return attrs.has('Swift');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.swift.split",
+    "textHash": "37a22c4d7fd5fd72",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:combat sub-step pump (struckNow && moreLater)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "297-damage-substeps-are-steps.test.ts",
+        "pattern": "R295 §3b an EMPTY sub-step opens no window",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "21-fixes.test.ts",
+        "pattern": "Flowstone Arcanite (R295): the Swift-step counters land at the boundary",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1540678747953569832#2",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1363298910528864318#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R295",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "presence of Swift or/and Sluggish opens new stacks which must be resolved before you move to next combat damage step"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.swift.struck",
+    "textHash": "f323dd0b81feabe5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:strikes",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "388-raq-blocks-and-windows.test.ts",
+        "pattern": "RAQ Swift: a column that dealt Swift damage deals no normal damage",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1363298910528864318#1",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R320",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (sub === 'normal' && done.includes('Swift')) return false;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.swift.with-sluggish",
+    "textHash": "52be41f4e7b27d23",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:scheduled",
+        "agrees": true,
+        "note": ""
+      },
+      {
+        "loc": "client/engine/src/engine.ts:strikes",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "423-cr-combat-damage.test.ts",
+        "pattern": "cr:combat.damage.substeps.swift-and-sluggish",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.43",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1363298910528864318#2",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R157 §5",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "A: It deals combat damage twice, going first and last,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.tough",
+    "textHash": "56d18abae60178f0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:effStats",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "08-cards2.test.ts",
+        "pattern": "Rampart Guardian: Tough doubles defense (layer 4), own and via augment",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.42",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.35",
+        "supports": "partly",
+        "note": "says Rampart grants Tough; not what Tough does"
+      },
+      {
+        "ref": "glossary: Tough",
+        "supports": "yes",
+        "note": "ours"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (a === 'Tough') t *= 2;"
+      },
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "will have its defense doubled, then its stats balanced."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.tough.after-counters",
+    "textHash": "6948c379acdfec36",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U19-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:E.effStats (layer 4)",
+        "agrees": true,
+        "note": "Tough doubles t after layer 3 (counters, temp deltas)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Tough: a 0/4 Tough unit with a +1/+1 counter is a 1/10",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U19/u19-probes.test.ts",
+        "title": "attr.tough.power — a 0/4 Tough unit with a -1/-1 counter is a -1/6",
+        "passed": true,
+        "demonstrates": "yes: the Manual's own -1/-1 example"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.42",
+        "supports": "yes",
+        "note": "layer list and the -1/6 example"
+      },
+      {
+        "ref": "RAQ 1362832912579559664#0",
+        "supports": "yes",
+        "note": "verbatim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "unit with a -1/-1 counter on it would become a -1/6."
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "That's 1/5 after including counter and 1/10 after including Tough"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "      if (a === 'Tough') t *= 2;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.tough.doubling",
+    "textHash": "1166de9c39cd5278",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:effStats",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Tough: Burgeon on that 1/10 makes it 1/20, and losing Tough to Monke leaves 1/10",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "140-layers-and-riders.test.ts",
+        "pattern": "Burgeon doubling a {Tough} unit's defense gives the printed number",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1362832912579559664#1",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "So Burgeon 'under the hood' gave it +0/+5"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.tough.power",
+    "textHash": "4383dad7d8cd611f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:effStats",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U19/u19-probes.test.ts",
+        "title": "attr.tough.power — a 0/4 Tough unit with a -1/-1 counter is a -1/6",
+        "passed": true,
+        "demonstrates": "yes: 0/4 Tough with a -1/-1 counter is -1/6"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.42",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R226",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "text": "place before the defense is doubled, so a 0/4 tough"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (a === 'Tough') t *= 2;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.unaware",
+    "textHash": "5e397b7a76164324",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:effStats",
+        "agrees": true,
+        "note": ""
+      },
+      {
+        "loc": "client/engine/src/engine.ts:collapsedBy/interactionStats",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1402292180499955884#3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R106",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "glossary: Unaware",
+        "supports": "yes",
+        "note": "ours"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "If you used Squish to make Bubb deal it"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (statAttrs.includes('Unaware')) return this.printedStats(e);"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (this.unaware(u)) return true;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.unaware.base",
+    "textHash": "fad9cedbf5be5cc7",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:effStats",
+        "agrees": true,
+        "note": "layer 6 returns printedStats, dropping layer 2"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "92-unaware.test.ts",
+        "pattern": "a base REWRITE is ignored too",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R157 §14",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R106",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (statAttrs.includes('Unaware')) return this.printedStats(e);"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "card. So a Statweaver leaves Bubb a 5/6."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.unaware.combat",
+    "textHash": "afbef1f6003f6d96",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:exchangeAt",
+        "agrees": true,
+        "note": "collapsed = any Unaware unit among atk and blk"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "92-unaware.test.ts",
+        "pattern": "Bubb blocks a pumped 3/3 and takes the attacker's PRINTED 3",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "92-unaware.test.ts",
+        "pattern": "an Unaware ATTACKER collapses the exchange the same way a blocker does",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "423-cr-combat-damage.test.ts",
+        "pattern": "cr:combat.damage.assignment.lethal-defined — in an Unaware exchange",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R106",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const collapsed = [...atk, ...blk].some(id => {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.unaware.death",
+    "textHash": "2931aaf8b98fb4e3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:sweepCollapsedDeaths",
+        "agrees": true,
+        "note": "kills participants whose printed defense is met"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "92-unaware.test.ts",
+        "pattern": "\"Bubb blocking a Robot token would kill it",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "92-unaware.test.ts",
+        "pattern": "\"Haboob kills anything that has 1 defense printed at the card level\"",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R106",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "private sweepCollapsedDeaths(ids: Iterable<EntityId>): void {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.unaware.interaction",
+    "textHash": "3e0c8cf18c3229e6",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:collapsedBy/interactionStats",
+        "agrees": true,
+        "note": ""
+      },
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "388-raq-blocks-and-windows.test.ts",
+        "pattern": "RAQ Squish: Unaware Bubb squishing a Robot 10 kills it",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "388-raq-blocks-and-windows.test.ts",
+        "pattern": "RAQ Squish: a Robot 10 squishing Unaware Bubb",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "92-unaware.test.ts",
+        "pattern": "two units FIGHT: Bubb reads a Robot 7 as a 0/0",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1402292180499955884#3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1402292180499955884#4",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R106",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (this.unaware(u)) return true;"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Squish to make Robot 10 deal its defense as damage to Bubb will cause no harm to Bubb"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.unaware.outside",
+    "textHash": "58779bafa4400b93",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:collapsedBy/interactionStats",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "92-unaware.test.ts",
+        "pattern": "NEGATIVE CONTROL: a Robot token that nobody Unaware is fighting is its full size",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R106",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "participants only — outside an interaction a Robot 20 is a 20/20 and stays one. It sits"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.unaware.self",
+    "textHash": "e70a75f81a33fc5b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:effStats",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "92-unaware.test.ts",
+        "pattern": "a +1/+1 counter on Bubb leaves it a 5/6",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "92-unaware.test.ts",
+        "pattern": "Bubb would also survive 100 -1/-1 counters just fine",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "92-unaware.test.ts",
+        "pattern": "{Tough} donated onto Bubb does nothing",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Reconfigure vs Despawn: moving Bubb and its Growing Plague onto a Robot",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353847640214999170#1",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R106",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (statAttrs.includes('Unaware')) return this.printedStats(e);"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Since now Robot is Unaware it will die and then trigger Growing Plague Despawn."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.unaware.spells",
+    "textHash": "706bb93c0418db85",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "srcUnaware collapses each recipient"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "92-unaware.test.ts",
+        "pattern": "\"Haboob kills anything that has 1 defense printed at the card level\"",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R106",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const srcUnaware = srcAttrs.has('Unaware');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.unaware.targets",
+    "textHash": "91e424da65927022",
+    "verdict": "confirmed",
+    "round": 3,
+    "verifier": "U19-r3",
+    "engine": [
+      {
+        "loc": "apply.ts / target legality",
+        "agrees": true,
+        "note": "no target check reads Unaware; Poison may target Bubb."
+      },
+      {
+        "loc": "engine.ts:effStats",
+        "agrees": true,
+        "note": "if (statAttrs.includes('Unaware')) return this.printedStats(e) — counters/temp/base changes stay on the entity but are not read."
+      },
+      {
+        "loc": "engine.ts:dealEffectDamageAll / interactionStats",
+        "agrees": true,
+        "note": "a Squish source interacting with Unaware Bubb is read at printed (Robot 10 = 0/0)."
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "388-raq-blocks-and-windows.test.ts",
+        "pattern": "RAQ Squish: a Robot 10 squishing Unaware Bubb",
+        "passed": true,
+        "asserts_claim": "yes: Bubb targeted by Squish takes 0 (its assertion message 'today the Robot deals its live 10 and kills it' is stale but the assert is correct)"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U19/u19-r2-probes.test.ts",
+        "title": "attr.unaware.targets — Poison X=6 may target Unaware Bubb: six -1/-1 counters go on, Bubb stays a 5/6",
+        "passed": true,
+        "demonstrates": "yes: target allowed, counters stay (-6), stats read 5/6"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U19/u19-r2-probes.test.ts",
+        "title": "attr.unaware.targets — a Robot 10 squishing Bubb deals 0 because the ROBOT is read at its printed 0/0; Bubb's printed defense is 6",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "RAQ 1402292180499955884#4",
+        "supports": "yes",
+        "note": "designer (_passer): Robot 10 squishing Bubb does no harm; supports example 2."
+      },
+      {
+        "ref": "R281 (owner quote)",
+        "supports": "yes",
+        "note": "'You can target things with unaware ... get 6 counters, but those counters won't do anything.' — states the rule and example 1."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "*\"You can target things with unaware, of course, but if that thing does a stat"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "get 6 counters, but those counters won't do anything.\"* R106's \"one open edge\""
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Squish to make Robot 10 deal its defense as damage to Bubb will cause no harm to Bubb"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (statAttrs.includes('Unaware')) return this.printedStats(e);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.vulnerable",
+    "textHash": "9318f65ec47c25c5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:victimShare",
+        "agrees": true,
+        "note": ""
+      },
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "09-attrs.test.ts",
+        "pattern": "Vulnerable: Crumbling Ancient marks double the combat damage it receives",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1372451771632320512#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R23",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "glossary: Vulnerable",
+        "supports": "yes",
+        "note": "ours"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "you need 4 damage to kill it, because this 4 damage would be doubled on him"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const mult = (!pure && this.effAttrs(u).has('Vulnerable')) ? 2 : 1;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.vulnerable.lethal",
+    "textHash": "304fd535db0a86d3",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U19-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:dealEffectDamageAll.poolToKill",
+        "agrees": true,
+        "note": "Math.ceil(recvCap / mult) with recvCap = t - damage - already dealt: half the REMAINING defense, rounded up"
+      },
+      {
+        "loc": "engine.ts:E.assignColumnDamage",
+        "agrees": true,
+        "note": "combat: a Vulnerable victim's share is half the pool"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Vulnerable: Arc Lightning on a Vulnerable 3/8",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "a 10-power Piercing column into a Vulnerable 3/8 assigns 4",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U19/u19-probes.test.ts",
+        "title": "attr.vulnerable.lethal — a Vulnerable 3/7 needs 4 (half of 7 rounded UP), so a 10-power Piercing column sends 6 through",
+        "passed": true,
+        "demonstrates": "yes: rounding UP"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U19/u19-r2-probes.test.ts",
+        "title": "attr.vulnerable.lethal — lethal for a Vulnerable unit is half its REMAINING defense: a damaged Vulnerable 3/8 (2 marked) needs 3, so 7 of 10 pierce",
+        "passed": true,
+        "demonstrates": "yes: \"remaining\" — prior damage is subtracted first"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "RAQ 1372451771632320512#0",
+        "supports": "yes",
+        "note": "4 to kill a 3/8 because doubled"
+      },
+      {
+        "ref": "R120",
+        "supports": "yes",
+        "note": "\"rounded up under {Vulnerable}\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "you need 4 damage to kill it, because this 4 damage would be doubled on him"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "rounded up under {Vulnerable}, 1 under {Deadly}, printed defense in an {Unaware}"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "      return Math.ceil(recvCap / mult);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.vulnerable.piercing",
+    "textHash": "7d943ae8194f55f2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:victimShare",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Vulnerable: a 10-power Piercing column into a Vulnerable 3/8 assigns 4",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1372451771632320512#3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R23",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "you are required to assing atleast 4 damage to Crumbling (which gets doubled due to Vulnerable) and excess damage is 10-4=6, which can go face"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.vulnerable.powerful",
+    "textHash": "7f0ff1d08a77ec4e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "82-attr-interactions.test.ts",
+        "pattern": "Powerful (source) and Vulnerable (receiver) both apply to one effect hit",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R103",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R23",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "1. {Powerful} doubles the source's damage first (already in the per-hit loop)."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.vulnerable.pure",
+    "textHash": "305eaaef768fd32a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "pureWith(recipient) guards its own Vulnerable"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "290-pure-outside-combat.test.ts",
+        "pattern": "§2 a Pure recipient's own Vulnerable is off too",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U19/u19-probes.test.ts",
+        "title": "attr.vulnerable.pure — a Vulnerable unit that is itself Pure is not dealt double damage",
+        "passed": true,
+        "demonstrates": "yes: a Pure Crumbling Ancient is dealt 2, not 4"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Just a Unit",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R61",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R289",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "are off against it, and so are its own {Vulnerable} and {Unaware}."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.vulnerable.receipt",
+    "textHash": "4d895e30a054c237",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U19-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:victimShare",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "399-raq-fix-combat.test.ts",
+        "pattern": "R319: a Piercing attacker may put all 10 into a lone Vulnerable 3/8",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1372451771632320512#4",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R23",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "You could assign all 10 damage to Crumbling, which would then get doubled to 20"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  }
+]

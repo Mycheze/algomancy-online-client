@@ -1,0 +1,4121 @@
+[
+  {
+    "key": "effects.column-share",
+    "textHash": "0b50ad9a8428c0ad",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:effAttrs / colAttrs",
+        "agrees": true,
+        "note": "union of ownAttrs over the column"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/79-round17-layers.test.ts",
+        "pattern": "R93 layer 5: {Inverted} is shared down the COLUMN",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.24",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.12",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Combat attributes (denoted in gold text) are shared by"
+      },
+      {
+        "file": "client/engine/test/79-round17-layers.test.ts",
+        "text": "\"its column-mate shares it: -1/-1 inverted to +1/+1\""
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.column-share.battle-only",
+    "textHash": "71c6a8e6abb50a4a",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U16-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:columnOf",
+        "agrees": true,
+        "note": "if (!b) return null - no battle, no column, effAttrs = ownAttrs"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/298-column-attrs-outside-combat.test.ts",
+        "pattern": "outside battle there are no columns at all",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R294",
+        "supports": "yes",
+        "note": "a column only exists in combat; outside battle effAttrs is ownAttrs"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**This is narrower than it sounds, and the reason matters.** A column only exists"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (!b) return null;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.column-share.columns-only",
+    "textHash": "1780eb28734c6e58",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:effAttrs / colAttrs",
+        "agrees": true,
+        "note": "effAttrs unions only the ids of columnOf(e); adjacent columns are not read"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U16/u16-probes.test.ts",
+        "title": "effects.column-share.columns-only: a unit in the NEXT column does not get its neighbour's Piercing; one in the same column does",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.24",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.12",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Combat attributes are not shared by units to the left or to the right, they"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "/** combat attributes are shared vertically within a column */"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.column-share.everything",
+    "textHash": "094c024f1b82f857",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:effectSourceAttrs (effAttrs of the source)",
+        "agrees": true,
+        "note": "effect damage and activations read column attributes while in the column"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/298-column-attrs-outside-combat.test.ts",
+        "pattern": "R294 §1 the report",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/298-column-attrs-outside-combat.test.ts",
+        "pattern": "R294 §2 every source-side attribute rides the same line",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R294",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R93",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Units in a column just share attributes in all situations"
+      },
+      {
+        "file": "client/engine/test/298-column-attrs-outside-combat.test.ts",
+        "text": "'THE REPORT: 3 damage dealt by a source in a Blessed column gains its controller 3');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.column-share.leaving",
+    "textHash": "5ebaf5c3c70ccdbe",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:effAttrs",
+        "agrees": true,
+        "note": "computed live from the current column"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "pattern": "once the Deadly partner leaves the column, the Boulder ping is not Deadly",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.24",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1353895783266516992#5",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "all other units in its column immediately lose access to"
+      },
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "text": "'the 7/5 survives a plain 1 damage'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.column-share.non-combat",
+    "textHash": "ee832f2a60779d5b",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U16-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:effAttrs/colAttrs",
+        "agrees": true,
+        "note": "column union of ownAttrs; Unstable (Entity.unstable/isUnstable) and Burst (CardDef.burst) are not in ownAttrs so never shared"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:ownAttrs",
+        "agrees": true,
+        "note": "Modular IS in a card's attrs and would union through a column, but only a spell prints it, so it never stands in a column (noted in 298 §5)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/298-column-attrs-outside-combat.test.ts",
+        "pattern": "a modded \\(therefore Unstable\\) unit does not make its column-mate Unstable",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.25",
+        "supports": "yes",
+        "note": "'These attributes are not shared in formation' refers to the purple non-combat attributes (burst, unstable)"
+      },
+      {
+        "ref": "R294",
+        "supports": "yes",
+        "note": "owner quote: Unstable/Burst special, not shared; Modular 'also special'"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "These attributes are not shared in formation"
+      },
+      {
+        "file": "client/engine/test/298-column-attrs-outside-combat.test.ts",
+        "text": "test('R294 §5b a modded (therefore Unstable) unit does not make its column-mate Unstable'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Minor: Modular is in the engine's attribute set and is unshared only because no unit carries it."
+  },
+  {
+    "key": "effects.column-share.own-questions",
+    "textHash": "81819b94838ab154",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "apply.ts",
+        "agrees": true,
+        "note": "Feeble read via ownAttrs(u); Alluring source via ownAttrs(e.entity(id)!)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/298-column-attrs-outside-combat.test.ts",
+        "pattern": "R294 §4 {Feeble} block legality",
+        "passed": true,
+        "asserts_claim": "yes (source-text check of apply.ts, not behavioural)"
+      },
+      {
+        "file": "client/engine/test/298-column-attrs-outside-combat.test.ts",
+        "pattern": "R294 §4b {Alluring} still originates from the unit that prints it",
+        "passed": true,
+        "asserts_claim": "yes (source-text check of apply.ts, not behavioural)"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R294",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "It won't let the Feeble unit block, even if it has another unit in the"
+      },
+      {
+        "file": "client/engine/test/298-column-attrs-outside-combat.test.ts",
+        "text": "'apply.ts still asks Feeble of the UNIT, not of its column');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.continuous.base-exchange",
+    "textHash": "e697fce91c9cf776",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:baseStatsOf",
+        "agrees": true,
+        "note": "Body Swap stamps baseSet with a later baseSetSeq; last-wins over the Statweaver static"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "pattern": "RAQ timestamps: Body Swap with a Statweavered unit",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Body Swap",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1357965714807586897#1",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "text": "'the Wisp is base 1/1 although the Statweaver still stands'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.continuous.doubling",
+    "textHash": "cf029d946a61b993",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "cards: Burgeon / R166 doubling",
+        "agrees": true,
+        "note": "solves the layer-3 delta that lands effStats on double"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/387-raq-combat.test.ts",
+        "pattern": "RAQ Tough: Burgeon on that 1/10 makes it 1/20",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Burgeon",
+        "supports": "partly",
+        "note": "says double, not how"
+      },
+      {
+        "ref": "RAQ 1362832912579559664#1",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R166",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/387-raq-combat.test.ts",
+        "text": "'\"if this unit would loose Tough (eg. Monke), then it\\'s back to being 1/10\"'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.continuous.ends",
+    "textHash": "10d341e0774992e1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:strippersOf / staticsFor",
+        "agrees": true,
+        "note": "continuous strippers are read live off anchors in play"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "pattern": "RAQ Transmogrifant: a unit that enters play under it has no attributes",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/12-fire-a.test.ts",
+        "pattern": "Infernal Wispweaver: the suppression ends the instant the weaver does",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355845893219287132#0",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "text": "'with Transmogrifant gone, Powerful is back'"
+      },
+      {
+        "file": "client/engine/test/12-fire-a.test.ts",
+        "text": "'continuous, not a one-off stamp — the Wisp gets its ability back');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.continuous.enters-modified",
+    "textHash": "28c4be3725d9875b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:staticsFor / effStats",
+        "agrees": true,
+        "note": "statics are read live, so a unit is changed from the moment it exists; spawn listeners read effStats"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "pattern": "RAQ Nectar Ridge: under Sandstone Defender",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "pattern": "RAQ Nectar Ridge: under Infernal Wispweaver",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355633589890584636#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1355633589890584636#2",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "text": "'the Oracle saw a 1/3 spawn and drew (once — [once])'"
+      },
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "text": "'it never was a 0/1 — no draw'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.continuous.layers",
+    "textHash": "b887825371350bf3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:effStats",
+        "agrees": true,
+        "note": "copy 0 · printed 1 · base 2 · counters/temp 3 · Tough/Balanced 4 · Inverted 5 · Unaware 6; layer 2 last-wins by timestamp"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/44-hybrids-ld-a.test.ts",
+        "pattern": "R118: a later setBase wins over a copy",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.42",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1357965714807586897#0",
+        "supports": "partly",
+        "note": "timestamps within a layer"
+      },
+      {
+        "ref": "R118",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "0 COPY  ·  1 printed/tokenStats  ·  2 baseSet + StaticMod baseP/baseT"
+      },
+      {
+        "file": "client/engine/test/44-hybrids-ld-a.test.ts",
+        "text": "'the copy does not overwrite the base-set: layer 0 is BELOW layer 2 in both orders');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.continuous.layers.attribute-order",
+    "textHash": "b18aaa335ffe7e93",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U16-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:ownAttrs/effAttrs layer-4 order (R19)",
+        "agrees": true,
+        "note": "printed attrs in type-line order, then augment-granted in mod order, then column-shared front to back"
+      },
+      {
+        "loc": "engineDiffers F-U16-4",
+        "agrees": true,
+        "note": "divergence real: Child of Aether (2/0 Balanced) augmented with Rampart Guardian (Tough) measures 2/4 (balanced then doubled); the Manual's 'augmented onto' clause gives 2/2"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/08-cards2.test.ts",
+        "pattern": "R19: layer-4 application order",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U16/u16-probes.test.ts",
+        "title": "effects.continuous.layers.attribute-order: a printed-Balanced unit augmented with Tough is balanced, then doubled (measured against the Manual p.42 first clause)",
+        "passed": true,
+        "demonstrates": "yes - engine measured 2/4, confirming the flagged divergence"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.42",
+        "supports": "yes",
+        "note": "the Q&A quoted verbatim, including its two conflicting clauses"
+      },
+      {
+        "ref": "R19",
+        "supports": "yes",
+        "note": "order is the engine's own call"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Attributes apply in order from top to bottom. So if"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "its stats balanced, then its defense doubled."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "⚠ Engine call: the Manual doesn't specify an order for printed-vs-granted-vs-shared;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "The ruling quotes the Manual's internal conflict honestly (D-U16-1). The engine divergence from the 'augmented onto' clause is real."
+  },
+  {
+    "key": "effects.continuous.layers.copy",
+    "textHash": "3785a147dfe70988",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:printedStats",
+        "agrees": true,
+        "note": "consults the copy face first, so layer 1 is the copied card's printed pair"
+      },
+      {
+        "loc": "engine.ts:effStats",
+        "agrees": true,
+        "note": "every later layer applies over it"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/44-hybrids-ld-a.test.ts",
+        "pattern": "R118: {Unaware} reads the COPIED face's printed stats",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R118",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "* **R106 {Unaware} reads the COPIED face's printed stats.** `E.printedStats` consults the"
+      },
+      {
+        "file": "client/engine/test/44-hybrids-ld-a.test.ts",
+        "text": "R118: {Unaware} reads the COPIED face\\'s printed stats (R106 over layer 0)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.continuous.layers.inverted-last",
+    "textHash": "a5f110097835916e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:effStats",
+        "agrees": true,
+        "note": "layer 5 applied once after the whole layer-4 walk"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/79-round17-layers.test.ts",
+        "pattern": "R226: the TWO-attribute case, in either grant order",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.42",
+        "supports": "yes",
+        "note": "layer list puts Inverted (5) after attributes (4)"
+      },
+      {
+        "ref": "R226",
+        "supports": "yes",
+        "note": "R93 records an OPEN note: Caleb \"Tough inverted balanced would be different\" (interleaved reading), self-closed as \"basically impossible\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "changes, like temporary +2/+2 bonuses and +1/+1"
+      },
+      {
+        "file": "client/engine/test/79-round17-layers.test.ts",
+        "text": "'Inverted then Tough is the SAME — layer 5 is a layer, not a step in the type-line order');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Note only: R93 keeps an OPEN question (Caleb: \"Tough inverted balanced would be different\") on whether Inverted is interleaved into layer 4; the rule follows the printed layer list and the shipped engine."
+  },
+  {
+    "key": "effects.continuous.layers.once",
+    "textHash": "aec5948588be07f4",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:statLayerAttrs",
+        "agrees": true,
+        "note": "deduped walk, an attribute counted once"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/79-round17-layers.test.ts",
+        "pattern": "R93 layer 5: {Inverted} applies ONCE however many sources grant it",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R19",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R93",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/79-round17-layers.test.ts",
+        "text": "'a second {Inverted} does not invert back — duplicates do not stack'"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "column-shared attrs** (column order, front to back). Duplicates don't stack — an"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.continuous.one-calculation",
+    "textHash": "d136c7c75fc1cc74",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:effStats / checkDeaths",
+        "agrees": true,
+        "note": "effStats is atomic; deaths are checked on the final answer"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/79-round17-layers.test.ts",
+        "pattern": "R93 layer 5: hitting 0 mid-calculation is not death",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R93",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "So a 1/1 with a -1/-1 counter and {Inverted} is a live 2/2, never a dead 0/0."
+      },
+      {
+        "file": "client/engine/test/79-round17-layers.test.ts",
+        "text": "'a 1/1 with a -1/-1 counter, inverted, is a 2/2'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.continuous.switch",
+    "textHash": "088e5deb172135e2",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U16-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-metal-b.ts:Invasive Reassignment",
+        "agrees": true,
+        "note": "const [p, d] = effStats(t); addTemp(t, d - p, p - d) - a frozen until-regroup delta"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/27-metal-b.test.ts",
+        "pattern": "Invasive Reassignment: switches power and defense until regroup",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U16/u16-r2-probes.test.ts",
+        "title": "effects.continuous.switch: an 8/3 switched by Invasive Reassignment then given +2/+0 is a 5/8",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Invasive Reassignment",
+        "supports": "yes",
+        "note": "printed text"
+      },
+      {
+        "ref": "R66",
+        "supports": "yes",
+        "note": "the delta freezes the numbers; a later asymmetric change applies unswitched; placement is an OPEN RULING"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "\"text\": \"Switch the power and defense of target unit until regroup.\","
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Where a real switch belongs is an OPEN RULING, and this line previously guessed"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-metal-b.ts",
+        "text": "g.addTemp(t, d - p, p - d);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.continuous.what",
+    "textHash": "f13de77f8f5f789f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:staticsFor",
+        "agrees": true,
+        "note": "statics radiate only to targets in the anchor's region, while the holder is in play"
+      },
+      {
+        "loc": "engine.ts:addTemp + regroup sweep",
+        "agrees": true,
+        "note": "until-regroup deltas cleared at regroup"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/25-wood-c.test.ts",
+        "pattern": "Sudden Bloom: your in-region units get +1/+1 until regroup",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.40",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "a.region === target.region"
+      },
+      {
+        "file": "client/engine/test/25-wood-c.test.ts",
+        "text": "'the buff was cleaned up at regroup'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.control.exchange-positions",
+    "textHash": "a477af5afc5b852c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:giveControl keepFormation",
+        "agrees": true,
+        "note": "Organic Exchange re-slots both units into each other's slots"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/24-wood-b.test.ts",
+        "pattern": "Organic Exchange: control swaps and the attack slot passes to the exchanged unit",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Organic Exchange",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R148",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/24-wood-b.test.ts",
+        "text": "'the 1/1 took Bubb\\'s attack slot'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.control.formation",
+    "textHash": "318c1ae0292c17ea",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:giveControl",
+        "agrees": true,
+        "note": "removeFromFormation, never re-slots; regroup sends units to homeRegion(controller)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/145-erase-routes.test.ts",
+        "pattern": "R172 (viii): Download",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/145-erase-routes.test.ts",
+        "pattern": "R172 (ix): Download",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R172",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R112",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "It changes controller **immediately**, is **out of the formation for the rest"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (!opts?.keepFormation) this.removeFromFormation(u.id);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.control.formation.block-stays",
+    "textHash": "613561c6e0f27181",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:exchangeAt",
+        "agrees": true,
+        "note": "blockedEver = b.blocks[ci] !== undefined — blocked stays blocked"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/157-blocked-stays-blocked.test.ts",
+        "pattern": "R185: a blocker STOLEN mid-combat",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R172",
+        "supports": "yes",
+        "note": "\"it does not un-declare the block\"; R185 (not cited) is the actual ruling"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "it does not un-declare the block. That is the existing after-blocks lock, and"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.control.mod-moved",
+    "textHash": "b3e4fe40c3880e8c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:moveMod",
+        "agrees": true,
+        "note": "re-parents the mod; controller follows the new host as attachMod sets it"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/151-copy-and-moved-mods.test.ts",
+        "pattern": "R178 Rotbeast: a moved augment takes {Unstable} and its static with it",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.34",
+        "supports": "partly",
+        "note": ""
+      },
+      {
+        "ref": "card: Rotbeast",
+        "supports": "partly",
+        "note": "the move, not the controller"
+      },
+      {
+        "ref": "R178",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/151-copy-and-moved-mods.test.ts",
+        "text": "'the mod\\'s controller follows its host — the augment radiates for the enemy now');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.control.mods",
+    "textHash": "6b8195d32f0abb27",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:giveControl",
+        "agrees": true,
+        "note": "for each mod, m.controller = to"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/25-wood-c.test.ts",
+        "pattern": "R112: a stolen unit takes its MODS with it",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/24-wood-b.test.ts",
+        "pattern": "Mindspore Fiend gives away a MODDED blocker",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.15",
+        "supports": "partly",
+        "note": "generic \"treated as if\" sentence"
+      },
+      {
+        "ref": "Manual p.34",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R112",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "for (const id of u.mods) { const m = this.entity(id); if (m) m.controller = to; }"
+      },
+      {
+        "file": "client/engine/test/25-wood-c.test.ts",
+        "text": "'and so is the mod riding it — mods are part of the unit'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.control.no-change",
+    "textHash": "cb3931f313dff128",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:giveControl",
+        "agrees": true,
+        "note": "returns false (nothing changes hands) when the unit is gone or already the recipient's"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "pattern": "RAQ Amphivore with Ralph grafted",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353859961855148103#3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R148",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (u.controller === to) { this.ev('info', `${this.pname(to)} already controls ${u.card} — nothing changes hands.`); return false; }"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.control.region",
+    "textHash": "1b6299e42855746e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:giveControl",
+        "agrees": true,
+        "note": "if presentSeats of the unit's region lacks the new controller, the unit and its mods move to homeRegion(to)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/24-wood-b.test.ts",
+        "pattern": "Mindspore Fiend gives away a MODDED blocker",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U16/u16-probes.test.ts",
+        "title": "effects.control.region: a unit given in deployment to a player not present goes to that player's home region, with its mods",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R112",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (!this.s.regions[u.region]!.presentSeats.includes(to)) {"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "not present where it stands (a deployment-time steal) goes to that"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.control.what",
+    "textHash": "6c74e079360fdd21",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:giveControl",
+        "agrees": true,
+        "note": "u.controller = to; owner untouched"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/246-zones-follow-control.test.ts",
+        "pattern": "R262 §3: ownership does NOT move",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R8",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R112",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "u.controller = to;"
+      },
+      {
+        "file": "client/engine/test/246-zones-follow-control.test.ts",
+        "text": "'the facts riding the event still report the OWNER. R262 moved zones, not ownership.'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.control.zones",
+    "textHash": "712a1d5b3395dd1a",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U16-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:recall / cacheUnit",
+        "agrees": true,
+        "note": "const seat = opts.to ?? u.controller"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:eraseMod",
+        "agrees": true,
+        "note": "{ seat: mod.controller }"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:disposeToBin",
+        "agrees": true,
+        "note": "bin follows control (R250)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/246-zones-follow-control.test.ts",
+        "pattern": "a stolen unit recalled goes to the THIEF hand",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/246-zones-follow-control.test.ts",
+        "pattern": "an explicit destination still wins",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R262",
+        "supports": "yes",
+        "note": "owner: 'All four follow control'; explicit to still wins. R262 says it knowingly overrules a Manual recall sentence, but no 'owner' wording was found in data/rules/Algomancy-Manual.txt"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> Round-32 Q2, Bena verbatim: *\"**(a) All four follow control** — one rule, no"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const seat = opts.to ?? u.controller;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.copies.all-abilities",
+    "textHash": "168572b09dacbf66",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:facesOf / facesWith (FaceProjection)",
+        "agrees": true,
+        "note": "projected faces carry no name/stats/attrs facets; recomputed on each read, so adjacency loss drops them"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/26-metal-a.test.ts",
+        "pattern": "R118: Ancient One radiates an adjacent ally's STATIC, and stops when the column breaks",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/117-copy-everything.test.ts",
+        "pattern": "R127: attributes are the ONE thing an adjacent ally does not donate",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/26-metal-a.test.ts",
+        "pattern": "R118: Ancient One projects an adjacent ally's face WITHOUT taking its name or its body",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Ancient One",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R127",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R118",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "* **A projected face never carries `name` or `stats`.** `facesOf(e)[0]` is always the"
+      },
+      {
+        "file": "client/engine/test/117-copy-everything.test.ts",
+        "text": "'{Piercing} is an ATTRIBUTE: the one thing the whole text box does not include'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.copies.all-abilities.i-is-me",
+    "textHash": "8a63e1272aa61a22",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:anchored / mustBeTargetedIn",
+        "agrees": true,
+        "note": "projected text anchors on the radiator (the mimic)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/117-copy-everything.test.ts",
+        "pattern": "R127: an adjacent Gatekeeper of Souls makes the ANCIENT ONE must-be-targeted",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R127",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/117-copy-everything.test.ts",
+        "text": "'adjacent, the Ancient One must be targeted too — the clause reads \"I\"');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.copies.becoming",
+    "textHash": "ee9a826e36a53787",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:becomeCopy / faceName",
+        "agrees": true,
+        "note": "identity face replaces name/stats/attrs/text; Entity.card never written"
+      },
+      {
+        "loc": "engine.ts:destroy",
+        "agrees": true,
+        "note": "bins u.card, the physical card"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/26-metal-a.test.ts",
+        "pattern": "R118: Borrower of Forms takes the NAME, the attributes and the card TEXT",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/44-hybrids-ld-a.test.ts",
+        "pattern": "R118: a copy DYING puts the PHYSICAL card in the bin",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Borrower of Forms",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Apex Prime",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R118",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**1. SPLIT IDENTITY.** A copy changes the **game name** — statics, \"name a card\","
+      },
+      {
+        "file": "client/engine/test/44-hybrids-ld-a.test.ts",
+        "text": "'R118 ruling 1: the card that bins is the one that was in the deck'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.copies.becoming.cost-and-type",
+    "textHash": "90d3f632a8005704",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:costOf",
+        "agrees": true,
+        "note": "reads faceDef(e).mana — the copied face's cost"
+      },
+      {
+        "loc": "engine.ts:faceDef",
+        "agrees": true,
+        "note": "type read off the copied face"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "pattern": "RAQ Borrower of Forms: a Borrower that copied a Robot costs 0",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "pattern": "RAQ Borrower of Forms: while it mimics a unit it is not a spell unit",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1372468222158180424#10",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1372468222158180424#11",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const m = this.faceDef(e).mana;"
+      },
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "text": "'the Borrower, a Good Whale for all purposes, stayed in play'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.copies.becoming.unit-facts",
+    "textHash": "36e15ed8ffefb35a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:becomeCopy",
+        "agrees": true,
+        "note": "counters/damage live on Entity, untouched by the face"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/44-hybrids-ld-a.test.ts",
+        "pattern": "R118: an until-regroup face lapses at regroup, and the revert can be lethal",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R118",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "* **Counters and marked damage stay on the entity.** They are facts about the *unit*, not"
+      },
+      {
+        "file": "client/engine/test/44-hybrids-ld-a.test.ts",
+        "text": "'back to base 1/1 with two -1/-1 counters — the regroup sweep runs a death check'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.copies.create-copy-of-me",
+    "textHash": "83849c932e345ad7",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "cards: Echo/Hooba-God (create copy of me)",
+        "agrees": true,
+        "note": "token copy of the face, no counters, no mods"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/108-formation-class.test.ts",
+        "pattern": "R325 Hooba-God: killed under its own attack trigger",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U16/u16-probes.test.ts",
+        "title": "effects.copies.create-copy-of-me: Echo of Despair's copy of itself has none of its counters and none of its mods",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R118",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "* **\"Create a copy of me\"** (Echo of Despair, Hooba-God, Swarmling) reads the FACE, and"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.copies.exact",
+    "textHash": "551947cb1cba8946",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "cards/sets/batch-metal-a.ts: Borrower of Forms",
+        "agrees": true,
+        "note": "copies base stats, counters and temporary stat changes; CopyRef.printedStats snapshots the target's base (layers 1-2)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/26-metal-a.test.ts",
+        "pattern": "Borrower of Forms: erases the target and takes its stats and counters",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Borrower of Forms",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1372468222158180424#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R118",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/sets/batch-metal-a.ts",
+        "text": " *  - Borrower of Forms copies base stats, counters and temporary stat changes"
+      },
+      {
+        "file": "client/engine/test/26-metal-a.test.ts",
+        "text": "'base 7/5 + the 2 copied counters'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.copies.exact.mods",
+    "textHash": "9bb5a6db800b564a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:becomeCopy (CopyRef.mods) / isUnstable",
+        "agrees": true,
+        "note": "no mod entity cloned; face records mods; isUnstable reads real mods (R336); augment boxes read via behaviorBlocks (R341)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/406-copied-augments.test.ts",
+        "pattern": "R341: a Borrower that copied a unit carrying a Powerful virus is Powerful",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "pattern": "RAQ Borrower of Forms: a Borrower that copied a Bellowing Boulder",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1372468222158180424#1",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1372468222158180424#4",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R336",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R341",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/406-copied-augments.test.ts",
+        "text": "'and the copy is not Unstable (R336 / CT-225)'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.copies.exact.mods.leaving",
+    "textHash": "db7a3df1b81a295b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:destroy / isUnstable",
+        "agrees": true,
+        "note": "a copy has no mod entities, so the tail moves only its own card; isUnstable reads real mods"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/406-copied-augments.test.ts",
+        "pattern": "R341: when that copy dies, only Borrower of Forms goes to the bin",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R341",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R336",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/406-copied-augments.test.ts",
+        "text": "'one card to A\\'s bin, the physical one'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.copies.exact.mods.once",
+    "textHash": "0bd0e00395c935f9",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "apply.ts activateAbility via {face, text}",
+        "agrees": true,
+        "note": "budget key 'augment:<card>#i' on the copy (R9 per card per host)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/406-copied-augments.test.ts",
+        "pattern": "R341: a Borrower that copied a Graxxlid-augmented unit can use Graxxlid",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R341",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/406-copied-augments.test.ts",
+        "text": "'not offered a second time this turn'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.copies.exact.mods.underneath",
+    "textHash": "af808ba1c2e5f72e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:graft composite (copied grafts first)",
+        "agrees": true,
+        "note": "pinned by test"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "pattern": "RAQ Borrower of Forms: a graft added to a Borrower",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1372468222158180424#5",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "text": "test('RAQ Borrower of Forms: a graft added to a Borrower that copied a graft stack resolves below the copied grafts', () => {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.copies.latest",
+    "textHash": "b9acac8fe6ee27e6",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:becomeCopy",
+        "agrees": true,
+        "note": "whole-identity face replaces the previous (seq last-wins)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/44-hybrids-ld-a.test.ts",
+        "pattern": "R118: attacking and then blocking leaves ONE face, not two",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R118",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/44-hybrids-ld-a.test.ts",
+        "text": "'a whole-identity face REPLACES the previous one — copies do not pile up');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.copies.of-a-copy",
+    "textHash": "b9457cab12324351",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:becomeCopy",
+        "agrees": true,
+        "note": "copies the source's identity face (nameOf), not its card"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/44-hybrids-ld-a.test.ts",
+        "pattern": "R118: a copy of a COPY chains through the face",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/406-copied-augments.test.ts",
+        "pattern": "R341: a copy of the copy chains",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R118",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R341",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/44-hybrids-ld-a.test.ts",
+        "text": "'MTG\\'s copiable values: you copy what it IS, not what card it is printed on');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.copies.spells",
+    "textHash": "6b1ececc6ef4b606",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U16-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts:copy helper (R164)",
+        "agrees": true,
+        "note": "puts the copy on the stack above the original; a priority round opens on it; stack sweeps (target effect) see it"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/138-spell-copy.test.ts",
+        "pattern": "Earthbound Replicator: the copy is a real stack item",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/138-spell-copy.test.ts",
+        "pattern": "the copy is offered as a .target effect. and Dematerialize negates it",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1379132904931594372#0",
+        "supports": "yes",
+        "note": "'put copy of spell effect on stack (above original spell effect)'"
+      },
+      {
+        "ref": "RAQ 1355613076506017894#4",
+        "supports": "yes",
+        "note": "'Copy is new spell effect on stack'"
+      },
+      {
+        "ref": "R164",
+        "supports": "yes",
+        "note": "pushes it above the original"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "put copy of spell effect on stack (above original spell effect)"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Copy is new spell effect on stack"
+      },
+      {
+        "file": "client/engine/test/138-spell-copy.test.ts",
+        "text": "'the COPY is a legal \"target effect\" — every stack sweep can see it now');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.copies.spells.declared",
+    "textHash": "9096eabdce594e77",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:pushSpellCopy",
+        "agrees": true,
+        "note": "clones costPaid, x, part.mode, part.targets; targets replaced only when opts.targets given (the card's \"may choose new targets\")"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/138-spell-copy.test.ts",
+        "pattern": "R164 Maelstrom Charger: the copy inherits the cast-cost receipt",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/138-spell-copy.test.ts",
+        "pattern": "the copy keeps EVERY target the spell declared",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Earthbound Replicator",
+        "supports": "partly",
+        "note": "new targets clause only"
+      },
+      {
+        "ref": "RAQ 1379132904931594372#2",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R164",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/138-spell-copy.test.ts",
+        "text": "'RAQ: \"the X value is the one from original spell\" — the copy read the same receipt');"
+      },
+      {
+        "file": "client/engine/test/138-spell-copy.test.ts",
+        "text": "assert.ok(declared.some(t => 'unit' in t && t.unit === ally), 'slot 0 survived the copy');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.copies.spells.modular",
+    "textHash": "7c1e256f1fd30714",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:pushSpellCopy",
+        "agrees": true,
+        "note": "structuredClone keeps item.mods (\"`mods`, the {Modular} CAST cost, IS copied\")"
+      },
+      {
+        "loc": "engine.ts:itemAttrs / stackModAttrs",
+        "agrees": true,
+        "note": "mods' augmentAttrs donate to the item, copy included"
+      },
+      {
+        "loc": "engine.ts:disposeItemMods",
+        "agrees": true,
+        "note": "mod cards erased once, with the original"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U16/u16-probes.test.ts",
+        "title": "effects.copies.spells.modular: a copy of a Modular spell carries the mods the original was cast with",
+        "passed": true,
+        "demonstrates": "yes: the copy carries the mods; attribute donation read from engine code, not measured (Primordial Coalescence grants none)"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R164",
+        "supports": "yes",
+        "note": "Caleb 2025-02-07 quoted"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "    // (`mods`, the {Modular} CAST cost, IS copied: Caleb 2025-02-07 — they"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "for (const m of item.mods ?? []) out.push(...this.card(m.card).augmentAttrs);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.copies.spells.no-card",
+    "textHash": "89e9c7fb38cc57e3",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U16-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:item exit (hasCard)",
+        "agrees": true,
+        "note": "if (item.copy === true) hasCard = false - a copy bins/erases nothing on all four exits"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:disposeItemMods",
+        "agrees": true,
+        "note": "a copy does not erase the original's Modular mods again"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/138-spell-copy.test.ts",
+        "pattern": "Maelstrom Charger: a resolved copy bins nothing",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/138-spell-copy.test.ts",
+        "pattern": "the copy is offered as a .target effect. and Dematerialize negates it",
+        "passed": true,
+        "asserts_claim": "yes - exactly one Burgeon reaches a bin"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R164",
+        "supports": "yes",
+        "note": "'\"Erase me.\" on a copy erases nothing.' and 'One Burgeon played is one Burgeon in a bin,'"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (item.copy === true) hasCard = false;"
+      },
+      {
+        "file": "client/engine/test/138-spell-copy.test.ts",
+        "text": "'a copy is not a card, so its \"Erase me.\" has nothing to erase');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.copies.spells.targets",
+    "textHash": "eaf87e458c81906a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:pushSpellCopy -> dispatchTargeted",
+        "agrees": true,
+        "note": "fires 'targeted' for the copy's targets without any play event"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U16/u16-probes.test.ts",
+        "title": "effects.copies.spells.targets: a spell copy's targets are \"targeted\" — Earnest Defender hears the original AND the copy",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R164",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "this.dispatchTargeted(copy);"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "3. **`targeted` DOES fire** for the copy's own targets (`E.dispatchTargeted`,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.copies.until-regroup",
+    "textHash": "68f81d4086bc21ff",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:becomeCopy (until regroup) + regroup sweep",
+        "agrees": true,
+        "note": "face lapses at regroup; regroup runs checkDeaths"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/44-hybrids-ld-a.test.ts",
+        "pattern": "R118: an until-regroup face lapses at regroup, and the revert can be lethal",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Apex Prime",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R118",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "then reverts at regroup **dies** — and the regroup sweep now runs `checkDeaths()` on the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.faces.face-up",
+    "textHash": "a0175d452c0e7277",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:revertFace",
+        "agrees": true,
+        "note": "a transformed card turns back over as it leaves play (R157 §10)"
+      },
+      {
+        "loc": "cards: Scholar of the Void transform",
+        "agrees": true,
+        "note": "rewrites Entity.card in place, same id (R101)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/43-dark-c.test.ts",
+        "pattern": "R101 — the transform is the SAME unit",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Scholar of the Void",
+        "supports": "partly",
+        "note": "shows the transform, not the same-unit clause"
+      },
+      {
+        "ref": "R101",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R157",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**A transform is the SAME unit with a different face up.** Nothing is deleted and nothing"
+      },
+      {
+        "file": "client/engine/test/43-dark-c.test.ts",
+        "text": "assert.ok(after, 'the very same entity id is still in play');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.last-known.adjacent",
+    "textHash": "f7d532b5fa28e690",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "cards: Flamebreath Initiate",
+        "agrees": true,
+        "note": "adjacency of a gone source counts 0"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "pattern": "RAQ dead unit: Flamebreath Initiate removed",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353895783266516992#3",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "text": "'X = 0 adjacent allies once it is gone, so a Fireball 1'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.last-known.attributes",
+    "textHash": "9ae80a8365c03d7f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:itemAttrs",
+        "agrees": true,
+        "note": "reads item.lastKnown.attrs (effAttrs at departure, column-shared included)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "pattern": "RAQ dead unit: Bellowing Boulder dead with its ping on the stack",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353895783266516992#4",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "new Set<string>(item.lastKnown?.attrs ?? (item.card ? this.card(item.card).attrs : []));   // R325"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.last-known.departure-facts",
+    "textHash": "a467185040024fdf",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:leftPlayFacts",
+        "agrees": true,
+        "note": "unit, card, seat, owner, region, counters, token; callers add verb and to"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/62-death-facts.test.ts",
+        "pattern": "R70: the death event carries token, verb, owner, region and destination",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U16/u16-probes.test.ts",
+        "title": "effects.last-known.departure-facts: the death event carries the counters the unit had",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R70",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "region: u.region, counters: u.counters, token: !!u.token,"
+      },
+      {
+        "file": "client/engine/test/62-death-facts.test.ts",
+        "text": "assert.equal(ev.data!['verb'], 'is sacrificed', 'the verb, so nobody has to read the log line');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.last-known.departure-facts.region",
+    "textHash": "92df6c4819c9ce8e",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U16-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:settle trigger resolution",
+        "agrees": true,
+        "note": "region: entity(sourceId)?.region ?? next.region ?? actionRegion(controller) - a gone source resolves in the region it fired in"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/62-death-facts.test.ts",
+        "pattern": "resolves in the region the unit DIED in",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R70",
+        "supports": "yes",
+        "note": "PendingTrigger carries the region its source fired in"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "The fix is the general one: `PendingTrigger` carries the **region its source"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "region: this.entity(next.sourceId)?.region ?? next.region ?? this.actionRegion(next.controller),"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.last-known.face",
+    "textHash": "f992b5956ec31e25",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U16-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-light-a.ts:Hooba-God",
+        "agrees": true,
+        "note": "me = self ? nameOf(self) : lk!.face - the copy is made from the last-known face"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-water-a.ts:Echo of Despair",
+        "agrees": true,
+        "note": "requires a last-known snapshot when the source is gone, then spawns printed 'Echo of Despair' (not lk.face); same answer unless the source was wearing another face"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/401-raq-fix-stack.test.ts",
+        "pattern": "R325 Echo of Despair",
+        "passed": true,
+        "asserts_claim": "yes - a copy token is made after the source is gone"
+      },
+      {
+        "file": "client/engine/test/108-formation-class.test.ts",
+        "pattern": "R325 Hooba-God",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U16/u16-r2-probes.test.ts",
+        "title": "effects.last-known.face: Hooba-God reads its last-known FACE; Echo of Despair spawns its printed name",
+        "passed": true,
+        "demonstrates": "yes (Echo branch)"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R325",
+        "supports": "yes",
+        "note": "'(copy of its last-known face) and Lumengrove Lurker.' - the parenthetical attaches to Hooba-God in the list; Echo is in the list of read-only sources"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "(last-known power), Echo of Despair, Hooba-Lin, Hooba-Bot, Hooba-Pon, Hooba-God"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-light-a.ts",
+        "text": "const me = self ? g.nameOf(self) : lk!.face;   // R118 layer 0: what I AM (or was)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Minor: Echo of Despair's code spawns its printed name rather than reading lk.face; it agrees with the rule in every reachable case found."
+  },
+  {
+    "key": "effects.last-known.formation",
+    "textHash": "261bf2bfa4b6b862",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:formationSeatOf",
+        "agrees": true,
+        "note": "uses lastKnown.formationSeat while that battle is on"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/108-formation-class.test.ts",
+        "pattern": "R325 Hooba-Lin: killed under its own attack trigger",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/401-raq-fix-stack.test.ts",
+        "pattern": "R325 Embermaw Fledgling",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353895783266516992#2",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R325",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "so Bellowing Boulder's ping stays Deadly. `formationSeatOf` uses it while the"
+      },
+      {
+        "file": "client/engine/test/401-raq-fix-stack.test.ts",
+        "text": "'X = the two attackers left in its formation'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.last-known.live-source",
+    "textHash": "a15ba54b90bde66a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:lastKnownOf / itemAttrs",
+        "agrees": true,
+        "note": "lastKnownOf is undefined while the source is in play, so itemAttrs reads the live ownAttrs at resolution"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "pattern": "Deadly given back to the Boulder before its ping resolves makes the ping Deadly again",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353895783266516992#6",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (id === undefined || this.entity(id)) return undefined;"
+      },
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "text": "'Deadly again: the 1 damage kills the 7/5'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.last-known.out-of-formation",
+    "textHash": "64fbeeeb0a48b37b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:formationSeatOf",
+        "agrees": true,
+        "note": "an in-play unit outside the grid names no formation; lastKnownOf only applies to sources that left play"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/108-formation-class.test.ts",
+        "pattern": "R225 Hooba-Lin: alive but out of the formation",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R225",
+        "supports": "yes",
+        "note": "second grade stands"
+      },
+      {
+        "ref": "R325",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/108-formation-class.test.ts",
+        "text": "test('R225 Hooba-Lin: alive but out of the formation (R172) → no token, no question', () => {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.last-known.stats",
+    "textHash": "0ba4ea93a8f9ebd3",
+    "verdict": "confirmed",
+    "round": 3,
+    "verifier": "U16-r3",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-earth-a.ts:Deathglow Strider effect",
+        "agrees": true,
+        "note": "self ? effStats(self)[1] : lastKnownOf(ctx.sourceId).defense"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-wood-c.ts:spewPoison",
+        "agrees": true,
+        "note": "self ? effStats(self)[0] : lk.power"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:stampLastKnown/lastKnownOf",
+        "agrees": true,
+        "note": "snapshot taken at leavePlay/destroy/exchange/erase before the unit leaves"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/401-raq-fix-stack.test.ts",
+        "pattern": "R325 Deathglow Strider",
+        "passed": true,
+        "asserts_claim": "yes, for the unmodified case the example states"
+      },
+      {
+        "file": "client/engine/test/401-raq-fix-stack.test.ts",
+        "pattern": "R325 Spewing Mushroom",
+        "passed": true,
+        "asserts_claim": "yes, for the unmodified case the example states"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U16/u16-r3-probes.test.ts",
+        "title": "effects.last-known.stats: Deathglow Strider 3/4 (counter) gone before its trigger deals its last-known 4",
+        "passed": true,
+        "demonstrates": "yes: 4 damage, not printed 3"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U16/u16-r3-probes.test.ts",
+        "title": "effects.last-known.stats: Spewing Mushroom at +2/+0, gone before its trigger, makes a Poison 3",
+        "passed": true,
+        "demonstrates": "yes: Poison 3, not printed 1"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R325",
+        "supports": "yes",
+        "note": "\"Where the effect reads its source (its attributes, its stats ...) it reads the source's last-known state\"; names Deathglow (last-known defense) and Spewing Mushroom (last-known power). R325 rests on RAQ _passer, so the designer field could have been cited too."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Deathglow Strider (last-known defense), Slag Spewer, Spewing Mushroom"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "formation it stood in), it reads the source's **last-known state**: what the"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-earth-a.ts",
+        "text": "// R325: gone before this resolves, it deals its LAST-KNOWN defense"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-wood-c.ts",
+        "text": "// R325: X is my power — my LAST-KNOWN power once I have left play"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None. Engine implements it per card (Deathglow, Spewing Mushroom, Slag Spewer) rather than generally, which matches the pool."
+  },
+  {
+    "key": "effects.last-known.what",
+    "textHash": "c8aef3f65acd14e8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:stampLastKnown",
+        "agrees": true,
+        "note": "LastKnown = card, face, controller, region, effAttrs (column-shared), power, defense, formationSeat"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353895783266516992#4",
+        "supports": "partly",
+        "note": "general \"remember his last state\""
+      },
+      {
+        "ref": "R325",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "attrs: [...this.effAttrs(u)], power, defense, formationSeat: this.formationSeatOf(u.id),"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "unit was the instant it left play."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.state.absent",
+    "textHash": "bc31c87539293056",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:isLethal",
+        "agrees": true,
+        "note": "if (u.absent) return false"
+      },
+      {
+        "loc": "engine.ts:endBattleRound",
+        "agrees": true,
+        "note": "checkDeaths after the sentAttackers loop clears absent"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/250-ally-count-and-absence.test.ts",
+        "pattern": "Prickly Protector survives being declared as a counterattacker",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/250-ally-count-and-absence.test.ts",
+        "pattern": "a counterattacker sent out alone survives the send and dies on arrival",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R270",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (u.absent) return false;"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**No.** `checkDeaths` skips absent units. The sweep is deferred to the moment"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.state.absent.home",
+    "textHash": "b81149bcdd9a9b3a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:unitsOf",
+        "agrees": true,
+        "note": "excludes absent units, so a counterattacker is not counted as an ally at home"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/250-ally-count-and-absence.test.ts",
+        "pattern": "scope: a unit left at home still loses the ally that counterattacked away",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R270",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "so an \"ally\" is a unit that is *here*, and a counterattacker is not here. The"
+      },
+      {
+        "file": "client/engine/test/250-ally-count-and-absence.test.ts",
+        "text": "'the Protector, still present and still swept, has no other ally left to count'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.state.dying",
+    "textHash": "a6c1a15741fa8980",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:destroy",
+        "agrees": true,
+        "note": "verbs 'dies' / 'is deleted' / 'is sacrificed' all fire died, Unstable included (R69/R137)"
+      },
+      {
+        "loc": "engine.ts:eraseFromPlay",
+        "agrees": true,
+        "note": "despawn + erased, no died"
+      },
+      {
+        "loc": "engine.ts:recall / cacheUnit / exchangeInPlace",
+        "agrees": true,
+        "note": "despawn, not death"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/145-erase-routes.test.ts",
+        "pattern": "R172 (vii): Banishment still fires no",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R302",
+        "supports": "partly",
+        "note": "about what counts, confirms Unstable erasures are deaths"
+      },
+      {
+        "ref": "R157",
+        "supports": "yes",
+        "note": "not a death"
+      },
+      {
+        "ref": "R172",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "| `verb` | `dies` / `is deleted` / `is sacrificed` |"
+      },
+      {
+        "file": "client/engine/test/145-erase-routes.test.ts",
+        "text": "'…and NO death: R157 §3 is \"not a death, but it IS a despawn\", both halves'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.state.lethal",
+    "textHash": "471e2ea98164de2b",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U16-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:isLethal",
+        "agrees": true,
+        "note": "const [, t] = effStats(u); return t <= 0 || u.damage >= t (exceptions: absent counterattackers, constructed bottomPending)"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:checkDeaths",
+        "agrees": true,
+        "note": "filters isLethal and destroys each"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/380-no-action-ends-dead.test.ts",
+        "pattern": "the turn draw that takes Dreadspawn Horror to 0 defense kills it at the turn flip",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U16/u16-probes.test.ts",
+        "title": "effects.state.lethal: a unit whose marked damage EQUALS its defense dies in the state check",
+        "passed": true,
+        "demonstrates": "yes - damage 3 on a 1/3 dies, damage 2 lives"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.40",
+        "supports": "yes",
+        "note": "'A unit with 0 or less defense will' [die]"
+      },
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": "damage >= defense dies; the Manual says 'during battle' but R313 and the engine apply it at every check"
+      },
+      {
+        "ref": "R313",
+        "supports": "yes",
+        "note": "'A unit with 0 defense, or with damage equal to its defense, dies at the next'"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "return t <= 0 || u.damage >= t;"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "decrease a units stats. A unit with 0 or less defense will"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "greater than or equal to its defense during"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A unit with 0 defense, or with damage equal to its defense, dies at the next"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.state.no-damage-needed",
+    "textHash": "83a85283016b9427",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:isLethal",
+        "agrees": true,
+        "note": "t <= 0 from any layer kills, no damage needed"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/79-round17-layers.test.ts",
+        "pattern": "R226: report #114",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R66",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R178",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R226",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/79-round17-layers.test.ts",
+        "text": "assert.equal(ent(h, oracle)!.damage, 0, 'undamaged — nothing below is a damage kill');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.state.no-damage-needed.pure",
+    "textHash": "10ab61fd6d76d7ab",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:pure / isLethal",
+        "agrees": true,
+        "note": "Pure is read only for combat exchanges; isLethal reads effStats, which Pure does not touch"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U16/u16-probes.test.ts",
+        "title": "effects.state.no-damage-needed.pure: a Pure unit that is Tough and Inverted still dies in the state check",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R226",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- ⚠ **`{Pure}` is NOT an escape.** R61 blinds a whole attack/block *exchange* to"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "pure(...cols: readonly EntityId[][]): boolean {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.state.together",
+    "textHash": "fb75b3d79fb97a04",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:checkDeaths (deathBatch)",
+        "agrees": true,
+        "note": "batch-mates stay in the listener scan for each other's disposal events"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/258-simultaneous-disposal-listeners.test.ts",
+        "pattern": "R278: Muck Rummager hears an ally trashed in the same combat-damage batch it dies in",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R278",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "triggers watching it.** A unit destroyed as part of one death batch still hears"
+      },
+      {
+        "file": "client/engine/test/258-simultaneous-disposal-listeners.test.ts",
+        "text": "'R278: dying alongside the card you were watching does not un-see it');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.state.together.limits",
+    "textHash": "4808986a29962635",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:checkDeaths / fireEvent (deathBatch, disposingSelf)",
+        "agrees": true,
+        "note": "batch-mates are only re-added to the LISTENER scan; disposingSelf blocks a body hearing its own departure; s.entities (targets, counts) no longer holds them"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R278",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "every disposal event of its batch-mates — their `died`, their `trashed`,"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "it is not handed its own 'died'/'trashed' event twice (R40). */"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "No test or probe isolates the target/ally-count half; judged on engine code and R278."
+  },
+  {
+    "key": "effects.state.tokens",
+    "textHash": "634efe29163b44fa",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:destroy / disposal tail",
+        "agrees": true,
+        "note": "token body binned, died fires, then the sweep erases it; fireEvent only queues triggers, so the token is gone before anything queued is put on the stack (R69)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/129-disposal-tail.test.ts",
+        "pattern": "R153 (iv): a TOKEN body with no mods takes the token sweep",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R152",
+        "supports": "yes",
+        "note": "owner quote: tokens cease to exist in all zones other than play/stack at SBA checks"
+      },
+      {
+        "ref": "R69",
+        "supports": "yes",
+        "note": "Caleb: erase happens, then the trigger goes on the stack"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "state based effects happen to erase it and then"
+      },
+      {
+        "file": "client/engine/test/129-disposal-tail.test.ts",
+        "text": "a TOKEN body with no mods takes the token sweep"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.state.what",
+    "textHash": "25fd76f39b0df45b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:checkDeaths",
+        "agrees": true,
+        "note": "kills every isLethal unit at a safe point"
+      },
+      {
+        "loc": "engine.ts:destroy",
+        "agrees": true,
+        "note": "token sweep in the disposal tail"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R313",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R152",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "safe point — the engine's state-based check. The end of every action is a safe"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const dead = Object.values(this.s.entities).filter(u => this.isLethal(u));"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.state.when",
+    "textHash": "dc6c61edee3a25f7",
+    "verdict": "confirmed",
+    "round": 3,
+    "verifier": "U16-r3",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:stateBasedBackstop",
+        "agrees": true,
+        "note": "after every completed action, settle() if any unit isLethal; suspended actions skip it"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:isLethal",
+        "agrees": true,
+        "note": "skips a seat's units while bottomPending (Constructed draw 4 / put 2 back)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/380-no-action-ends-dead.test.ts",
+        "pattern": "R313: a planning action that does not settle",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/380-no-action-ends-dead.test.ts",
+        "pattern": "R313 constructed: 3 cards in hand nets to 5",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/380-no-action-ends-dead.test.ts",
+        "pattern": "R313 constructed: drawing 4 does not kill before the 2 go back",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/380-no-action-ends-dead.test.ts",
+        "pattern": "R313",
+        "passed": true,
+        "asserts_claim": "yes: all 6 pass, including the turn-draw and draft cases"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R313",
+        "supports": "yes",
+        "note": "States every clause: action end is a safe point (draw, draft, recycle, resource activation), suspended action is mid-resolution, Constructed draw phase is one step with bottomPending exemption; owner quote included."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "So no action — a draw, a draft, a recycle, a resource activation — may"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**Constructed's draw phase is one step.** Draw 4 and put 2 back are two"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (!Object.values(e.s.entities).some(u => e.isLethal(u))) return;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None. Recycle is not exercised by a test but is named in R313 and covered by the general backstop."
+  },
+  {
+    "key": "effects.state.when.mid-resolution",
+    "textHash": "e9f7fea3d033875a",
+    "verdict": "confirmed",
+    "round": 3,
+    "verifier": "U16-r3",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:addCounters",
+        "agrees": true,
+        "note": "ends with this.checkDeaths() after every counter placement"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:resolve composite part loop (~10427)",
+        "agrees": true,
+        "note": "checkDeaths() after each finished part: \"sequential within the composite; triggers wait for settle()\""
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-dark-a.ts:titanPlague",
+        "agrees": true,
+        "note": "loops units calling g.addCounters(u,-1) one at a time, so each lethal counter kills before the next unit is reached"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U16/u16-r3-probes.test.ts",
+        "title": "effects.state.when.mid-resolution: Pestilent Titan's trigger kills a 1/1 before the next unit gets its counter",
+        "passed": true,
+        "demonstrates": "yes: a died event precedes the last countersChanged event within one resolution"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R237",
+        "supports": "partly",
+        "note": "The quote is an implementation note inside the Deadly/Poisonous ruling, stating addCounters runs checkDeaths; it does not rule on mid-resolution death checks generally and says nothing about multi-part effects. Basis \"engine\" is honest."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "this.checkDeaths();   // sequential within the composite; triggers wait for settle()"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "because `addCounters` runs `checkDeaths` and a lethal poison hit would otherwise"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-dark-a.ts",
+        "text": "for (const u of g.unitsIn(ctx.region)) g.addCounters(u, -1);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None in substance. Only source is an engine note in R237; the multi-part clause is engine-only (no ruling cites it). The illustrative Pestilent Titan example is measured true by probe."
+  },
+  {
+    "key": "effects.stripping.column",
+    "textHash": "0afebb3aad3a8b5f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:suppress (Formless / Suppression Field column stamp)",
+        "agrees": true,
+        "note": "attrs stamp applied to every unit of the target's column; abilities/base/erase stay on the target"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/299-formless-column.test.ts",
+        "pattern": "R293 §1 the report",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "pattern": "RAQ Suppression Field: aimed at either unit of a column",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/299-formless-column.test.ts",
+        "pattern": "R293 §2 the base rewrite still hits the TARGET alone",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/402-raq-fix-stripping.test.ts",
+        "pattern": "§2 Suppression Field: the column loses its attributes",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Formless",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1355845893219287132#3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R329",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R293",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/299-formless-column.test.ts",
+        "text": "'THE REPORT: the column-MATE lost {Blessed} too — it was stamped as well'"
+      },
+      {
+        "file": "client/engine/test/299-formless-column.test.ts",
+        "text": "\"the column-mate keeps its printed 1/3 — \\\"target unit becomes a base 4/4\\\" is singular, \""
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.stripping.column.alone",
+    "textHash": "bf984ed9824db08e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:columnOf",
+        "agrees": true,
+        "note": "null outside battle / out of formation, so the stamp hits the target only"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/299-formless-column.test.ts",
+        "pattern": "R293 §5 a target with no column",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R293",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/299-formless-column.test.ts",
+        "text": "'the lone target is stamped'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.stripping.column.per-unit",
+    "textHash": "7d75cccbea6141e7",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:suppress (column stamp)",
+        "agrees": true,
+        "note": "each column unit gets its own suppressed.attrs stamp, cleared at regroup"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/299-formless-column.test.ts",
+        "pattern": "R293 §3 the stamp outlives the column",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/299-formless-column.test.ts",
+        "pattern": "R293 §4 a unit that joins the column afterwards keeps its own attributes",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R293",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "So the stamp is **per unit**, and is that unit's own state until regroup."
+      },
+      {
+        "file": "client/engine/test/299-formless-column.test.ts",
+        "text": "'a Flzzz that was not on the board when Formless resolved is Blessed like any other'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.stripping.column.regain",
+    "textHash": "757485c324c7af34",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:effAttrs / colAttrs",
+        "agrees": true,
+        "note": "column sharing reads each mate's post-strip ownAttrs"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/402-raq-fix-stripping.test.ts",
+        "pattern": "§5 a stripped unit that joins a Balanced column later is Balanced",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355845893219287132#4",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "example) — and gives the column nothing it lost."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.stripping.copied-text",
+    "textHash": "bf5abcf611294ee1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:ownAttrs / textStripped (R341 copied text is PRINTED-age)",
+        "agrees": true,
+        "note": "strip takes the copied text; copy has no mod entities"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/406-copied-augments.test.ts",
+        "pattern": "R341 / R328: the copied augment text is the copy's card text",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R341",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/406-copied-augments.test.ts",
+        "text": "'stripped of the copied attribute'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.stripping.mutual",
+    "textHash": "09333785c9cbae07",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:staticsFor",
+        "agrees": true,
+        "note": "one pass: only entity stamps stop radiating, so mutual continuous strippers both apply"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/28-metal-c.test.ts",
+        "pattern": "Transmogrifant: a silenced unit radiates nothing of its own",
+        "passed": true,
+        "asserts_claim": "yes: two Transmogrifants, each silenced by the other, both still radiate"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R62",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R328",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "\"other unit\" — both keep radiating and both go quiet. That is the simultaneous"
+      },
+      {
+        "file": "client/engine/test/28-metal-c.test.ts",
+        "text": "assert.deepEqual(effStats(h, other), [5, 5], 'both statics still project');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.stripping.named-card",
+    "textHash": "695be56af0adf65b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "cards: The Everywhere (naming decision + continuous suppress by name, region-scoped)",
+        "agrees": true,
+        "note": "tests pin all three clauses"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/38-light-a.test.ts",
+        "pattern": "The Everywhere: naming a card during [Haste] silences EVERY copy of it IN MY REGION",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/38-light-a.test.ts",
+        "pattern": "The Everywhere: the silence is CONTINUOUS",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/38-light-a.test.ts",
+        "pattern": "The Everywhere: a second naming replaces the first",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: The Everywhere",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R91",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/38-light-a.test.ts",
+        "text": "'and the OLD one is released — \"my LAST named card\" is one card, not a growing list');"
+      },
+      {
+        "file": "client/engine/test/38-light-a.test.ts",
+        "text": "'\"(as long as I am in their region)\" — the silence switches on with no new event');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.stripping.one-clause",
+    "textHash": "d964f02b7d238e3a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:abilityIsSuppressed",
+        "agrees": true,
+        "note": "R269 per-ability suppression; only the named clause is off"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/249-suppression-scope.test.ts",
+        "pattern": "§2 a Wisp keeps an ability it was given",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Infernal Wispweaver",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R269",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "behaviour and leaves the rest of the layer alone."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.stripping.timestamp",
+    "textHash": "7bb909ec392f0ecb",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:strippersOf / ownAttrs",
+        "agrees": true,
+        "note": "each attribute source is kept unless it is older than every stripper (R328 Stamp ordering)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "pattern": "RAQ Suppression Field: an attribute granted after it resolved still applies",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "pattern": "RAQ timestamps: a virus applied AFTER Monke",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/402-raq-fix-stripping.test.ts",
+        "pattern": "§1 a static stripper takes a mod attached BEFORE it arrived",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355685844467581081#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1355845893219287132#1",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R328",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A card that takes attributes or abilities away takes **what the unit has when the"
+      },
+      {
+        "file": "client/engine/test/402-raq-fix-stripping.test.ts",
+        "text": "'the virus attached AFTER it is not'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.stripping.what",
+    "textHash": "1a0679f212ce0327",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:strippersOf / ownAttrs / abilitiesSuppressed",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/27-metal-b.test.ts",
+        "pattern": "Monke: R62 — other units lose all attributes and abilities during battle",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Suppression Field",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Monke",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R62",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/27-metal-b.test.ts",
+        "text": "assert.ok(new E(h.state).abilitiesSuppressed(ent(h, mine)!), 'and their abilities');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.stripping.what.abilities",
+    "textHash": "fe958fd292c1b979",
+    "verdict": "confirmed",
+    "round": 3,
+    "verifier": "U16-r3",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:suppress / staticsFor (one-shot stamp)",
+        "agrees": true,
+        "note": "a stamped unit radiates nothing at once (probe, and 44-hybrids R118)"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:staticsFor (continuous strip)",
+        "agrees": false,
+        "note": "flagged divergence is real: staticsFor reads only the entity stamp, so Sandstone Defender stripped by Transmogrifant keeps radiating +0/+2 (token measures 3/5, rule says 3/3)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/44-hybrids-ld-a.test.ts",
+        "pattern": "R118: R62 suppression is a veto ABOVE copy",
+        "passed": true,
+        "asserts_claim": "yes: a copy silenced by Suppression Field radiates nothing"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U16/u16-r3-probes.test.ts",
+        "title": "effects.stripping.what.abilities: one-shot strip silences Sandstone Defender's static at once",
+        "passed": true,
+        "demonstrates": "yes: token 1/3 -> 1/1"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U16/u16-r3-probes.test.ts",
+        "title": "effects.stripping.what.abilities: (engine divergence) Sandstone Defender under Transmogrifant still radiates; token is 3/5 not 3/3",
+        "passed": true,
+        "demonstrates": "yes: confirms the flagged engine divergence (F-U16-3) is real"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Transmogrifant",
+        "supports": "yes",
+        "note": "\"lose all attributes and abilities\" — read with R62 \"a static *is* an ability\", the stripped unit's static goes."
+      },
+      {
+        "ref": "RAQ 1355845893219287132#0",
+        "supports": "partly",
+        "note": "Says Monke/Transmogrifant are continuous statics that also hit later entrants; it does not address whether a stripped unit stops radiating its own static. On-topic, not direct."
+      },
+      {
+        "ref": "R62",
+        "supports": "yes",
+        "note": "The list of what \"abilities\" covers (triggered, activated, statics and cost modifiers, replacement hooks; own, donated, granted). Note R62/R328 also record staticsFor reading only the entity stamp, which is the engine side of the divergence."
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "Your other units gain +2/+2 and lose all attributes and abilities."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "radiates — a static *is* an ability — and both R38 replacement hooks."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**Unchanged:** static-vs-static still resolves in one pass (`staticsFor` reads only"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Ruling supported by printed text plus R62; divergence real. Caveat: our own R62/R328 describe the static-vs-static one-pass behaviour as intended, so the divergence is between the printed reading and an engine choice the register endorses, not a mere bug."
+  },
+  {
+    "key": "effects.stripping.what.erase-mods",
+    "textHash": "372d282686c14c33",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "cards: Suppression Field",
+        "agrees": true,
+        "note": "suppress + separate erase of all mods"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/28-metal-c.test.ts",
+        "pattern": "Suppression Field: erases all of the target's mods",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Suppression Field",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R62",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "a unit's mods (Suppression Field's second clause) is separate and additional:"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.stripping.what.not-stats",
+    "textHash": "db34bfd4b9132ca3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U16-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:effStats",
+        "agrees": true,
+        "note": "suppression of abilities does not touch layers 1-3"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/27-metal-b.test.ts",
+        "pattern": "Formless: R62 — \"and loses all attributes\", abilities untouched",
+        "passed": true,
+        "asserts_claim": "yes for the example as written; but the example illustrates \"Formless leaves abilities\", not the rule's \"a silenced unit keeps its stats\" (probe covers that)"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U16/u16-probes.test.ts",
+        "title": "effects.stripping.what.not-stats: a unit that loses its abilities keeps its stats and counters",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R62",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**What it does not cover.** Stats are not abilities: a silenced 7/5 is still a"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  }
+]

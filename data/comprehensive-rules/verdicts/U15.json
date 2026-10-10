@@ -1,0 +1,3459 @@
+[
+  {
+    "key": "effects.activated.cost-cannot-whiff",
+    "textHash": "dd18e7cfe99a6cba",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:abilityUnusable/canPayCastCost",
+        "agrees": true,
+        "note": "unpayable recall/erase gates the offer; nothing paid, [once] kept"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "167-variable-ability-costs.test.ts",
+        "pattern": "R196 Auric Ascendant with no other ally is NOT OFFERED",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R196",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R196",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**An unpayable cost GATES; it does not whiff.** Auric Ascendant's \"no other ally"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "offers the ability, the `[one]` is never paid and the `[once]` is never spent."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.activated.from-mod",
+    "textHash": "fac62765fd56328a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:activateAbility via {mod}",
+        "agrees": true,
+        "note": "host controller activates; me = host"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "27-metal-b.test.ts",
+        "pattern": "Living Forge: donated on a host, the [three] ability activates via the mod",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "46-hybrids-ld-c.test.ts",
+        "pattern": "Aurozoa: \"[Augment] Pay 1 life: Recall me\" — on itself and donated to a host",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R77",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R157 (its §6)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "ability was donated by an augment — so \"I have an adjacent ally\" reads"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> *\"The unit's controller. But why would that be a problem for Doot? You virus"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.activated.not-activations",
+    "textHash": "81ab10dc840ad04b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:costMods purpose (mod / ability)",
+        "agrees": true,
+        "note": "augment not taxed; resource and spell-token casts untaxed per R121"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "16-earth-a.test.ts",
+        "pattern": "Crevice Lurker: R121 — applying an augment during battle is NOT taxed (R37: a mod is not an activation)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R121 (its activation tax and designer rulings)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R121 (its activation tax and designer rulings)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R178 (its §3)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- (R37 family) Augment/Ambush are alternative ways to PLAY a card, not"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "spell-token casts are not ability activations and are untaxed."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> *\"Maelstrom Ability is neither Triggered nor Activated, so Crevice Lurker"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.activated.procedure",
+    "textHash": "6dab0422675e9685",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:collectTargets",
+        "agrees": true,
+        "note": "X, variable costs, targets, subjects, modes, then payActivationCost/collectItemCosts/fixed castCosts, all before the push"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "167-variable-ability-costs.test.ts",
+        "pattern": "R196 nothing may act INSIDE the cast window",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R57 (targets before fixed costs; costs paid before the stack)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R49 (its costs-at-cast rule)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**at cast, before the item reaches the stack**, so R49's guarantee holds: no"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "item reaches the stack, so no one may respond between a cost and its effect."
+      },
+      {
+        "file": "client/engine/test/167-variable-ability-costs.test.ts",
+        "text": "and the item is not on the stack yet, so it cannot be negated mid-payment either"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.activated.procedure.fixed-costs",
+    "textHash": "115c9d2a83de9330",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:collectTargets",
+        "agrees": true,
+        "note": "payActivationCost + collectItemCosts + fixed castCosts run after collectPartTargets"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "167-variable-ability-costs.test.ts",
+        "pattern": "the RECALL is a cost, named before the opponent answers",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R64 (its cost half)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R57 (targets before fixed costs)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Fixed costs stay where R57 put them, **after** targets"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "The precise scope: an **activated ability** pays its entire cost after"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.activated.procedure.gates",
+    "textHash": "95294e9b0be0a5d3",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U15-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doActivateAbility",
+        "agrees": true,
+        "note": "timing (phase/priority/ability.timing), cost payability, then abilityUnusable — all before any charge"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:abilityUnusable",
+        "agrees": true,
+        "note": "usableWhen precondition, castCost payability, required target slots; same predicate gates the offer in legalActions"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "167-variable-ability-costs.test.ts",
+        "pattern": "R196 the COMPOUND half-pay hazard",
+        "passed": true,
+        "asserts_claim": "yes — not offered, refused, 3 mana untouched, nothing on the stack"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U15/u15-probes.test.ts",
+        "title": "effects.activated.procedure.gates: Instrument of Reassignment with no other nontoken unit (only a token) is not offered and spends nothing",
+        "passed": true,
+        "demonstrates": "yes — 0 offers, throws, open mana unchanged"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R77",
+        "supports": "yes",
+        "note": "the gate table (precondition, unpayable cost, no legal target), checked before anything is paid"
+      },
+      {
+        "ref": "R196",
+        "supports": "yes",
+        "note": "all-or-nothing, checked before the first payment"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "| a printed precondition is false | R77 |"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "source, and the cost destroys the source. `doActivateAbility` evaluates every"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "'Its timing allows it' is supported by the engine (doActivateAbility) and the Manual's activated-abilities paragraph rather than R77's table; fine."
+  },
+  {
+    "key": "effects.activated.procedure.stack",
+    "textHash": "401cc01a3c799e11",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:pushItem",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "167-variable-ability-costs.test.ts",
+        "pattern": "R196 Infernal Cultivator",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R57 (targets before fixed costs; costs paid before the stack)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**at cast, before the item reaches the stack**, so R49's guarantee holds: no"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.activated.procedure.targets",
+    "textHash": "236cae58aaec67a0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:collectTargets",
+        "agrees": true,
+        "note": "collectPartTargets before the fixed costs"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "167-variable-ability-costs.test.ts",
+        "pattern": "R196 Slag Spewer",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R57 (targets before fixed costs)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R57 (targets before fixed costs)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Every cast-time *question* is asked in this order: **X → {Modular} mods →"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "TARGETS → costs.** Nothing that requires a decision, and nothing irreversible,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.activated.procedure.variable-cost",
+    "textHash": "61ee2dfdfa7da419",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U15-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:collectCastCosts('variable')",
+        "agrees": true,
+        "note": "payMana1 / doneCost loop; costPaid.x = what was paid, collected at activation"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "167-variable-ability-costs.test.ts",
+        "pattern": "R196 Celestial Shifter",
+        "passed": true,
+        "asserts_claim": "yes — pays 3 point by point, X=3 visible on the stack before the response"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R196",
+        "supports": "yes",
+        "note": "an ability's X is a bracketed variable cost"
+      },
+      {
+        "ref": "R64 (its cost half)",
+        "supports": "yes",
+        "note": "pay one unit at a time until you stop; what you paid is X"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A **variable** cost is where X comes from. You pay one unit of it at a time"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "* **An ABILITY's X is a BRACKETED COST.** There is no card being played, no mana"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.activated.timing-icon",
+    "textHash": "ef4586d202e84585",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:activation timing gate",
+        "agrees": true,
+        "note": "refused at activation"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "43-dark-c.test.ts",
+        "pattern": "Grox: R49 — the printed [Battle] marker is enforced at ACTIVATION",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "45-hybrids-ld-b.test.ts",
+        "pattern": "Cadaverous Cultivator: R49 — [Battle] is enforced at ACTIVATION, not at resolution",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R49 (its activation-timing marker)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R49 (its activation-timing marker)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "`{Battle}` / `{Deployment}` marker on the ability itself (Grox, Cadaverous"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Cultivator), enforced at activation rather than fudged at resolution."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.activated.what",
+    "textHash": "5b24a8244fe8da00",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:collectCastCosts",
+        "agrees": true,
+        "note": "Glook discard X is a castCost collected at activation; the glimpses are the effect at resolution"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "167-variable-ability-costs.test.ts",
+        "pattern": "R196 Glook",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.41",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "Manual p.41",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "Manual p.41",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "an activated ability by a colon “:”. Everything before the"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "colon is a cost that must be paid to activate the ability,"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "which will grant you the effect stated after the colon."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.replacement.amount-before-redirect",
+    "textHash": "e2101cd82b2cff82",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U15-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:addCounters",
+        "agrees": true,
+        "note": "n += amountDelta(...) then target = replaceCounters(target, n)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "87-replacement-layer.test.ts",
+        "pattern": "an AmountMod runs BEFORE the redirect",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R104 (its two families and hooks)",
+        "supports": "yes",
+        "note": "owner/engine reading from the printed wording; no designer source"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**In `addCounters`**, the amount runs before the redirect. \"Put that many"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "beside a Flux Resonator steals the plus-one too."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.replacement.amount-modifiers",
+    "textHash": "14b2b8e7f596028d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:amountMods sum (consulted once each)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "12-fire-a.test.ts",
+        "pattern": "Conduit of Pain: two Conduits both apply, and neither applies to itself",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "27-metal-b.test.ts",
+        "pattern": "Flux Resonator: two allied Resonators give a spawn X plus TWO (summed)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R104 (its two families and hooks)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R104 (its two families and hooks)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> \"a replacement only happens once … The replacement just takes what would be 1"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "So two **different** modifiers both apply (two Conduits of Pain make a 1 into a"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.replacement.locked-life",
+    "textHash": "f5d3fc1fc0536348",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:gainLife",
+        "agrees": true,
+        "note": "lock asked above the replaceLifeGain hooks"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "87-replacement-layer.test.ts",
+        "pattern": "a locked life total stops the replacement layer too",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R104 (its two families and hooks)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R104 (its two families and hooks)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "`gainLife` and `loseLife`: once the change cannot happen at all, there is"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "nothing left to replace."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.replacement.multipliers",
+    "textHash": "4d95acfd74ed7d6a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:lifeAmount factor fold (product)",
+        "agrees": true,
+        "note": "2^n"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "137-multiplier-and-mode.test.ts",
+        "pattern": "R264: THREE Arbiters multiply",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R264",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R264",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "history R157",
+        "supports": "yes",
+        "note": "its §23 formula n*2*v (linear) was amended by R264 to 2^n; n = 2 is unchanged"
+      },
+      {
+        "ref": "history R162",
+        "supports": "yes",
+        "note": "its summed fold was superseded by R264"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**The claiming factors MULTIPLY. n mods each declaring ×2 give 2^n.** Three"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Arbiters give **×8**, where they used to give ×6."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.replacement.multipliers.additive-first",
+    "textHash": "e1d4b14575c26730",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:lifeAmount ((v+Σdelta)×factor)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Resonant: Conduit adds its 1 BEFORE Powerful doubles",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "137-multiplier-and-mode.test.ts",
+        "pattern": "the multiplier composes with a REAL additive mod end to end",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R316",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R264",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "history R104",
+        "supports": "yes",
+        "note": "its order (Conduit after Powerful) was reversed by R316"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> \"Bellowing Boulder with Powerful and Conduit of Pain: (1+1)x2 damage to each unit ="
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "does not reach it. `E.lifeAmount` keeps its interim `(v + Σdelta) × factor` —"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.replacement.multipliers.lethal",
+    "textHash": "a771ed0e984dac7b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:loseLife (lifeAmount fold then lethal check)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "137-multiplier-and-mode.test.ts",
+        "pattern": "Arbiter of Vitality: a LETHAL loss is multiplied BEFORE the lethal check",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "137-multiplier-and-mode.test.ts",
+        "pattern": "the multiplier is a REPLACEMENT, not a second helping",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R162 (its Arbiter of Vitality section)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "now committed in one go, BEFORE the lethal check."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.replacement.no-stack",
+    "textHash": "132a52c912755b83",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:amountMods/replaceLifeGain hooks",
+        "agrees": true,
+        "note": "consulted inline; nothing queued"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "87-replacement-layer.test.ts",
+        "pattern": "Containment Protocol on the stack cannot negate a life-gain replacement",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "12-fire-a.test.ts",
+        "pattern": "Conduit of Pain: the extra damage never reaches the stack",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.41",
+        "supports": "yes",
+        "note": "printed: replacement effects do not use the stack (line-wrapped in Manual.txt)"
+      },
+      {
+        "ref": "R104 (its stack rule)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> a ':' activated ability. All cards that say 'instead' or 'as' or 'if'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.replacement.no-stack.targeted",
+    "textHash": "27ecffbebc287253",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:replaceRotDamage (Beyond queues a targeted part)",
+        "agrees": true,
+        "note": "damage replaced at once"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "43-dark-c.test.ts",
+        "pattern": "Beyond, Codex Incarnate: R102 — the rot replacement asks its controller for a target, and the damage never lands",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R102",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R102",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "resolved. The damage IS replaced — that is what \"instead\" means — so a queued"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "effect that later fizzles for want of a target does **not** resurrect it:"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.replacement.once",
+    "textHash": "ae28be9fc8676b15",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U15-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:replaceCombatDamage",
+        "agrees": true,
+        "note": "each holder is consulted once per hit; one Oorblak absorbs 4 and passes 6 through, not re-offered"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:gainLife/replaceLifeGain",
+        "agrees": true,
+        "note": "first-true-consumes; a loss is not a gain, so Nullbringer does not re-apply"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Oorblak: 10 Piercing combat damage redirected into a 2/4 Oorblak",
+        "passed": true,
+        "asserts_claim": "yes — Oorblak dies, D at 30-6"
+      },
+      {
+        "file": "40-light-c.test.ts",
+        "pattern": "Nullbringer: two copies do not stack",
+        "passed": true,
+        "asserts_claim": "yes — exactly -3 (one loss), not -6/-9"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1397188292239163454#0",
+        "supports": "yes",
+        "note": "calebgannon quoted in the thread; same text in the guard test's comment"
+      },
+      {
+        "ref": "R104 (its two families and hooks)",
+        "supports": "partly",
+        "note": "the quoted Caleb line is used in R104 for the AmountMod fold (Conduit); on-topic, the 'first-true-consumes' paragraph is the closer support"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/387-raq-combat.test.ts",
+        "text": "// face\" — and Caleb: \"replacement effects only apply once in an effect\", so"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "redirects the thing itself. A thing can only be replaced once, so the first"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None material. The Nullbringer example concerns two copies (strictly the one-applies sibling rule), but the claim it states matches its test."
+  },
+  {
+    "key": "effects.replacement.once.one-applies",
+    "textHash": "b1e56e57094f8290",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U15-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:replaceCombatDamage",
+        "agrees": false,
+        "note": "loops over every holder with `left`: a second Oorblak absorbs the leftover of the first — the divergence the text flags is real"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:addCounters/inReplaceCounters",
+        "agrees": true,
+        "note": "lowest id claims; the latch stops ping-pong"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:gainLife",
+        "agrees": true,
+        "note": "two Nullbringers: one inversion"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "46-hybrids-ld-c.test.ts",
+        "pattern": "Counter Thief: two thieves do not ping-pong",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "40-light-c.test.ts",
+        "pattern": "Nullbringer: two copies do not stack",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U15/u15-probes.test.ts",
+        "title": "effects.replacement.once.one-applies: two Oorblaks and one 10-point Piercing hit — does the second absorb the leftover?",
+        "passed": true,
+        "demonstrates": "yes — measured the divergence: D life 28 and both Oorblaks die (ruling reading: 24, one dies)"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "RAQ 1397188292239163454#0",
+        "supports": "yes",
+        "note": "Caleb: replacement effects only apply once in an effect"
+      },
+      {
+        "ref": "R104 (its two families and hooks)",
+        "supports": "yes",
+        "note": "first-true-consumes; two thieves would bounce forever without the latch"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "redirects the thing itself. A thing can only be replaced once, so the first"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "for (const { face, def, anchor } of this.donorFaces(holders, 'replaceCombatDamageToPlayer')) {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Ruling confirmed; engine divergence (two Oorblaks chain) confirmed real by probe."
+  },
+  {
+    "key": "effects.replacement.prevention",
+    "textHash": "b464257949f76ce6",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:preventUnitDamage",
+        "agrees": true,
+        "note": "prevented damage fires no damage event"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Poisonous: a shielded Jollyglop",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "24-wood-b.test.ts",
+        "pattern": "Phytochemical Protection: prevented damage is NOT dealt",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1354148437355925554#1",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R98 (its prevention rules)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "{Lethal} still kills through it\"*. **Replacement is a substitution; prevention is a"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Jollyglop doesn't trigger, won't get -2/-2 from Poisonous but will receive +2/+2 counters from Phytochemical Protection."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.replacement.prevention.when",
+    "textHash": "fe72cdf32851ab95",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:preventUnitDamage (at commit)",
+        "agrees": true,
+        "note": "after Vulnerable; assignment planned unprotected"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "82-attr-interactions.test.ts",
+        "pattern": "Piercing vs a damage-shielded unit",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R98 (its prevention rules)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R98 (its prevention rules)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "{Vulnerable}'s doubling (\"all damage that WOULD BE DEALT\" to a Vulnerable unit is the"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "floor: those are planned against the unit's real toughness as if it were unprotected. The"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.replacement.prevention.whole-hit",
+    "textHash": "a06385259c685bcc",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:preventUnitDamage",
+        "agrees": true,
+        "note": "whole assigned hit prevented"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "24-wood-b.test.ts",
+        "pattern": "Phytochemical Protection: the whole hit is prevented, not just the lethal part",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353888077625561108#7",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "history R98",
+        "supports": "yes",
+        "note": "its open item 1 (prevention counters capped at lethal) was superseded by R114: the whole assigned hit is dealt"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "All damage must be assigned to this single unit and whole damage will be prevented, potentially putting a lot of +/+ counters"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.replacement.scope",
+    "textHash": "d7371cc68dd0bad3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:loseRot/loseDebt (amountMods not consulted)",
+        "agrees": true,
+        "note": "removal is unscaled"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "152-hand-entry.test.ts",
+        "pattern": "a counter-amount replacement does NOT scale a REMOVAL",
+        "passed": true,
+        "asserts_claim": "yes (white-box loseRot/loseDebt, not Burn the Blight itself)"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R179",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R179",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> *\"Resonater says 'put on' so this question is irrelevant. Removing counters"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**THE GENERALISABLE FORM, which is the half worth keeping: the scope of a layer"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.replacement.scope.all-counters",
+    "textHash": "7649d63cfd20beef",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets: Flux Resonator amountMods step",
+        "agrees": true,
+        "note": "sign-preserving +1"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "120-counter-attribution.test.ts",
+        "pattern": "Resonator: -1/-1 counters get one more of the SAME",
+        "passed": true,
+        "asserts_claim": "yes (one -1/-1 becomes two; example says two become three — same rule)"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R130 (its counter-attribution ruling)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**The ruling**, verbatim: *\"All counters count as counters.\"* No sign filter,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.replacement.scope.who-put",
+    "textHash": "f3d2336ee4d13d3f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:addCounters(by)",
+        "agrees": true,
+        "note": "actor seat passed with the placement; Resonator filters on it"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "120-counter-attribution.test.ts",
+        "pattern": "Resonator: an ENEMY's placement onto your own unit is not an allied source",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "120-counter-attribution.test.ts",
+        "pattern": "Resonator: counters YOU put on an ENEMY unit are plus one too",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R130 (its counter-attribution ruling)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R130 (its counter-attribution ruling)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "fact.** Three cards print an ACTOR (\"when **you** put\", \"by an **allied**"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "another are still counters you put."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.replacement.substitute",
+    "textHash": "bd41cdd7fab6fcaf",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:gainLife/replaceLifeGain; replaceCombatDamage (still dealt)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "87-replacement-layer.test.ts",
+        "pattern": "a replaced life gain fires no lifeGained",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "87-replacement-layer.test.ts",
+        "pattern": "a replaced token creation fires no spawned",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "210-zephyrzoa-hears-a-replaced-hit.test.ts",
+        "pattern": "R238: Zephyrzoa fires on a hit that was REPLACED and cost no life",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R104 (its two families and hooks)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R238",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "`spawned` for it, asked, and erased it — so a token the card says was never"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> **\"Yes, blightsea pollup says it deals damage as, so its still damage. Just"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.replacement.token-batch",
+    "textHash": "19a43022fdc37888",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:token creation batch (R104/R157 §24)",
+        "agrees": true,
+        "note": "unique by (name, X)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "136-triggers-and-modes.test.ts",
+        "pattern": "R157 §24: end to end",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "136-triggers-and-modes.test.ts",
+        "pattern": "R157 §24: three IDENTICAL Robot 2s",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R104 (its token-batch section)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R157 (its §24)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "history R104",
+        "supports": "yes",
+        "note": "its \"UNIQUE is by token kind, the X is not part of it\" was reversed by R157 §24"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**One resolving part is one creation batch**, which is the unit R80 already gave"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> *\"'Unique' means unique (name, X) pair — you get two extras.\"*"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.replacement.what",
+    "textHash": "18b1167eccae4e7e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets: Flux Resonator amountMods",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "27-metal-b.test.ts",
+        "pattern": "Flux Resonator: a counter you put on an allied unit becomes one more",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.41",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "Manual p.41",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Abilities like Flux Resonator’s using the templating “If..."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.static.continuous",
+    "textHash": "d28e33187921787a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:staticsFor",
+        "agrees": true,
+        "note": "continuous layer re-read; ends when source leaves"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Transmogrifant: a unit that enters play under it has no attributes",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355845893219287132#0",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "RAQ 1355845893219287132#0",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Monke and Transmogrifant have Static Abilities meaning they work continuously and affect new units entering play"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Once Monke / Transmogrifant are removed from play, all other units regain their Abilities and Attributes."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.static.continuous.not-counters",
+    "textHash": "5027ec600b4a4005",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:StaticMod (dp/dt layer, no counters)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "142-static-conformance.test.ts",
+        "pattern": "R168: Aetherflux Golem is a STATIC, like the two cards printing its sentence",
+        "passed": true,
+        "asserts_claim": "yes (shape: StaticMod, nothing stack-reaching); counter-blindness follows by construction, not asserted directly"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R168",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R168",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "* **counter-matters cards stop seeing counters.** The card says \"I gain +2/+2\","
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A layer is true while its source is there and false afterwards."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.static.continuous.on-arrival",
+    "textHash": "c573f07da84866ef",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U15-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:spawnUnit/statics",
+        "agrees": true,
+        "note": "statics are live at the 'spawned' event, measured by the three tests"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Nectar Ridge: under Sandstone Defender",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Nectar Ridge: under Infernal Wispweaver",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Nectar Ridge: Animated Spark statics a unit that spawns mid-battle",
+        "passed": true,
+        "asserts_claim": "yes — asserts 9/8 right after the spawn"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355633589890584636#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1355633589890584636#1",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1355633589890584636#2",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "text": "assert.equal(handSize(h, A), hand0 + 1, 'the Oracle saw a 1/3 spawn and drew (once — [once])');"
+      },
+      {
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "text": "assert.equal(handSize(h, A), hand0, 'it never was a 0/1 — no draw');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.static.declared-targets",
+    "textHash": "8087f59d979fb673",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:effectAttrs ctx.targets = part.targets.length",
+        "agrees": true,
+        "note": "cast-time list"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "12-fire-a.test.ts",
+        "pattern": "Envoy of Lightning: two DECLARED targets is not",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R94",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R94",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> **A:** \"No, it still has 2 targets, but one of them is invalid (but could become valid"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "`part.targets.length` (the cast-time list), **never** `ctx.targets.length` (the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.static.from-mod",
+    "textHash": "e6d76ec09a1d758c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:anchored",
+        "agrees": true,
+        "note": "mod text anchors on the host; statics, cost mods and replacement hooks read from it"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "28-metal-c.test.ts",
+        "pattern": "Transmogrifant: the augment-donated static anchors on the host",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "16-earth-a.test.ts",
+        "pattern": "Crevice Lurker: R121 — donated as an augment, the HOST's region carries the tax",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "87-replacement-layer.test.ts",
+        "pattern": "a donated [Augment] replacement reads from its HOST",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R157 (its §6)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R94",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R94",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> *\"The unit's controller. But why would that be a problem for Doot? You virus"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "division `StaticMod` already uses — so an Enlightener augmented onto an ENEMY unit"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "boosts *that enemy's* spells, matching the units half exactly."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.static.literal",
+    "textHash": "f78214c03ce0b222",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets: Rotspore Herald effectAttrs",
+        "agrees": true,
+        "note": "units, spells and spell tokens in region"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "107-semantics-statics.test.ts",
+        "pattern": "Rotspore Herald: R125 — a SPELL resolving in the region is deadly",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "107-semantics-statics.test.ts",
+        "pattern": "Rotspore Herald: R125 — a SPELL TOKEN standing in the region is deadly too",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R125",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R125",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R237",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "tokens. Literally everything in its region. I think you're underestimating"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "carries no qualifier, do not invent one. The narrow reading here was not a"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> 1 damage kills the front unit, **the second damage kills the herald**.\"*"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.static.literal.spell-tokens",
+    "textHash": "2d8005daf08c7cb9",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/dsl.ts:isSpellEffect",
+        "agrees": true,
+        "note": "isSpellEffect('spellToken') true"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "111-literal-fire.test.ts",
+        "pattern": "Emberflame and Envoy of Lightning ask the SAME question about a spell token",
+        "passed": true,
+        "asserts_claim": "yes at predicate level (Emberflame affects spellToken); the doubled damage itself is not asserted"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R157 (its §13)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R94",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> *\"Yes. Tokens are spells.\"*"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "R157 §13, the owner: *\"Yes. Tokens are spells.\"* Emberflame doubles a Burst Fireball, as the engine"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.static.no-stack",
+    "textHash": "5e035a409508f570",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:staticsFor / costMods",
+        "agrees": true,
+        "note": "statics are layers, never queued; Crevice Lurker tax is applied to activations/triggers only"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ Crevice Lurker: a static ability is not taxed",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "142-static-conformance.test.ts",
+        "pattern": "R168: Aetherflux Golem is a STATIC",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355103348378042515#3",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R168",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "* **it stops being respondable.** A triggered ability reaches the stack, so"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "It doesn't affect Static Abilities (Like 'I gain +2/+2', 'Spells cost 1 more to play during battle' or 'If ... instead ...')"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.static.permission",
+    "textHash": "998cf7422e842e35",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-earth-c.ts:The Bonesculptor",
+        "agrees": false,
+        "note": "built as type 'activated', cost {}, bounded, timing deploy — the divergence the rule flags is real"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U15/u15-probes.test.ts",
+        "title": "effects.static.permission: The Bonesculptor permission is used as an activated ability (measured shape)",
+        "passed": true,
+        "demonstrates": "yes — the divergence: offered as activateAbility, resolves as an activated item"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R165",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R168",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "deployment\"* is not an effect anyone should be able to answer, but it is built"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "should simply be true reaches the stack and Containment Protocol can negate"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-earth-c.ts",
+        "text": "    type: 'activated', cost: {}, bounded: true, timing: 'deploy',"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Ruling confirmed against R165/R168 (both record the permission should simply be true and file the engine as wrong). Divergence real: the probe shows the permission is offered as activateAbility and resolves as an activated item. Note: Containment Protocol is battle-timing and the Bonesculptor is deploy-only on an isolated deployment stack (R286), so the illustrative example's negation is not reachable in practice; the divergence is structural."
+  },
+  {
+    "key": "effects.static.printed-form",
+    "textHash": "a5d09c5201fc55d8",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U15-r2",
+    "engine": [
+      {
+        "loc": "client/engine/test/142-static-conformance + 88-replacement-conformance sweeps",
+        "agrees": true,
+        "note": "whole-pool: pure-static and untargeted-replacement cards declare nothing stack-reaching; targeted replacements (Beyond) do"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:queueResonant / Alluring trigger",
+        "agrees": true,
+        "note": "Resonant (R315) and Alluring (R84) are queued as triggers"
+      },
+      {
+        "loc": "The Bonesculptor (STACK_ANYWAY in 142)",
+        "agrees": "partly",
+        "note": "its static permission is modelled as an activated ability (filed divergence PLAY-VS-PUT-INTO-PLAY); deployment-only, so it resolves at once and never sits on the stack"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "142-static-conformance.test.ts",
+        "pattern": "a card whose whole printed text is continuous declares NOTHING",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "88-replacement-conformance.test.ts",
+        "pattern": "a card whose whole text is an untargeted replacement declares NO ability",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.41",
+        "supports": "yes",
+        "note": "triggered abilities at specified times like 'After combat'"
+      },
+      {
+        "ref": "R104 (its stack rule)",
+        "supports": "yes",
+        "note": "owner: only When/Whenever/':' go on the stack; instead/as/if without targets don't"
+      },
+      {
+        "ref": "R315",
+        "supports": "yes",
+        "note": "Resonant is a trigger (Caleb)"
+      },
+      {
+        "ref": "R168",
+        "supports": "partly",
+        "note": "one card's static moved to a StaticMod; on-topic"
+      },
+      {
+        "ref": "R102",
+        "supports": "partly",
+        "note": "the targeted-replacement exception; the quoted line is about fizzling, merely on-topic"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> effects that go onto the stack are cards that say 'When' or 'Whenever' or have"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> instead, as or if and don't mention targets'. Plus, rot damage is a trigger to"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Crevice Lurker taxes it, and Containment Protocol can negate it."
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Minor: 'Only triggered abilities and activated abilities put anything on the stack' should be read as 'of abilities' — played spells also go on the stack. Bonesculptor's permission is modelled as an activated ability (known divergence), not flagged here."
+  },
+  {
+    "key": "effects.static.region",
+    "textHash": "ae2110ba2151f360",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U15-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:amountFactor/anchored",
+        "agrees": true,
+        "note": "anchored static/amount layers filter a.region === ctx.region (R12)"
+      },
+      {
+        "loc": "client/engine/src/cards Rotspore Herald statics",
+        "agrees": true,
+        "note": "test shows a Herald in another region gives no Deadly"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "107-semantics-statics.test.ts",
+        "pattern": "Rotspore Herald: R125 — the scope is the REGION",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.42 (Prickly Protector Q&A)",
+        "supports": "partly",
+        "note": "one static counting only its region; the same page's 'There is zero interaction between regions' is the stronger printed statement"
+      },
+      {
+        "ref": "R237",
+        "supports": "yes",
+        "note": "Caleb 2023-09-07: every effect works in a single zone"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> **Caleb Gannon:** *\"Yeah.\"* … *\"Every single effect without exception will"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "A: No, it only sees the units in the region it"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.static.spawn-counters",
+    "textHash": "9e2674dac32ebc70",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:spawnUnit (spawn counters written before spawned event)",
+        "agrees": true,
+        "note": "no stack item"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "139-spawn-and-play.test.ts",
+        "pattern": "Aethercap Siphoner: a spawn watcher sees the 1/1 the card prints, not the printed 4/4",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "139-spawn-and-play.test.ts",
+        "pattern": "Powerforge Synergist / Aethercap Siphoner: \"I spawn with N counters\" never reaches the stack",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R165",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R165",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**The ruling: \"I spawn with N counters\" is a DECLARATION about the body, not an"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "*\"I spawn with N counters\"* is a statement about what the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.static.spawn-counters.modifiers",
+    "textHash": "b2b05ea78ff68a56",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:spawnUnit amountMods, no countersChanged",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "27-metal-b.test.ts",
+        "pattern": "Flux Resonator: an allied Robot spawns with one more counter (report #88)",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "139-spawn-and-play.test.ts",
+        "pattern": "Aethercap Siphoner: spawning with counters is not",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R165",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R130 (its counter-attribution ruling)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **SILENT.** No `countersChanged` fires, so no \"when **you** put a counter\""
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "reaches the AMOUNT layer only — an allied Flux Resonator still makes a Robot X"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.static.what",
+    "textHash": "8da604caec4248d5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:effStats (statics re-read on every read)",
+        "agrees": true,
+        "note": "Prickly Protector count is live"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "24-wood-b.test.ts",
+        "pattern": "Prickly Protector: +1/+1 per other ally",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.41",
+        "supports": "yes",
+        "note": "line-wrapped in Manual.txt; exact in printed-pages.json"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Static abilities declare a change that a card is contin-"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.triggered.above-cause",
+    "textHash": "a50a3c70ea41decd",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:pushItem above the cause",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "RAQ Bloomcaster: its 1/1 resolves before the Mycelial Mentor it was played with arrives",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "RAQ Bloomcaster: a negated spell unit still leaves the Bloomcaster 1/1 behind",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353862592661164152#0",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "RAQ 1353862592661164152#1",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R53",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "the stack **above** the spell that targeted — the trigger resolves first."
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Bloomcaster trigger to create 1/1. After it resolves Mycelial Mentor can be resolved and comes into play"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "you will get 1/1 from Bloomcaster even if Spell-Units effect is negated"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.triggered.attributes",
+    "textHash": "cc5a9fb74ef9b021",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:Alluring Attribute (registerSynthetic) / Resonant rider (R315)",
+        "agrees": true,
+        "note": "queued as triggered items; taxed; negatable"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ trigger-like attributes: Crevice Lurker taxes the Alluring trigger",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ trigger-like attributes: Containment Protocol negates a waiting Alluring trigger",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "399-raq-fix-combat.test.ts",
+        "pattern": "R315: the Resonant rider waits on the stack after combat, as its source, and can be negated",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1366446116274442291#0",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R315 (its ruling)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R315 (its ruling)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "history R94",
+        "supports": "yes",
+        "note": "its \"OPEN\" note that the engine riders the undoubled {Resonant} amount is overtaken by R315 (the rider is damage from the source); not marked in the register (D-U15-7)"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "the resonant source**, put on the stack as that source's trigger — not life loss"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Crevice Lurker taxes it, and Containment Protocol can negate it."
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "my intent is for it to stop those from triggering"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.triggered.chosen-unit",
+    "textHash": "044b804a98d7a888",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U15-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:collectSubjects",
+        "agrees": true,
+        "note": "subject aimed in the stack window; 1 candidate recorded without asking; aimed-and-gone fizzles"
+      },
+      {
+        "loc": "client/engine/src/cards/registry.ts:wraithAllies",
+        "agrees": true,
+        "note": "the carrier is included — a unit is its own ally"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "37-attrs-wight.test.ts",
+        "pattern": "R144\\(b\\): three Wraith triggers may all aim",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "37-attrs-wight.test.ts",
+        "pattern": "R144\\(b\\): \"no ally at all\" still does nothing",
+        "passed": true,
+        "asserts_claim": "yes — the title says 'does nothing', but the assertions are what the example says: no decision, shrank to 2/2, no fizzle"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R144 (its half (b))",
+        "supports": "yes",
+        "note": "owner ruling, verbatim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> stack simultaneously and be allowed to target the same unit, even exceeding"
+      },
+      {
+        "file": "client/engine/test/37-attrs-wight.test.ts",
+        "text": "assert.deepEqual(effStats(h, id), [2, 2], 'and it shrank itself');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.triggered.chosen-unit.not-target",
+    "textHash": "0884a20a076aaec2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:collectSubjects (no targeted event, not a redirect slot)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "37-attrs-wight.test.ts",
+        "pattern": "R144(b): a subject is not a target",
+        "passed": true,
+        "asserts_claim": "yes (no targeted event; uses a test body rather than Mohruung; redirect half rests on R144, not a test)"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R144 (its half (b))",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R144 (its half (b))",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "R144 grants **1 and 2** — which is exactly and only what the owner asked for —"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "and withholds **3 and 4**. The expensive one is 3: **Mohruung** prints *\"when I"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.triggered.if-you-do",
+    "textHash": "bf9e6a7c35d088c0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-earth-a.ts:Eminence of the Barrens",
+        "agrees": true,
+        "note": "one triggered ability; the [one] is a payOrDecline inside its run"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U15/u15-probes.test.ts",
+        "title": "effects.triggered.if-you-do: Eminence of the Barrens under Crevice Lurker is taxed once, and its \"if you do\" pay is asked inside the one trigger",
+        "passed": true,
+        "demonstrates": "yes — one tax question per trigger, the [one] asked at resolution; tax+pay = 2 per trigger"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R121 (its activation tax and designer rulings)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R121 (its activation tax and designer rulings)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- An ability's *\"if you do\"* clause is **not** its own trigger — it resolves"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "inside the one queued trigger's parts and is never double-taxed."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.triggered.once-per-event",
+    "textHash": "f0c922fc0e7539a5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:fireEvent targeted (per target)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "136-triggers-and-modes.test.ts",
+        "pattern": "R157 §16: two targeted allies are TWO TRIGGERS on the stack, not one that makes two",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R157 (its §16)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> *\"Once per targeted ally — two targets, two triggers, two 1/1s.\"*"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.triggered.once-per-event.moved-mods",
+    "textHash": "7a682f791abafc73",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:Reconfigure mod move (modApplied per mod)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Reconfigure onto Perpetual Construct",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353856176558706769#0",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R332",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Reconfigure is the exception, because its printed text says the mods are augmented."
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Perpetual Construct will trigger separetly for each of the Mods"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.triggered.once-per-event.one-move",
+    "textHash": "1356286eb226ca88",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:handEntered (one per move)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "152-hand-entry.test.ts",
+        "pattern": "a multi-card move fires exactly ONE handEntered, like a multi-card draw",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R179",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R179",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "1. **ONE EVENT FOR A MULTI-CARD MOVE.** The printed text is \"one or more\", and"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "the Tides +2/+2 *per card*, which no reading of the sentence supports."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.triggered.order",
+    "textHash": "f5a2f3883c119219",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:orderTriggers (R2/R261 batch)",
+        "agrees": true,
+        "note": "each seat orders its own batch; IT pushed first, NIT on top"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "239-damage-triggers-after-combat.test.ts",
+        "pattern": "R261 THE RAQ BATCH",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.43",
+        "supports": "yes",
+        "note": "printed FAQ: each player orders; NIT enter last and resolve before IT"
+      },
+      {
+        "ref": "Manual p.43",
+        "supports": "yes",
+        "note": "printed FAQ: each player orders; NIT enter last and resolve before IT"
+      },
+      {
+        "ref": "RAQ 1540678747953569832#0",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R2",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "All simultaneous triggers are ordered **by their owner, however they choose**; then all go"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "the stack. NIT effects will enter the stack last and"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Since all those effects are put on the same stack at the same time, each player can decide the order of their effects."
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Each player decides the order their effects go on"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.triggered.own-death",
+    "textHash": "692b5bafffcc5156",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:PendingTrigger.region (R70)",
+        "agrees": true,
+        "note": "death trigger carries the death region"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "62-death-facts.test.ts",
+        "pattern": "R70: a \"when I die\" trigger resolves in the region the unit DIED in",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R278",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R70",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "*\"a unit sees its own death\"*."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "The fix is the general one: `PendingTrigger` carries the **region its source"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.triggered.own-death.despawn",
+    "textHash": "5f439289fd71c370",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:despawn events on recall/cache/die",
+        "agrees": true,
+        "note": "donated despawn fires on recall and cache"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "141-despawn-mods.test.ts",
+        "pattern": "R167 (i)",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "141-despawn-mods.test.ts",
+        "pattern": "R167 (ii)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R167",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "a printed \"when I despawn\" means it whichever way the unit leaves play"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.triggered.own-death.reconfigure",
+    "textHash": "f5c1cdc4b239879e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:moveMods (Reconfigure)",
+        "agrees": true,
+        "note": "no despawn fired"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Reconfigure vs Despawn",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353847640214999170#0",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Does Reconfigure causes units Despawn effect to trigger? No. The Unit never switch zones"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.triggered.own-death.same-batch",
+    "textHash": "3c7a76a9972620d1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:disposal batch listeners (R278)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "258-simultaneous-disposal-listeners.test.ts",
+        "pattern": "R278: Muck Rummager hears an ally trashed in the same combat-damage batch it dies in",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R278",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R278",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**A batch of deaths that is simultaneous in the rules is simultaneous to the"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "every disposal event of its batch-mates — their `died`, their `trashed`,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.triggered.region",
+    "textHash": "451121a230679cff",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:fireEvent (R12 region filter)",
+        "agrees": true,
+        "note": "listeners outside the event region are not scanned"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "28-metal-c.test.ts",
+        "pattern": "Refuse Reclaimer: a death in a region it is not in leaves it cold (R12)",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.42",
+        "supports": "yes",
+        "note": "Q: spell in one region trigger units in another? A: No."
+      },
+      {
+        "ref": "Manual p.21",
+        "supports": "yes",
+        "note": "Sparkwraith in another region does not trigger"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Sparkwraith in their own region (region 4). Sparkwraith does not trigger from casting of Maw of"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "If I play a spell in one region, will that trigger effects"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.triggered.region.after-combat",
+    "textHash": "bd8f68afd612c80f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:after-combat trigger scan (battle region, formation-agnostic)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ after combat: the control, an after-combat unit in ANOTHER region makes nothing",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ after combat: an after-combat trigger fires for a unit in the battle region that is not in formation",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.43",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "Manual p.43",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "A: No, because a battle did not happen."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.triggered.targets-as-played",
+    "textHash": "a968315766698637",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U15-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts:Earthbound Replicator when",
+        "agrees": true,
+        "note": "reads ev.data.targets from the spellPlayed event (targets declared at the play), not the item's current targets"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "151-copy-and-moved-mods.test.ts",
+        "pattern": "R178 Earthbound Replicator: a spell played at something ELSE and retargeted onto me makes NO copy",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "151-copy-and-moved-mods.test.ts",
+        "pattern": "R178 Earthbound Replicator: a spell played AT ME and retargeted away still makes its copy",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355613076506017894#3",
+        "supports": "yes",
+        "note": "_passer, quoted verbatim in R178"
+      },
+      {
+        "ref": "R178 (its §1)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> *\"He must be targeted while playing the spell. If the spell is played and"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts",
+        "text": "// R178: \"targeting me\", asked NOW (R1) against what the spell declared"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "General phrasing rests on one card: Earthbound Replicator is the only card in the oracle whose trigger is 'plays a … spell targeting'. Fine as stated."
+  },
+  {
+    "key": "effects.triggered.two-moments",
+    "textHash": "f22164a096c810fc",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:fireEvent -> PendingTrigger; collectTargets at push",
+        "agrees": true,
+        "note": "fires in the step, stacked and aimed after"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "239-damage-triggers-after-combat.test.ts",
+        "pattern": "R261: a combat-damage trigger is announced INSIDE the damage step and pushed to the stack AFTER it",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "53-playtest-round7.test.ts",
+        "pattern": "R84: the trigger goes on the stack, targets at cast (R67), and can be NEGATED",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R261 (its firing-versus-stacking distinction)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R261 (its firing-versus-stacking distinction)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R144 (its half (b))",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**The trigger still FIRES during the damage step**, and that is not a detail — it is what"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "(target selection) and the **resolution**. So a combat trigger's shape in the log is"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "1. it is **chosen when the effect is declared**, not when it resolves;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.triggered.what",
+    "textHash": "36d98957a0475f97",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets (afterCombat triggers)",
+        "agrees": true,
+        "note": "Embermaw after-combat X/X"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "11-fire-wood.test.ts",
+        "pattern": "Embermaw Fledgling: after combat → X/X, X = attacking units in my formation",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.41",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "Manual p.41",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "Manual p.41",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "Manual p.41",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "“When” and “Whenever” denote triggered abilities, which"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "are effects that happen when something else takes place."
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Triggered abilities may also take place at specified times,"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "like “After combat” or “At the end of turn”."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.triggered.when-stacked",
+    "textHash": "26536ce3ebe09c9e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:settle/pushItem",
+        "agrees": true,
+        "note": "header rule; no example"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R250 (its §3 outside the combat damage step)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> **A trigger is respondable wherever the game hands out priority, and the game"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.triggered.when-stacked.battle",
+    "textHash": "ab5f702dd6df1ae3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:pushItem (passes reset, priority to non-actor)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "229-cosmic-and-control.test.ts",
+        "pattern": "R250: a trigger fired OUTSIDE the damage step reaches the stack and IS respondable",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R250 (its §3 outside the combat damage step)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R250 (its §3 outside the combat damage step)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R53",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "demonstrates both answers** — Eminence hit by a spell in an open battle window"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "goes on the stack and the opponent may respond; Eminence hit by combat damage"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "the stack **above** the spell that targeted — the trigger resolves first."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.triggered.when-stacked.combat-damage",
+    "textHash": "de3923c8859abd24",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:pumpCombatDamage / damage sub-step windows (R261/R295)",
+        "agrees": true,
+        "note": "combat-caused triggers announced in the step, stacked after it or at a sub-step boundary"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "239-damage-triggers-after-combat.test.ts",
+        "pattern": "R261: a combat DEATH trigger waits with the rest",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1540678747953569832#2",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R300",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> dying (if it happens) will happen, but be pushed into the next step since the combat"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "presence of Swift or/and Sluggish opens new stacks which must be resolved before you move to next combat damage step (swift->normal->sluggish)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.triggered.when-stacked.deployment",
+    "textHash": "feb95c57e24ffa54",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:settleDeploySeat",
+        "agrees": true,
+        "note": "per-seat deployment stack"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "37-attrs-wight.test.ts",
+        "pattern": "R144(a): every start-of-deployment trigger is on the stack before any of them resolves",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R144 (deployment triggers use the stack)",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "R102",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "history R144",
+        "supports": "yes",
+        "note": "its single shared deployment stack and its \"no priority in deployment\" were amended by R286: one stack per player, and that player holds priority over it"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **(a)** deployment-phase triggers go through the **stack**, like everything"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> -1/-1 counters on during deployment (which still has and uses a stack). But"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "effects.triggered.when-stacked.end-of-turn",
+    "textHash": "b728fd329d9ad632",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U15-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:legalActions (turnEnding)",
+        "agrees": true,
+        "note": "no play/cast/activate offered while an end-of-turn trigger asks"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "420-cr-battle-regroup-deploy.test.ts",
+        "pattern": "cr:turn.initiative.end-of-turn.no-responses",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.26",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "Manual p.26",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      },
+      {
+        "ref": "Manual p.26",
+        "supports": "yes",
+        "note": "quote found verbatim in the source and states the claim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "This step is exclusively for resolving card abilities as"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "a special action, players cannot play cards after or in"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "response to these end of turn triggers."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  }
+]

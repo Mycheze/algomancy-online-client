@@ -1,0 +1,402 @@
+[
+  {
+    "id": "D-U23-1",
+    "kind": "c-owner-call-only",
+    "rule": "annexd.clocks.banks",
+    "tier": 3,
+    "summary": "The clock banks (no clock, 45 minutes, 60 minutes) and the per-mode defaults are an owner answer on a question sheet, not an R-ruling. The rules are therefore engine-only, backed by test 271.",
+    "sides": [
+      {
+        "source": "file: client/docs/questions-round36.md",
+        "quote": "ANSWER: Let's do: 45m (default for constructed), 60m (default for live draft) and allow the clock to be turned off when doing room settings, for friendly games."
+      }
+    ],
+    "resolution": "The rules state the engine's banks and defaults as basis engine. Register the owner's Q4 answer as a ruling if it is to count as owner basis."
+  },
+  {
+    "id": "D-U23-2",
+    "kind": "b-engine-only",
+    "rule": "annexd.clocks.running",
+    "tier": 3,
+    "summary": "Sources silent on when a clock runs, what happens when it runs out, the recap's clock hold and the closing of idle games. No ruling, designer source or printed page covers clocks; everything in D3 comes from tests (e2e/test-clock.ts, 360, 367, 372).",
+    "sides": [
+      {
+        "source": "file: client/server/e2e/test-clock.ts",
+        "quote": " *   - chess clock: CLOCK_START_MS per seat, runs only for seats the game is"
+      },
+      {
+        "source": "file: client/server/e2e/test-clock.ts",
+        "quote": "console.log('\\n[BL-27: a seat that stops acting runs out of time and LOSES]');"
+      }
+    ],
+    "resolution": "The D3 rules ship as engine-derived (Annex P) and await owner sign-off. e2e/test-clock.ts is not in the test-title index, so its rules carry only a file-level citation of suite.test.ts."
+  },
+  {
+    "id": "D-U23-3",
+    "kind": "c-owner-call-only",
+    "rule": "annexd.clocks.running.standing-pass",
+    "tier": 3,
+    "summary": "That a standing pass stops the clock, with a server backstop pass, rests on an owner sentence quoted only in a test comment. No R-ruling records it.",
+    "sides": [
+      {
+        "source": "file: client/server/e2e/test-passall-clock.ts",
+        "quote": " * The owner, 2026-09-28: *\"When a player is 'Pass all'ed, their timer should"
+      },
+      {
+        "source": "file: client/server/e2e/test-passall-clock.ts",
+        "quote": " * never go down.\"* He chose PAUSE + BACKSTOP: the client tells the server when"
+      }
+    ],
+    "resolution": "The rule states the engine's behaviour as basis engine. Register the owner's call as a ruling if it is to count as owner basis."
+  },
+  {
+    "id": "D-U23-4",
+    "kind": "c-owner-call-only",
+    "rule": "annexd.auto-pass.full-control.deployment",
+    "tier": 3,
+    "summary": "R287 gives the owner's full-control sentence, including deployment, and records that the deployment clause is not built. It was filed as CT-185 and left as the owner's call.",
+    "sides": [
+      {
+        "source": "R287",
+        "quote": "> the haste step or anything. Even during deployment, nothing will"
+      },
+      {
+        "source": "R287",
+        "quote": "⚠ **THE DEPLOYMENT CLAUSE IS NOT BUILT.** *\"Even during deployment, nothing"
+      }
+    ],
+    "resolution": "Under owner decision 2 the rule states the ruling, with the marker 'engine differs, see F-U23-1'. Whether to build it (a replay-safe holdStack action) is CT-185's open owner call."
+  },
+  {
+    "id": "D-U23-5",
+    "kind": "c-owner-call-only",
+    "rule": "annexd.auto-pass.haste-ready.residual",
+    "tier": 3,
+    "summary": "R18 defines a hidden segment as one where nobody sees the other side's plays until everyone is done. R236 measures a residual channel, the live action counter, that tells a modified client when its opponent acts in every hidden segment. R236 leaves closing it to the owner.",
+    "sides": [
+      {
+        "source": "R18 (its hidden-segment half)",
+        "quote": "false: the haste step is a **hidden simultaneous segment** — nobody sees the"
+      },
+      {
+        "source": "R236",
+        "quote": "`GameState.actionCount` is served live to both seats and increments on **every**"
+      },
+      {
+        "source": "R236",
+        "quote": "`server/rooms.ts`** — both off limits this round, and a call for the owner. The"
+      }
+    ],
+    "resolution": "The rule states the residual as R236 measured it. It stays open as R236's own owner call (a per-seat action counter, or accept the residual). F-U23-3."
+  },
+  {
+    "id": "D-U23-6",
+    "kind": "a-sources-disagree",
+    "rule": "annexd.auto-pass.automatic-answers",
+    "tier": 2,
+    "summary": "R245(b) rules that an automatic answer, naming both the haste-step ready and the automatic pass, is latched by being unanswered and never by a state counter. R258, describing the code later, says the automatic pass is latched once per actionCount, and test 70 [59] asserts that a new state number releases the latch.",
+    "sides": [
+      {
+        "source": "R245",
+        "quote": "### (b) An automatic answer is latched by the FACT of being unanswered, never"
+      },
+      {
+        "source": "R245",
+        "quote": "The client sends intents the player did not: the haste-step ready (R236) and"
+      },
+      {
+        "source": "R258",
+        "quote": "[59]/R245 latch it to one send per `actionCount` (`takeAutoPass` in"
+      },
+      {
+        "source": "file: client/ui/test/70-playtest-round15.test.ts",
+        "quote": "assert.equal(takeAutoPass(plan, 41, latch), true, 'a new state is a new window');"
+      }
+    ],
+    "resolution": "The rule states R245(b), the ruling, with 'engine differs, see F-U23-2'. Question for the owner only if R245(b) was meant for the haste-step ready alone: its words name both automatics, so the rule reads it as covering both."
+  },
+  {
+    "id": "D-U23-7",
+    "kind": "c-owner-call-only",
+    "rule": "annexd.undo.hidden-step",
+    "tier": 3,
+    "summary": "The basic undo convention (undo your own actions back toward the start of a hidden step, whatever the opponent does, but not past what the step itself did as it began) has no ruling of its own. R312 states it only in the past tense, as what it narrows. The owner's words survive only in an e2e test's header.",
+    "sides": [
+      {
+        "source": "R312",
+        "quote": "Undo inside a hidden step (planning, haste, deployment) used to walk back any"
+      },
+      {
+        "source": "file: client/server/e2e/test-undo-segment.ts",
+        "quote": " *    to undo everything, up to the beginning of that phase (unless there is"
+      }
+    ],
+    "resolution": "D4.1 cites R312 for the baseline. Its opponent and floor sub-rules are engine-only. Register the owner's 2026-08-23 answer (ledger #37/#76) as a ruling if they are to count as owner basis."
+  },
+  {
+    "id": "D-U23-8",
+    "kind": "b-engine-only",
+    "rule": "annexd.recap.stops",
+    "tier": 3,
+    "summary": "Sources silent on the recap's structure: no ruling defines the recap, its frames, where it pauses, or its end pause. R310 describes it only in passing. Tests 360, 372 and 383 carry it.",
+    "sides": [
+      {
+        "source": "R310",
+        "quote": "(playback), at the moment it happened, with its card popup. The glimpser still"
+      }
+    ],
+    "resolution": "The frame and pause rules ship as engine-derived (Annex P)."
+  },
+  {
+    "id": "D-U23-9",
+    "kind": "b-engine-only",
+    "rule": "annexd.auto-pass.preference",
+    "tier": 3,
+    "summary": "Sources silent on when the auto-pass preference passes. R150 says only what turning it on means to the player; the condition (pass only when passing is the only legal action, never through a decision) is in test 70 alone.",
+    "sides": [
+      {
+        "source": "R150 (its CT-28 pacing half)",
+        "quote": "armed. Auto-pass is the player having said out loud that these windows are"
+      }
+    ],
+    "resolution": "The rule ships as engine-derived (Annex P)."
+  },
+  {
+    "id": "D-U23-10",
+    "kind": "a-sources-disagree",
+    "rule": "annexd.auto-pass.misclick-confirm.family",
+    "tier": 4,
+    "summary": "The owner's first message names Organic Exchange among the cards that should warn; his later derivation ('target ally AND target unit on the same card') excludes it, since it prints two target units with no ally slot.",
+    "sides": [
+      {
+        "source": "R288",
+        "quote": "> of your own units (Fight, Organic Exchange). We shouldn't stop that from"
+      },
+      {
+        "source": "R288",
+        "quote": "⚠ **THE OWNER'S TWO MESSAGES DISAGREE ABOUT ORGANIC EXCHANGE, and the later one"
+      }
+    ],
+    "resolution": "R288 follows the later message, and so does the rule. Organic Exchange's case is a known no-op warning (R74), not this confirmation."
+  },
+  {
+    "id": "D-U23-11",
+    "kind": "b-engine-only",
+    "rule": "annexd.undo.hidden-step.battle",
+    "tier": 3,
+    "summary": "No ruling says that battle actions cannot be undone. Test 373's title is the only statement.",
+    "sides": [
+      {
+        "source": "file: client/ui/test/373-no-confirm-where-undo-works.test.ts",
+        "quote": "nothing there is undone"
+      }
+    ],
+    "resolution": "The rule ships as engine-derived (Annex P)."
+  },
+  {
+    "id": "D-U23-12",
+    "kind": "g-other",
+    "rule": "annexd.auto-pass.haste-ready",
+    "tier": 4,
+    "summary": "R228 parks R224's requirement that passing through the always-open haste step be cheap, as not yet met. R236 met it the same day. R228 still reads as owing it; the register already flags the warning as stale.",
+    "sides": [
+      {
+        "source": "R228",
+        "quote": "⚠ **R224's own requirement is NOT yet met**: *\"an always-open window is a tax on"
+      },
+      {
+        "source": "R236",
+        "quote": "This makes it cheap. Nothing in `engine/src/**` was touched: the step's"
+      }
+    ],
+    "resolution": "No rule change. Register note only: R228's 'Parked, and owed' section was discharged by R236."
+  },
+  {
+    "id": "D-U23-13",
+    "kind": "f-register-chain-wrong",
+    "rule": "annexd.auto-pass.automatic-answers",
+    "tier": 2,
+    "summary": "R236 §5 describes the haste auto-ready's latch (its own hasteAutoAt). R245(b) reports that this client re-sent doneHaste once per arriving state, and replaced the latch with one keyed on the answer being outstanding. supersession.json has no R245 → R236 edge.",
+    "sides": [
+      {
+        "source": "R236",
+        "quote": "The one guard that is *not* borrowed: the send is latched on its own"
+      },
+      {
+        "source": "R245",
+        "quote": "client re-sent `doneHaste` once per arriving state, and the extras came back"
+      }
+    ],
+    "resolution": "The rule states R245(b). Proposed register edge: R245 amends R236 (scope: §5's latch)."
+  },
+  {
+    "id": "D-U23-14",
+    "kind": "g-other",
+    "rule": "annexd.auto-pass.pass-buttons",
+    "tier": 4,
+    "summary": "R245 leaves 'what should stop Pass All' to the owner. R251 is the owner's answer (three buttons). R245's open section still reads as open; the register already flags it as stale.",
+    "sides": [
+      {
+        "source": "R245",
+        "quote": "**#123 \"Pass All still isn't working right\" is a DESIGN question, and the"
+      },
+      {
+        "source": "R251",
+        "quote": "by the owner on the round-31 sheet (Q6) after R245 established that the code was"
+      }
+    ],
+    "resolution": "No rule change. The rules state R251. Register note only."
+  },
+  {
+    "id": "D-U23-15",
+    "kind": "g-other",
+    "rule": "annexd.auto-pass.haste-ready",
+    "tier": 4,
+    "summary": "R236 §6 limits the auto-ready to the online client and justifies that by hotseat. Hotseat has since been removed (R170's amendment), and Learn to Play and the replay viewer now run a server inside the page over the ordinary network path. Sources silent on whether the haste auto-ready applies in Learn to Play.",
+    "sides": [
+      {
+        "source": "R236",
+        "quote": "`planAutoPass` is `NET`-gated, so this changes nothing in hotseat. Deliberate:"
+      },
+      {
+        "source": "R170",
+        "quote": "### ⚠ AMENDED 2026-09-23 — HOTSEAT IS GONE; THE RULING IS NOT"
+      }
+    ],
+    "resolution": "The rule states no scope limit. Leave it to the verifier to measure whether Learn to Play auto-readies."
+  },
+  {
+    "id": "D-U23-16",
+    "kind": "b-engine-only",
+    "rule": "annexd.auto-pass.no-retain",
+    "tier": 2,
+    "summary": "No ruling says a player cannot keep priority after acting. Test 272 records that casting hands priority to the opponent, and calls it a finding. U14's F-U14-2 suspects this contradicts the Manual's rule that a player who acts may keep priority.",
+    "sides": [
+      {
+        "source": "file: client/ui/test/272-full-control.test.ts",
+        "quote": "// the window here: `engine.ts` hands priority to the other seat as soon as"
+      }
+    ],
+    "resolution": "The rule states the engine's convention as basis engine and points at 703. If F-U14-2 is upheld (the Manual wins), this Annex D rule is withdrawn rather than kept as a convention."
+  },
+  {
+    "id": "D-U23-17",
+    "kind": "f-register-chain-wrong",
+    "rule": "annexd.general.player-decides.forced.lone-counterattacker",
+    "tier": 2,
+    "summary": "R36 (a lone round-2 counterattacker auto-forms) is unmarked in the register, but the engine's forcedAction records that branch as removed on 2026-08-24 by the decisions-for-the-player audit, because declining to send it is a real choice. If the audit was the owner's decision, R36 is reversed and the register lacks the mark.",
+    "sides": [
+      {
+        "source": "R36",
+        "quote": "that could ride along, the only-unit formation is auto-declared (a forced"
+      },
+      {
+        "source": "file: client/engine/src/apply.ts",
+        "quote": "// There used to be a second branch here: a round-2 counterattack with"
+      }
+    ],
+    "resolution": "The rule states R36, with 'engine differs, see F-U23-4'. Question for the owner only if the 2026-08-24 audit's removal was not his call; if it was, mark R36 reversed in digital-rules.md and retire the sub-rule."
+  },
+  {
+    "id": "D-U23-18",
+    "kind": "f-register-chain-wrong",
+    "rule": "annexd.recap.skip",
+    "tier": 3,
+    "summary": "R150 and R258 still describe a 'catching up (n) — skip' chip as the visible way out of the pacing. The owner removed the chip on 2026-09-28; only the S key skips now, and test 237 asserts the chip is absent. Neither ruling is marked.",
+    "sides": [
+      {
+        "source": "R150",
+        "quote": "- **Skip**: a `catching up (n) — ⏭ skip` chip beside the standing-pass chip"
+      },
+      {
+        "source": "R258",
+        "quote": "- **the ⏭ `catching up (n) — skip` chip.** It is the only *visible* way out of"
+      },
+      {
+        "source": "file: client/ui/main.ts",
+        "quote": "GONE (the owner, 2026-09-28: \"that catching up banner doesn't need to be"
+      },
+      {
+        "source": "file: client/engine/test/237-live-while-held.test.ts",
+        "quote": "assert.equal(ui.has({ btn: 'paceskip' }), false, 'the owner cut the chip: no skip button');"
+      }
+    ],
+    "resolution": "The rules follow the owner's later call: no chip, S skips. Mark the chip halves of R150 and R258 as superseded (2026-09-28) in the register."
+  },
+  {
+    "id": "D-U23-19",
+    "kind": "b-engine-only",
+    "rule": "annexd.clocks.banks.critical",
+    "tier": 3,
+    "summary": "Sources silent on when a clock is shown as critical. Only the client and test 271 decide it: a tenth of the bank, capped at one minute.",
+    "sides": [
+      {
+        "source": "file: client/ui/main.ts",
+        "quote": "return Math.min(60_000, start / 10);"
+      },
+      {
+        "source": "file: client/ui/test/271-clock-picker-and-warning.test.ts",
+        "quote": "// …and the cap is real: a tenth of a very long bank would be a warning"
+      }
+    ],
+    "resolution": "The rule states the engine's threshold, basis engine, for owner sign-off in Annex P."
+  },
+  {
+    "id": "D-U23-20",
+    "kind": "g-other",
+    "rule": "annexd.general.not-rules",
+    "tier": 4,
+    "summary": "Sources silent on whether the annex's presentation and confirmation conventions are rules. R150 says only of its own pacing/concurrency reports that they are not a rules change; nothing extends that to the rest of the annex.",
+    "sides": [
+      {
+        "source": "R150",
+        "quote": "**CT-32** (#98). Both are pacing/concurrency, neither is a rules change, and"
+      }
+    ],
+    "resolution": "The rule is narrowed to pacing and concurrency. Whether presentation and confirmation conventions are likewise not rules is a question for the owner only if the export needs D1 to say so."
+  },
+  {
+    "id": "D-U23-21",
+    "kind": "b-engine-only",
+    "rule": "annexd.general.player-decides.forced",
+    "tier": 3,
+    "summary": "Sources silent on which actions the game takes for a player. The only ruling naming a forced action is R36 (the lone round-2 counterattacker), whose branch the engine removed. The two cases the engine forces, the empty attack and the empty block, rest on forcedAction and tests 21 and 273 alone.",
+    "sides": [
+      {
+        "source": "R36",
+        "quote": "that could ride along, the only-unit formation is auto-declared (a forced"
+      },
+      {
+        "source": "file: client/engine/src/apply.ts",
+        "quote": "if (!eligible.length) return { type: 'declareAttack', seat: b.attacker, columns: [] };"
+      },
+      {
+        "source": "file: client/engine/src/apply.ts",
+        "quote": "return { type: 'declareBlocks', seat: b.defender, blocks: {} };"
+      }
+    ],
+    "resolution": "The rule states the engine's two forced cases, basis engine, for owner sign-off in Annex P; R36's case stays a sub-rule stating the ruling (F-U23-4, D-U23-17)."
+  },
+  {
+    "id": "D-U23-22",
+    "kind": "b-engine-only",
+    "rule": "annexd.recap.skip.in-playback",
+    "tier": 3,
+    "summary": "R150 describes S as spending the whole held queue to the live state in one step. In a recap playback the engine's Skip goes only to the next stop (and continues from a stop), and a Skip button is drawn on the play bar. No ruling covers skipping inside a playback; only owner report #198 and test 383 do.",
+    "sides": [
+      {
+        "source": "R150",
+        "quote": "the `S` key. `paceFlush` spends the whole queue in one step. Deliberately not"
+      },
+      {
+        "source": "file: client/ui/main.ts",
+        "quote": "if (NET?.playbackStopped()) { NET.continuePlayback(); return; }"
+      },
+      {
+        "source": "file: client/ui/test/383-recap-stops.test.ts",
+        "quote": "test('report #198: Skip jumps to the next stop, never past it', () => {"
+      }
+    ],
+    "resolution": "annexd.recap.skip is scoped to outside a playback; the playback behaviour ships as an engine-derived sub-rule (Annex P). Register note: R150's S-key flush is now the out-of-playback case only."
+  }
+]

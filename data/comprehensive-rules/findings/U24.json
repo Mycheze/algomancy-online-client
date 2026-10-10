@@ -1,0 +1,78 @@
+[
+  {
+    "id": "F-U24-1",
+    "rule": "annexd.display.text-box",
+    "title": "The in-game inspector states a type-line attribute's reminder twice on cards with an empty text box",
+    "summary": "R282 put a card's type-line attribute reminders into its text box when the printed box is empty (21 cards). The card browser was changed to stop repeating them, but R282 says the in-game inspector still prints its own Attributes (printed) section under the box, so on those cards it states the reminder twice. R282 says the one-condition fix in inspectorHtml should be made before the ruling counts as closed. Suspected still open; not checked against the client.",
+    "evidence": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "⚠ **One duplication is left standing and it is in `ui/main.ts`.** The in-game"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "this counts as closed."
+      }
+    ]
+  },
+  {
+    "id": "F-U24-2",
+    "rule": "annexd.display.declarations",
+    "title": "The client's in-progress block assignment may not be re-seeded when attack columns close ranks",
+    "summary": "R72's note says the defender's half-built block assignment in the client is keyed by attack-column index, and that a spell killing an attacker during the blocks step shifts those indices under it. The engine refuses a stale key, so the worst case is a rejected declaration, but R72 says the client should re-seed its preview when the number of columns changes and does not yet. Suspected; the note may be stale (the board has been rebuilt since) and was not checked against the client.",
+    "evidence": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "re-seed its preview when `b.columns.length` changes, and it does not yet."
+      }
+    ]
+  },
+  {
+    "id": "F-U24-3",
+    "rule": "annexd.reveal.hidden-steps",
+    "title": "A modified client can still see when its opponent acts inside a hidden simultaneous step",
+    "summary": "R236 hid the opponent's haste readiness but names a residual it did not close: the state's action count is served live to both seats and rises on every action, so a modified client can tell that, and when, the opponent did something inside any hidden step (resource, haste, deployment). The shipped client draws nothing from it. Recorded so the hidden-step rule is not read as airtight; not checked against the server.",
+    "evidence": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "### 3. ⚠ THE RESIDUAL, WHICH IS NOT CLOSED — `actionCount`"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "action, so a *modified* client can still see that its opponent did something,"
+      }
+    ]
+  },
+  {
+    "id": "F-U24-4",
+    "rule": "annexd.confirm.not-only-log",
+    "title": "Announcements of a loss the player paid for are still shown only in the game log",
+    "summary": "R266 requires an announcement the player acts on or has lost something by to reach a surface other than the log. The verifier measured the client's own derived inventory in 244-log-is-not-the-only-surface: 39 announcements are log-only, 21 of them tier 1 (spells fizzling, costs that cannot be paid, declined costs, life not gained or not lost, nothing lured). R266 records nineteen and the test asserts 21, so the ruling's count is also stale.",
+    "evidence": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "Nineteen tier-1 announcements remain log-only. That is a ticket list, not a bug list"
+      },
+      {
+        "file": "client/ui/test/244-log-is-not-the-only-surface.test.ts",
+        "quote": "assert.equal(costly.length, 21, 'tier 1:"
+      }
+    ]
+  },
+  {
+    "id": "F-U24-5",
+    "rule": "annexd.reveal.hidden-names.look-at",
+    "title": "Looking at your own hand tells the other player nothing, not even that a hand was looked at",
+    "summary": "The rule says that when an effect lets a player look at a hand, the other players log says only that the hand was looked at. The U24 tester measured Thought Extraction aimed at the caster own hand: the other player log has no look line at all (it goes from Resolving straight to the discard). Aimed at the other player hand, that player log does say \"looks at\". Four look-at sites skip the public line when the looker owns the hand (if (who !== ctx.controller) g.revealHandTo(...)). Either the rule should say the line is written only when looking at another player hand, or the engine should write it for both.",
+    "evidence": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U24/u24-tester-probe.out.txt",
+        "quote": "MEASURED own hand: other player log = [\"Player 1 plays Thought Extraction → stack.\",\"Thought Extraction → stack.\",\"Resolving Thought Extraction:\",\"Player 1 discards Good Whale.\""
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-dark-b.ts",
+        "quote": "if (who !== ctx.controller) g.revealHandTo(ctx.controller, who);"
+      }
+    ]
+  }
+]

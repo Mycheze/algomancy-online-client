@@ -1,0 +1,1431 @@
+[
+  {
+    "key": "combat.after.what-it-is",
+    "parent": "609",
+    "order": 1,
+    "text": "The after combat step is the last step of a battle round. It follows the combat damage step, in the region where that battle is fought, and it is the last priority window for interaction in that region before regroup.",
+    "examples": [
+      {
+        "text": "Example: A battle round steps through the declaration, the attack window, blocks and the block window, and ends with the after-combat window.",
+        "test": "420-cr-battle-regroup-deploy.test.ts::cr:turn.battle.steps — a battle round steps through"
+      }
+    ],
+    "see": [
+      "505.2",
+      "608"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "6 After Combat Step - This is the last priority window"
+        },
+        {
+          "ref": "Manual p.20",
+          "quote": "for interaction in this region before Regroup."
+        },
+        {
+          "ref": "Manual p.27",
+          "quote": "6. After combat priority window"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "420-cr-battle-regroup-deploy.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.20 lists it as step 6 of both phases; p.27 as the sixth item of each battle list.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.after.what-it-is.battled-regions-only",
+    "parent": "combat.after.what-it-is",
+    "order": 1,
+    "text": "A region in which no battle takes place has no after combat step. A battle round in which no attack is declared has no after combat step.",
+    "examples": [
+      {
+        "text": "Example: Both players decline to attack. Neither region has a combat damage step or an after combat step, and the battle phase opens no priority window at all.",
+        "test": "165-token-loss-warning.test.ts::[CT-55] a battle both players decline opens no priority window at all"
+      }
+    ],
+    "see": [
+      "505.2a",
+      "604.4"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "did not get attacked, in which case combat and after"
+        },
+        {
+          "ref": "Manual p.43",
+          "quote": "A: No, because a battle did not happen."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R194",
+          "quote": "A declined attack fights no combat, so there is no"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "165-token-loss-warning.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.20 skips combat and after combat in unattacked regions; R194 states the same for a declined attack (it is why a decline opens no window).",
+    "sourceHashes": {
+      "R194": "b5a45cc0ecccdb7c3471030b213cc8593ef622de9c332ff7da3863ef327b11c9"
+    }
+  },
+  {
+    "key": "combat.after.what-it-is.each-round",
+    "parent": "combat.after.what-it-is",
+    "order": 2,
+    "text": "In a game with two battle rounds, each round that has a battle has its own after combat step, in the region where that round is fought: the first round's in the non-initiative player's region, and the second round's in the initiative player's region.",
+    "examples": [
+      {
+        "text": "Example: Round 1 walks the declaration, the attack window, blocks, the block window and then the after-combat window, all in the non-initiative player's region.",
+        "test": "420-cr-battle-regroup-deploy.test.ts::cr:turn.battle.rounds.round-1 — round 1 walks"
+      }
+    ],
+    "see": [
+      "505.3",
+      "505.4b",
+      "610"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "6 After Combat Step - This is the last priority window"
+        },
+        {
+          "ref": "Manual p.20",
+          "quote": "6. After Combat Step - This is the last priority window."
+        },
+        {
+          "ref": "Manual p.27",
+          "quote": "PHASE 2 (IT REGIONS)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "420-cr-battle-regroup-deploy.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.20 gives Phase 1 and Phase 2 each a step 6 After Combat Step; p.27 labels Phase 1 'NIT REGIONS' and Phase 2 'IT REGIONS'.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.after.window",
+    "parent": "609",
+    "order": 2,
+    "text": "The after combat step is a priority window. The initiative player receives priority first, then priority passes to the non-initiative player in the region. When all players pass priority in succession with the stack empty, the after combat step ends.",
+    "examples": [
+      {
+        "text": "Example (illustrative): After combat, the initiative player passes, the non-initiative player casts a spell, and both then pass. The spell resolves and the initiative player receives priority again. When both pass with the stack empty, the step ends.",
+        "test": "424-cr-after-combat.test.ts::cr:combat.after.window — initiative first; a spell cast in the window resolves after both pass, priority returns to the initiative player; two passes on an empty stack end the step"
+      }
+    ],
+    "see": [
+      "703"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.30",
+          "quote": "After Combat step"
+        },
+        {
+          "ref": "Manual p.30",
+          "quote": "Within a priority window, first the initiative player will receive"
+        },
+        {
+          "ref": "Manual p.30",
+          "quote": "process is repeated until all players pass priority with"
+        },
+        {
+          "ref": "Manual p.30",
+          "quote": "an empty stack, which will move them to the next step"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "424-cr-after-combat.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.30 names the After Combat step among the steps followed by a priority window, and gives the general window procedure.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.after.window.then-round-two",
+    "parent": "combat.after.window",
+    "order": 1,
+    "text": "When the after combat step of the first battle round ends and units were sent to counterattack, the battle phase does not end: the second battle round begins (see rule 610).",
+    "examples": [
+      {
+        "text": "Example: With counterattackers sent, passing in round 1's after-combat window does not end the battle.",
+        "test": "77-playtest-round17.test.ts::[66] the after-combat window of round 1 does NOT end the battle when counterattackers were sent"
+      }
+    ],
+    "see": [
+      "610"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.21",
+          "quote": "Once battle has been completed"
+        },
+        {
+          "ref": "Manual p.21",
+          "quote": "was a counter-attack, the players"
+        },
+        {
+          "ref": "Manual p.21",
+          "quote": "will move to IT’s region and"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "77-playtest-round17.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.after.window.then-regroup",
+    "parent": "combat.after.window",
+    "order": 2,
+    "text": "When the after combat step of the last battle round ends, the battle phase ends and regroup begins. The last battle round is the second round, or the first round if no units were sent to counterattack.",
+    "examples": [
+      {
+        "text": "Example: The last pass in the after-combat window moves the game through regroup and into deployment, with nobody holding priority.",
+        "test": "420-cr-battle-regroup-deploy.test.ts::cr:turn.regroup.what-it-is.no-actions"
+      }
+    ],
+    "see": [
+      "506",
+      "combat.counterattack.round-two"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "for interaction in this region before Regroup."
+        },
+        {
+          "ref": "Manual p.20",
+          "quote": "6. After Combat Step - This is the last priority window."
+        },
+        {
+          "ref": "Manual p.27",
+          "quote": "Erase all spell tokens"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R15",
+          "quote": "units sent at block time** (Manual p.20-21), even if that set is empty (= no"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "420-cr-battle-regroup-deploy.test.ts",
+        "21-fixes.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The 'first round if none were sent' half is R15's 'even if that set is empty (= no round-2 battle)'; the regroup half is Manual p.20/p.27.",
+    "sourceHashes": {
+      "R15": "e9757a2a1c4b7ad66b358fba9e6d8ca20cacb03fd5c6e1121f4687ec41eeb12c"
+    }
+  },
+  {
+    "key": "combat.after.triggers",
+    "parent": "609",
+    "order": 3,
+    "text": "An ability that triggers \"after combat\" triggers when the after combat step begins. It is put on the stack in the after combat step, and players may respond to it there.",
+    "examples": [
+      {
+        "text": "Example: Smouldering Inferno, played as a unit, sacrifices itself after combat.",
+        "test": "07-cards.test.ts::Smouldering Inferno played as a unit sacrifices itself after combat"
+      }
+    ],
+    "see": [
+      "109.3",
+      "706"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1540678747953569832#0",
+          "quote": "Since all those effects are put on the same stack at the same time, each player can decide the order of their effects."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R261 (its unsplit hold)",
+          "quote": "> Both the initiative player and non-initiative player have their triggers put onto the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "07-cards.test.ts",
+        "239-damage-triggers-after-combat.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "medium",
+    "notes": "No source says in so many words 'triggers when the step begins'; the RAQ and R261's owner quote put after-combat triggers on the stack during after combat, respondable there. Confidence medium for the 'begins' wording.",
+    "sourceHashes": {
+      "R261": "07d6f7efa79b63164e8f12b9dd39a9c844544f5b5411f16f14b6b139a7e9f7b2",
+      "RAQ 1540678747953569832#0": "609f04503fdbf3baa6b081e145272a30ef8cb3d74e814175d0f41614d2d76708"
+    }
+  },
+  {
+    "key": "combat.after.triggers.presence",
+    "parent": "combat.after.triggers",
+    "order": 1,
+    "text": "An \"after combat\" ability of a unit triggers if that unit is present in the region where the battle is happening. The unit need not be in a formation.",
+    "examples": [
+      {
+        "text": "Example: A unit with an after-combat ability that stands in the battle region outside the formation still triggers.",
+        "test": "390-raq-stack.test.ts::RAQ after combat: an after-combat trigger fires for a unit in the battle region that is not in formation"
+      }
+    ],
+    "see": [
+      "601.7"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1356667460211966060#0",
+          "quote": "It just needs to be present in a region where battle is happening. Doesn't need to be in formation"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts",
+        "424-cr-after-combat.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "Also stated at 601.7 (U10); this is its home in the after-combat section.",
+    "sourceHashes": {
+      "RAQ 1356667460211966060#0": "65990a25471e20f696ebe324e7248f44649e3e802ddbc63e0c1abfa9f7bd1d58"
+    }
+  },
+  {
+    "key": "combat.after.triggers.no-battle",
+    "parent": "combat.after.triggers",
+    "order": 2,
+    "text": "An \"after combat\" ability does not trigger in a region where no battle took place. A unit in a region other than the one where the battle is fought does not trigger.",
+    "examples": [
+      {
+        "text": "Example: A unit with an after-combat ability in another region makes nothing.",
+        "test": "390-raq-stack.test.ts::RAQ after combat: the control, an after-combat unit in ANOTHER region makes nothing"
+      }
+    ],
+    "see": [
+      "505.4c",
+      "601.7"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.43",
+          "quote": "Q: Do “After combat” triggers happen in regions where"
+        },
+        {
+          "ref": "Manual p.43",
+          "quote": "A: No, because a battle did not happen."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1356667460211966060#0",
+          "quote": "It just needs to be present in a region where battle is happening."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1356667460211966060#0": "65990a25471e20f696ebe324e7248f44649e3e802ddbc63e0c1abfa9f7bd1d58"
+    }
+  },
+  {
+    "key": "combat.after.triggers.batch",
+    "parent": "combat.after.triggers",
+    "order": 3,
+    "text": "Abilities that triggered during the combat damage step and are still waiting are put on the stack in the after combat step together with the \"after combat\" abilities, as one batch. The initiative player puts all of theirs on the stack first, then the non-initiative player puts theirs, so the non-initiative player's resolve first. Each player chooses the order of their own and may interleave the two kinds.",
+    "examples": [
+      {
+        "text": "Example: One player's combat-damage trigger and after-combat trigger are ordered together, in one decision.",
+        "test": "239-damage-triggers-after-combat.test.ts::R261 THE RAQ BATCH"
+      },
+      {
+        "text": "Example: The initiative player's triggers go on the stack first and sit at the bottom.",
+        "test": "239-damage-triggers-after-combat.test.ts::R261 RAQ STACK ORDER"
+      }
+    ],
+    "see": [
+      "608.9b",
+      "706"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.43",
+          "quote": "the stack. NIT effects will enter the stack last and"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1540678747953569832#0",
+          "quote": "Since all those effects are put on the same stack at the same time, each player can decide the order of their effects."
+        },
+        {
+          "ref": "RAQ 1540678747953569832#1",
+          "quote": "Initiative (IT) player put all of his effects on the stack first, then non-Initiative (NIT) player puts his."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R261 (its unsplit hold)",
+          "quote": "> Instead, all triggers that are caused by damage get moved to \"After combat\", along with"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "239-damage-triggers-after-combat.test.ts",
+        "424-cr-after-combat.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "Same batch as 608.9b, stated from the after-combat side. RAQ 1540678747953569832#1 is not in the U13 pack; read from the extract (U12 cites it too).",
+    "sourceHashes": {
+      "R261": "07d6f7efa79b63164e8f12b9dd39a9c844544f5b5411f16f14b6b139a7e9f7b2",
+      "RAQ 1540678747953569832#0": "609f04503fdbf3baa6b081e145272a30ef8cb3d74e814175d0f41614d2d76708",
+      "RAQ 1540678747953569832#1": "ce36c3bfc3d1d8aba0f94ddfc9de4ab45798548219bbceaf78a06074b7d3d5c6"
+    }
+  },
+  {
+    "key": "combat.after.triggers.split-last",
+    "parent": "combat.after.triggers",
+    "order": 4,
+    "text": "When Swift or Sluggish splits the combat damage step, only the abilities that triggered in the last sub-step in which damage is dealt join the after combat batch. Those that triggered in an earlier sub-step have already resolved before the next sub-step (see rule 608.9c).",
+    "examples": [
+      {
+        "text": "Example: With Swift in the battle, a unit that dies in the last (normal) sub-step has its death trigger in the after-combat batch.",
+        "test": "408-raq-new-threads.test.ts::RAQ Combat Damage & After Combat: with Swift in the battle"
+      },
+      {
+        "text": "Example: With Sluggish last, a death in the Sluggish sub-step joins the after-combat batch.",
+        "test": "408-raq-new-threads.test.ts::RAQ Combat Damage & After Combat: with Sluggish last"
+      },
+      {
+        "text": "Example: In a split damage step a death trigger from an earlier sub-step resolves at the boundary, not after combat.",
+        "test": "239-damage-triggers-after-combat.test.ts::R295: in a SPLIT damage step a death trigger resolves at the boundary"
+      }
+    ],
+    "see": [
+      "608.3",
+      "608.9c"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1540678747953569832#3",
+          "quote": "but the last one which happens is then directly connected with \"after combat\""
+        },
+        {
+          "ref": "RAQ 1540678747953569832#2",
+          "quote": "presence of Swift or/and Sluggish opens new stacks which must be resolved before you move to next combat damage step (swift->normal->sluggish)"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        "R295"
+      ],
+      "history": [
+        {
+          "ruling": "R261",
+          "relation": "its unconditional hold was narrowed by R295 to an unsplit damage step"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "408-raq-new-threads.test.ts",
+        "239-damage-triggers-after-combat.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "RAQ 1540678747953569832#2 and R295 are not in the U13 pack; read from the extract and digital-rules.md.",
+    "sourceHashes": {
+      "R295": "e30311733f4edf882d1892f41c15af9a598b6ffaeb78879961a86198e2a15c18",
+      "RAQ 1540678747953569832#2": "c606d1a891a2c53e293717e8c62f1e2487fe5a75c188a2814b3b3bab5c88d228",
+      "RAQ 1540678747953569832#3": "c8218df1e839008921539cfa4041b3584d8fb1dcd806017d5d7bbb8f10d0b352"
+    }
+  },
+  {
+    "key": "combat.counterattack.what-it-is",
+    "parent": "610",
+    "order": 1,
+    "text": "A counterattack is the non-initiative team's attack in a battle phase with two battle rounds. The non-initiative team sends its counterattacking units out during the block step of the first battle round, and they attack in the second battle round.",
+    "examples": [
+      {
+        "text": "Example: The non-initiative player sends units at block time, and they attack in round 2.",
+        "test": "02-combat.test.ts::1v1 counterattack: NIT sends units at block time, they attack in round 2"
+      }
+    ],
+    "see": [
+      "505.3",
+      "606.5"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "3. The NIT declare their blocking formations while also"
+        },
+        {
+          "ref": "Manual p.20",
+          "quote": "having the opportunity to send attacking units for"
+        },
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "but their attack step takes place after the first combat has completely finished. After the"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "02-combat.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.counterattack.what-it-is.when-sent",
+    "parent": "combat.counterattack.what-it-is",
+    "order": 1,
+    "text": "Units are sent to counterattack only in the first battle round, at the same time as the non-initiative team declares its blocks. Sending counterattackers is optional.",
+    "examples": [
+      {
+        "text": "Example: In round 2 the defending player may not send counterattackers.",
+        "test": "422-cr-attacking-blocking.test.ts::cr:combat.blocks.counterattack.second-round"
+      }
+    ],
+    "see": [
+      "606.5",
+      "606.5b"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.27",
+          "quote": "3. NIT declare blocks/send units to attack"
+        },
+        {
+          "ref": "Manual p.20",
+          "quote": "having the opportunity to send attacking units for"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "422-cr-attacking-blocking.test.ts",
+        "21-fixes.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "'Optional' rests on Manual p.20's 'the opportunity to send'; 21-fixes declares blocks with no send.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.counterattack.sent",
+    "parent": "610",
+    "order": 2,
+    "text": "Counterattacking units leave their region as soon as they are sent. From then until the first battle round ends they are in no region, and they are treated as if they do not exist.",
+    "examples": [
+      {
+        "text": "Example: A sent Towering Colossus host radiates nothing in the region it left.",
+        "test": "22-playtest3.test.ts::a SENT Towering Colossus host radiates nothing in the region it left"
+      }
+    ],
+    "see": [
+      "505.3b",
+      "606.2d"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "a counter-attack. The counter-attacking units leave"
+        },
+        {
+          "ref": "Manual p.20",
+          "quote": "the region and are treated as if they don’t exist until"
+        },
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "attacking units leave the region at this time,"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R32",
+          "quote": "counterattacker is in NO region: it radiates no statics, is no legal target,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "22-playtest3.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "'In no region' is R32's clarification of the Manual's 'leave the region ... treated as if they don't exist'.",
+    "sourceHashes": {
+      "R32": "c63daf335ac9ebbcb1a5c789375783a31584525028691b5108005ed315d2a402"
+    }
+  },
+  {
+    "key": "combat.counterattack.sent.no-statics",
+    "parent": "combat.counterattack.sent",
+    "order": 1,
+    "text": "A sent counterattacker's static abilities apply to nothing while it is away, not even to itself.",
+    "examples": [
+      {
+        "text": "Example: A sent Towering Colossus host radiates nothing in the region it left.",
+        "test": "22-playtest3.test.ts::a SENT Towering Colossus host radiates nothing in the region it left"
+      },
+      {
+        "text": "Example (illustrative): A sent Prickly Protector (\"I gain +1/+1 for each other ally\") does not give itself that bonus while it is away.",
+        "test": "424-cr-after-combat.test.ts::cr:combat.counterattack.sent.no-statics — a sent Prickly Protector does not give itself its own bonus while away"
+      }
+    ],
+    "see": [
+      "707"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "the region and are treated as if they don’t exist until"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R32",
+          "quote": "counterattacker is in NO region: it radiates no statics, is no legal target,"
+        },
+        {
+          "ref": "R270",
+          "quote": "whole absence model (a counterattacking Statweaver must not go on rewriting"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "424-cr-after-combat.test.ts",
+        "22-playtest3.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "'Not even to itself' is R270's: the alternative of radiating onto itself was considered and rejected ('its own text included').",
+    "sourceHashes": {
+      "R270": "a7ba5cc481f39cfab82ed74f48c838902e00641d5bc1e0296e0ed1ef2112370a",
+      "R32": "c63daf335ac9ebbcb1a5c789375783a31584525028691b5108005ed315d2a402"
+    }
+  },
+  {
+    "key": "combat.counterattack.sent.not-targetable",
+    "parent": "combat.counterattack.sent",
+    "order": 2,
+    "text": "A sent counterattacker cannot be targeted and cannot be sacrificed while it is away.",
+    "examples": [
+      {
+        "text": "Example (illustrative): The initiative player casts a spell that targets a unit in the round-1 battle region. A unit that was sent to counterattack is not offered as a target.",
+        "test": "424-cr-after-combat.test.ts::cr:combat.counterattack.sent.not-targetable — a sent counterattacker is not offered as a target; a unit that stayed is"
+      }
+    ],
+    "see": [
+      "110"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "the region and are treated as if they don’t exist until"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R32",
+          "quote": "counterattacker is in NO region: it radiates no statics, is no legal target,"
+        },
+        {
+          "ref": "R270",
+          "quote": "engine honours that: it is not targetable, not sacrificeable, not returned by"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "424-cr-after-combat.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "No test in the pack asserts the targeting half directly; R270 describes it as current engine behaviour.",
+    "sourceHashes": {
+      "R270": "a7ba5cc481f39cfab82ed74f48c838902e00641d5bc1e0296e0ed1ef2112370a",
+      "R32": "c63daf335ac9ebbcb1a5c789375783a31584525028691b5108005ed315d2a402"
+    }
+  },
+  {
+    "key": "combat.counterattack.sent.not-counted",
+    "parent": "combat.counterattack.sent",
+    "order": 3,
+    "text": "A sent counterattacker does not count as a unit in the region it left. A unit that stays behind does not count a sent counterattacker as an ally.",
+    "examples": [
+      {
+        "text": "Example: A unit left at home loses the ally that counterattacked away.",
+        "test": "250-ally-count-and-absence.test.ts::scope: a unit left at home still loses the ally that counterattacked away"
+      }
+    ],
+    "see": [
+      "601"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "the region and are treated as if they don’t exist until"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R270",
+          "quote": "only ally counterattacks away is present, is swept, and loses that ally from"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "250-ally-count-and-absence.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "R270 calls this 'not obviously the intended one' and asks the owner; the Manual's 'treated as if they don't exist' gives this reading. See D-U13-6.",
+    "sourceHashes": {
+      "R270": "a7ba5cc481f39cfab82ed74f48c838902e00641d5bc1e0296e0ed1ef2112370a"
+    }
+  },
+  {
+    "key": "combat.counterattack.sent.tokens",
+    "parent": "combat.counterattack.sent",
+    "order": 4,
+    "text": "Spell tokens sent with counterattackers are away with them, and cannot be cast until they return.",
+    "examples": [
+      {
+        "text": "Example: A sent spell token is not offered for casting while it is away.",
+        "test": "22-playtest3.test.ts::a sent spell token is not enumerable (castSpellToken) while absent"
+      }
+    ],
+    "see": [
+      "combat.counterattack.tokens"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "the region and are treated as if they don’t exist until"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R32",
+          "quote": "and its spell tokens can't be cast. It reappears in the enemy region when"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "22-playtest3.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R32": "c63daf335ac9ebbcb1a5c789375783a31584525028691b5108005ed315d2a402"
+    }
+  },
+  {
+    "key": "combat.counterattack.sent.no-death-check",
+    "parent": "combat.counterattack.sent",
+    "order": 5,
+    "text": "A sent counterattacker is not checked for death while it is away. It is checked as soon as it returns at the start of the second battle round.",
+    "examples": [
+      {
+        "text": "Example: Prickly Protector with a -1/-1 counter, alive only through its own static, survives being declared as a counterattacker.",
+        "test": "250-ally-count-and-absence.test.ts::Prickly Protector survives being declared as a counterattacker"
+      },
+      {
+        "text": "Example: A Prickly Protector sent out alone survives the send, and dies on arrival in the enemy region, where it has no ally to count.",
+        "test": "250-ally-count-and-absence.test.ts::a counterattacker sent out alone survives the send and dies on arrival"
+      }
+    ],
+    "see": [
+      "713"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R270",
+          "quote": "A sent counterattacker is not death-checked"
+        },
+        {
+          "ref": "R270",
+          "quote": "attackers), which is the first moment their stats can honestly be read again."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "250-ally-count-and-absence.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R270 is an owner call; no printed or designer source addresses state checks on absent units. See D-U13-5.",
+    "sourceHashes": {
+      "R270": "a7ba5cc481f39cfab82ed74f48c838902e00641d5bc1e0296e0ed1ef2112370a"
+    }
+  },
+  {
+    "key": "combat.counterattack.tokens",
+    "parent": "610",
+    "order": 3,
+    "text": "Spell tokens may go with counterattacking units, under the same conditions as with an attack (see rule 604.2c). A counterattack made only of spell tokens is not allowed: spell tokens need at least one counterattacking unit to go with.",
+    "examples": [
+      {
+        "text": "Example: A block declaration's spell tokens ride out with the counterattackers.",
+        "test": "78-round17-core.test.ts::R87: declareBlocks takes spellTokens, and they ride out with the counterattackers"
+      },
+      {
+        "text": "Example: A counterattack of spell tokens alone is refused.",
+        "test": "77-playtest-round17.test.ts::[67] a token-only counterattack is refused by the engine"
+      }
+    ],
+    "see": [
+      "604.2c",
+      "606.5a"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "and other cards in play, such as spell tokens, to bring"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R87",
+          "quote": "Spell tokens travel with a formation, in either direction, and they need a unit"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "78-round17-core.test.ts",
+        "77-playtest-round17.test.ts",
+        "424-cr-after-combat.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R87 quotes _passer, lofavreel, tecera and calebgannon; only the R87 text is in the pack (no RAQ claim id), so the designer words are cited through the ruling.",
+    "sourceHashes": {
+      "R87": "9dd306a3fefd3160b14fb625d78d25dd99cf9fe6c645d47a05920706c2a44214"
+    }
+  },
+  {
+    "key": "combat.counterattack.round-two",
+    "parent": "610",
+    "order": 4,
+    "text": "The second battle round begins only once the first battle round has completely finished, its after combat step included. In a two-player game it is fought in the initiative player's region.",
+    "examples": [
+      {
+        "text": "Example: The first battle round runs every one of its steps in the defending region before the counterattack round begins in the other region.",
+        "test": "421-cr-regions-formations.test.ts::cr:combat.regions.one-at-a-time — the first battle round runs every one of its steps"
+      }
+    ],
+    "see": [
+      "505.4b",
+      "combat.after.window"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "but their attack step takes place after the first combat has completely finished. After the"
+        },
+        {
+          "ref": "Manual p.21",
+          "quote": "will move to IT’s region and"
+        },
+        {
+          "ref": "Manual p.21",
+          "quote": "resolve battle in that region in its"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "421-cr-regions-formations.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.counterattack.round-two.return",
+    "parent": "combat.counterattack.round-two",
+    "order": 1,
+    "text": "When the second battle round begins, the sent counterattackers, and the spell tokens sent with them, reappear in the region they are attacking.",
+    "examples": [
+      {
+        "text": "Example (illustrative): The non-initiative player sent two units. When round 1's after combat step ends, both appear in the initiative player's region, ready to be put into formation.",
+        "test": "424-cr-after-combat.test.ts::cr:combat.counterattack.round-two.return — sent units and a sent spell token reappear in the region they attack when round 2 begins"
+      }
+    ],
+    "see": [
+      "combat.counterattack.sent"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.27",
+          "quote": "1. NIT attack IT regions with units sent in Phase 1"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R32",
+          "quote": "and its spell tokens can't be cast. It reappears in the enemy region when"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "424-cr-after-combat.test.ts",
+        "02-combat.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "That the tokens reappear too follows from R32 ('its spell tokens') and R87 (tokens ride out with counterattackers); no test in the pack asserts the token half directly.",
+    "sourceHashes": {
+      "R32": "c63daf335ac9ebbcb1a5c789375783a31584525028691b5108005ed315d2a402"
+    }
+  },
+  {
+    "key": "combat.counterattack.round-two.attackers",
+    "parent": "combat.counterattack.round-two",
+    "order": 2,
+    "text": "If the first battle round had a battle, only the units sent to counterattack can attack in the second battle round. In its attack step, the non-initiative team puts them into formation.",
+    "examples": [
+      {
+        "text": "Example: In round 2 the attacker's pool holds exactly the unit it sent at block time.",
+        "test": "32-cast-costs.test.ts::forcedAction: a single sent counterattacker is NOT auto-formed"
+      }
+    ],
+    "see": [
+      "604.2f"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "1. The NIT puts their attacking units into formation."
+        },
+        {
+          "ref": "Manual p.27",
+          "quote": "1. NIT attack IT regions with units sent in Phase 1"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R15",
+          "quote": "of their units. If a round-1 battle happened, round-2 attackers are **exactly the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "32-cast-costs.test.ts",
+        "02-combat.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Whether every sent unit must go into the formation is D-U13-4.",
+    "sourceHashes": {
+      "R15": "e9757a2a1c4b7ad66b358fba9e6d8ca20cacb03fd5c6e1121f4687ec41eeb12c"
+    }
+  },
+  {
+    "key": "combat.counterattack.round-two.none-sent",
+    "parent": "combat.counterattack.round-two",
+    "order": 3,
+    "text": "If the first battle round had a battle and no units were sent to counterattack, there is no second battle round. The battle phase ends after the first round's after combat step.",
+    "examples": [
+      {
+        "text": "Example: With no counterattack sent, no battle is fought in the initiative player's region.",
+        "test": "421-cr-regions-formations.test.ts::cr:combat.regions.one-at-a-time.order — with no counterattack sent"
+      }
+    ],
+    "see": [
+      "505.3f",
+      "combat.after.window.then-regroup"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.21",
+          "quote": "in the attacking region, if there"
+        },
+        {
+          "ref": "Manual p.21",
+          "quote": "was a counter-attack, the players"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R15",
+          "quote": "units sent at block time** (Manual p.20-21), even if that set is empty (= no"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "421-cr-regions-formations.test.ts",
+        "21-fixes.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Manual p.21 moves to IT's region only 'if there was a counter-attack'; R15 states the empty case outright.",
+    "sourceHashes": {
+      "R15": "e9757a2a1c4b7ad66b358fba9e6d8ca20cacb03fd5c6e1121f4687ec41eeb12c"
+    }
+  },
+  {
+    "key": "combat.counterattack.round-two.no-round-one",
+    "parent": "combat.counterattack.round-two",
+    "order": 4,
+    "text": "If the initiative team declared no attack in the first battle round, the non-initiative team may still attack in the second battle round. It may attack with any of its units, since it never had a block step in which to send counterattackers.",
+    "examples": [
+      {
+        "text": "Example: The initiative player could attack and declines; the non-initiative player may then attack with any unit.",
+        "test": "396-raq-timing.test.ts::RAQ Temporal Rift thread: the non-initiative player still attacks when the initiative player declines"
+      }
+    ],
+    "see": [
+      "505.3e",
+      "604.4a"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "The NIT can still declare attacks even if the IT decides not to attack."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R15",
+          "quote": "If IT declines to attack (no round-1 battle), NIT never gets a block step and so"
+        },
+        {
+          "ref": "R15",
+          "quote": "never commits counterattackers — in that case NIT may attack round 2 with **any**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts",
+        "21-fixes.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The printed NOTE gives the permission; 'any of its units' is R15. The RAQ thread R15 names as resolving it is still open (D-U13-2).",
+    "sourceHashes": {
+      "R15": "e9757a2a1c4b7ad66b358fba9e6d8ca20cacb03fd5c6e1121f4687ec41eeb12c"
+    }
+  },
+  {
+    "key": "combat.counterattack.round-two.may-decline",
+    "parent": "combat.counterattack.round-two",
+    "order": 5,
+    "text": "The non-initiative team may decline to attack in the second battle round, even if it sent units to counterattack. Then the second round has no battle and opens no priority window, and the battle phase ends.",
+    "examples": [
+      {
+        "text": "Example: One unit was sent to counterattack. In round 2 both attacking with it and declining are legal.",
+        "test": "32-cast-costs.test.ts::forcedAction: a single sent counterattacker is NOT auto-formed"
+      },
+      {
+        "text": "Example: When the round-2 attacker declines, the initiative player's spell tokens at home, castable in no round-1 window, are never castable this battle.",
+        "test": "165-token-loss-warning.test.ts::[CT-55] the premise: a round-2 defender really is holding castable tokens when the attacker declines"
+      }
+    ],
+    "see": [
+      "604.2a",
+      "604.4"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R194",
+          "quote": "* So a round-2 decline is the whole difference between a live Fireball and"
+        },
+        {
+          "ref": "R194",
+          "quote": "nothing, and it takes every window away at once."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "424-cr-after-combat.test.ts",
+        "32-cast-costs.test.ts",
+        "165-token-loss-warning.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "The printed round-2 step reads 'The NIT puts their attacking units into formation' (Manual p.20), which can be read as mandatory; question for the owner in D-U13-4. R36 (lone counterattacker auto-forms) is contradicted by test 32's flipped title (D-U13-3, F-U13-1).",
+    "sourceHashes": {
+      "R194": "b5a45cc0ecccdb7c3471030b213cc8593ef622de9c332ff7da3863ef327b11c9"
+    }
+  },
+  {
+    "key": "combat.counterattack.round-two.no-counter",
+    "parent": "combat.counterattack.round-two",
+    "order": 6,
+    "text": "In the second battle round the initiative team declares blocks only. It cannot send units to counterattack, because each team gets only one chance to attack.",
+    "examples": [
+      {
+        "text": "Example: In round 2 the defending initiative player may not send units to attack back.",
+        "test": "422-cr-attacking-blocking.test.ts::cr:combat.attack.general.rounds"
+      }
+    ],
+    "see": [
+      "505.3d",
+      "606.5b"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "3. The IT declare their blocking formation."
+        },
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "so there are no additional counter attacks here."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "422-cr-attacking-blocking.test.ts",
+        "420-cr-battle-regroup-deploy.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.counterattack.round-two.initiative-priority",
+    "parent": "combat.counterattack.round-two",
+    "order": 7,
+    "text": "In every priority window of the second battle round, the initiative player receives priority first, although it is now the defending player.",
+    "examples": [
+      {
+        "text": "Example: In the round 2 attack window the initiative player, who is defending, gets priority first.",
+        "test": "422-cr-attacking-blocking.test.ts::cr:combat.attack-window.general.initiative-first"
+      }
+    ],
+    "see": [
+      "605.1a",
+      "703"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.30",
+          "quote": "Within a priority window, first the initiative player will receive"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "422-cr-attacking-blocking.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The Manual's rule is general (every window); no source makes an exception for round 2.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.counterattack.round-two.other-region-absent",
+    "parent": "combat.counterattack.round-two",
+    "order": 8,
+    "text": "While the second battle round is resolved, units in the region where the first round was fought are treated as if they do not exist. They include the units the initiative team attacked with and any unit created there during the first round, so none of them can block in the second round.",
+    "examples": [
+      {
+        "text": "Example: Tidelurker's 2/2, created mid-attack in the enemy region, stays there and cannot block the counterattack.",
+        "test": "98-spawn-region.test.ts::R115 inverts R28: Tidelurker's mid-attack 2/2 stays in the enemy region and CANNOT block the counterattack"
+      },
+      {
+        "text": "Example: A spell token the initiative player keeps at home cannot be cast in any round-1 window, and can be cast in round 2's windows.",
+        "test": "165-token-loss-warning.test.ts::[CT-55] the premise"
+      }
+    ],
+    "see": [
+      "505.4c",
+      "304.8a"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.21",
+          "quote": "entirety, treating the units in the"
+        },
+        {
+          "ref": "Manual p.21",
+          "quote": "other region as if they don’t exist."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "424-cr-after-combat.test.ts",
+        "98-spawn-region.test.ts",
+        "165-token-loss-warning.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.counterattack.no-later-rounds",
+    "parent": "610",
+    "order": 5,
+    "text": "A battle phase has at most two battle rounds. After the second round's after combat step, battle ends and regroup begins.",
+    "examples": [
+      {
+        "text": "Example: In round 2 the initiative player cannot send units out to counterattack, and the battle phase ends after round 2.",
+        "test": "420-cr-battle-regroup-deploy.test.ts::cr:turn.battle.rounds.one-attack-each"
+      }
+    ],
+    "see": [
+      "505.3d",
+      "506"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "takes place again with the non-initative attackers. Each team only gets one chance to attack,"
+        },
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "so there are no additional counter attacks here."
+        },
+        {
+          "ref": "Manual p.20",
+          "quote": "6. After Combat Step - This is the last priority window."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "420-cr-battle-regroup-deploy.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "combat.counterattack.teams",
+    "parent": "610",
+    "order": 6,
+    "text": "In team games, combat is first resolved completely in every region the initiative team attacked. Then combat is resolved in the regions the non-initiative team counterattacked.",
+    "examples": [
+      {
+        "text": "Example (illustrative): In a 2v2 game the initiative team attacks both non-initiative regions. Both of those battles are resolved, one region at a time, before any counterattack battle in an initiative region begins.",
+        "test": null
+      }
+    ],
+    "see": [
+      "505.4",
+      "904"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.9",
+          "quote": "• Combat is first resolved completely in the regions that were initially attacked by the initiative team."
+        },
+        {
+          "ref": "Rulebook 2023 p.9",
+          "quote": "• Then, combat in the counter-attacking regions is resolved."
+        },
+        {
+          "ref": "Manual p.27",
+          "quote": "PHASE 2 (IT REGIONS)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "No test in the pack exercises a team game. Which initiative region a counterattacker enters in a team game is not stated (D-U13-7).",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "team games are not implemented: the engine plays 1v1 only, so there is no team combat to execute"
+  }
+]

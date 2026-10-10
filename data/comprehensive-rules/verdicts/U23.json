@@ -1,0 +1,4394 @@
+[
+  {
+    "key": "annexd.auto-pass.automatic-answers",
+    "textHash": "df10818a8bf97b8a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts:runAutoPass (hasteAutoOut)",
+        "agrees": true,
+        "note": "the haste ready is latched by the fact of being unanswered, lowered only by an authoritative state"
+      },
+      {
+        "loc": "client/ui/inspect.ts:takeAutoPass",
+        "agrees": false,
+        "note": "the automatic PASS is still latched on actionCount (latch.autoAt / sentFor), which R245(b) forbids: the flagged divergence is real"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/223-client-legality.test.ts",
+        "pattern": "[122] one automatic doneHaste per unanswered send, however many states arrive",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R245",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R245",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "### (b) An automatic answer is latched by the FACT of being unanswered, never"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "The client sends intents the player did not: the haste-step ready (R236) and"
+      },
+      {
+        "file": "client/ui/inspect.ts",
+        "text": "if (latch.autoAt === actionCount || latch.sentFor === actionCount) return false;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Ruling confirmed; the engine-differs flag is real for the automatic pass (actionCount latch), not for the haste ready. The example test covers only the haste ready."
+  },
+  {
+    "key": "annexd.auto-pass.automatic-answers.refusal",
+    "textHash": "3bb5b1f4114e512f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts:NetBackend.doAuto/autoOutstanding",
+        "agrees": true,
+        "note": "refusal of an auto-sent intent goes to the log and a toast"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/223-client-legality.test.ts",
+        "pattern": "[122] a refusal of an action the CLIENT chose to send is not the player refusal",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R245",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R245",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "It must not wear the red bar and the error cue a refused click uses — and it"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "the log and a plain toast, saying who sent it."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.auto-pass.full-control",
+    "textHash": "180f6ca337ba1395",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts:planAutoPass/fullControlOn",
+        "agrees": true,
+        "note": "auto-pass, standing pass, auto-yield and the haste ready (the !full guard) stand down"
+      },
+      {
+        "loc": "client/server/main.ts forcedAction drain",
+        "agrees": true,
+        "note": "breaks on room.fullControl[seat]"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/272-full-control.test.ts",
+        "pattern": "BL-18 §2 with full control ON, the auto-pass preference sends nothing",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      },
+      {
+        "file": "client/ui/test/272-full-control.test.ts",
+        "pattern": "CT-183 §6 letting go goes right back to the way it was",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R287",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R287",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R287",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> given every single stop, regardless of your settings (auto pass) or yields or"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> automatically resolve if you're holding ctrl. When you let go, it goes right"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**MOMENTARY, NOT PERSISTENT.** It is a modifier you hold for the beat you want"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.auto-pass.full-control.chord",
+    "textHash": "f9bfe0a2a364c290",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts keydown handler",
+        "agrees": true,
+        "note": "chord latch until Control released"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/272-full-control.test.ts",
+        "pattern": "CT-183 §6 (c) Ctrl+Z is undo, not full control",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R287",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R287",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Ctrl+T are the browser's. Any other key pressed while Control is down"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "LATCHES the press as a chord and drops the hold, and the latch does not"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.auto-pass.full-control.deployment",
+    "textHash": "202884631800eba0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:settle (deployment stack drain)",
+        "agrees": false,
+        "note": "the engine has no full-control flag (no reference in engine/src); CT-185 (holdStack) is still open in ledgers/card-todo.ts. Divergence is real."
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R287",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R287",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> the haste step or anything. Even during deployment, nothing will"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "⚠ **THE DEPLOYMENT CLAUSE IS NOT BUILT.** *\"Even during deployment, nothing"
+      },
+      {
+        "file": "client/ledgers/card-todo.ts",
+        "text": "+ 'be IN that log or the replay diverges. So: a `holdStack` action carrying the seat '"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Ruling clause is the owner's (R287) and the engine-differs flag is accurate."
+  },
+  {
+    "key": "annexd.auto-pass.full-control.latency",
+    "textHash": "56589e672ab15135",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/server/main.ts forcedAction drain",
+        "agrees": true,
+        "note": "reads room.fullControl, set by a socket message"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/272-full-control.test.ts",
+        "pattern": "BL-18 §3 the switch reaches the SERVER, on the join and on every change",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R287",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R287",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "1. **Relay latency splits in two.** The three CLIENT automatics — auto-pass,"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "honest instruction is **hold Ctrl before you act, not after.**"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.auto-pass.full-control.not-persisted",
+    "textHash": "23627000ba4960cb",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts (no algoFullControl in localStorage)",
+        "agrees": true,
+        "note": "readout shows held/not"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/272-full-control.test.ts",
+        "pattern": "CT-183 §6 the hold is not written to the browser",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      },
+      {
+        "file": "client/ui/test/272-full-control.test.ts",
+        "pattern": "BL-18 §3 the chip is on screen and says whether it is held right now",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R287",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**NOT PERSISTED, and the removal is part of the ruling.** A held key has no"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.auto-pass.full-control.release",
+    "textHash": "e9e807b3240954da",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts blur/pagehide/visibility",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/272-full-control.test.ts",
+        "pattern": "CT-183 §6 (b) alt-tabbing away is letting go",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R287",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "doors close it: `blur`, `pagehide`, and a hidden document."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.auto-pass.haste-ready",
+    "textHash": "e3d24eb696dcef99",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui/inspect.ts:autoHasteDone",
+        "agrees": true,
+        "note": "doneHaste the only legal action and bluff off"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/205-haste-auto-ready.test.ts",
+        "pattern": "R236 §2a: with the preference OFF and nothing hasteable, the client sends doneHaste by itself",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R236",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R236",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> **\"If the player doesn't have a haste card or doesn't have haste bluff"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "of the legal list is **\"is `doneHaste` the only thing on it?\"** — nothing about"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.auto-pass.haste-ready.any-play",
+    "textHash": "ed7f86fff1ebc58c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui/inspect.ts:autoHasteDone",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/205-haste-auto-ready.test.ts",
+        "pattern": "R236 §2d: with something playable the client never answers, preference or not",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R236",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "of the legal list is **\"is `doneHaste` the only thing on it?\"** — nothing about"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.auto-pass.haste-ready.bluff",
+    "textHash": "8e7018ca12e1b1be",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts:bluffHasteOn",
+        "agrees": true,
+        "note": "localStorage 'algoBluffHaste' === '1', default off"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/205-haste-auto-ready.test.ts",
+        "pattern": "R236 §2c: with the preference ON the client sits in the step and offers the button",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R236",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R236",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "`algoBluffHaste`, default OFF, `localStorage`, toggled by a `🎭 bluff haste`"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "me\": the player sits in the step deliberately, which is exactly the point of"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.auto-pass.haste-ready.readiness-hidden",
+    "textHash": "17035607c7d6d2d9",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/server/view.ts:viewFor",
+        "agrees": true,
+        "note": "hasteDone masked for the other seat"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/205-haste-auto-ready.test.ts",
+        "pattern": "R236 §3a: the opponent is not served my haste readiness while the step is open",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      },
+      {
+        "file": "client/engine/test/205-haste-auto-ready.test.ts",
+        "pattern": "R236 §3b: the step's END is still public",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R236",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R236",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R236",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "if (v.hasteDone) v.hasteDone = v.hasteDone.map((done, s) => (s === seat ? done : false));"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "* **The step's END is still public** and that is the thing that must never be"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "* **Your own flag is untouched** — you must be able to see that you are done."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.auto-pass.haste-ready.residual",
+    "textHash": "65cb844c4bb83dfd",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/server/view.ts",
+        "agrees": true,
+        "note": "actionCount served unredacted"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/205-haste-auto-ready.test.ts",
+        "pattern": "R236 §3d: the residual, named and measured",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R236",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R236",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "`GameState.actionCount` is served live to both seats and increments on **every**"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "action, so a *modified* client can still see that its opponent did something,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.auto-pass.haste-ready.server-never",
+    "textHash": "60d73eefc2eb62fc",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:forcedAction",
+        "agrees": true,
+        "note": "returns null outside battle, so never doneHaste"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/200-haste-step-is-unconditional.test.ts",
+        "pattern": "R228 §5: no seat is auto-done, and BOTH have to close the step",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "not run: client/server test, excluded by the brief; body read; executed at wave end: whole file 11/11 pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R228",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R228",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "names. ⚠ `forcedAction` was NOT taught to close the step, and must not be: an"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "automatic `doneHaste` is a broadcast that the seat holds no haste play, which"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "200 §5 is a server test (read, not run)."
+  },
+  {
+    "key": "annexd.auto-pass.misclick-confirm",
+    "textHash": "13e4f3d9b8972ec8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/dsl.ts:mixedAllegiance",
+        "agrees": true,
+        "note": "allyUnit slot beside a unit/any slot"
+      },
+      {
+        "loc": "client/ui/main.ts:act (R288 confirm)",
+        "agrees": true,
+        "note": "asks before sending; no leaves the pick open"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/278-ally-misclick.test.ts",
+        "pattern": "R288",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran (9/9); §1, §5 yes/no"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R288",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R288",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R288",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "literally \"target ally AND target unit on the same card\". Fight is"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**WHAT \"NO\" DOES.** Nothing has been sent, so there is nothing to undo: the"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "question closes and the same target pick is still open. BL-30 asks for \"back to"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.auto-pass.misclick-confirm.family",
+    "textHash": "befe73f2ca62fc20",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/dsl.ts:mixedAllegiance",
+        "agrees": true,
+        "note": "derived, not listed"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/278-ally-misclick.test.ts",
+        "pattern": "R288 §0",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "Fight in, Organic Exchange out"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U23/misclick-family.test.ts",
+        "title": "annexd.auto-pass.misclick-confirm.family",
+        "passed": true,
+        "demonstrates": "yes: the derived family over the whole pool is exactly [Fight, Squish]"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R288",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R288",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "and the derived family today is **Fight and Squish**."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "⚠ **THE OWNER'S TWO MESSAGES DISAGREE ABOUT ORGANIC EXCHANGE, and the later one"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.auto-pass.no-retain",
+    "textHash": "370c24e8069a950c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts (push to stack in battle)",
+        "agrees": true,
+        "note": "casting hands priority to the opponent (272 §4 and 358 measure it)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/272-full-control.test.ts",
+        "pattern": "BL-18 §4 you can respond to your own spell with the first still on the stack",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [],
+    "quote_spans": [
+      {
+        "file": "client/ui/test/272-full-control.test.ts",
+        "text": "'MEASURED, and it is the finding: casting hands priority to the OPPONENT here. If this ever '"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "ui/main.ts's BL-18 comment still says \"nothing but passPriority moves priority away from a seat inside a battle window\", which the test measures as false; the rule follows the test."
+  },
+  {
+    "key": "annexd.auto-pass.open-decision",
+    "textHash": "893b1910b1a25087",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:decisionBlocks",
+        "agrees": true,
+        "note": "case 1: own question gates own input; concede escapes"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/130-seat-aware-gate.test.ts",
+        "pattern": "R154 §4: your own question still gates your own input",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R154 (its decision gate)",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "1. **It is your own question.** You must answer it, or concede (R65)."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.auto-pass.open-decision.battle",
+    "textHash": "52b65d987c45e424",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:decisionBlocks",
+        "agrees": true,
+        "note": "case 2: outside a hidden segment the other seat is blocked"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/130-seat-aware-gate.test.ts",
+        "pattern": "R154 §4: a REAL battle decision blocks the other seat",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R154 (its decision gate)",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "2. **You are not inside a hidden simultaneous segment** — i.e. you are in"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.auto-pass.open-decision.both-seats",
+    "textHash": "512ce4825ce16bb3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts:promptHtml/doneRow (R170)",
+        "agrees": true,
+        "note": "two bars; the free seat keeps its controls"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/144-both-seats-decision-gate.test.ts",
+        "pattern": "R170 §1: ending the free seat's deployment goes through, from the button on screen",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R170",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R170",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "1. **Two bars, not one instead of the other.** `promptHtml` splits: the"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "2. **`doneRow` never offers a button `apply()` would throw on.** The seat being"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "R170 was written for hotseat, which was removed 2026-09-23; the both-seats screen survives only off the online path (R170 §5: online the state cannot reach the client). Still true where such a screen exists."
+  },
+  {
+    "key": "annexd.auto-pass.open-decision.concede",
+    "textHash": "77dd3c4f7897af4e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:dispatch",
+        "agrees": true,
+        "note": "concede is exempt from the gate"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/130-seat-aware-gate.test.ts",
+        "pattern": "R154 §4: concede is always reachable, from either seat",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R154 (its decision gate)",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "* `dispatch()` — was `if (e.s.decision && type !== 'decide' && type !== 'concede')`"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.auto-pass.open-decision.no-disturb",
+    "textHash": "588b5f66e455e6b1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:apply (pendingFingerprint)",
+        "agrees": true,
+        "note": "IllegalAction with disturbs=true, draft discarded; online the server routes the refusal into the deferral queue (\"waiting\")"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/130-seat-aware-gate.test.ts",
+        "pattern": "R154 §2: seat 0 may not overwrite seat 1's open decision",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      },
+      {
+        "file": "client/ui/test/144-both-seats-decision-gate.test.ts",
+        "pattern": "R170 §4: both seats can never have a question open",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R154 (its decision gate)",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R170",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "* If it changed, `apply()` throws `IllegalAction` with `disturbs = true` and the"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**Nothing — it cannot happen.** `GameState.decision` is a single slot and"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Online the refused action is deferred and re-applied, not simply refused (covered by the rewind sub-rule's wording)."
+  },
+  {
+    "key": "annexd.auto-pass.open-decision.rewind",
+    "textHash": "6f287410198f7718",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:decisionBlocks (case 3)",
+        "agrees": true,
+        "note": "a 'resolve' suspension with a snapshot keeps the full gate"
+      },
+      {
+        "loc": "client/server/rooms.ts:arrivalVerdict",
+        "agrees": true,
+        "note": "deferral queue: the player is told waiting"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/130-seat-aware-gate.test.ts",
+        "pattern": "R154 §3: a mid-resolution suspension still blocks the other seat",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R154 (its decision gate)",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R154 (its decision gate)",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "3. **Answering it will rewind the world.** See below."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "player is told \"waiting\", never \"illegal\"."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.auto-pass.open-decision.segment",
+    "textHash": "dc8478fd4faef3a4",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:decisionBlocks",
+        "agrees": true,
+        "note": "inside hiddenSegment() another seat's question does not block"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/130-seat-aware-gate.test.ts",
+        "pattern": "R154 §1: every kind of action seat 0 had is still theirs",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R154 (its decision gate)",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R154 (its decision gate)",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> **A decision belonging to another seat stops you only where the engine cannot"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> prove it is none of your business — outside a hidden simultaneous segment, or"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.auto-pass.pass-buttons",
+    "textHash": "30aa3250f9f0bd2f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui/passrelease.ts:passAllRelease",
+        "agrees": true,
+        "note": "'stack' mode: every change clause live, ends 'done'; 'all' mode: phase-scoped, only the 'tokens' terminus kept"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/230-pass-modes.test.ts",
+        "pattern": "[123]",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran 12/12"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R251",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R251",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> \"I think there need to be three options: Pass, Pass through stack, and Pass"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**A standing pass is a promise, a promise has a SCOPE, and the scope is fixed at"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.auto-pass.pass-buttons.all",
+    "textHash": "2e64f2d7efeb5b9b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui/passrelease.ts:passAllRelease",
+        "agrees": true,
+        "note": "'stack' mode: every change clause live, ends 'done'; 'all' mode: phase-scoped, only the 'tokens' terminus kept"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/230-pass-modes.test.ts",
+        "pattern": "[123] pass all does not hand priority back for a new item or a new option",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R251",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R251",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "* **Pass all** (`'all'`) — scoped to the PHASE it was armed in"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "(`AutoPassArm.armedPhase`). The two \"something changed\" clauses are not asked"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.auto-pass.pass-buttons.baseline",
+    "textHash": "98ca348be95b9c83",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui/passrelease.ts:passAllRelease",
+        "agrees": true,
+        "note": "'stack' mode: every change clause live, ends 'done'; 'all' mode: phase-scoped, only the 'tokens' terminus kept"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/230-pass-modes.test.ts",
+        "pattern": "[123] an option that was on offer at the arm is not news several windows later",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R251",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "the moment the player clicks. Two scopes, two buttons, and exactly one release"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.auto-pass.pass-buttons.pass",
+    "textHash": "c6ec5cb5485a088e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui/passrelease.ts:passAllRelease",
+        "agrees": true,
+        "note": "'stack' mode: every change clause live, ends 'done'; 'all' mode: phase-scoped, only the 'tokens' terminus kept"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R251",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "* **Pass** — one `passPriority`. Arms nothing. Unchanged."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.auto-pass.pass-buttons.revocable",
+    "textHash": "2c2272b0a81b145c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui/passrelease.ts:passAllRelease",
+        "agrees": true,
+        "note": "'stack' mode: every change clause live, ends 'done'; 'all' mode: phase-scoped, only the 'tokens' terminus kept"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/230-pass-modes.test.ts",
+        "pattern": "[123] each pass button arms a chip that names its own promise, and one stop drops it",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R251",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R251",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Both promises stay opt-in and revocable: nothing arms without a click, one `✕"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "stop` in the top bar drops whichever is running, and the chip names the promise"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.auto-pass.pass-buttons.through-stack",
+    "textHash": "52432bcce5885be8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui/passrelease.ts:passAllRelease",
+        "agrees": true,
+        "note": "'stack' mode: every change clause live, ends 'done'; 'all' mode: phase-scoped, only the 'tokens' terminus kept"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/230-pass-modes.test.ts",
+        "pattern": "[123] a stack item outside the armed scope hands priority back",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      },
+      {
+        "file": "client/engine/test/230-pass-modes.test.ts",
+        "pattern": "[123] pass through stack finishes when the stack it was armed on has resolved",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R251",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R251",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R251",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "stack items that were there when it was clicked (`AutoPassArm.armedItems`)."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Every release clause is live, and the promise ENDS when the scope has resolved"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "(identity on the stack, options by exclusion, the #66 token guard) and gains the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.auto-pass.pass-buttons.through-stack.offered",
+    "textHash": "a7be52ea7111f922",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui/passrelease.ts:passAllRelease",
+        "agrees": true,
+        "note": "'stack' mode: every change clause live, ends 'done'; 'all' mode: phase-scoped, only the 'tokens' terminus kept"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/230-pass-modes.test.ts",
+        "pattern": "[123] the battle bar offers pass through stack only while there is a stack",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R251",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "(`'done'`). Offered only while there is a stack to pass through: a \"pass"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.auto-pass.pass-buttons.token-stop",
+    "textHash": "06b7f6a9eb8b6458",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui/passrelease.ts:passAllRelease",
+        "agrees": true,
+        "note": "'stack' mode: every change clause live, ends 'done'; 'all' mode: phase-scoped, only the 'tokens' terminus kept"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/230-pass-modes.test.ts",
+        "pattern": "[123] pass all still stops on the one pass that would erase castable spell tokens",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R251",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R251",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "`'tokens'` — the pass that would reach Regroup with castable spell tokens still"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "in hand (R11, report #66) — is still asked in `'all'` mode. It is not a"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.auto-pass.preference",
+    "textHash": "a91832af6ed671b9",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui/inspect.ts:planAutoPass",
+        "agrees": true,
+        "note": "passes only when passPriority is the only option; never through a decision"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/70-playtest-round15.test.ts",
+        "pattern": "[59] the C4 toggle passes only when passing is the ONLY thing I could do",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      },
+      {
+        "file": "client/ui/test/70-playtest-round15.test.ts",
+        "pattern": "[59] a pending decision is never passed through, by any of the three",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [],
+    "quote_spans": [],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.auto-pass.regroup-confirm",
+    "textHash": "97ce1daa0b4bc2be",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui/battle.ts:passEndsBattlePhase",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/77-playtest-round17.test.ts",
+        "pattern": "[66] the Pass button asks before the pass that reaches Regroup, and only that one",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R194",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "has. It should only warn right before moving to Regroup ('You're about to move"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.auto-pass.regroup-confirm.announced",
+    "textHash": "a06079b044613127",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:startRegroup",
+        "agrees": true,
+        "note": "one 'erased' event per seat, silent when nothing lost"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/165-token-loss-warning.test.ts",
+        "pattern": "[CT-55] a battle both players decline opens no priority window at all, and the loss is still announced",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      },
+      {
+        "file": "client/ui/test/165-token-loss-warning.test.ts",
+        "pattern": "[CT-55] the announcement is per seat, in a fixed order, and silent when there is nothing to lose",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R194",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R194",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "`E.startRegroup` now emits one `erased` event per seat, naming that seat's own"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "It is deliberately silent when nothing is lost. #66 is a report about being"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.auto-pass.regroup-confirm.card-ended",
+    "textHash": "d34dce1d157487a6",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:endBattleRound -> startRegroup",
+        "agrees": true,
+        "note": "every exit funnels through startRegroup"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R213",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R213",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "cannot fire on the Temporal Rift path, and that is not a bug."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "had: **every exit from `endBattleRound` funnels through `startRegroup`**, which"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.clocks.banks",
+    "textHash": "768211ab54c475af",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts:CLOCK_PRESETS",
+        "agrees": true,
+        "note": "Off, 45m, 60m"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/271-clock-picker-and-warning.test.ts",
+        "pattern": "BL-26 §4 the home screen offers the owner's three banks, including no clock at all",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [],
+    "quote_spans": [
+      {
+        "file": "client/ui/main.ts",
+        "text": "{ ms: 0, label: 'Off', why: 'no clock at all — nobody can lose on time' },"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.clocks.banks.critical",
+    "textHash": "39984e5043ea93e7",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U23-r2",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts:clockWarnAt",
+        "agrees": true,
+        "note": "Math.min(60_000, start/10); warn when 0 < ms <= warnAt"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/271-clock-picker-and-warning.test.ts",
+        "pattern": "threshold is a tenth",
+        "passed": true,
+        "asserts_claim": "yes: 10s of 90s not warn, 8s warn, 5min of 10h not warn"
+      }
+    ],
+    "probes": [],
+    "source_checks": [],
+    "quote_spans": [
+      {
+        "file": "client/ui/main.ts",
+        "text": "return Math.min(60_000, start / 10);"
+      },
+      {
+        "file": "client/ui/main.ts",
+        "text": "+ `${ms > 0 && ms <= warnAt ? 'warn' : ''} ${ms <= 0 ? 'exp' : ''}`;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None. (Display-only, client side; the test brackets nine seconds as 8s warn / 10s quiet, and the code is <=.)"
+  },
+  {
+    "key": "annexd.clocks.banks.default",
+    "textHash": "d0c41a93405d75a0",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U23-r2",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts:CLOCK_DEFAULT_BY_MODE / chosenClockMs",
+        "agrees": true,
+        "note": "constructed 45, shared 45, draft 60"
+      },
+      {
+        "loc": "client/server/rooms.ts:MATCH_CLOCK_MS",
+        "agrees": true,
+        "note": "matchmade: 45/60, and the player's picker is not consulted"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/271-clock-picker-and-warning.test.ts",
+        "pattern": "default follows the MODE",
+        "passed": true,
+        "asserts_claim": "yes: table {constructed:45, shared:45, draft:60} and the mode is passed at creation"
+      }
+    ],
+    "probes": [],
+    "source_checks": [],
+    "quote_spans": [
+      {
+        "file": "client/ui/main.ts",
+        "text": "constructed: 45 * 60_000,"
+      },
+      {
+        "file": "client/ui/main.ts",
+        "text": "draft: 60 * 60_000,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None material. Nuance: in a matchmade game the player cannot choose otherwise (MATCH_CLOCK_MS), and a server request with no clock field gets CLOCK_START_MS = 60 min."
+  },
+  {
+    "key": "annexd.clocks.banks.not-custom",
+    "textHash": "4bf235ab1d1cfd54",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui (366 test)",
+        "agrees": true,
+        "note": "clock chips do not mark the game custom"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/366-clock-in-options.test.ts",
+        "pattern": "366 changing the clock does not make the game custom",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [],
+    "quote_spans": [],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.clocks.banks.off",
+    "textHash": "ece62ff2cc17b11a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/server/rooms.ts:clockSnapshot",
+        "agrees": true,
+        "note": "null for a clockless room; the field is omitted and the client draws no clocks"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/271-clock-picker-and-warning.test.ts",
+        "pattern": "BL-26 §1 a client that was never sent a clock draws no clocks at all",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [],
+    "quote_spans": [
+      {
+        "file": "client/server/rooms.ts",
+        "text": "if (room.clockStart === null) return null;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.clocks.idle-rooms",
+    "textHash": "449407c037b9696a",
+    "verdict": "confirmed",
+    "round": 3,
+    "verifier": "U23-r3",
+    "engine": [
+      {
+        "loc": "client/server/rooms.ts:idleWindowMs",
+        "agrees": true,
+        "note": "<5 actions -> 1h, else 12h"
+      },
+      {
+        "loc": "client/server/rooms.ts:idleDue",
+        "agrees": true,
+        "note": "attended (seat socket or watcher) never closes; empty must persist RECONNECT_GRACE_MS (5 min) from first empty sweep tick; decided rooms are left to sweepFinished"
+      },
+      {
+        "loc": "client/server/rooms.ts:closeIdleRoom",
+        "agrees": true,
+        "note": "marks closed, keeps file (sandbox dropped)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/367-idle-rooms-close.test.ts",
+        "pattern": "367 §1|367 §2|367 §3",
+        "passed": true,
+        "asserts_claim": "yes (read, not run: server test excluded by brief); §1 59m stays/61m closes at 4 actions, §2 11h stays/12h closes at 5, §3 seat/watcher keep it, grace before close",
+        "note": "executed at wave end: whole file 8/8 pass"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U23/idle-rooms.test.ts",
+        "title": "annexd.clocks.idle-rooms: 4 actions -> one hour, 5 actions -> twelve hours (empty room); a room nobody moves in is NOT closed while a seat is connected",
+        "passed": true,
+        "demonstrates": "yes: windows 1h/<5 actions and 12h/>=5, open tab keeps room, grace then close"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "367-idle-rooms-close.test.ts",
+        "supports": "yes",
+        "note": "test header quotes the owner's 2026-10-04 instruction; basis engine honest"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/server/rooms.ts",
+        "text": "export const IDLE_FEW_ACTIONS = 5;"
+      },
+      {
+        "file": "client/server/rooms.ts",
+        "text": "actions < IDLE_FEW_ACTIONS ? IDLE_SHORT_MS : IDLE_LONG_MS;"
+      },
+      {
+        "file": "client/server/rooms.ts",
+        "text": "export const IDLE_LONG_MS = 12 * 3600_000;"
+      },
+      {
+        "file": "client/server/rooms.ts",
+        "text": "export const RECONNECT_GRACE_MS = 5 * 60_000;"
+      },
+      {
+        "file": "client/server/rooms.ts",
+        "text": "!!room.sockets[0] || !!room.sockets[1] || room.watchers.size > 0;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None substantive. Nuance: the sweep never closes a game that already has a winner (decidedWinner) and a sandbox room is deleted rather than kept; the grace is counted from the first sweep tick that sees the room empty."
+  },
+  {
+    "key": "annexd.clocks.idle-rooms.kept-open",
+    "textHash": "0d4fb1bbb6db5662",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/server/rooms.ts:roomAttended/idleDue",
+        "agrees": true,
+        "note": "a seat socket or a watcher resets unattendedSince; an empty room must stay empty RECONNECT_GRACE_MS (5 min) before it can close"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/367-idle-rooms-close.test.ts",
+        "pattern": "367 §3 a connected seat or a watcher keeps an idle room open",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "not run: client/server test, excluded by the brief; body read; executed at wave end: whole file 8/8 pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [],
+    "quote_spans": [
+      {
+        "file": "client/server/rooms.ts",
+        "text": "export const RECONNECT_GRACE_MS = 5 * 60_000;"
+      },
+      {
+        "file": "client/server/rooms.ts",
+        "text": "!!room.sockets[0] || !!room.sockets[1] || room.watchers.size > 0;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Server convention, not engine; test 367 §3 read (server test, not run)."
+  },
+  {
+    "key": "annexd.clocks.idle-rooms.no-result",
+    "textHash": "dc12c687280d6f44",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/server/rooms.ts:closeIdleRoom",
+        "agrees": true,
+        "note": "room.closed set, winner untouched, so isRated fails and the history reads it unfinished"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/367-idle-rooms-close.test.ts",
+        "pattern": "367 §6 a closed game has no winner, is not rated and reads as unfinished",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "not run: client/server test, excluded by the brief; body read; executed at wave end: whole file 8/8 pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [],
+    "quote_spans": [
+      {
+        "file": "client/server/rooms.ts",
+        "text": "* A closed room gets NO result — rated or not, nobody wins, nothing moves a"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Test 367 §6 read, not run (server test)."
+  },
+  {
+    "key": "annexd.clocks.out-of-time",
+    "textHash": "c3b77c7c6be4e28e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/server/rooms.ts:expiredSeat/expireOnTime",
+        "agrees": true,
+        "note": "stamps room.winner and pushes a note \"<name> ran out of time\"; main.ts runs the sweep on a once-a-second tick, so no action is needed"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/e2e/suite.test.ts",
+        "pattern": "test-clock.ts",
+        "passed": true,
+        "asserts_claim": "partly: e2e runner, spawns the server; not run per brief",
+        "note": "not run; executed at wave end: node e2e/test-clock.ts exited 0 (ALL PASS)"
+      }
+    ],
+    "probes": [],
+    "source_checks": [],
+    "quote_spans": [
+      {
+        "file": "client/server/rooms.ts",
+        "text": "msg: `⏱ ${room.names[loser]} ran out of time. ${room.names[winner]} wins.`,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Only cited test is the e2e runner, not run. Confirmed on server code."
+  },
+  {
+    "key": "annexd.clocks.running",
+    "textHash": "a02e1d9facbbd40c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/server/rooms.ts:matchRunning/clockRunning",
+        "agrees": true,
+        "note": "runs a seat only when it has a legal action and both sockets are present; not while a standing pass answers or a playback is watched"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/e2e/suite.test.ts",
+        "pattern": "test-clock.ts",
+        "passed": true,
+        "asserts_claim": "not run (e2e)",
+        "note": "not run; executed at wave end: node e2e/test-clock.ts exited 0 (ALL PASS)"
+      }
+    ],
+    "probes": [],
+    "source_checks": [],
+    "quote_spans": [
+      {
+        "file": "client/server/rooms.ts",
+        "text": "if (!room.sockets[0] || !room.sockets[1]) return false;"
+      },
+      {
+        "file": "client/server/rooms.ts",
+        "text": "return [0, 1].map(s => legalActions(room.state, s as 0 | 1).length > 0"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.clocks.running.playback",
+    "textHash": "4bf5f29ac14bcb42",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/server/rooms.ts:clockRunning (watchHold)",
+        "agrees": true,
+        "note": "watchHold unbills; lapses at its deadline in settleClock; main.ts releases on playbackdone and in landAction"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/360-playback-frames.test.ts",
+        "pattern": "§8 a seat watching a playback is off the clock until it is done, or the hold lapses",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "not run: client/server test, excluded by the brief; body read; executed at wave end: whole file 9/9 pass"
+      },
+      {
+        "file": "client/server/test/360-playback-frames.test.ts",
+        "pattern": "§8b the server holds the clock when it sends a playback",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "not run: client/server test, excluded by the brief; body read; executed at wave end: whole file 9/9 pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [],
+    "quote_spans": [
+      {
+        "file": "client/server/main.ts",
+        "text": "if (setWatchHold(room, seat, pb.frames.length ? Date.now() + playbackBudget(pb.frames) : null)) settleClock(room);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "360 §8/§8b are server tests (read, not run); 372 passed."
+  },
+  {
+    "key": "annexd.clocks.running.simultaneous",
+    "textHash": "2c22fa57ed426db9",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/server/rooms.ts:clockRunning",
+        "agrees": true,
+        "note": "per-seat legalActions; a finished seat has none"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/e2e/suite.test.ts",
+        "pattern": "test-clock.ts",
+        "passed": true,
+        "asserts_claim": "not run (e2e)",
+        "note": "not run; executed at wave end: node e2e/test-clock.ts exited 0 (ALL PASS)"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U23/clocks-simultaneous.test.ts",
+        "title": "annexd.clocks.running.simultaneous (2 tests)",
+        "passed": true,
+        "demonstrates": "yes: in planning, haste and deployment both seats have legal actions; after done* the finished seat has zero, so clockRunning stops it"
+      }
+    ],
+    "source_checks": [],
+    "quote_spans": [
+      {
+        "file": "client/server/rooms.ts",
+        "text": "* draft picks, and the simultaneous planning/deploy done-flags — both clocks"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.clocks.running.standing-pass",
+    "textHash": "da9769ccb5a19e8a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/server/rooms.ts:settlePassAll/clockRunning/passAllDue",
+        "agrees": true,
+        "note": "passAllWait unbills only a real pass window; PASS_ALL_BACKSTOP_MS = 2000; main.ts sweepPassAll lands a passPriority action through landAction (logged)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/e2e/suite.test.ts",
+        "pattern": "test-passall-clock.ts",
+        "passed": true,
+        "asserts_claim": "not run (e2e)",
+        "note": "not run; executed at wave end: node e2e/test-passall-clock.ts exited 0 (ALL PASS)"
+      }
+    ],
+    "probes": [],
+    "source_checks": [],
+    "quote_spans": [
+      {
+        "file": "client/server/rooms.ts",
+        "text": "export const PASS_ALL_BACKSTOP_MS = 2000;"
+      },
+      {
+        "file": "client/server/main.ts",
+        "text": "landAction(room, seat, { type: 'passPriority', seat });"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.general.hidden-segment",
+    "textHash": "83122181e01ce22e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/engine (hiddenSegment) / server/rooms.ts segmentKey",
+        "agrees": true,
+        "note": "'plan', 'haste', 'deploy'"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R18 (its hidden-segment half)",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R18 (its hidden-segment half)",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R310",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "false: the haste step is a **hidden simultaneous segment** — nobody sees the"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "other side's haste plays until everyone is done, exactly as the planning phase"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "round: a glimpse waits for the reveal in every hidden step (the resource step,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.general.hidden-segment.barrier",
+    "textHash": "740401a8aed2da87",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/server/main.ts (segment close, playbackFrames)",
+        "agrees": true,
+        "note": "the resource step close arrives whole rather than as frames (see recap.what.resource-step)"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R310",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "that step produces. The other seat gets it at the barrier, in the recap"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.general.hidden-segment.battle-open",
+    "textHash": "ff0ced58387cbb47",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:decisionBlocks",
+        "agrees": true,
+        "note": "battle is outside hiddenSegment"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R310",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **Battle.** Nothing is held in battle, so a battle glimpse (Premonition,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Hidden information (hands) is still hidden in battle; \"nothing that happens\" means events."
+  },
+  {
+    "key": "annexd.general.hidden-segment.redaction",
+    "textHash": "966ec035740ee5bc",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/server/view.ts:viewFor",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R18 (its hidden-segment half)",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R18 (its hidden-segment half)",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "the whole state and answers every query truthfully — so the concealment is done"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "where every other concealment is done, in the **server's view redaction**"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.general.not-rules",
+    "textHash": "4adc0796a041672f",
+    "verdict": "partial",
+    "round": 3,
+    "verifier": "U23-r3",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:decisionBlocks",
+        "agrees": false,
+        "note": "R154 moved the concurrency convention into the engine: legalActions/dispatch now let a seat act while the other seat's decision is open inside a hidden segment; that changes what the engine treats as legal"
+      },
+      {
+        "loc": "client/ui/pace.ts",
+        "agrees": true,
+        "note": "pacing is client-only and changes no legality"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R150 (its CT-28 pacing half)",
+        "supports": "partly",
+        "note": "R150 says this of its own two items only, and its concurrency half was then re-done in apply.ts by R154; not an owner quote, so basis 'owner' is wrong"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**CT-32** (#98). Both are pacing/concurrency, neither is a rules change, and"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "`decisionBlocks(state, seat)` in `apply.ts` is that sentence, and it is now the"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "* `legalActions()` — was `if (s.decision) return legalDecisionActions(e, seat)`"
+      }
+    ],
+    "basis_ok": false,
+    "problem": "The 'none of them changes what is legal' clause is too broad: the concurrency convention (R150 CT-32 as re-done by R154) changed which actions the engine accepts from a seat while the other seat holds a decision. True for the pacing conventions (throttle, skip, recap). Source is our R150 text, not an owner statement."
+  },
+  {
+    "key": "annexd.general.not-rules.warn-not-refuse",
+    "textHash": "40549b80d55f92e3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts:act",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/278-ally-misclick.test.ts",
+        "pattern": "R288 §4 the question changes no legality",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran; the example is marked illustrative"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R288",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**IT IS A QUESTION, NEVER A FILTER.** The owner says it twice — *\"we shouldn't"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.general.one-opinion",
+    "textHash": "e60a816c33d601fa",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui/passrelease.ts",
+        "agrees": true,
+        "note": "the server asks the client's own release function; formationCandidates mirrors validFormation"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R245",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R245",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**Wherever the client decides something the engine also decides, the client's"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "answer must be DERIVED from the engine's — by asking it, or by mirroring one"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.general.one-opinion.affordances",
+    "textHash": "fd12980d7a4db1d3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui/battle.ts:formationCandidates",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/223-client-legality.test.ts",
+        "pattern": "[127] a unit the engine would refuse is not ringed and does not pick up on a click",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R245",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R245",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A ring, a clickable unit, a drop target and a one-click \"attack all\" all say"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "\"the engine will take this\". If the engine would refuse it, the affordance is a"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.general.player-decides",
+    "textHash": "2426fe74c6d4481f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:forcedAction",
+        "agrees": true,
+        "note": "returns null under any decision; only no-choice declarations are forced"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R120 (its default-split option)",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "project rule — **the engine must never decide for the player** — is what this closes: with"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.general.player-decides.burst-order",
+    "textHash": "7e6b4880b90b0428",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:burstStep",
+        "agrees": true,
+        "note": "burstPick per token; the client always sends ordered: true"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/358-burst-order.test.ts",
+        "pattern": "R309: a lone token is not asked to be ordered",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R309",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "wanted no \"auto\" shortcut: *\"Just force them to choose the order.\"*"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.general.player-decides.default-first",
+    "textHash": "8438b4c217d218ba",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts (elective split options)",
+        "agrees": true,
+        "note": "first option 'default — share front-to-back'; forcedAction null under a decision"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R120 (its default-split option)",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R120 (its default-split option)",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "The **first** question leads with `default — share front-to-back (…)`: one click reproduces"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "is still the player's. `forcedAction` never answers it (it returns null under any pending"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.general.player-decides.forced",
+    "textHash": "6238f6539e7e9b26",
+    "verdict": "confirmed",
+    "round": 3,
+    "verifier": "U23-r3",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:forcedAction",
+        "agrees": true,
+        "note": "exactly two cases: empty declareAttack when no eligible attacker (pool / allured excluded), empty declareBlocks when the defender has no unit in the battle region; null under any decision"
+      },
+      {
+        "loc": "client/ui/main.ts / server forcedAction drain (R287 full control)",
+        "agrees": true,
+        "note": "full control stops the drain and leaves the window (273 §2)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/21-fixes.test.ts",
+        "pattern": "a whole empty-board battle drains|forcedAction is null whenever a real choice",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "client/engine/test/273-full-control-both-seats.test.ts",
+        "pattern": "BL-18 §2 with full control ON",
+        "passed": true,
+        "asserts_claim": "yes: forcedAction still non-null but the drain did not take it; the player is offered the window"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U23/forced-lone-counterattacker.test.ts",
+        "title": "annexd.general.player-decides.forced.lone-counterattacker / annexd.general.player-decides.forced",
+        "passed": true,
+        "demonstrates": "yes: empty attacker forced, unit holder not; a lone sent counterattacker is NOT forced"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U23/forced-target.test.ts",
+        "title": "annexd.general.player-decides.forced-target",
+        "passed": true,
+        "demonstrates": "yes: a one-candidate target is still a decision, not forced"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R36",
+        "supports": "partly",
+        "note": "supports 'logged like any other', but R36 is about a THIRD forced action (lone counterattacker auto-forms) that the engine deleted 2026-08-24; as registered it contradicts the rule's 'only'. Merely on-topic for the sentence it is cited for."
+      },
+      {
+        "ref": "R287",
+        "supports": "yes",
+        "note": "full control outranks the forcedAction drain"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (!eligible.length) return { type: 'declareAttack', seat: b.attacker, columns: [] };"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (b.step === 'blocks' && !e.unitsOf(b.defender, b.region).length) {"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "automatics are decided, and the server's `forcedAction` drain reads one per-seat"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "When a round-2 counterattack pool holds EXACTLY one unit and no spell token"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Text matches the engine. But the cited R36 still says a lone sent counterattacker auto-forms (a forced action) and was never amended; the engine removed that branch. The rule should not lean on R36, and the register needs R36 amended (see bugs)."
+  },
+  {
+    "key": "annexd.general.player-decides.forced-target",
+    "textHash": "2f49839f1a66956d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts (cast target collection)",
+        "agrees": true,
+        "note": "a one-candidate target slot still suspends with a decision"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U23/forced-target.test.ts",
+        "title": "annexd.general.player-decides.forced-target",
+        "passed": true,
+        "demonstrates": "yes: Divine Foresight (\"target opponent\") cast in battle opens a cast decision with exactly one option, and forcedAction returns null"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R67",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R67",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**A consequence worth knowing:** the collector asks even when exactly one"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "candidate is legal, so a forced \"target opponent\" is now a click. That is the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.general.player-decides.forced.lone-counterattacker",
+    "textHash": "c98f587cb929ad21",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U23-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:forcedAction",
+        "agrees": false,
+        "note": "The lone-counterattacker branch was REMOVED 2026-08-24; round-2 declare with one sent unit and no token returns null and offers both [] and [[unit]]. Divergence flagged by the rule is real."
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U23/forced-lone-counterattacker.test.ts",
+        "title": "annexd.general.player-decides.forced.lone-counterattacker: one sent unit, no token — round 2 declare is NOT forced (engine differs)",
+        "passed": true,
+        "demonstrates": "yes: the engine does not auto-form (pool [4], forcedAction null, options [] and [[4]]), confirming the flagged divergence"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R36",
+        "supports": "yes",
+        "note": "R36 states exactly the ruling; it carries no amendment or reversal marker in the register"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "When a round-2 counterattack pool holds EXACTLY one unit and no spell token"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "(decisions-for-the-player audit): sending a counterattacker and"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None in the rule. The ruling stands in the register while the engine removed it; the open divergence is the engine bug listed below."
+  },
+  {
+    "key": "annexd.general.player-decides.identical-triggers",
+    "textHash": "348a448a0aec9da8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:processTriggerQueue/sameTrigger",
+        "agrees": true,
+        "note": "same card, ability, label, parts"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/33-trigger-fixes.test.ts",
+        "pattern": "R34",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran 2/2: two identical Flora triggers ask nothing; mixed ask"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R34",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R34",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R34",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "When ALL of a seat's simultaneously queued triggers are identical — same"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "text) — the ordering decision (R2) is skipped and they enqueue in the order"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "from different cards/abilities, or composites whose parts differ (a spent"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.general.player-decides.one-subject",
+    "textHash": "d7a07f3d934f0ced",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:collectSubjects",
+        "agrees": true,
+        "note": "cands.length < 2 records without asking"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R144 (its half (b))",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R144 (its half (b))",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **≥ 2 candidates** — one decision, in the stack window, `stage: 'subject'`."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **1 candidate** — recorded without asking. A lone Wraith is not asked which"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.general.player-decides.unoffered",
+    "textHash": "8e91474ba0414d84",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/engine/test/util.ts:notOffered (R64 doctrine)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R120 (its default-split option)",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "while anything would go behind it (the R64 doctrine: illegal options are unoffered, not"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.recap.glimpse",
+    "textHash": "fa759637d0d01577",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/server/view.ts / rooms.ts (held reveal)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/371-glimpse-in-the-recap.test.ts",
+        "pattern": "R310 §1: the opponent's glimpse notice pops when its recap frame plays, not before",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      },
+      {
+        "file": "client/server/test/203-reveal-waits-for-the-barrier.test.ts",
+        "pattern": "R310 §3: the reveal plays in the recap",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "not run: client/server test, excluded by the brief; body read; executed at wave end: whole file 9/9 pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R310",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R310",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R310",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **Barrier and recap.** The glimpse is flushed exactly once, inside the"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "sees their own reveal live, because it is their own action."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **Battle.** Nothing is held in battle, so a battle glimpse (Premonition,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "203 §3 is a server test (read, not run); 371 passed."
+  },
+  {
+    "key": "annexd.recap.skip",
+    "textHash": "96da49240dcb490b",
+    "verdict": "confirmed",
+    "round": 3,
+    "verifier": "U23-r3",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts:keydown (S key)",
+        "agrees": true,
+        "note": "S calls skipPacing when anything is paced ahead and no overlay is up"
+      },
+      {
+        "loc": "client/ui/main.ts:skipPacing",
+        "agrees": true,
+        "note": "skipToStop (= paceFlush with no stop queued) then flushFlashes() drops flashes, flushBeats() releases beats"
+      },
+      {
+        "loc": "client/ui/pace.ts:paceToStop",
+        "agrees": true,
+        "note": "no stop -> whole queue, i.e. live state"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/237-live-while-held.test.ts",
+        "pattern": "several held arrivals still draw nothing",
+        "passed": true,
+        "asserts_claim": "yes: no chip/count while held, S lands on the live (turn 9) state"
+      },
+      {
+        "file": "client/ui/test/218-one-tempo.test.ts",
+        "pattern": "§4b skipping RELEASES",
+        "passed": true,
+        "asserts_claim": "yes: flushBeats keeps every line"
+      },
+      {
+        "file": "client/ui/test/218-one-tempo.test.ts",
+        "pattern": "§4a|§4d",
+        "passed": true,
+        "asserts_claim": "yes: flashes dropped; skip wires all three queues; no catching-up chip in source"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R150 (its CT-28 pacing half)",
+        "supports": "partly",
+        "note": "supports the S key and the one-step flush; R150 also describes a visible skip chip, which the owner removed 2026-09-28 (only recorded in 237's header and 218 §4d, not in the register)"
+      },
+      {
+        "ref": "R242",
+        "supports": "yes",
+        "note": "flashes dropped, beats brought forward"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- pending **beats** are brought forward, not dropped: a beat is holding back"
+      },
+      {
+        "file": "client/ui/main.ts",
+        "text": "if (overlayUp || !pacedAhead()) return;"
+      },
+      {
+        "file": "client/ui/main.ts",
+        "text": "beatQueue = flushBeats(beatQueue, now);"
+      },
+      {
+        "file": "client/engine/test/237-live-while-held.test.ts",
+        "text": "assert.equal(ui.has({ btn: 'paceskip' }), false, 'the owner cut the chip: no skip button');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None. Note the 'no skip control' clause is sourced only by tests (owner 2026-09-28), and R150's chip description is stale."
+  },
+  {
+    "key": "annexd.recap.skip.disconnect",
+    "textHash": "ee53908dfb58d4d1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts (presence ahead of hold gate)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/237-live-while-held.test.ts",
+        "pattern": "R258 a disconnect that arrives while the throttle is holding is on screen at once",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R258",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**Presence is applied ahead of the hold gate**, beside `m.clock`, `m.names` and"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.recap.skip.in-playback",
+    "textHash": "b1abb57aa0927387",
+    "verdict": "confirmed",
+    "round": 3,
+    "verifier": "U23-r3",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts:skipPacing",
+        "agrees": true,
+        "note": "on a stop -> continuePlayback; else skipToStop (paceToStop: up to the next stop)"
+      },
+      {
+        "loc": "client/ui/main.ts:keydown",
+        "agrees": true,
+        "note": "during playback Space, Enter and Escape skip; S also skips (pacedAhead counts the stop)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/383-recap-stops.test.ts",
+        "pattern": "Skip jumps to the next stop",
+        "passed": true,
+        "asserts_claim": "yes (with Space)"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U23/recap-skip-in-playback.test.ts",
+        "title": "annexd.recap.skip.in-playback: the S key skips to the next stop and continues from a stop; the Skip button on the play bar skips to the next stop",
+        "passed": true,
+        "demonstrates": "yes: S and the playskip button both stop at the next stop and continue from it"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "383-recap-stops.test.ts",
+        "supports": "yes",
+        "note": "header quotes the owner's settled reading (report #198)"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ui/main.ts",
+        "text": "if (NET?.playbackStopped()) { NET.continuePlayback(); return; }"
+      },
+      {
+        "file": "client/ui/main.ts",
+        "text": "if (playbackNow && !overlayUp && [' ', 'Enter', 'Escape'].includes(e.key)) {"
+      },
+      {
+        "file": "client/ui/test/383-recap-stops.test.ts",
+        "text": "assert.equal(bar(), '3/5 Continue', 'Skip: the end of their moves, and waiting');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None; the key list omits Enter and Escape, which also skip during a playback."
+  },
+  {
+    "key": "annexd.recap.skip.live",
+    "textHash": "a56fc252b7d3db3a",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U23-r2",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts:NetBackend.onMsg",
+        "agrees": true,
+        "note": "m.clock and m.peers applied ahead of the hold gate; paintLive fills only the presence/share slots; the 1s ticker patches clock nodes"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/237-live-while-held.test.ts",
+        "pattern": "disconnect that arrives",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/237-live-while-held.test.ts",
+        "pattern": "held update moves the live slots",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R258",
+        "supports": "yes",
+        "note": "presence kept live, applied ahead of the hold gate beside m.clock"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ui/main.ts",
+        "text": "if (m.clock) clockSnap = { ...m.clock, rx: Date.now() };"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**Presence is applied ahead of the hold gate**, beside `m.clock`, `m.names` and"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None material (names, watcher count and opponent column-building also bypass the hold, but they are not board changes from the held update)."
+  },
+  {
+    "key": "annexd.recap.stops",
+    "textHash": "e4fc79cec076ce5a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui (playback queue)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/383-recap-stops.test.ts",
+        "pattern": "report #198: the deployment recap stops after their moves",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      },
+      {
+        "file": "client/ui/test/383-recap-stops.test.ts",
+        "pattern": "report #198: Skip jumps to the next stop, never past it",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [],
+    "quote_spans": [],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.recap.stops.end-pause",
+    "textHash": "e2edfb19faa08f08",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui (playback queue)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/372-recap-end-pause.test.ts",
+        "pattern": "the hand-over to the next turn waits PLAYBACK_END_MS, longer than a frame",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      },
+      {
+        "file": "client/ui/test/372-recap-end-pause.test.ts",
+        "pattern": "every playback goes through the one gap rule",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [],
+    "quote_spans": [],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.recap.stops.watch-again",
+    "textHash": "a4146d5e5a33c99f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui (playback queue)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/383-recap-stops.test.ts",
+        "pattern": "report #198: \"watch again\" stops at the same places",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R310",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "absorb. \"Watch again\" and Learn to Play use the same branch: watching again"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.recap.tempo",
+    "textHash": "c215b434784539cb",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui/pace.ts / ui/flash.ts",
+        "agrees": true,
+        "note": "PACE_MS = 1000, PACE_MAX_HELD = 12"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/218-one-tempo.test.ts",
+        "pattern": "§1a the beat tempo IS the client-wide ceiling",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R150 (its CT-28 pacing half)",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R242",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- `PACE_MS = 1000` is the single named interval; nothing else spells a number."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**There is one tempo, and it is `PACE_MS`.** `ui/pace.ts` already declared"
+      },
+      {
+        "file": "client/ui/pace.ts",
+        "text": "export const PACE_MS = 1000;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.recap.tempo.cascade",
+    "textHash": "2ca4f8b7af14ddd2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui/pace.ts / ui/flash.ts",
+        "agrees": true,
+        "note": "PACE_MS = 1000, PACE_MAX_HELD = 12"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/218-one-tempo.test.ts",
+        "pattern": "§2a \"all at once\": a simultaneous batch shares ONE arrival",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      },
+      {
+        "file": "client/ui/test/218-one-tempo.test.ts",
+        "pattern": "§2c they leave in RESOLUTION order",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R242",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R242",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> go onto the stack (in the right order, all at once) and then slowly resolve."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A group now has **one arrival and N departures**, one tempo-step apart, in"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.recap.tempo.flush",
+    "textHash": "104d1240b4b688cd",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui/pace.ts / ui/flash.ts",
+        "agrees": true,
+        "note": "PACE_MS = 1000, PACE_MAX_HELD = 12"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/128-ui-pace.test.ts",
+        "pattern": "R150 #94: an urgent arrival FLUSHES the backlog rather than jumping it",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R150 (its CT-28 pacing half)",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **An un-holdable update FLUSHES the backlog rather than jumping it.** This is"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.recap.tempo.held",
+    "textHash": "03d5420500119fa7",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui/pace.ts / ui/flash.ts",
+        "agrees": true,
+        "note": "PACE_MS = 1000, PACE_MAX_HELD = 12"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/128-ui-pace.test.ts",
+        "pattern": "R150 #94: a decision of MINE is never held",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      },
+      {
+        "file": "client/ui/test/128-ui-pace.test.ts",
+        "pattern": "R150 #94: the game ending is never held",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R150 (its CT-28 pacing half)",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R150 (its CT-28 pacing half)",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "narrow: an update is eligible **only** when it is not the echo of something"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "ending, and either offers **zero** legal actions or arrives with auto-pass"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.recap.tempo.input",
+    "textHash": "f6dfe860d9f0b95d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui/pace.ts / ui/flash.ts",
+        "agrees": true,
+        "note": "PACE_MS = 1000, PACE_MAX_HELD = 12"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/128-ui-pace.test.ts",
+        "pattern": "R150 #94: my OWN action's echo is never held",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R150 (its CT-28 pacing half)",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- Input is never delayed: `NetBackend.do()` sends immediately and marks the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.recap.tempo.lag-bound",
+    "textHash": "33690ea91c6695fa",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui/pace.ts / ui/flash.ts",
+        "agrees": true,
+        "note": "PACE_MS = 1000, PACE_MAX_HELD = 12"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/128-ui-pace.test.ts",
+        "pattern": "R150 #94: the queue never falls further than PACE_MAX_HELD intervals behind",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R242",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**The lag bound is counted in beats, not milliseconds.** `MAX_LEAD_MS` becomes"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.recap.what",
+    "textHash": "5c820713cf45862c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/server/main.ts:sendUpdate (playback && step !== plan)",
+        "agrees": true,
+        "note": "haste and deploy close into frames"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/360-playback-frames.test.ts",
+        "pattern": "§7 a haste step closes into frames the same way",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "not run: client/server test, excluded by the brief; body read; executed at wave end: whole file 9/9 pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R310",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R310",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "(playback), at the moment it happened, with its card popup. The glimpser still"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "haste or deployment close plays that frame, and the client's playback branch"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "360 §7 is a server test (read, not run)."
+  },
+  {
+    "key": "annexd.recap.what.end-of-turn",
+    "textHash": "6f939da1fd6dbcd0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/server playbackFrames (tail)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/360-playback-frames.test.ts",
+        "pattern": "§2 the end of turn is a frame per trigger",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "not run: client/server test, excluded by the brief; body read; executed at wave end: whole file 9/9 pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [],
+    "quote_spans": [],
+    "basis_ok": true,
+    "problem": "Bound test is in client/server/test (360), read but not run per the brief."
+  },
+  {
+    "key": "annexd.recap.what.no-effect",
+    "textHash": "dfc5330f5af45774",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:apply({frames})",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/360-playback-frames.test.ts",
+        "pattern": "§1 a game with frames is the same game without them",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "not run: client/server test, excluded by the brief; body read; executed at wave end: whole file 9/9 pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [],
+    "quote_spans": [],
+    "basis_ok": true,
+    "problem": "Bound test is in client/server/test (360), read but not run per the brief."
+  },
+  {
+    "key": "annexd.recap.what.nothing-to-show",
+    "textHash": "77bfb0f19519de5a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/server playbackFrames",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/360-playback-frames.test.ts",
+        "pattern": "§4 a move with nothing to show is not a step",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "not run: client/server test, excluded by the brief; body read; executed at wave end: whole file 9/9 pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [],
+    "quote_spans": [],
+    "basis_ok": true,
+    "problem": "Bound test is in client/server/test (360), read but not run per the brief."
+  },
+  {
+    "key": "annexd.recap.what.opponent-frame",
+    "textHash": "f6bbdc31ce37ce26",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/server playbackFrames (opp)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/360-playback-frames.test.ts",
+        "pattern": "§3 an opponent frame",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "not run: client/server test, excluded by the brief; body read; executed at wave end: whole file 9/9 pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [],
+    "quote_spans": [],
+    "basis_ok": true,
+    "problem": "Bound test is in client/server/test (360), read but not run per the brief."
+  },
+  {
+    "key": "annexd.recap.what.resource-step",
+    "textHash": "069eb88e7ab8df3b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/server/main.ts:sendUpdate",
+        "agrees": true,
+        "note": "playback only when step !== 'plan'"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R310",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R310",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "pops the notice again. A resource-step close still arrives whole, without a"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "playback, and its glimpse pops from that update's events as before."
+      },
+      {
+        "file": "client/server/main.ts",
+        "text": "if (playback && step !== 'plan') {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.recap.what.undo",
+    "textHash": "1ca979d644d5928f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/server/rooms.ts:undoActionAt (rebuild heldFrames)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/360-playback-frames.test.ts",
+        "pattern": "§6 undoing a move inside the step takes its frame with it",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "not run: client/server test, excluded by the brief; body read; executed at wave end: whole file 9/9 pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [],
+    "quote_spans": [],
+    "basis_ok": true,
+    "problem": "Bound test is in client/server/test (360), read but not run per the brief."
+  },
+  {
+    "key": "annexd.undo.cast-cancel",
+    "textHash": "0f32d550d2e92d4f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/server/rooms.ts:undoForSeat (castChain)",
+        "agrees": true,
+        "note": "cast suspension of own non-triggered item, or burstPick, in any phase"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R312",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R309",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R309",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- The pre-commit cast chain (X, costs, targets) gets no floor. Every stage"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- Cancel works on the whole burst: the `burstPick` step counts as a"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "pre-commit cast for the client's cast-cancel and the server's undo."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.undo.hidden-step",
+    "textHash": "dde3d589f9d18b01",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/server/rooms.ts:undoForSeat",
+        "agrees": true,
+        "note": "walks back to the seat's own latest action, down to segmentFloor"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/374-undo-locks-on-reveal.test.ts",
+        "pattern": "R312 §2: an undo of an earlier play BEFORE any glimpse still works",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "not run: client/server test, excluded by the brief; body read; executed at wave end: whole file 7/7 pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R312",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Undo inside a hidden step (planning, haste, deployment) used to walk back any"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "374 §2 is a server test (read, not run)."
+  },
+  {
+    "key": "annexd.undo.hidden-step.battle",
+    "textHash": "be47184cda0ddde2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/server/rooms.ts:undoForSeat",
+        "agrees": true,
+        "note": "outside a segment only a pre-commit cast chain is undoable"
+      },
+      {
+        "loc": "client/ui/undo.ts",
+        "agrees": true,
+        "note": "confirm skipped where undo works"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/373-no-confirm-where-undo-works.test.ts",
+        "pattern": "in deployment, an irreversible ability activates on the click",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      },
+      {
+        "file": "client/ui/test/373-no-confirm-where-undo-works.test.ts",
+        "pattern": "in battle, the same ability still asks",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "ran the file; all tests pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [],
+    "quote_spans": [],
+    "basis_ok": true,
+    "problem": "A pre-commit cast in battle can still be cancelled (annexd.undo.cast-cancel)."
+  },
+  {
+    "key": "annexd.undo.hidden-step.floor",
+    "textHash": "71fda610e0b430d2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/server/rooms.ts:segmentFloor",
+        "agrees": true,
+        "note": "debt/rot are inside the barrier action; a leading run of decides draining a start-of-phase suspension is excluded"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/e2e/suite.test.ts",
+        "pattern": "test-undo-segment.ts",
+        "passed": true,
+        "asserts_claim": "not run (e2e)",
+        "note": "not run; executed at wave end: node e2e/test-undo-segment.ts exited 0 (ALL PASS)"
+      }
+    ],
+    "probes": [],
+    "source_checks": [],
+    "quote_spans": [
+      {
+        "file": "client/server/rooms.ts",
+        "text": "* allowed to undo everything, up to the beginning of that phase (unless there"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.undo.hidden-step.opponent",
+    "textHash": "b05edb8586536e32",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/server/rooms.ts:undoForSeat",
+        "agrees": true,
+        "note": "\"has your opponent acted since\" is no longer asked; exceptions are a later move naming an entity this action created, or a changed reference key"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/e2e/suite.test.ts",
+        "pattern": "test-undo-segment.ts",
+        "passed": true,
+        "asserts_claim": "not run (e2e)",
+        "note": "not run; executed at wave end: node e2e/test-undo-segment.ts exited 0 (ALL PASS)"
+      }
+    ],
+    "probes": [],
+    "source_checks": [],
+    "quote_spans": [
+      {
+        "file": "client/server/rooms.ts",
+        "text": "// screen, and what they do must not be able to take your undo away. So"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "True subject to the parent's limits (spliceable / reference-key refusals)."
+  },
+  {
+    "key": "annexd.undo.learn-to-play",
+    "textHash": "f0915668a1479954",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/ui/solo.ts (undo with lastSeen floor)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/374-undo-locks-on-reveal.test.ts",
+        "pattern": "R312 §7: Learn to Play applies the same floor",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "not run: client/server test, excluded by the brief; body read; executed at wave end: whole file 7/7 pass"
+      },
+      {
+        "file": "client/ui/test/306-solo-backend.test.ts",
+        "pattern": "§4 a save replays to the same game, and undo takes back the learner's last move",
+        "passed": true,
+        "asserts_claim": "partly: undo exists in Learn to Play; the lock itself is 374 §7",
+        "note": "ran"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R312",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R312",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R312",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Learn to Play's undo follows the same rule in every phase, because it has no"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "phase gate. A turn's draw, a glimpse or a look at the Bot's hand ends the"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "is a fresh attempt, not an undo, and this rule does not cover it."
+      }
+    ],
+    "basis_ok": true,
+    "problem": "374 §7 is a server-folder test (read, not run)."
+  },
+  {
+    "key": "annexd.undo.seen-cards",
+    "textHash": "b1dd6e3972a294ea",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/server/rooms.ts:undoForSeat (lastSeen)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/374-undo-locks-on-reveal.test.ts",
+        "pattern": "R312 §1: a Glimpse in deployment cannot be undone",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "not run: client/server test, excluded by the brief; body read; executed at wave end: whole file 7/7 pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R312",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R312",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "An action that showed you hidden cards cannot be taken back, and neither can"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "anything you did before it. The owner: *\"once you've seen the cards, it"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "374 is a server test (read, not run)."
+  },
+  {
+    "key": "annexd.undo.seen-cards.after",
+    "textHash": "e18762150dd1035b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/server/rooms.ts:undoForSeat",
+        "agrees": true,
+        "note": "i <= lastSeen refuses"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/374-undo-locks-on-reveal.test.ts",
+        "pattern": "R312 §3: a plain spawn after the glimpse is undoable back to the glimpse",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "not run: client/server test, excluded by the brief; body read; executed at wave end: whole file 7/7 pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R312",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R312",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Now an undo walks back no further than just after the latest action in the"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "step that showed **you** a hidden card. A play after that action can still be"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "374 §3 server test (read, not run)."
+  },
+  {
+    "key": "annexd.undo.seen-cards.measured",
+    "textHash": "ad5aa28cbde7e81c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/server/seen.ts:seenBy",
+        "agrees": true,
+        "note": "reorders hidden cards twice and compares the redacted view + events"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/374-undo-locks-on-reveal.test.ts",
+        "pattern": "R312 §6: measured, not listed",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "not run: client/server test, excluded by the brief; body read; executed at wave end: whole file 7/7 pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R312",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R312",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      },
+      {
+        "ref": "R312",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "events or cards. A glimpse, a draw, Tides of the Cosmos's reveal, Bripp's"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "spawn from hand, a recycle or a card put on the bottom of a deck shows the"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "never locks, because reordering 30 copies of one card changes nothing."
+      }
+    ],
+    "basis_ok": true,
+    "problem": "374 §6 server test (read, not run). Wording nit: \"Playing a card from hand does not\" should read \"a plain play from hand\" — the §6 example is itself a play from hand that locks because its spawn trigger glimpses."
+  },
+  {
+    "key": "annexd.undo.seen-cards.message",
+    "textHash": "38727c07e80a75e5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/server/seen.ts:SEEN_REFUSAL",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R312",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "reads: *\"you've seen those cards — that can't be taken back\"*."
+      },
+      {
+        "file": "client/server/seen.ts",
+        "text": "export const SEEN_REFUSAL = \"you've seen those cards — that can't be taken back\";"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.undo.seen-cards.only-seer",
+    "textHash": "f8b8038cbf9e53f2",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U23-r2",
+    "engine": [
+      {
+        "loc": "client/server/seen.ts:seenBy",
+        "agrees": true,
+        "note": "measured per seat; the opponent's glimpse changes only their view"
+      },
+      {
+        "loc": "client/server/rooms.ts:undoForSeat",
+        "agrees": true,
+        "note": "refuses only at/below lastSeen for that seat"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U23/undo-seen.test.ts",
+        "title": "annexd.undo.seen-cards.only-seer: the opponent glimpsing the shared deck leaves my undo free, and locks theirs",
+        "passed": true,
+        "demonstrates": "yes: undoForSeat(P) ok:true, undoForSeat(O) refused with SEEN_REFUSAL"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R312",
+        "supports": "yes",
+        "note": "'Who it locks: only the seat that saw' and the hidden-step reason"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**Who it locks: only the seat that saw.** The deck may be shared, and your"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None. The bound test (server/test/374 §5) was not run: the brief forbids client/server tests; a probe reproducing §5 in-process passes."
+  },
+  {
+    "key": "annexd.undo.seen-cards.opponent-shown",
+    "textHash": "ecf1c28e0a28346d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/server/rooms.ts:undoActionAt (sameSeen)",
+        "agrees": true,
+        "note": "refuses with 'it would change cards that were already shown'"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R312",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "undo may not change the cards your opponent has already been shown. If"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.undo.seen-cards.restart",
+    "textHash": "ed8ec139d7247904",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U23-r1",
+    "engine": [
+      {
+        "loc": "client/server/rooms.ts:rebuild (segSeen)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/374-undo-locks-on-reveal.test.ts",
+        "pattern": "R312 §4: the lock survives a restart",
+        "passed": true,
+        "asserts_claim": true,
+        "note": "not run: client/server test, excluded by the brief; body read; executed at wave end: whole file 7/7 pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R312",
+        "supports": "yes",
+        "note": "quote found in digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "again after a restart or an undo, so the floor survives both."
+      }
+    ],
+    "basis_ok": true,
+    "problem": "374 §4 server test (read, not run)."
+  }
+]

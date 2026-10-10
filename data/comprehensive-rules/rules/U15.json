@@ -1,0 +1,2996 @@
+[
+  {
+    "key": "effects.activated.what",
+    "parent": "705",
+    "order": 1,
+    "text": "An activated ability is written with a colon (\":\"). Everything before the colon is the cost of activating the ability; everything after it is the effect the ability has.",
+    "examples": [
+      {
+        "text": "Example: Glook's \"[once] Discard X cards: Glimpse 1, X times\" — discarding X cards is the cost, and glimpsing X times is the effect.",
+        "test": "167-variable-ability-costs.test.ts::R196 Glook"
+      }
+    ],
+    "see": [
+      "109.2"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.41",
+          "quote": "an activated ability by a colon “:”. Everything before the"
+        },
+        {
+          "ref": "Manual p.41",
+          "quote": "colon is a cost that must be paid to activate the ability,"
+        },
+        {
+          "ref": "Manual p.41",
+          "quote": "which will grant you the effect stated after the colon."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "167-variable-ability-costs.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.activated.timing-icon",
+    "parent": "705",
+    "order": 2,
+    "text": "An activated ability may print a timing icon of its own. An ability marked {Battle} can be activated only during battle, and one marked {Deployment} only during deployment. The icon is checked when the ability is activated.",
+    "examples": [
+      {
+        "text": "Example: Grox's ability is marked {Battle}, so it cannot be activated during deployment.",
+        "test": "43-dark-c.test.ts::Grox: R49 — the printed [Battle] marker is enforced at ACTIVATION"
+      },
+      {
+        "text": "Example: Cadaverous Cultivator's {Battle} ability is refused when activated outside battle, rather than doing nothing when it resolves.",
+        "test": "45-hybrids-ld-b.test.ts::Cadaverous Cultivator: R49 — [Battle] is enforced at ACTIVATION, not at resolution"
+      }
+    ],
+    "see": [
+      "109.2a",
+      "109.2b"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R49 (its activation-timing marker)",
+          "quote": "`{Battle}` / `{Deployment}` marker on the ability itself (Grox, Cadaverous"
+        },
+        {
+          "ref": "R49 (its activation-timing marker)",
+          "quote": "Cultivator), enforced at activation rather than fudged at resolution."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "43-dark-c.test.ts",
+        "45-hybrids-ld-b.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R49 is partly superseded only in its closing X-cost note (by R64); the timing-marker paragraph stands. The \"no icon is no restriction\" half (Dropslime) is 109.2b, not repeated here.",
+    "sourceHashes": {
+      "R49": "5d3c2bff8c7d58ca657dffa7259041cc8de3a1b62ca85d59e81fcdb127319364"
+    }
+  },
+  {
+    "key": "effects.activated.procedure",
+    "parent": "705",
+    "order": 3,
+    "text": "To activate an ability, the player takes the steps below, in order. Everything is chosen and paid before the ability is put on the stack, so no player can respond between the payment of its cost and the ability going on the stack.",
+    "examples": [
+      {
+        "text": "Example: while the steps are being taken, the opponent has no legal action.",
+        "test": "167-variable-ability-costs.test.ts::R196 nothing may act INSIDE the cast window"
+      }
+    ],
+    "see": [
+      "111.7",
+      "703"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R57 (targets before fixed costs; costs paid before the stack)",
+          "quote": "**at cast, before the item reaches the stack**, so R49's guarantee holds: no"
+        },
+        {
+          "ref": "R49 (its costs-at-cast rule)",
+          "quote": "item reaches the stack, so no one may respond between a cost and its effect."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "167-variable-ability-costs.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R49": "5d3c2bff8c7d58ca657dffa7259041cc8de3a1b62ca85d59e81fcdb127319364",
+      "R57": "d8d1bc665f473e3e0fb2f87660c6589fbb4a5c2bafed95cf7c802d38a76df78f"
+    }
+  },
+  {
+    "key": "effects.activated.procedure.gates",
+    "parent": "effects.activated.procedure",
+    "order": 1,
+    "text": "Step 1: the game checks that the ability can be activated: its timing allows it, any printed condition on it (\"Activate this ability only if …\") is met, every part of its cost can be paid, and every target it requires has a legal choice. If any check fails, the ability cannot be activated and nothing is paid.",
+    "examples": [
+      {
+        "text": "Example: Instrument of Reassignment costs [x] and \"sacrifice another nontoken unit\". With only a token beside it, it is not offered and cannot be activated, and the 3 open mana are not spent either.",
+        "test": "167-variable-ability-costs.test.ts::R196 the COMPOUND half-pay hazard"
+      }
+    ],
+    "see": [
+      "111.6a",
+      "111.7b"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R77",
+          "quote": "| a printed precondition is false | R77 |"
+        },
+        {
+          "ref": "R77",
+          "quote": "| a bracketed [cost] on the effect cannot be paid | R64 |"
+        },
+        {
+          "ref": "R77",
+          "quote": "| a mandatory target has nothing legal | R64 |"
+        },
+        {
+          "ref": "R77",
+          "quote": "**Ordering is load-bearing and it is checked first.** The condition is about the"
+        },
+        {
+          "ref": "R196",
+          "quote": "once, before the first payment** — which is not a new principle but R110's, one"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "167-variable-ability-costs.test.ts",
+        "426-cr-abilities-and-replacement.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R196": "750c321c1cca87cb667e1ee80af1a620f0d453d891173e372b07e1317ac59331",
+      "R77": "5eb13b284b5106b9ded954435685fd78ac7860c6156a9a74fedf793ed7f2105e"
+    }
+  },
+  {
+    "key": "effects.activated.procedure.variable-cost",
+    "parent": "effects.activated.procedure",
+    "order": 2,
+    "text": "Step 2: if the cost has a variable part (a printed [x], \"Discard X cards\", \"Sacrifice X units\"), the player pays it, one at a time, until they stop. The amount paid is X.",
+    "examples": [
+      {
+        "text": "Example: Celestial Shifter's \"[x]\" is paid while activating, so the opponent sees X before deciding whether to respond.",
+        "test": "167-variable-ability-costs.test.ts::R196 Celestial Shifter"
+      }
+    ],
+    "see": [
+      "111.7",
+      "702.6b"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R196",
+          "quote": "* **An ABILITY's X is a BRACKETED COST.** There is no card being played, no mana"
+        },
+        {
+          "ref": "R64 (its cost half)",
+          "quote": "A **variable** cost is where X comes from. You pay one unit of it at a time"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "167-variable-ability-costs.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R64 is not in the U15 pack; read from client/docs/digital-rules.md (its cost half is current; only its no-recheck statement was amended by R324).",
+    "sourceHashes": {
+      "R196": "750c321c1cca87cb667e1ee80af1a620f0d453d891173e372b07e1317ac59331",
+      "R64": "1f75a48297b01fef7baed699c56aa4421738f1e70ca0aa68072458dbaf91b09b"
+    }
+  },
+  {
+    "key": "effects.activated.procedure.targets",
+    "parent": "effects.activated.procedure",
+    "order": 3,
+    "text": "Step 3: the player declares the ability's targets.",
+    "examples": [
+      {
+        "text": "Example: Slag Spewer's target is declared before its mod is erased to pay the cost.",
+        "test": "167-variable-ability-costs.test.ts::R196 Slag Spewer"
+      }
+    ],
+    "see": [
+      "110"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R57 (targets before fixed costs)",
+          "quote": "Every cast-time *question* is asked in this order: **X → {Modular} mods →"
+        },
+        {
+          "ref": "R57 (targets before fixed costs)",
+          "quote": "TARGETS → costs.** Nothing that requires a decision, and nothing irreversible,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "167-variable-ability-costs.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R57": "d8d1bc665f473e3e0fb2f87660c6589fbb4a5c2bafed95cf7c802d38a76df78f"
+    }
+  },
+  {
+    "key": "effects.activated.procedure.fixed-costs",
+    "parent": "effects.activated.procedure",
+    "order": 4,
+    "text": "Step 4: the player pays the rest of the cost: its mana, including any tax on activating abilities (rule 111.10f), and any life, debt, sacrifice or other fixed part.",
+    "examples": [
+      {
+        "text": "Example: Auric Ascendant's \"Recall another ally\" is paid before the ability is on the stack, so the opponent already knows which ally left.",
+        "test": "167-variable-ability-costs.test.ts::the RECALL is a cost, named before the opponent answers"
+      }
+    ],
+    "see": [
+      "111.7",
+      "111.10f"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R64 (its cost half)",
+          "quote": "Fixed costs stay where R57 put them, **after** targets"
+        },
+        {
+          "ref": "R57 (targets before fixed costs)",
+          "quote": "The precise scope: an **activated ability** pays its entire cost after"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "167-variable-ability-costs.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R57 is narrowed by R64: only the fixed costs stay after targets; variable costs moved to step 2.",
+    "sourceHashes": {
+      "R57": "d8d1bc665f473e3e0fb2f87660c6589fbb4a5c2bafed95cf7c802d38a76df78f",
+      "R64": "1f75a48297b01fef7baed699c56aa4421738f1e70ca0aa68072458dbaf91b09b"
+    }
+  },
+  {
+    "key": "effects.activated.procedure.stack",
+    "parent": "effects.activated.procedure",
+    "order": 5,
+    "text": "Step 5: the ability is put on the stack as an effect, and players receive priority as rule 703 describes.",
+    "examples": [
+      {
+        "text": "Example: Infernal Cultivator's sacrificed units are gone while the ability waits on the stack, so negating it refunds nothing.",
+        "test": "167-variable-ability-costs.test.ts::R196 Infernal Cultivator"
+      }
+    ],
+    "see": [
+      "703"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R57 (targets before fixed costs; costs paid before the stack)",
+          "quote": "**at cast, before the item reaches the stack**, so R49's guarantee holds: no"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "167-variable-ability-costs.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R57": "d8d1bc665f473e3e0fb2f87660c6589fbb4a5c2bafed95cf7c802d38a76df78f"
+    }
+  },
+  {
+    "key": "effects.activated.cost-cannot-whiff",
+    "parent": "705",
+    "order": 4,
+    "text": "If a part of an ability's cost names something that is not there to pay with (no other ally to recall, no mod to erase), the ability cannot be activated. Nothing is paid, and a [once] on the ability is not used.",
+    "examples": [
+      {
+        "text": "Example: Auric Ascendant with no other ally is not offered, so its [one] is not paid and its [once] is kept.",
+        "test": "167-variable-ability-costs.test.ts::R196 Auric Ascendant with no other ally is NOT OFFERED"
+      }
+    ],
+    "see": [
+      "111.6",
+      "109.9b"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R196",
+          "quote": "**An unpayable cost GATES; it does not whiff.** Auric Ascendant's \"no other ally"
+        },
+        {
+          "ref": "R196",
+          "quote": "offers the ability, the `[one]` is never paid and the `[once]` is never spent."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "167-variable-ability-costs.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R196": "750c321c1cca87cb667e1ee80af1a620f0d453d891173e372b07e1317ac59331"
+    }
+  },
+  {
+    "key": "effects.activated.from-mod",
+    "parent": "705",
+    "order": 5,
+    "text": "An activated ability that a mod gives its host is an ability of the host. The host's controller activates it, and \"I\" and \"me\" in it mean the host.",
+    "examples": [
+      {
+        "text": "Example: Living Forge augmented onto another unit lets that unit's controller activate \"[three]: create a Robot 2\" through the mod.",
+        "test": "27-metal-b.test.ts::Living Forge: donated on a host, the [three] ability activates via the mod"
+      },
+      {
+        "text": "Example: Aurozoa's \"[Augment] Pay 1 life: Recall me\" recalls the host when Aurozoa is a mod.",
+        "test": "46-hybrids-ld-c.test.ts::Aurozoa: \"[Augment] Pay 1 life: Recall me\" — on itself and donated to a host"
+      }
+    ],
+    "see": [
+      "720"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R77",
+          "quote": "ability was donated by an augment — so \"I have an adjacent ally\" reads"
+        },
+        {
+          "ref": "R157 (its §6)",
+          "quote": "> *\"The unit's controller. But why would that be a problem for Doot? You virus"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "27-metal-b.test.ts",
+        "46-hybrids-ld-c.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R157 §6 answers \"you\" on a Virus [Augment] (the unit's controller); R77 states \"I/self\" is the host for a donated activated ability.",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
+      "R77": "5eb13b284b5106b9ded954435685fd78ac7860c6156a9a74fedf793ed7f2105e"
+    }
+  },
+  {
+    "key": "effects.activated.not-activations",
+    "parent": "705",
+    "order": 6,
+    "text": "Some actions are not activated abilities, and rules and effects that apply to activating abilities do not apply to them: applying a mod (an augment or a graft), playing a card as an Ambush, casting a spell token, using a resource, and taking an option a card offers as a spell is played (rule 109.6).",
+    "examples": [
+      {
+        "text": "Example: during battle Crevice Lurker taxes activated abilities, but applying an augment costs nothing extra.",
+        "test": "16-earth-a.test.ts::Crevice Lurker: R121 — applying an augment during battle is NOT taxed (R37: a mod is not an activation)"
+      }
+    ],
+    "see": [
+      "109.6",
+      "701.2",
+      "111.10f"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R121 (its activation tax and designer rulings)",
+          "quote": "- (R37 family) Augment/Ambush are alternative ways to PLAY a card, not"
+        },
+        {
+          "ref": "R121 (its activation tax and designer rulings)",
+          "quote": "spell-token casts are not ability activations and are untaxed."
+        },
+        {
+          "ref": "R178 (its §3)",
+          "quote": "> *\"Maelstrom Ability is neither Triggered nor Activated, so Crevice Lurker"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "16-earth-a.test.ts",
+        "151-copy-and-moved-mods.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R121 line: \"Resource activations and spell-token casts are not ability activations and are untaxed.\" The Maelstrom Charger sentence is the designer (_passer) quoted inside R178.",
+    "sourceHashes": {
+      "R121": "70cfe1343c4a705ff17c19cfa079161a0b8c2c6a592ff57e394cf3dc007cfa83",
+      "R178": "92613172ef363565035f3346c813b8e4fdf7cbf5ff2a45ae1543bf273254e204"
+    }
+  },
+  {
+    "key": "effects.triggered.what",
+    "parent": "706",
+    "order": 1,
+    "text": "A triggered ability is an ability that happens when something else takes place. \"When\" and \"Whenever\" mark a triggered ability. A triggered ability can also happen at a stated time, such as \"After combat\" or \"At the end of turn\".",
+    "examples": [
+      {
+        "text": "Example: Embermaw Fledgling's \"after combat\" ability creates an X/X unit after combat.",
+        "test": "11-fire-wood.test.ts::Embermaw Fledgling: after combat → X/X, X = attacking units in my formation"
+      }
+    ],
+    "see": [
+      "109.3"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.41",
+          "quote": "“When” and “Whenever” denote triggered abilities, which"
+        },
+        {
+          "ref": "Manual p.41",
+          "quote": "are effects that happen when something else takes place."
+        },
+        {
+          "ref": "Manual p.41",
+          "quote": "Triggered abilities may also take place at specified times,"
+        },
+        {
+          "ref": "Manual p.41",
+          "quote": "like “After combat” or “At the end of turn”."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "11-fire-wood.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.triggered.two-moments",
+    "parent": "706",
+    "order": 2,
+    "text": "A triggered ability triggers at the moment its event happens, and whether it triggers is decided then (rule 109.3a). It is put on the stack afterwards, at one of the times this section gives, and its targets are chosen and its costs paid only as it is put on the stack.",
+    "examples": [
+      {
+        "text": "Example: a \"whenever I am dealt damage\" ability triggers inside the combat damage step, but is put on the stack, and has its target chosen, after the step.",
+        "test": "239-damage-triggers-after-combat.test.ts::R261: a combat-damage trigger is announced INSIDE the damage step and pushed to the stack AFTER it"
+      },
+      {
+        "text": "Example: the {Alluring} trigger chooses its target as it goes on the stack, and can then be negated.",
+        "test": "53-playtest-round7.test.ts::R84: the trigger goes on the stack, targets at cast (R67), and can be NEGATED"
+      }
+    ],
+    "see": [
+      "109.3a",
+      "111.8"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R261 (its firing-versus-stacking distinction)",
+          "quote": "**The trigger still FIRES during the damage step**, and that is not a detail — it is what"
+        },
+        {
+          "ref": "R261 (its firing-versus-stacking distinction)",
+          "quote": "(target selection) and the **resolution**. So a combat trigger's shape in the log is"
+        },
+        {
+          "ref": "R144 (its half (b))",
+          "quote": "1. it is **chosen when the effect is declared**, not when it resolves;"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "239-damage-triggers-after-combat.test.ts",
+        "53-playtest-round7.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R144": "d38299227d982a9c48914d31fdd2feb7a885638dcd002cfafeadc2572bdf3061",
+      "R261": "07d6f7efa79b63164e8f12b9dd39a9c844544f5b5411f16f14b6b139a7e9f7b2"
+    }
+  },
+  {
+    "key": "effects.triggered.when-stacked",
+    "parent": "706",
+    "order": 3,
+    "text": "Triggered abilities that have triggered are put on the stack at the times below, depending on when they triggered.",
+    "examples": [
+      {
+        "text": "Example: Eminence of the Barrens damaged by a spell in battle has its trigger on the stack as soon as the spell has resolved, while Lithoghul damaged in combat triggers inside the damage step and is put on the stack only in the after combat step.",
+        "test": "426-cr-abilities-and-replacement.test.ts::cr:effects.triggered.when-stacked — a triggered ability is put on the stack, and when depends on when it triggered: at once outside the damage step, after combat inside it"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R250 (its §3 outside the combat damage step)",
+          "quote": "> **A trigger is respondable wherever the game hands out priority, and the game"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "229-cosmic-and-control.test.ts",
+        "239-damage-triggers-after-combat.test.ts",
+        "426-cr-abilities-and-replacement.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "A heading rule for the four sub-rules; R250 §3's combat half is reversed by R261 and its deployment half amended by R286, so only its general sentence is cited here.",
+    "sourceHashes": {
+      "R250": "85f8949b08f8ce75cfdb86bf8e04db453b4f36aa27bd63c5b44ca693e61ffc53"
+    }
+  },
+  {
+    "key": "effects.triggered.when-stacked.battle",
+    "parent": "effects.triggered.when-stacked",
+    "order": 1,
+    "text": "During battle, outside the combat damage step: as soon as the action or resolution that made them trigger is complete, on top of anything already on the stack. Players then receive priority and may respond to them.",
+    "examples": [
+      {
+        "text": "Example: Eminence of the Barrens dealt damage by a spell in battle puts its trigger on the stack, and the opponent may respond to it.",
+        "test": "229-cosmic-and-control.test.ts::R250: a trigger fired OUTSIDE the damage step reaches the stack and IS respondable"
+      }
+    ],
+    "see": [
+      "703"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R250 (its §3 outside the combat damage step)",
+          "quote": "demonstrates both answers** — Eminence hit by a spell in an open battle window"
+        },
+        {
+          "ref": "R250 (its §3 outside the combat damage step)",
+          "quote": "goes on the stack and the opponent may respond; Eminence hit by combat damage"
+        },
+        {
+          "ref": "R53",
+          "quote": "the stack **above** the spell that targeted — the trigger resolves first."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "229-cosmic-and-control.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R250": "85f8949b08f8ce75cfdb86bf8e04db453b4f36aa27bd63c5b44ca693e61ffc53",
+      "R53": "ac71cc78da3271b40af86b4b02ff9861dd8646ae2c63bafa07076c7755ce8531"
+    }
+  },
+  {
+    "key": "effects.triggered.when-stacked.combat-damage",
+    "parent": "effects.triggered.when-stacked",
+    "order": 2,
+    "text": "During the combat damage step: they wait. They are put on the stack in the after combat step, or at a window between damage sub-steps, as rules 608.9b and 608.9c describe.",
+    "examples": [
+      {
+        "text": "Example: a \"when I die\" ability of a unit killed by combat damage waits with the others and goes on the stack after combat.",
+        "test": "239-damage-triggers-after-combat.test.ts::R261: a combat DEATH trigger waits with the rest"
+      }
+    ],
+    "see": [
+      "combat.damage.triggers.unsplit",
+      "combat.damage.triggers.split"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1540678747953569832#2",
+          "quote": "presence of Swift or/and Sluggish opens new stacks which must be resolved before you move to next combat damage step (swift->normal->sluggish)"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R300",
+          "quote": "> dying (if it happens) will happen, but be pushed into the next step since the combat"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "239-damage-triggers-after-combat.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "R300 is the owner's statement of the model; the RAQ thread is the designer source. The detail lives in 608.9b/608.9c (U12).",
+    "sourceHashes": {
+      "R300": "433eaa2ccb6dc1247571654060ad72dec7a9ded55d273f78a24a63e3079f3338",
+      "RAQ 1540678747953569832#2": "c606d1a891a2c53e293717e8c62f1e2487fe5a75c188a2814b3b3bab5c88d228"
+    }
+  },
+  {
+    "key": "effects.triggered.when-stacked.deployment",
+    "parent": "effects.triggered.when-stacked",
+    "order": 3,
+    "text": "During deployment: on the deployment stack of the player who controls them (rule 703.7). All the abilities that trigger at the same moment are put on that stack before any of them resolves.",
+    "examples": [
+      {
+        "text": "Example: three start-of-deployment abilities are all on the stack before the first of them resolves.",
+        "test": "37-attrs-wight.test.ts::R144(a): every start-of-deployment trigger is on the stack before any of them resolves"
+      }
+    ],
+    "see": [
+      "effects.priority.deployment"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R144 (deployment triggers use the stack)",
+          "quote": "- **(a)** deployment-phase triggers go through the **stack**, like everything"
+        },
+        {
+          "ref": "R102",
+          "quote": "> -1/-1 counters on during deployment (which still has and uses a stack). But"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R144",
+          "relation": "its single shared deployment stack and its \"no priority in deployment\" were amended by R286: one stack per player, and that player holds priority over it"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "37-attrs-wight.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R102": "5e24f1f507495aef77c4b72cb612a83e002cfc7af4c24d1fcd7b44364df62381",
+      "R144": "d38299227d982a9c48914d31fdd2feb7a885638dcd002cfafeadc2572bdf3061"
+    }
+  },
+  {
+    "key": "effects.triggered.when-stacked.end-of-turn",
+    "parent": "effects.triggered.when-stacked",
+    "order": 4,
+    "text": "In the end-of-turn step: they resolve as special actions. No player can play cards in response to them (rule 508.1a).",
+    "examples": [
+      {
+        "text": "Example: while an end-of-turn trigger is asking its controller a question, neither player may play a card.",
+        "test": "420-cr-battle-regroup-deploy.test.ts::cr:turn.initiative.end-of-turn.no-responses"
+      }
+    ],
+    "see": [
+      "turn.initiative.end-of-turn.no-responses"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.26",
+          "quote": "This step is exclusively for resolving card abilities as"
+        },
+        {
+          "ref": "Manual p.26",
+          "quote": "a special action, players cannot play cards after or in"
+        },
+        {
+          "ref": "Manual p.26",
+          "quote": "response to these end of turn triggers."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "420-cr-battle-regroup-deploy.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.triggered.above-cause",
+    "parent": "706",
+    "order": 4,
+    "text": "An ability that triggers on a card being played, or on something being targeted, is put on the stack above the effect that made it trigger, so it resolves first. It still resolves if that effect is negated afterwards.",
+    "examples": [
+      {
+        "text": "Example: Mycelial Mentor is played while Bloomcaster is in play. Bloomcaster's 1/1 is created before the Mentor arrives, so the Mentor does not see that token being created.",
+        "test": "396-raq-timing.test.ts::RAQ Bloomcaster: its 1/1 resolves before the Mycelial Mentor it was played with arrives"
+      },
+      {
+        "text": "Example: a spell unit that is negated after Bloomcaster triggered still leaves Bloomcaster's 1/1 behind.",
+        "test": "396-raq-timing.test.ts::RAQ Bloomcaster: a negated spell unit still leaves the Bloomcaster 1/1 behind"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353862592661164152#0",
+          "quote": "Bloomcaster trigger to create 1/1. After it resolves Mycelial Mentor can be resolved and comes into play"
+        },
+        {
+          "ref": "RAQ 1353862592661164152#1",
+          "quote": "you will get 1/1 from Bloomcaster even if Spell-Units effect is negated"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R53",
+          "quote": "the stack **above** the spell that targeted — the trigger resolves first."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R53": "ac71cc78da3271b40af86b4b02ff9861dd8646ae2c63bafa07076c7755ce8531",
+      "RAQ 1353862592661164152#0": "b8900e5634fbf608f3841fe20f39a2a1330bd12286120aa061d5273d2c0002c0",
+      "RAQ 1353862592661164152#1": "b2755977f37b7fd5c0c0a6935c5a3df8015c2ce388d03d05adda10105fd6fed4"
+    }
+  },
+  {
+    "key": "effects.triggered.order",
+    "parent": "706",
+    "order": 5,
+    "text": "Triggered abilities that are put on the stack at the same time are put there in the order of rule 703.4: each player orders their own, the initiative player puts all of theirs on first, and the non-initiative player's resolve first. A player may order their own abilities in any way, whatever made each of them trigger.",
+    "examples": [
+      {
+        "text": "Example: a player with a \"when I die\" ability triggered by combat damage and an \"after combat\" ability orders the two in one choice.",
+        "test": "239-damage-triggers-after-combat.test.ts::R261 THE RAQ BATCH"
+      }
+    ],
+    "see": [
+      "effects.priority.simultaneous"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.43",
+          "quote": "A: Each player decides the order their effects go on"
+        },
+        {
+          "ref": "Manual p.43",
+          "quote": "the stack. NIT effects will enter the stack last and"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1540678747953569832#0",
+          "quote": "Since all those effects are put on the same stack at the same time, each player can decide the order of their effects."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R2",
+          "quote": "All simultaneous triggers are ordered **by their owner, however they choose**; then all go"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "239-damage-triggers-after-combat.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "R2 says \"owner\"; the Manual and the RAQ say each player orders \"their\" effects. The abilities a player controls are theirs to order; no source covers a stolen unit's trigger.",
+    "sourceHashes": {
+      "R2": "d70a36c8b83a36f5395c670a59121d87a6722fe6c2c39a4acd7e556f5b3813d9",
+      "RAQ 1540678747953569832#0": "609f04503fdbf3baa6b081e145272a30ef8cb3d74e814175d0f41614d2d76708"
+    }
+  },
+  {
+    "key": "effects.triggered.once-per-event",
+    "parent": "706",
+    "order": 6,
+    "text": "A triggered ability triggers once each time its event happens. If one action makes the event happen several times, the ability triggers that many times.",
+    "examples": [
+      {
+        "text": "Example: an enemy spell that targets two allies triggers Earnest Defender twice, and two 1/1s are created.",
+        "test": "136-triggers-and-modes.test.ts::R157 §16: two targeted allies are TWO TRIGGERS on the stack, not one that makes two"
+      }
+    ],
+    "see": [
+      "109.3d"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 (its §16)",
+          "quote": "> *\"Once per targeted ally — two targets, two triggers, two 1/1s.\"*"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "136-triggers-and-modes.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
+    }
+  },
+  {
+    "key": "effects.triggered.once-per-event.one-move",
+    "parent": "effects.triggered.once-per-event",
+    "order": 1,
+    "text": "Several cards that enter a hand together in one move are one event. An ability that triggers when a card, or one or more cards, enters a hand triggers once for that move.",
+    "examples": [
+      {
+        "text": "Example: recalling two units out of a bin in one move is one entry into the hand, as a two-card draw is.",
+        "test": "152-hand-entry.test.ts::a multi-card move fires exactly ONE handEntered, like a multi-card draw"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R179",
+          "quote": "1. **ONE EVENT FOR A MULTI-CARD MOVE.** The printed text is \"one or more\", and"
+        },
+        {
+          "ref": "R179",
+          "quote": "the Tides +2/+2 *per card*, which no reading of the sentence supports."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "152-hand-entry.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R179": "3182e34830acb735bedd78d8bfa82b37c3583f82f7d92ceee5fe8ba8f20522ac"
+    }
+  },
+  {
+    "key": "effects.triggered.once-per-event.moved-mods",
+    "parent": "effects.triggered.once-per-event",
+    "order": 2,
+    "text": "Each mod that Reconfigure moves onto a new host is applied to that host separately. An ability that triggers whenever a mod is applied triggers once for each of them.",
+    "examples": [
+      {
+        "text": "Example: Reconfiguring a unit carrying three mods onto Perpetual Construct triggers it three times.",
+        "test": "393-raq-mods.test.ts::RAQ Reconfigure onto Perpetual Construct"
+      }
+    ],
+    "see": [
+      "721"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353856176558706769#0",
+          "quote": "Perpetual Construct will trigger separetly for each of the Mods"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R332",
+          "quote": "Reconfigure is the exception, because its printed text says the mods are augmented."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "Moving a mod in general is not applying it (R178 §4); Reconfigure is the exception because its printed text augments the mods (R332).",
+    "sourceHashes": {
+      "R332": "a4514ee56e3f362eaf3d41bd562810d04ba83246c325c861cc9eab50acfc63ef",
+      "RAQ 1353856176558706769#0": "c3645e5b668d8436865f988b6ed50c8ecfa1a408c4ef86303565ad1719173a20"
+    }
+  },
+  {
+    "key": "effects.triggered.region",
+    "parent": "706",
+    "order": 7,
+    "text": "A triggered ability triggers only on events in the region its card is in. An event in another region does not trigger it, even when the event involves its controller.",
+    "examples": [
+      {
+        "text": "Example: Refuse Reclaimer does not grow when a unit dies in a region it is not in.",
+        "test": "28-metal-c.test.ts::Refuse Reclaimer: a death in a region it is not in leaves it cold (R12)"
+      }
+    ],
+    "see": [
+      "601"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.42",
+          "quote": "Q: If I play a spell in one region, will that trigger effects"
+        },
+        {
+          "ref": "Manual p.21",
+          "quote": "Sparkwraith in their own region (region 4). Sparkwraith does not trigger from casting of Maw of"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "28-metal-c.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.triggered.region.after-combat",
+    "parent": "effects.triggered.region",
+    "order": 1,
+    "text": "An \"after combat\" ability triggers only in a region where a battle took place.",
+    "examples": [
+      {
+        "text": "Example: a unit with an \"after combat\" ability in a region where no battle happened makes nothing.",
+        "test": "390-raq-stack.test.ts::RAQ after combat: the control, an after-combat unit in ANOTHER region makes nothing"
+      },
+      {
+        "text": "Example: a unit with an \"after combat\" ability that stands in the battle region but in no formation still triggers.",
+        "test": "390-raq-stack.test.ts::RAQ after combat: an after-combat trigger fires for a unit in the battle region that is not in formation"
+      }
+    ],
+    "see": [
+      "609"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.43",
+          "quote": "Q: Do “After combat” triggers happen in regions where"
+        },
+        {
+          "ref": "Manual p.43",
+          "quote": "A: No, because a battle did not happen."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.triggered.own-death",
+    "parent": "706",
+    "order": 8,
+    "text": "An ability of a unit that triggers on its own death (\"When I die\") triggers when the unit dies, although the unit has then left play. The ability is put on the stack in the region where the unit died.",
+    "examples": [
+      {
+        "text": "Example: a \"when I die\" ability of a unit that died in the battle region offers targets in the battle region, not in its controller's home region.",
+        "test": "62-death-facts.test.ts::R70: a \"when I die\" trigger resolves in the region the unit DIED in"
+      }
+    ],
+    "see": [
+      "714"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R278",
+          "quote": "*\"a unit sees its own death\"*."
+        },
+        {
+          "ref": "R70",
+          "quote": "The fix is the general one: `PendingTrigger` carries the **region its source"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "62-death-facts.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R278 also quotes \"a unit sees its own death\" (R70/R137). R70 is an engine-structure ruling; the region rule is its point 1.",
+    "sourceHashes": {
+      "R278": "7600281fcd0d850ecc6a90e36891616608e829fab1907b6f897508b47bcd230d",
+      "R70": "312b8e32266c89e279f69cda34416803de7c707afb44468168fb6b8bc9678f2b"
+    }
+  },
+  {
+    "key": "effects.triggered.own-death.despawn",
+    "parent": "effects.triggered.own-death",
+    "order": 1,
+    "text": "An ability that triggers when its unit despawns (\"When I despawn\"), including one a mod gives its host, triggers whichever way the unit leaves play: when it dies, when it is recalled, and when it is cached.",
+    "examples": [
+      {
+        "text": "Example: a host carrying Growing Plague that is recalled to its hand triggers Growing Plague's despawn ability.",
+        "test": "141-despawn-mods.test.ts::R167 (i)"
+      },
+      {
+        "text": "Example: the same host cached triggers it too.",
+        "test": "141-despawn-mods.test.ts::R167 (ii)"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R167",
+          "quote": "a printed \"when I despawn\" means it whichever way the unit leaves play"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "141-despawn-mods.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R167": "7b3b795a55a9c9e8a63cd25ecd39a570d9a767790a2890de421ba72020f75770"
+    }
+  },
+  {
+    "key": "effects.triggered.own-death.reconfigure",
+    "parent": "effects.triggered.own-death",
+    "order": 2,
+    "text": "Moving a unit and its mods onto another unit (Reconfigure) is not a despawn: the unit does not change zones, so its \"When I despawn\" abilities do not trigger.",
+    "examples": [
+      {
+        "text": "Example: Bubb wearing Growing Plague is Reconfigured onto a Robot; Growing Plague does not trigger.",
+        "test": "393-raq-mods.test.ts::RAQ Reconfigure vs Despawn"
+      }
+    ],
+    "see": [
+      "721"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353847640214999170#0",
+          "quote": "Does Reconfigure causes units Despawn effect to trigger? No. The Unit never switch zones"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1353847640214999170#0": "0bff393adef7eae7d57a8fc64c94d828f9d0899aa4fff6b63e5be57023ecba70"
+    }
+  },
+  {
+    "key": "effects.triggered.own-death.same-batch",
+    "parent": "effects.triggered.own-death",
+    "order": 3,
+    "text": "Units that die together hear each other. A unit destroyed in the same batch of deaths as other units still triggers on their deaths, and on their cards being trashed, as it would have had it survived.",
+    "examples": [
+      {
+        "text": "Example: Muck Rummager killed by combat damage alongside two allies still draws for its controller trashing those allies.",
+        "test": "258-simultaneous-disposal-listeners.test.ts::R278: Muck Rummager hears an ally trashed in the same combat-damage batch it dies in"
+      }
+    ],
+    "see": [
+      "713"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R278",
+          "quote": "**A batch of deaths that is simultaneous in the rules is simultaneous to the"
+        },
+        {
+          "ref": "R278",
+          "quote": "every disposal event of its batch-mates — their `died`, their `trashed`,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "258-simultaneous-disposal-listeners.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R278": "7600281fcd0d850ecc6a90e36891616608e829fab1907b6f897508b47bcd230d"
+    }
+  },
+  {
+    "key": "effects.triggered.targets-as-played",
+    "parent": "706",
+    "order": 9,
+    "text": "An ability that triggers when a spell is played targeting something reads the targets the spell declared as it was played. A target changed onto that thing later does not make the ability trigger, and a target changed away from it later does not undo the trigger.",
+    "examples": [
+      {
+        "text": "Example: a spell played at another unit and then retargeted onto Earthbound Replicator makes no copy.",
+        "test": "151-copy-and-moved-mods.test.ts::R178 Earthbound Replicator: a spell played at something ELSE and retargeted onto me makes NO copy"
+      },
+      {
+        "text": "Example: a spell played at Earthbound Replicator and then retargeted away still makes its copy.",
+        "test": "151-copy-and-moved-mods.test.ts::R178 Earthbound Replicator: a spell played AT ME and retargeted away still makes its copy"
+      }
+    ],
+    "see": [
+      "109.3a"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355613076506017894#3",
+          "quote": "4. He must be targeted while playing the spell. If the spell is played and target is changed later to him … you don't get a copy"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R178 (its §1)",
+          "quote": "retargeting away **cancelled** one that was. R1 already says where a condition"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "151-copy-and-moved-mods.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The designer states the \"changed onto it\" half; the \"changed away\" half is R178 (owner), from the same R1 principle.",
+    "sourceHashes": {
+      "R178": "92613172ef363565035f3346c813b8e4fdf7cbf5ff2a45ae1543bf273254e204",
+      "RAQ 1355613076506017894#3": "0db171ac91f02b31b348258a244f14a3637f58f92cfc89de216bef9832be5df6"
+    }
+  },
+  {
+    "key": "effects.triggered.if-you-do",
+    "parent": "706",
+    "order": 10,
+    "text": "An \"If you do\" clause in a triggered ability is part of that ability, not a separate triggered ability. It resolves as part of the ability, and it is not put on the stack or taxed separately.",
+    "examples": [
+      {
+        "text": "Example (illustrative): Eminence of the Barrens' \"you may pay [one]. If you do, I fight another target unit\" is one triggered ability.",
+        "test": null
+      },
+      {
+        "text": "Example: Eminence of the Barrens attacks under an enemy Crevice Lurker and is damaged by a spell. Its controller is asked the Crevice Lurker tax once for the trigger, and the [one] to fight is asked while that same trigger resolves, and is never taxed itself: each trigger costs 2 in all, the tax plus the fight.",
+        "test": "426-cr-abilities-and-replacement.test.ts::cr:effects.triggered.if-you-do — Eminence of the Barrens under an enemy Crevice Lurker is taxed once per trigger, and its pay-to-fight is asked inside that one trigger"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R121 (its activation tax and designer rulings)",
+          "quote": "- An ability's *\"if you do\"* clause is **not** its own trigger — it resolves"
+        },
+        {
+          "ref": "R121 (its activation tax and designer rulings)",
+          "quote": "inside the one queued trigger's parts and is never double-taxed."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "426-cr-abilities-and-replacement.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "",
+    "sourceHashes": {
+      "R121": "70cfe1343c4a705ff17c19cfa079161a0b8c2c6a592ff57e394cf3dc007cfa83"
+    }
+  },
+  {
+    "key": "effects.triggered.attributes",
+    "parent": "706",
+    "order": 11,
+    "text": "{Alluring} and {Resonant} work as triggered abilities of the unit or source that has them. What they do is put on the stack, so it can be responded to and negated, and an effect that taxes triggered abilities applies to it.",
+    "examples": [
+      {
+        "text": "Example: Crevice Lurker taxes the {Alluring} trigger, and declining the tax stops the lure.",
+        "test": "390-raq-stack.test.ts::RAQ trigger-like attributes: Crevice Lurker taxes the Alluring trigger"
+      },
+      {
+        "text": "Example: Containment Protocol negates an {Alluring} trigger waiting on the stack.",
+        "test": "390-raq-stack.test.ts::RAQ trigger-like attributes: Containment Protocol negates a waiting Alluring trigger"
+      },
+      {
+        "text": "Example: a {Resonant} source's extra damage waits on the stack after combat as that source's ability, and can be negated.",
+        "test": "399-raq-fix-combat.test.ts::R315: the Resonant rider waits on the stack after combat, as its source, and can be negated"
+      }
+    ],
+    "see": [
+      "802",
+      "111.10f"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1366446116274442291#0",
+          "quote": "my intent is for it to stop those from triggering"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R315 (its ruling)",
+          "quote": "the resonant source**, put on the stack as that source's trigger — not life loss"
+        },
+        {
+          "ref": "R315 (its ruling)",
+          "quote": "Crevice Lurker taxes it, and Containment Protocol can negate it."
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R94",
+          "relation": "its \"OPEN\" note that the engine riders the undoubled {Resonant} amount is overtaken by R315 (the rider is damage from the source); not marked in the register (D-U15-7)"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts",
+        "399-raq-fix-combat.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "Caleb ruled the tax (stop them triggering). That Containment Protocol can negate them is R315 and the engine; the RAQ question about Containment Protocol is unanswered (D-U15-1).",
+    "sourceHashes": {
+      "R315": "6ca33ebc6ed5bca380a104b3da4e4e7bbf6136abea553cd4f5c0d0dda4a7b92f",
+      "RAQ 1366446116274442291#0": "8377357b3934e6a3da06ecc08116930b252d309294440fba64594ce8378308dd"
+    }
+  },
+  {
+    "key": "effects.triggered.chosen-unit",
+    "parent": "706",
+    "order": 12,
+    "text": "Some triggered abilities choose a unit without targeting it, such as a Wraith's start-of-deployment ability choosing \"an ally\". The unit is chosen as the ability is put on the stack. Several such abilities may choose the same unit, even if together they would do more than destroying it takes; if the chosen unit has left play when one resolves, that one fizzles.",
+    "examples": [
+      {
+        "text": "Example: three Wraith abilities all choose one 1/1 ally. The first kills it, and the other two fizzle.",
+        "test": "37-attrs-wight.test.ts::R144(b): three Wraith triggers may all aim at one 1/1, and the surplus fizzles"
+      },
+      {
+        "text": "Example: a Wraith with no other ally is its own only ally. Its ability chooses it without asking, resolves on it (it shrinks to 2/2), and nothing fizzles.",
+        "test": "37-attrs-wight.test.ts::R144(b): \"no ally at all\" still does nothing"
+      }
+    ],
+    "see": [
+      "704.5c"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R144 (its half (b))",
+          "quote": "> stack simultaneously and be allowed to target the same unit, even exceeding"
+        },
+        {
+          "ref": "R144 (its half (b))",
+          "quote": "> its defense (the final triggers would just fizzle).\""
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "37-attrs-wight.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R144": "d38299227d982a9c48914d31fdd2feb7a885638dcd002cfafeadc2572bdf3061"
+    }
+  },
+  {
+    "key": "effects.triggered.chosen-unit.not-target",
+    "parent": "effects.triggered.chosen-unit",
+    "order": 1,
+    "text": "Choosing a unit this way is not targeting it. It does not trigger \"when I become targeted\" abilities, and it cannot be redirected.",
+    "examples": [
+      {
+        "text": "Example: a Wraith ability choosing Mohruung does not give its controller a Crystal.",
+        "test": "37-attrs-wight.test.ts::R144(b): a subject is not a target"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R144 (its half (b))",
+          "quote": "R144 grants **1 and 2** — which is exactly and only what the owner asked for —"
+        },
+        {
+          "ref": "R144 (its half (b))",
+          "quote": "and withholds **3 and 4**. The expensive one is 3: **Mohruung** prints *\"when I"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "37-attrs-wight.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "The owner's words say \"target\"; R144 reads them as an aim with no targeting event and no redirect. Recorded as an owner question (D-U15-8).",
+    "sourceHashes": {
+      "R144": "d38299227d982a9c48914d31fdd2feb7a885638dcd002cfafeadc2572bdf3061"
+    }
+  },
+  {
+    "key": "effects.static.what",
+    "parent": "707",
+    "order": 1,
+    "text": "A static ability states a change that its card continuously makes to the game for as long as the card is in play.",
+    "examples": [
+      {
+        "text": "Example: Prickly Protector's \"+1/+1 for each other ally\" is counted again whenever its stats are read.",
+        "test": "24-wood-b.test.ts::Prickly Protector: +1/+1 per other ally"
+      }
+    ],
+    "see": [
+      "109.4"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.41",
+          "quote": "Static abilities declare a change that a card is continuously making to the game as long as it is in play, like"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "24-wood-b.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.static.no-stack",
+    "parent": "707",
+    "order": 2,
+    "text": "A static ability does not use the stack. It cannot be responded to or negated, and an effect that changes what abilities cost to activate or trigger does not apply to it.",
+    "examples": [
+      {
+        "text": "Example: Crevice Lurker does not tax Tranquility's \"spells cost [one] more\"; Tranquility still adds exactly one.",
+        "test": "390-raq-stack.test.ts::RAQ Crevice Lurker: a static ability is not taxed"
+      },
+      {
+        "text": "Example: Aetherflux Golem's \"I gain +2/+2\" never goes on the stack, so Containment Protocol cannot negate it.",
+        "test": "142-static-conformance.test.ts::R168: Aetherflux Golem is a STATIC"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355103348378042515#3",
+          "quote": "It doesn't affect Static Abilities (Like 'I gain +2/+2', 'Spells cost 1 more to play during battle' or 'If ... instead ...')"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R168",
+          "quote": "* **it stops being respondable.** A triggered ability reaches the stack, so"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts",
+        "142-static-conformance.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R168": "86536e0fb516f00a6526d98e58f76b8d04fcdb9812af914b9e00ba92fe3fb30f",
+      "RAQ 1355103348378042515#3": "5d04262e5542382abe3a5347592d54af46ce4dcea94eb75c1094a496a3d483c6"
+    }
+  },
+  {
+    "key": "effects.static.printed-form",
+    "parent": "707",
+    "order": 3,
+    "text": "Only triggered abilities and activated abilities put anything on the stack. A triggered ability says \"When\" or \"Whenever\" or names a time such as \"After combat\"; {Alluring} and {Resonant} also work as triggered abilities; an activated ability is written with a colon. A sentence that states a standing fact (\"I gain +2/+2\", \"Spells cost [one] more to play during battle\") is a static ability, and a sentence that says \"instead\", \"as\" or \"if\" and names no target is a replacement effect. Neither goes on the stack, except that a replacement whose substitute names a target puts that substitute on the stack.",
+    "examples": [
+      {
+        "text": "Example: a card whose whole printed text states standing facts has nothing that can reach the stack.",
+        "test": "142-static-conformance.test.ts::a card whose whole printed text is continuous declares NOTHING that reaches the stack"
+      },
+      {
+        "text": "Example: a card whose whole printed text is a replacement that names no target has no ability that goes on the stack.",
+        "test": "88-replacement-conformance.test.ts::a card whose whole text is an untargeted replacement declares NO ability at all"
+      }
+    ],
+    "see": [
+      "effects.replacement.what",
+      "concepts.abilities.replacement.targeted",
+      "effects.triggered.what",
+      "effects.triggered.attributes",
+      "effects.activated.what",
+      "effects.replacement.no-stack.targeted"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.41",
+          "quote": "Triggered abilities may also take place at specified times,"
+        },
+        {
+          "ref": "Manual p.41",
+          "quote": "like “After combat” or “At the end of turn”."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R104 (its stack rule)",
+          "quote": "> effects that go onto the stack are cards that say 'When' or 'Whenever' or have"
+        },
+        {
+          "ref": "R104 (its stack rule)",
+          "quote": "> instead, as or if and don't mention targets'. Plus, rot damage is a trigger to"
+        },
+        {
+          "ref": "R168",
+          "quote": "It is a `StaticMod` on the anchor now, and the ruling is that the printed"
+        },
+        {
+          "ref": "R315 (its ruling)",
+          "quote": "Crevice Lurker taxes it, and Containment Protocol can negate it."
+        },
+        {
+          "ref": "R102",
+          "quote": "effect that later fizzles for want of a target does **not** resurrect it:"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "142-static-conformance.test.ts",
+        "88-replacement-conformance.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Round 1: the When/Whenever gloss was widened. The owner's R104 sentence is a heuristic; the Manual's stated times, R315's trigger-like attributes and R102's targeted substitute all reach the stack without saying When/Whenever.",
+    "sourceHashes": {
+      "R102": "5e24f1f507495aef77c4b72cb612a83e002cfc7af4c24d1fcd7b44364df62381",
+      "R104": "c244bb0f93acb790aff6bbb49d0004b1c55862fca4ffe8960d31104b5e7650d4",
+      "R168": "86536e0fb516f00a6526d98e58f76b8d04fcdb9812af914b9e00ba92fe3fb30f",
+      "R315": "6ca33ebc6ed5bca380a104b3da4e4e7bbf6136abea553cd4f5c0d0dda4a7b92f"
+    }
+  },
+  {
+    "key": "effects.static.continuous",
+    "parent": "707",
+    "order": 4,
+    "text": "A static ability applies continuously to everything it describes, including units that enter play after it began to apply. When its source leaves play, the change ends.",
+    "examples": [
+      {
+        "text": "Example: a unit that enters play while Transmogrifant is in play has no attributes, and gets them back when Transmogrifant leaves.",
+        "test": "393-raq-mods.test.ts::RAQ Transmogrifant: a unit that enters play under it has no attributes"
+      }
+    ],
+    "see": [
+      "709"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355845893219287132#0",
+          "quote": "Monke and Transmogrifant have Static Abilities meaning they work continuously and affect new units entering play"
+        },
+        {
+          "ref": "RAQ 1355845893219287132#0",
+          "quote": "Once Monke / Transmogrifant are removed from play, all other units regain their Abilities and Attributes."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "Whether such a static also removes an attribute a unit gains later is the open thread 1355685844467581081 (D-U15-2); timestamps are rule 709.",
+    "sourceHashes": {
+      "RAQ 1355845893219287132#0": "37412e26f9f412386a6af7e6252564a6a7e1f53154977fe9f24c3e66b8378807"
+    }
+  },
+  {
+    "key": "effects.static.continuous.on-arrival",
+    "parent": "effects.static.continuous",
+    "order": 1,
+    "text": "A unit that enters play while a static ability applies to it enters with the change already made. An ability that triggers on the unit entering play sees the unit as changed.",
+    "examples": [
+      {
+        "text": "Example: under Sandstone Defender a 1/1 enters as a 1/3, so Nectar Ridge Oracle (\"an ally spawns with greater defense than power\") draws.",
+        "test": "393-raq-mods.test.ts::RAQ Nectar Ridge: under Sandstone Defender"
+      },
+      {
+        "text": "Example: under Infernal Wispweaver a 0/1 Wisp enters as a 2/2, so Nectar Ridge Oracle does not draw.",
+        "test": "393-raq-mods.test.ts::RAQ Nectar Ridge: under Infernal Wispweaver"
+      },
+      {
+        "text": "Example: Animated Spark's +X/+0 applies to a unit that spawns mid-battle from the moment it spawns.",
+        "test": "393-raq-mods.test.ts::RAQ Nectar Ridge: Animated Spark statics a unit that spawns mid-battle"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355633589890584636#0",
+          "quote": "For Sandstone Defender it means that 1/1 unit will spawn already as 1/3 and it will trigger Nectar Ridge Oracle"
+        },
+        {
+          "ref": "RAQ 1355633589890584636#1",
+          "quote": "will spawn already as 2/2 and WON'T trigger Nectar Ridge Oracle."
+        },
+        {
+          "ref": "RAQ 1355633589890584636#2",
+          "quote": "This works the same for Statis Ability of Animated Spark which saw some spells casted and adds +X/+0 to allies which could spawn during combat."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1355633589890584636#0": "95d51078ff553984dc0a07150c44db439154fa1c5423e10f710bcc9bdb182dfc",
+      "RAQ 1355633589890584636#1": "f91bde7466c742d90d115e1dd7766652be33834eecebeee2c735caa2c656d726",
+      "RAQ 1355633589890584636#2": "e87bbb974161554f80377625dc931b68a5090c4d680d203f5ff0c673f0147cd2"
+    }
+  },
+  {
+    "key": "effects.static.continuous.not-counters",
+    "parent": "effects.static.continuous",
+    "order": 2,
+    "text": "A static ability that changes stats (\"I gain +2/+2\") puts no counters on the unit. Effects that count, move, double or remove counters do not see the change, and it ends as soon as its source stops applying it.",
+    "examples": [
+      {
+        "text": "Example: Aetherflux Golem's \"+2/+2\" is a static change in both of its forms, like the other cards that print \"I gain ±N/±N\".",
+        "test": "142-static-conformance.test.ts::R168: Aetherflux Golem is a STATIC, like the two cards printing its sentence"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R168",
+          "quote": "* **counter-matters cards stop seeing counters.** The card says \"I gain +2/+2\","
+        },
+        {
+          "ref": "R168",
+          "quote": "A layer is true while its source is there and false afterwards."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "142-static-conformance.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R168": "86536e0fb516f00a6526d98e58f76b8d04fcdb9812af914b9e00ba92fe3fb30f"
+    }
+  },
+  {
+    "key": "effects.static.spawn-counters",
+    "parent": "707",
+    "order": 5,
+    "text": "A card's statement that it enters play with counters (\"I spawn with two +1/+1 counters\") is not a triggered ability. The unit enters play already holding those counters; nothing goes on the stack, and an ability that triggers on the unit entering play sees it with them.",
+    "examples": [
+      {
+        "text": "Example: Aethercap Siphoner (printed 4/4, \"I spawn with three -1/-1 counters on me\") is seen as a 1/1 by an ability that triggers when it spawns.",
+        "test": "139-spawn-and-play.test.ts::Aethercap Siphoner: a spawn watcher sees the 1/1 the card prints, not the printed 4/4"
+      },
+      {
+        "text": "Example: neither Powerforge Synergist's nor Aethercap Siphoner's counters can be responded to.",
+        "test": "139-spawn-and-play.test.ts::Powerforge Synergist / Aethercap Siphoner: \"I spawn with N counters\" never reaches the stack"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R165",
+          "quote": "**The ruling: \"I spawn with N counters\" is a DECLARATION about the body, not an"
+        },
+        {
+          "ref": "R165",
+          "quote": "*\"I spawn with N counters\"* is a statement about what the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "139-spawn-and-play.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R165": "3f61e5ab4e91ee143485df7a7a5a76e059453f2d23a3f4503a7a024564b6de6d"
+    }
+  },
+  {
+    "key": "effects.static.spawn-counters.modifiers",
+    "parent": "effects.static.spawn-counters",
+    "order": 1,
+    "text": "Replacement effects that change how many counters are put on a unit apply to those counters. But no player puts them on the unit, so abilities that trigger when a player puts counters on a unit do not trigger.",
+    "examples": [
+      {
+        "text": "Example: under an allied Flux Resonator a Robot 2 enters as a 3/3.",
+        "test": "27-metal-b.test.ts::Flux Resonator: an allied Robot spawns with one more counter (report #88)"
+      },
+      {
+        "text": "Example: Aethercap Siphoner's own -1/-1 counters do not count as its controller putting counters on an ally.",
+        "test": "139-spawn-and-play.test.ts::Aethercap Siphoner: spawning with counters is not"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R165",
+          "quote": "- **SILENT.** No `countersChanged` fires, so no \"when **you** put a counter\""
+        },
+        {
+          "ref": "R130 (its counter-attribution ruling)",
+          "quote": "reaches the AMOUNT layer only — an allied Flux Resonator still makes a Robot X"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "27-metal-b.test.ts",
+        "139-spawn-and-play.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R130": "324ebd377208d7bd85952920b24c35cf86e5158ccd98f95f1e022d212fa14000",
+      "R165": "3f61e5ab4e91ee143485df7a7a5a76e059453f2d23a3f4503a7a024564b6de6d"
+    }
+  },
+  {
+    "key": "effects.static.region",
+    "parent": "707",
+    "order": 6,
+    "text": "A static ability applies only in the region its source is in.",
+    "examples": [
+      {
+        "text": "Example: Rotspore Herald (\"Everything is {deadly}\") in its home region does not make a spell resolving in the battle region deadly.",
+        "test": "107-semantics-statics.test.ts::Rotspore Herald: R125 — the scope is the REGION"
+      }
+    ],
+    "see": [
+      "601"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.42",
+          "quote": "Q: Does Prickly Protector count my total units in all"
+        },
+        {
+          "ref": "Manual p.42",
+          "quote": "A: No, it only sees the units in the region it’s in."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R237",
+          "quote": "> **Caleb Gannon:** *\"Yeah.\"* … *\"Every single effect without exception will"
+        },
+        {
+          "ref": "R237",
+          "quote": "> only ever work in a single zone.\"*"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "107-semantics-statics.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Manual p.42 (Prickly Protector sees only its region) supports this only partly, as one card's count; the general statement is Caleb's 2023 answer quoted in R237.",
+    "sourceHashes": {
+      "R237": "ec152f51160f9f8410800e8323fd9f676fdf45864242ec64e8d1e35ce6ae3cc7"
+    }
+  },
+  {
+    "key": "effects.static.literal",
+    "parent": "707",
+    "order": 7,
+    "text": "A static ability applies to everything its text names, with no limit its text does not state. \"Everything\" means every unit, spell and spell token in its region, on both sides.",
+    "examples": [
+      {
+        "text": "Example: with Rotspore Herald in the region, a spell that deals 1 damage destroys a 7/5.",
+        "test": "107-semantics-statics.test.ts::Rotspore Herald: R125 — a SPELL resolving in the region is deadly"
+      },
+      {
+        "text": "Example: a Fireball 1 spell token in Rotspore Herald's region is {Deadly} too.",
+        "test": "107-semantics-statics.test.ts::Rotspore Herald: R125 — a SPELL TOKEN standing in the region is deadly too"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R125",
+          "quote": "tokens. Literally everything in its region. I think you're underestimating"
+        },
+        {
+          "ref": "R125",
+          "quote": "carries no qualifier, do not invent one. The narrow reading here was not a"
+        },
+        {
+          "ref": "R237",
+          "quote": "> 1 damage kills the front unit, **the second damage kills the herald**.\"*"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "107-semantics-statics.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R125": "349a75c7891354248b00e90d386d39cb71bf772baa118887f837a7f7e6055e8d",
+      "R237": "ec152f51160f9f8410800e8323fd9f676fdf45864242ec64e8d1e35ce6ae3cc7"
+    }
+  },
+  {
+    "key": "effects.static.literal.spell-tokens",
+    "parent": "effects.static.literal",
+    "order": 1,
+    "text": "A static ability that names \"spells\" applies to spell tokens too, because spell tokens are spells.",
+    "examples": [
+      {
+        "text": "Example: Emberflame Enlightener (\"Your units and spells gain {Powerful}\") doubles the damage of its controller's Burst Fireball.",
+        "test": "111-literal-fire.test.ts::Emberflame and Envoy of Lightning ask the SAME question about a spell token"
+      }
+    ],
+    "see": [
+      "108.2"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 (its §13)",
+          "quote": "> *\"Yes. Tokens are spells.\"*"
+        },
+        {
+          "ref": "R94",
+          "quote": "R157 §13, the owner: *\"Yes. Tokens are spells.\"* Emberflame doubles a Burst Fireball, as the engine"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "111-literal-fire.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
+      "R94": "9dfaa17128fa1b9a95d19b4997d6321eade9ec1f9b04e251de4f34b13d0f1d8b"
+    }
+  },
+  {
+    "key": "effects.static.declared-targets",
+    "parent": "707",
+    "order": 8,
+    "text": "A static ability that applies to effects with a number of targets (\"spell effects with a single target\") counts the targets the effect declared as it was played, including targets that have since become illegal.",
+    "examples": [
+      {
+        "text": "Example: Twin Flame played at two units is not \"a single target\" for Envoy of Lightning, even after one of them is removed.",
+        "test": "12-fire-a.test.ts::Envoy of Lightning: two DECLARED targets is not"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R94",
+          "quote": "> **A:** \"No, it still has 2 targets, but one of them is invalid (but could become valid"
+        },
+        {
+          "ref": "R94",
+          "quote": "`part.targets.length` (the cast-time list), **never** `ctx.targets.length` (the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "12-fire-a.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R94 quotes the RAQ \"[Solved] Envoy of Lightning vs Twin Flame.\" verbatim; that thread is not in the U15 pack, so the designer answer is cited through R94.",
+    "sourceHashes": {
+      "R94": "9dfaa17128fa1b9a95d19b4997d6321eade9ec1f9b04e251de4f34b13d0f1d8b"
+    }
+  },
+  {
+    "key": "effects.static.from-mod",
+    "parent": "707",
+    "order": 9,
+    "text": "A static ability or replacement effect that a mod gives its host works from the host. \"I\" and \"me\" mean the host, \"you\" and \"your\" mean the host's controller, and it applies in the host's region.",
+    "examples": [
+      {
+        "text": "Example: Transmogrifant as a mod gives \"your other units +2/+2\" from its host.",
+        "test": "28-metal-c.test.ts::Transmogrifant: the augment-donated static anchors on the host"
+      },
+      {
+        "text": "Example: Crevice Lurker as a mod taxes abilities in its host's region.",
+        "test": "16-earth-a.test.ts::Crevice Lurker: R121 — donated as an augment, the HOST's region carries the tax"
+      },
+      {
+        "text": "Example: a replacement effect on a mod reads from its host.",
+        "test": "87-replacement-layer.test.ts::a donated [Augment] replacement reads from its HOST"
+      }
+    ],
+    "see": [
+      "720"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 (its §6)",
+          "quote": "> *\"The unit's controller. But why would that be a problem for Doot? You virus"
+        },
+        {
+          "ref": "R94",
+          "quote": "division `StaticMod` already uses — so an Enlightener augmented onto an ENEMY unit"
+        },
+        {
+          "ref": "R94",
+          "quote": "boosts *that enemy's* spells, matching the units half exactly."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "28-metal-c.test.ts",
+        "16-earth-a.test.ts",
+        "87-replacement-layer.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
+      "R94": "9dfaa17128fa1b9a95d19b4997d6321eade9ec1f9b04e251de4f34b13d0f1d8b"
+    }
+  },
+  {
+    "key": "effects.static.permission",
+    "parent": "707",
+    "order": 10,
+    "text": "A permission a card grants (\"You may play one unit with no abilities from your bin each deployment\") is a standing fact, not an ability that goes on the stack. Using it cannot be responded to, and an effect that negates activated or triggered abilities cannot stop it. (engine differs, see F-U15-1)",
+    "examples": [
+      {
+        "text": "Example (illustrative): Containment Protocol cannot negate The Bonesculptor's permission, because there is nothing on the stack to negate.",
+        "test": null
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R165",
+          "quote": "deployment\"* is not an effect anyone should be able to answer, but it is built"
+        },
+        {
+          "ref": "R168",
+          "quote": "should simply be true reaches the stack and Containment Protocol can negate"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R165 and R168 both say the permission \"should simply be true\" and both leave the engine building it as a bounded activated ability; filed, not fixed.",
+    "engineDiffers": [
+      "F-U15-1"
+    ],
+    "sourceHashes": {
+      "R165": "3f61e5ab4e91ee143485df7a7a5a76e059453f2d23a3f4503a7a024564b6de6d",
+      "R168": "86536e0fb516f00a6526d98e58f76b8d04fcdb9812af914b9e00ba92fe3fb30f"
+    }
+  },
+  {
+    "key": "effects.replacement.what",
+    "parent": "708",
+    "order": 1,
+    "text": "A replacement effect is an ability that changes an event as it happens, written \"If … instead\". It replaces the event, rather than triggering in response to it.",
+    "examples": [
+      {
+        "text": "Example: Flux Resonator (\"if one or more counters would be put on a unit by an allied source, put that many counters plus one instead\") makes a counter put on an ally one more.",
+        "test": "27-metal-b.test.ts::Flux Resonator: a counter you put on an allied unit becomes one more"
+      }
+    ],
+    "see": [
+      "109.5"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.41",
+          "quote": "Abilities like Flux Resonator’s using the templating “If..."
+        },
+        {
+          "ref": "Manual p.41",
+          "quote": "and modify events as they happen, instead of triggering in response to events."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "27-metal-b.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.replacement.no-stack",
+    "parent": "708",
+    "order": 2,
+    "text": "A replacement effect does not use the stack. It cannot be responded to, and an effect that negates triggered and activated effects (Containment Protocol) cannot stop it or undo what it did.",
+    "examples": [
+      {
+        "text": "Example: Containment Protocol on the stack cannot negate Nullbringer's life-gain replacement.",
+        "test": "87-replacement-layer.test.ts::Containment Protocol on the stack cannot negate a life-gain replacement"
+      },
+      {
+        "text": "Example: Conduit of Pain's extra damage never reaches the stack, so nothing can negate it.",
+        "test": "12-fire-a.test.ts::Conduit of Pain: the extra damage never reaches the stack"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.41",
+          "quote": "Instead” are called replacement effects. Unlike triggered abilities, replacement effects don’t use the stack"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R104 (its stack rule)",
+          "quote": "> a ':' activated ability. All cards that say 'instead' or 'as' or 'if'"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "87-replacement-layer.test.ts",
+        "12-fire-a.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R104": "c244bb0f93acb790aff6bbb49d0004b1c55862fca4ffe8960d31104b5e7650d4"
+    }
+  },
+  {
+    "key": "effects.replacement.no-stack.targeted",
+    "parent": "effects.replacement.no-stack",
+    "order": 1,
+    "text": "A replacement effect whose substitute names a target is the one exception (rule 109.5a): the event is replaced at once, and the substitute goes on the stack as a triggered ability. If the substitute later has no legal target or fizzles, the replaced event still does not happen.",
+    "examples": [
+      {
+        "text": "Example: Beyond, Codex Incarnate replaces its controller's rot damage with -1/-1 counters on a target unit; the damage never lands, whatever becomes of the counters.",
+        "test": "43-dark-c.test.ts::Beyond, Codex Incarnate: R102 — the rot replacement asks its controller for a target, and the damage never lands"
+      }
+    ],
+    "see": [
+      "concepts.abilities.replacement.targeted"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R102",
+          "quote": "resolved. The damage IS replaced — that is what \"instead\" means — so a queued"
+        },
+        {
+          "ref": "R102",
+          "quote": "effect that later fizzles for want of a target does **not** resurrect it:"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "43-dark-c.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R102": "5e24f1f507495aef77c4b72cb612a83e002cfc7af4c24d1fcd7b44364df62381"
+    }
+  },
+  {
+    "key": "effects.replacement.substitute",
+    "parent": "708",
+    "order": 3,
+    "text": "The event a replacement effect replaces does not happen, and the substitute happens instead. Abilities that trigger on the replaced event do not trigger. When the substitute is still damage (damage dealt \"as\" rot), the damage was still dealt (rule 112.12).",
+    "examples": [
+      {
+        "text": "Example: under Nullbringer a player who would gain life loses that much instead; nothing that triggers on gaining life triggers.",
+        "test": "87-replacement-layer.test.ts::a replaced life gain fires no lifeGained"
+      },
+      {
+        "text": "Example: a Robot that Cosmic Conspirator replaces with a Fireball is never created, so nothing that triggers on a unit spawning triggers for it.",
+        "test": "87-replacement-layer.test.ts::a replaced token creation fires no spawned"
+      },
+      {
+        "text": "Example: with Blightsea Polyp in play, Zephyrzoa's column still deals combat damage to the opponent, although the opponent gains rot instead of losing life.",
+        "test": "210-zephyrzoa-hears-a-replaced-hit.test.ts::R238: Zephyrzoa fires on a hit that was REPLACED and cost no life"
+      }
+    ],
+    "see": [
+      "concepts.damage.replaced"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R104 (its two families and hooks)",
+          "quote": "`spawned` for it, asked, and erased it — so a token the card says was never"
+        },
+        {
+          "ref": "R238",
+          "quote": "> **\"Yes, blightsea pollup says it deals damage as, so its still damage. Just"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "87-replacement-layer.test.ts",
+        "210-zephyrzoa-hears-a-replaced-hit.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Whether a REDIRECTED hit (Oorblak: \"dealt to me instead\") counts as damage dealt to the player is not stated by any source (D-U15-10).",
+    "sourceHashes": {
+      "R104": "c244bb0f93acb790aff6bbb49d0004b1c55862fca4ffe8960d31104b5e7650d4",
+      "R238": "0e100f9b3442e2b363e7a1ca1abf5dfaa1189d9688d1ed9c1bdc237b3d6faccb"
+    }
+  },
+  {
+    "key": "effects.replacement.once",
+    "parent": "708",
+    "order": 4,
+    "text": "A replacement effect applies to an event only once. What it produces is not replaced again by the same effect, unless a new event occurs.",
+    "examples": [
+      {
+        "text": "Example: 10 {Piercing} combat damage redirected into a 2/4 Oorblak: 4 destroy it, and the other 6 reach the player and are not redirected again.",
+        "test": "387-raq-combat.test.ts::RAQ Oorblak: 10 Piercing combat damage redirected into a 2/4 Oorblak"
+      },
+      {
+        "text": "Example: two Nullbringers turn one life gain into one loss, not into a gain again.",
+        "test": "40-light-c.test.ts::Nullbringer: two copies do not stack"
+      }
+    ],
+    "see": [
+      "combat.damage.player.redirect",
+      "effects.replacement.once.one-applies"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1397188292239163454#0",
+          "quote": "replacement effects only apply once in an effect Unless a new trigger occurs"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R104 (its two families and hooks)",
+          "quote": "> \"a replacement only happens once … The replacement just takes what would be 1"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts",
+        "40-light-c.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "The engine-differs flag (F-U12-1) moved to effects.replacement.once.one-applies: the verifier measured the engine agreeing for the SAME effect (one Oorblak never re-absorbs its own leftover; one inversion per Nullbringer gain); the divergence is a second, different holder re-replacing the product.",
+    "sourceHashes": {
+      "R104": "c244bb0f93acb790aff6bbb49d0004b1c55862fca4ffe8960d31104b5e7650d4",
+      "RAQ 1397188292239163454#0": "859ade14197b364f8aed8a0d8462175435c6ba4ba8f67b055cf85849ae403635"
+    }
+  },
+  {
+    "key": "effects.replacement.once.one-applies",
+    "parent": "effects.replacement.once",
+    "order": 1,
+    "text": "If two or more effects could each replace or redirect the same event (two Nullbringers, two Counter Thieves, two Oorblaks), only one of them does. An event a redirect produces is not redirected again by another such effect. (engine differs, see F-U15-3)",
+    "examples": [
+      {
+        "text": "Example: two Counter Thieves do not pass the same counters back and forth.",
+        "test": "46-hybrids-ld-c.test.ts::Counter Thief: two thieves do not ping-pong"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1397188292239163454#0",
+          "quote": "replacement effects only apply once in an effect Unless a new trigger occurs"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R104 (its two families and hooks)",
+          "quote": "Substitutes or redirects the thing itself. A thing can only be replaced once, so"
+        },
+        {
+          "ref": "R104 (its two families and hooks)",
+          "quote": "thief puts the counters on itself, and that is a counter placement — and two"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "46-hybrids-ld-c.test.ts",
+        "40-light-c.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "Which one applies is not stated by any designer or printed source; R104 takes the first by entity id (D-U15-3). The verifier's probe measured two Oorblaks both redirecting one 10-point Piercing hit (the player loses 2, not 6; both die): F-U15-3, the same defect as F-U12-1 (D-U15-11).",
+    "sourceHashes": {
+      "R104": "c244bb0f93acb790aff6bbb49d0004b1c55862fca4ffe8960d31104b5e7650d4",
+      "RAQ 1397188292239163454#0": "859ade14197b364f8aed8a0d8462175435c6ba4ba8f67b055cf85849ae403635"
+    },
+    "engineDiffers": [
+      "F-U15-3",
+      "F-U12-1"
+    ]
+  },
+  {
+    "key": "effects.replacement.amount-modifiers",
+    "parent": "708",
+    "order": 5,
+    "text": "Replacement effects that only change an amount (\"that many plus one instead\") all apply: each applies once, and their changes add up. A modifier does not apply to its own change, but two copies of the same card are two modifiers and both apply.",
+    "examples": [
+      {
+        "text": "Example: two Conduits of Pain make 1 damage from an allied source into 3.",
+        "test": "12-fire-a.test.ts::Conduit of Pain: two Conduits both apply, and neither applies to itself"
+      },
+      {
+        "text": "Example: two allied Flux Resonators make a Robot X spawn with X plus 2 counters.",
+        "test": "27-metal-b.test.ts::Flux Resonator: two allied Resonators give a spawn X plus TWO (summed)"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R104 (its two families and hooks)",
+          "quote": "> \"a replacement only happens once … The replacement just takes what would be 1"
+        },
+        {
+          "ref": "R104 (its two families and hooks)",
+          "quote": "So two **different** modifiers both apply (two Conduits of Pain make a 1 into a"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "12-fire-a.test.ts",
+        "27-metal-b.test.ts",
+        "87-replacement-layer.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R104": "c244bb0f93acb790aff6bbb49d0004b1c55862fca4ffe8960d31104b5e7650d4"
+    }
+  },
+  {
+    "key": "effects.replacement.multipliers",
+    "parent": "708",
+    "order": 6,
+    "text": "Effects that double an amount (\"Double all life gain and life loss\") multiply together. With n of them applying to the same amount, it is multiplied by 2 to the power n.",
+    "examples": [
+      {
+        "text": "Example: three Arbiters of Vitality multiply a life loss by 8.",
+        "test": "137-multiplier-and-mode.test.ts::R264: THREE Arbiters multiply"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R264",
+          "quote": "**The claiming factors MULTIPLY. n mods each declaring ×2 give 2^n.** Three"
+        },
+        {
+          "ref": "R264",
+          "quote": "Arbiters give **×8**, where they used to give ×6."
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R157",
+          "relation": "its §23 formula n*2*v (linear) was amended by R264 to 2^n; n = 2 is unchanged"
+        },
+        {
+          "ruling": "R162",
+          "relation": "its summed fold was superseded by R264"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "137-multiplier-and-mode.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R264": "95b7d61f66f2efa6b8ad89acef4b28f40cfa6eb372d3468b7470806548b75018"
+    }
+  },
+  {
+    "key": "effects.replacement.multipliers.additive-first",
+    "parent": "effects.replacement.multipliers",
+    "order": 1,
+    "text": "When modifiers that add to an amount and an effect that doubles it apply to the same amount, the additions are made first and the result is doubled.",
+    "examples": [
+      {
+        "text": "Example: a {Powerful} Bellowing Boulder with Conduit of Pain deals (1+1)x2 = 4 damage to each unit.",
+        "test": "387-raq-combat.test.ts::RAQ Resonant: Conduit adds its 1 BEFORE Powerful doubles"
+      },
+      {
+        "text": "Example: Conduit of Pain and Arbiter of Vitality: the 1 is added before the life loss is doubled.",
+        "test": "137-multiplier-and-mode.test.ts::the multiplier composes with a REAL additive mod end to end"
+      }
+    ],
+    "see": [
+      "112.9"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R316",
+          "quote": "> \"Bellowing Boulder with Powerful and Conduit of Pain: (1+1)x2 damage to each unit ="
+        },
+        {
+          "ref": "R264",
+          "quote": "does not reach it. `E.lifeAmount` keeps its interim `(v + Σdelta) × factor` —"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R104",
+          "relation": "its order (Conduit after Powerful) was reversed by R316"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts",
+        "137-multiplier-and-mode.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "For damage and {Powerful} the order is the designer's (R316 quotes the RAQ). For a life multiplier (Arbiter) R264 calls the same order an interim decision, unruled (D-U15-4).",
+    "sourceHashes": {
+      "R264": "95b7d61f66f2efa6b8ad89acef4b28f40cfa6eb372d3468b7470806548b75018",
+      "R316": "0a120883d7cfa92ba527097fad739d9bf9c28e09964452ec7c89cef9578bb128"
+    }
+  },
+  {
+    "key": "effects.replacement.multipliers.lethal",
+    "parent": "effects.replacement.multipliers",
+    "order": 2,
+    "text": "A multiplied life loss is lost all at once, as one loss of the whole amount, and only then does the game check whether the player has lost.",
+    "examples": [
+      {
+        "text": "Example: Arbiter of Vitality doubles a lethal loss before the game checks whether the player has lost.",
+        "test": "137-multiplier-and-mode.test.ts::Arbiter of Vitality: a LETHAL loss is multiplied BEFORE the lethal check"
+      },
+      {
+        "text": "Example: one \"loses life\" event carries the whole doubled number.",
+        "test": "137-multiplier-and-mode.test.ts::the multiplier is a REPLACEMENT, not a second helping"
+      }
+    ],
+    "see": [
+      "104"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R162 (its Arbiter of Vitality section)",
+          "quote": "now committed in one go, BEFORE the lethal check."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "137-multiplier-and-mode.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R162": "cce03aedbad6ba5b735880d7acb96b463e250174b38e8f23e2f7f449b087412b"
+    }
+  },
+  {
+    "key": "effects.replacement.amount-before-redirect",
+    "parent": "708",
+    "order": 7,
+    "text": "When a replacement that changes the number of counters and a replacement that redirects them both apply to the same placement, the number is changed first, and the redirect then moves the whole changed number.",
+    "examples": [
+      {
+        "text": "Example: a Counter Thief beside a Flux Resonator steals the extra counter too.",
+        "test": "87-replacement-layer.test.ts::an AmountMod runs BEFORE the redirect"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R104 (its two families and hooks)",
+          "quote": "**In `addCounters`**, the amount runs before the redirect. \"Put that many"
+        },
+        {
+          "ref": "R104 (its two families and hooks)",
+          "quote": "beside a Flux Resonator steals the plus-one too."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "87-replacement-layer.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R104": "c244bb0f93acb790aff6bbb49d0004b1c55862fca4ffe8960d31104b5e7650d4"
+    }
+  },
+  {
+    "key": "effects.replacement.scope",
+    "parent": "708",
+    "order": 8,
+    "text": "A replacement effect applies only to what its own text names. One that applies when counters \"would be put on\" a unit does not apply when counters are removed.",
+    "examples": [
+      {
+        "text": "Example: Proliferating Slime does not change how many counters Burn the Blight removes.",
+        "test": "152-hand-entry.test.ts::a counter-amount replacement does NOT scale a REMOVAL"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R179",
+          "quote": "> *\"Resonater says 'put on' so this question is irrelevant. Removing counters"
+        },
+        {
+          "ref": "R179",
+          "quote": "**THE GENERALISABLE FORM, which is the half worth keeping: the scope of a layer"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "152-hand-entry.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R179": "3182e34830acb735bedd78d8bfa82b37c3583f82f7d92ceee5fe8ba8f20522ac"
+    }
+  },
+  {
+    "key": "effects.replacement.scope.all-counters",
+    "parent": "effects.replacement.scope",
+    "order": 1,
+    "text": "Counters of either sign are counters. A replacement effect that adds to counters being put on a unit adds -1/-1 counters to -1/-1 counters, as it adds +1/+1 counters to +1/+1 counters.",
+    "examples": [
+      {
+        "text": "Example: Flux Resonator makes two -1/-1 counters its controller puts on a unit into three.",
+        "test": "120-counter-attribution.test.ts::Resonator: -1/-1 counters get one more of the SAME"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R130 (its counter-attribution ruling)",
+          "quote": "**The ruling**, verbatim: *\"All counters count as counters.\"* No sign filter,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "120-counter-attribution.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R130": "324ebd377208d7bd85952920b24c35cf86e5158ccd98f95f1e022d212fa14000"
+    }
+  },
+  {
+    "key": "effects.replacement.scope.who-put",
+    "parent": "effects.replacement.scope",
+    "order": 2,
+    "text": "Whether counters are put \"by an allied source\", or put by \"you\", depends on whose effect put them, not on whose unit they land on. Counters that a redirect moves are still put by the player whose effect put them.",
+    "examples": [
+      {
+        "text": "Example: counters an opponent's effect puts on your unit do not get your Flux Resonator's extra counter.",
+        "test": "120-counter-attribution.test.ts::Resonator: an ENEMY's placement onto your own unit is not an allied source"
+      },
+      {
+        "text": "Example: counters your effect puts on an enemy unit do.",
+        "test": "120-counter-attribution.test.ts::Resonator: counters YOU put on an ENEMY unit are plus one too"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R130 (its counter-attribution ruling)",
+          "quote": "fact.** Three cards print an ACTOR (\"when **you** put\", \"by an **allied**"
+        },
+        {
+          "ref": "R130 (its counter-attribution ruling)",
+          "quote": "another are still counters you put."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "120-counter-attribution.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R130": "324ebd377208d7bd85952920b24c35cf86e5158ccd98f95f1e022d212fa14000"
+    }
+  },
+  {
+    "key": "effects.replacement.token-batch",
+    "parent": "708",
+    "order": 9,
+    "text": "All the tokens one resolution of one effect creates are created together. A replacement effect that acts on \"each unique token you created\" sees all of them at once, and a token is unique by its name and its X together.",
+    "examples": [
+      {
+        "text": "Example: Automaton of Abundance with Manufacture (a Robot 3, a Robot 2 and a Robot 1) creates three extra Robots.",
+        "test": "136-triggers-and-modes.test.ts::R157 §24: end to end"
+      },
+      {
+        "text": "Example: three identical Robot 2s created together are one unique token and yield one extra.",
+        "test": "136-triggers-and-modes.test.ts::R157 §24: three IDENTICAL Robot 2s"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R104 (its token-batch section)",
+          "quote": "**One resolving part is one creation batch**, which is the unit R80 already gave"
+        },
+        {
+          "ref": "R157 (its §24)",
+          "quote": "> *\"'Unique' means unique (name, X) pair — you get two extras.\"*"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R104",
+          "relation": "its \"UNIQUE is by token kind, the X is not part of it\" was reversed by R157 §24"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "136-triggers-and-modes.test.ts",
+        "87-replacement-layer.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R104": "c244bb0f93acb790aff6bbb49d0004b1c55862fca4ffe8960d31104b5e7650d4",
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
+    }
+  },
+  {
+    "key": "effects.replacement.locked-life",
+    "parent": "708",
+    "order": 10,
+    "text": "When an effect says a player's life total can't change, a gain or loss of life for that player does not happen at all, and no replacement effect applies to it.",
+    "examples": [
+      {
+        "text": "Example: with the life total locked by Suspend, Nullbringer has no gain of life to turn into a loss.",
+        "test": "87-replacement-layer.test.ts::a locked life total stops the replacement layer too"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R104 (its two families and hooks)",
+          "quote": "`gainLife` and `loseLife`: once the change cannot happen at all, there is"
+        },
+        {
+          "ref": "R104 (its two families and hooks)",
+          "quote": "nothing left to replace."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "87-replacement-layer.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R104": "c244bb0f93acb790aff6bbb49d0004b1c55862fca4ffe8960d31104b5e7650d4"
+    }
+  },
+  {
+    "key": "effects.replacement.prevention",
+    "parent": "708",
+    "order": 11,
+    "text": "A prevention effect (\"if damage would be dealt …, prevent it\") is not a replacement effect. Prevented damage is not dealt at all (rule 112.11), while damage a replacement effect changes is still dealt (rule 112.12).",
+    "examples": [
+      {
+        "text": "Example: a unit shielded by Phytochemical Protection and hit by a {Poisonous} unit takes no -1/-1 counters and does not trigger on being dealt damage.",
+        "test": "387-raq-combat.test.ts::RAQ Poisonous: a shielded Jollyglop"
+      },
+      {
+        "text": "Example: prevented damage fires nothing that triggers on damage being dealt.",
+        "test": "24-wood-b.test.ts::Phytochemical Protection: prevented damage is NOT dealt"
+      }
+    ],
+    "see": [
+      "concepts.damage.prevented",
+      "concepts.damage.replaced"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1354148437355925554#1",
+          "quote": "Jollyglop doesn't trigger, won't get -2/-2 from Poisonous but will receive +2/+2 counters from Phytochemical Protection."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R98 (its prevention rules)",
+          "quote": "{Lethal} still kills through it\"*. **Replacement is a substitution; prevention is a"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts",
+        "24-wood-b.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R98": "3b5eca7b78135e3b83d9772ba1d9b4a61e98a52ee192747ede43080eb4f13a41",
+      "RAQ 1354148437355925554#1": "0cee7d451013b6afaa95e382f1b150732182e144830830fbfe16e51ceaef2394"
+    }
+  },
+  {
+    "key": "effects.replacement.prevention.whole-hit",
+    "parent": "effects.replacement.prevention",
+    "order": 1,
+    "text": "A prevention effect on a unit prevents all the damage dealt to it, including any beyond what would destroy it.",
+    "examples": [
+      {
+        "text": "Example: a lone shielded blocker is assigned the whole of a column's damage, and all of it is prevented.",
+        "test": "24-wood-b.test.ts::Phytochemical Protection: the whole hit is prevented, not just the lethal part"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353888077625561108#7",
+          "quote": "All damage must be assigned to this single unit and whole damage will be prevented, potentially putting a lot of +/+ counters"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [
+        {
+          "ruling": "R98",
+          "relation": "its open item 1 (prevention counters capped at lethal) was superseded by R114: the whole assigned hit is dealt"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "24-wood-b.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1353888077625561108#7": "b5a93e65c48542a8aa5116ff2c05ede3732105bdf5e30a659d7bf3dc9459bc6f"
+    }
+  },
+  {
+    "key": "effects.replacement.prevention.when",
+    "parent": "effects.replacement.prevention",
+    "order": 2,
+    "text": "Prevention applies to the damage as it would be dealt, after the recipient's own doubling ({Vulnerable}). It does not change how damage is assigned or how much is lethal (rule 608.6g).",
+    "examples": [
+      {
+        "text": "Example: a shield changes what is dealt to a unit, never how much of a {Piercing} hit goes past it.",
+        "test": "82-attr-interactions.test.ts::Piercing vs a damage-shielded unit"
+      }
+    ],
+    "see": [
+      "combat.damage.assignment.shields-ignored"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R98 (its prevention rules)",
+          "quote": "{Vulnerable}'s doubling (\"all damage that WOULD BE DEALT\" to a Vulnerable unit is the"
+        },
+        {
+          "ref": "R98 (its prevention rules)",
+          "quote": "floor: those are planned against the unit's real toughness as if it were unprotected. The"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "82-attr-interactions.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "",
+    "sourceHashes": {
+      "R98": "3b5eca7b78135e3b83d9772ba1d9b4a61e98a52ee192747ede43080eb4f13a41"
+    }
+  }
+]

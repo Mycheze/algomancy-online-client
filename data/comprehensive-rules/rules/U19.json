@@ -1,0 +1,3647 @@
+[
+  {
+    "key": "attr.general",
+    "parent": "802",
+    "order": 1,
+    "text": "Attributes are qualities a card can have that change how it engages in combat (see rule 204).",
+    "examples": [],
+    "see": [
+      "204"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.12",
+          "quote": "In addition to stats, some units have Attributes (1), which can change how they engage"
+        },
+        {
+          "ref": "Manual p.24",
+          "quote": "Some units have attributes, which can modify how they"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Non-combat attributes (Burst, Unstable) are the exception the Manual itself names (rule attr.general.kinds); \"generally\" is the Manual's word.",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "a definition of the word attribute; the attributes themselves are executed under their own rules"
+  },
+  {
+    "key": "attr.general.reminder",
+    "parent": "attr.general",
+    "order": 1,
+    "text": "Cards with attributes carry reminder text, in italics, to help players remember what each attribute does.",
+    "examples": [],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.24",
+          "quote": "engage in combat. These cards have a reminder text in"
+        },
+        {
+          "ref": "Manual p.24",
+          "quote": "italics to help players remember what each attribute"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "For Tough, Vulnerable, Feeble and Unaware the reminder is printed under the type line, which the oracle transcription does not carry: see D-U19-8. Rules in this section quote those reminders only through the discrepancy, never as printed sources.",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "printed card layout (reminder text in italics); nothing in play reads it"
+  },
+  {
+    "key": "attr.general.kinds",
+    "parent": "attr.general",
+    "order": 2,
+    "text": "Attributes are combat attributes or non-combat attributes. Combat attributes are printed in gold. Non-combat attributes, such as Burst and Unstable, are printed in purple and generally have nothing to do with combat.",
+    "examples": [],
+    "see": [
+      "204",
+      "803"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.24",
+          "quote": "Combat attributes (denoted in gold text) are shared by"
+        },
+        {
+          "ref": "Manual p.25",
+          "quote": "Some attributes, like burst and unstable, are written in a"
+        },
+        {
+          "ref": "Manual p.25",
+          "quote": "bat attributes, since they generally have nothing to do"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "printed card layout (gold and purple text) and a classification with no game consequence of its own"
+  },
+  {
+    "key": "attr.general.shared",
+    "parent": "attr.general",
+    "order": 3,
+    "text": "Combat attributes are shared by the units in the same column of a formation: while a unit is in a column, it has every combat attribute that any unit in that column has.",
+    "examples": [
+      {
+        "text": "A token attacking in a column behind a Flying unit has Flying too.",
+        "test": "421-cr-regions-formations.test.ts::cr:combat.columns.definition.shared-attributes — Flying on the front unit of a column is shared"
+      }
+    ],
+    "see": [
+      "603.1a",
+      "602"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.24",
+          "quote": "Combat attributes (denoted in gold text) are shared by"
+        },
+        {
+          "ref": "Rulebook 2023 p.12",
+          "quote": "Units in the same column of a formation share attributes, meaning that if Smoke"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R93",
+          "quote": "Units in a column just share attributes in all situations"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "421-cr-regions-formations.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The R93 line is Caleb Gannon in #rules-questions, quoted inside the ruling (not a RAQ claim, so it cannot be a designer source here).",
+    "sourceHashes": {
+      "R93": "73186b8c262fceca3f8e8f4bb6096062273e36d0810c6cc93495021144038a67"
+    }
+  },
+  {
+    "key": "attr.general.shared.not-sideways",
+    "parent": "attr.general",
+    "order": 4,
+    "text": "Attributes are not shared with the units to the left or right of a unit. They are shared only within its column.",
+    "examples": [
+      {
+        "text": "A unit attacking in the next column beside a Flying unit does not have Flying.",
+        "test": "421-cr-regions-formations.test.ts::cr:combat.columns.definition.shared-attributes — Flying on the front unit of a column is shared"
+      }
+    ],
+    "see": [
+      "603.1a"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.24",
+          "quote": "Combat attributes are not shared by units to the left or to the right, they"
+        },
+        {
+          "ref": "Rulebook 2023 p.12",
+          "quote": "the left or the right of another unit, it will not gain Flying."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "421-cr-regions-formations.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "attr.general.shared.all-purposes",
+    "parent": "attr.general",
+    "order": 5,
+    "text": "A unit has the attributes of its column for everything it does while it is in the column, not only for combat damage. Damage it deals with its abilities has those attributes too.",
+    "examples": [
+      {
+        "text": "An ability of a unit in a column with a Blessed unit gains its controller life when it deals damage.",
+        "test": "298-column-attrs-outside-combat.test.ts::R294 §1 the report"
+      },
+      {
+        "text": "Bellowing Boulder, in a column with a Deadly unit, pings with Deadly.",
+        "test": "390-raq-stack.test.ts::RAQ dead unit: Bellowing Boulder in a column with a Deadly unit pings with Deadly"
+      }
+    ],
+    "see": [
+      "112.6"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353895783266516992#5",
+          "quote": "However if Deadly unit is removed before Bellowing Boulder dies, BB loses Deadly"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R294",
+          "quote": "The whole card gets the attributes while it's in the column. And so when it"
+        },
+        {
+          "ref": "R294",
+          "quote": "activates abilities or whatever, it has that attribute. Combat damage also gets"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "298-column-attrs-outside-combat.test.ts",
+        "390-raq-stack.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The designer quote says the Boulder LOSES Deadly when its partner leaves, which presupposes that its ping had the partner's Deadly while they shared a column. R294 is the owner's general statement.",
+    "sourceHashes": {
+      "R294": "8cae16d380577db83dfb428eb40c37313643ed54a5a3131e6ef3efdc40475495",
+      "RAQ 1353895783266516992#5": "5e462e9ca9b495a36637f73ca1979568eb4217daf77b3faee95a637f08a42aeb"
+    }
+  },
+  {
+    "key": "attr.general.shared.combat-only",
+    "parent": "attr.general",
+    "order": 6,
+    "text": "Columns exist only during a battle. Outside a battle no unit is in a column, so no attribute is shared.",
+    "examples": [
+      {
+        "text": "Outside battle, a unit standing beside a Blessed unit gains nothing from it.",
+        "test": "298-column-attrs-outside-combat.test.ts::R294 §3 outside battle there are no columns at all"
+      }
+    ],
+    "see": [
+      "602",
+      "603"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R294",
+          "quote": "A column only exists"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "298-column-attrs-outside-combat.test.ts",
+        "421-cr-regions-formations.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R294's sentence (\"A column only exists in combat\") is the ruling's own text describing E.columnOf, not an owner quote. The printed rules place formations in battle (section 602), which agrees.",
+    "sourceHashes": {
+      "R294": "8cae16d380577db83dfb428eb40c37313643ed54a5a3131e6ef3efdc40475495"
+    }
+  },
+  {
+    "key": "attr.general.shared.leaving",
+    "parent": "attr.general",
+    "order": 7,
+    "text": "When a unit leaves a column, the other units in that column immediately lose the attributes it was sharing with them.",
+    "examples": [
+      {
+        "text": "A unit leaving a Swift column takes the Swift it shared with it.",
+        "test": "423-cr-combat-damage.test.ts::cr:combat.damage.substeps.column-attributes — a unit leaving a column takes the Swift it shared with it"
+      },
+      {
+        "text": "Once the Deadly unit leaves Bellowing Boulder's column, the Boulder's ping is not Deadly.",
+        "test": "390-raq-stack.test.ts::RAQ dead unit: once the Deadly partner leaves the column, the Boulder ping is not Deadly"
+      }
+    ],
+    "see": [
+      "603.1a",
+      "608.2b"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.24",
+          "quote": "When a unit with attributes is removed from a column,"
+        },
+        {
+          "ref": "Manual p.24",
+          "quote": "all other units in its column immediately lose access to"
+        },
+        {
+          "ref": "Rulebook 2023 p.12",
+          "quote": "But be careful! If a unit with attributes is removed, all other units in its column will im"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1353895783266516992#5",
+          "quote": "However if Deadly unit is removed before Bellowing Boulder dies, BB loses Deadly"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "423-cr-combat-damage.test.ts",
+        "390-raq-stack.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1353895783266516992#5": "5e462e9ca9b495a36637f73ca1979568eb4217daf77b3faee95a637f08a42aeb"
+    }
+  },
+  {
+    "key": "attr.general.noncombat-not-shared",
+    "parent": "attr.general",
+    "order": 8,
+    "text": "Non-combat attributes are not shared in formation. A unit that is Unstable, or has Burst or Modular, does not give that attribute to the other units in its column.",
+    "examples": [
+      {
+        "text": "A modded (and so Unstable) unit does not make its column-mate Unstable.",
+        "test": "298-column-attrs-outside-combat.test.ts::R294 §5b a modded (therefore Unstable) unit does not make its column-mate Unstable"
+      }
+    ],
+    "see": [
+      "803"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.25",
+          "quote": "These attributes are not shared in formation, and simply"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R294",
+          "quote": "*are* attributes, but they're a bit special in that they're not applied to"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "298-column-attrs-outside-combat.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Modular rests on the owner alone (\"Modular is also special\", R294); the Manual names only burst and unstable.",
+    "sourceHashes": {
+      "R294": "8cae16d380577db83dfb428eb40c37313643ed54a5a3131e6ef3efdc40475495"
+    }
+  },
+  {
+    "key": "attr.general.present-or-not",
+    "parent": "attr.general",
+    "order": 9,
+    "text": "A card either has an attribute or does not. Having the same attribute from more than one source has no extra effect.",
+    "examples": [
+      {
+        "text": "Two sources granting Inverted to one unit invert its stat changes once, not twice.",
+        "test": "79-round17-layers.test.ts::R93 layer 5: {Inverted} applies ONCE however many sources grant it"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R19",
+          "quote": "attribute is either present or not, and its first occurrence sets its position."
+        },
+        {
+          "ref": "R84",
+          "quote": "It's like how you can't gain flying flying"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "79-round17-layers.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R84 quotes Caleb Gannon (\"you can't gain flying flying\") from #rules-questions, so the rule is designer-backed in substance; no RAQ claim carries it, so it is typed owner. R19 marks its own content an engine call.",
+    "sourceHashes": {
+      "R19": "a8effeef282ac888aa6eecce0c38d16861edf9ce178156dc5deaa109ff8eb7b3",
+      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
+    }
+  },
+  {
+    "key": "attr.general.stat-attributes",
+    "parent": "attr.general",
+    "order": 10,
+    "text": "Four attributes change a unit's stats. Tough and Balanced apply in the fourth stat layer, Inverted in the fifth and Unaware in the sixth and last (see rule 206.4).",
+    "examples": [
+      {
+        "text": "Caleb's worked example: a 1/4 with Tough, Balanced and Inverted is a -6/0.",
+        "test": "79-round17-layers.test.ts::R93 layer 5: Caleb's worked example — a 1/4 Tough Balanced Inverted is a -6/0"
+      },
+      {
+        "text": "A unit with both Inverted and Unaware is read at its printed stats: Unaware applies last.",
+        "test": "92-unaware.test.ts::{Inverted} and {Unaware} on one unit: layer 6 goes last, so Bubb is a 5/6"
+      }
+    ],
+    "see": [
+      "206.4",
+      "709"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.42",
+          "quote": "counters, 4. Attributes like Tough, 5. Inverted, 6.Unaware"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R19",
+          "quote": "Tough (defense doubled) and Balanced (power and defense become the max of the two) apply"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "79-round17-layers.test.ts",
+        "92-unaware.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The Manual lists only \"Attributes like Tough\" in layer 4; Balanced is placed there by R19 and by the Manual's own Tough-and-Balanced Q&A on the same page. Whether Inverted is a clean layer after all of layer 4 is open: D-U19-4.",
+    "sourceHashes": {
+      "R19": "a8effeef282ac888aa6eecce0c38d16861edf9ce178156dc5deaa109ff8eb7b3"
+    }
+  },
+  {
+    "key": "attr.general.stats-then-death",
+    "parent": "attr.general",
+    "order": 11,
+    "text": "A unit's stats are worked out through all the stat layers before it is checked for death. A unit whose defense would be 0 or less part-way through the calculation, but not at the end of it, does not die.",
+    "examples": [
+      {
+        "text": "A 1/1 with a -1/-1 counter and Inverted is a live 2/2, never a dead 0/0.",
+        "test": "79-round17-layers.test.ts::R93 layer 5: hitting 0 mid-calculation is not death"
+      },
+      {
+        "text": "Child of Aether, a 2/0 with Balanced, is a 2/2 and survives.",
+        "test": "08-cards2.test.ts::Child of Aether: Balanced (power & defense = max) keeps a 2/0 alive"
+      }
+    ],
+    "see": [
+      "206.4",
+      "713"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R93",
+          "quote": "does it die if it hits 0 partway through? **calebgannon:** \"Not if it hits 0"
+        },
+        {
+          "ref": "R93",
+          "quote": "So a 1/1 with a -1/-1 counter and {Inverted} is a live 2/2, never a dead 0/0."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "79-round17-layers.test.ts",
+        "08-cards2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Caleb Gannon's answer, quoted in R93 from #rules-questions; typed owner because no RAQ claim carries it.",
+    "sourceHashes": {
+      "R93": "73186b8c262fceca3f8e8f4bb6096062273e36d0810c6cc93495021144038a67"
+    }
+  },
+  {
+    "key": "attr.general.application-order",
+    "parent": "attr.general",
+    "order": 12,
+    "text": "When Tough and Balanced both apply to a unit, they apply one after the other, from top to bottom. If Tough is augmented onto a Balanced unit, or a Tough unit attacks with a Balanced unit behind it, the unit has its defense doubled, then its stats balanced. If Tough is applied to a Balanced unit, it has its stats balanced, then its defense doubled. Attributes granted by a unit's augments apply in the order the mods were gained, the first attached first, and attributes shared from its column apply from front to back. An attribute the unit has from more than one source takes the position of the first.",
+    "examples": [
+      {
+        "text": "A 3/1 augmented with Rampart Guardian (Tough) and then Child of Aether (Balanced) is a 3/3; augmented in the other order it is a 3/6.",
+        "test": "08-cards2.test.ts::R19: layer-4 application order — Tough→Balanced ≠ Balanced→Tough"
+      },
+      {
+        "text": "Child of Aether prints Balanced and is a 2/0. Augmented with Rampart Guardian (Tough), its defense is doubled (2/0), then its stats balanced: it is a 2/2. (illustrative; engine differs, F-U19-5: the engine balances first and makes it a 2/4)",
+        "test": null
+      },
+      {
+        "text": "Rampart Guardian (0/4, Tough) attacks with Child of Aether (Balanced) behind it: its defense is doubled (0/8), then its stats balanced, and it is an 8/8.",
+        "test": "430-cr-attributes-1.test.ts::cr:attr.general.application-order — a Tough unit attacking with a Balanced unit behind it is doubled, then balanced: Rampart Guardian is an 8/8"
+      }
+    ],
+    "see": [
+      "206.4",
+      "721"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.42",
+          "quote": "A: Attributes apply in order from top to bottom. So if"
+        },
+        {
+          "ref": "Manual p.42",
+          "quote": "“Tough” is augmented onto a “Balanced” unit, or if a"
+        },
+        {
+          "ref": "Manual p.42",
+          "quote": "tough unit attacks with a Balanced unit behind it, it"
+        },
+        {
+          "ref": "Manual p.42",
+          "quote": "will have its defense doubled, then its stats balanced."
+        },
+        {
+          "ref": "Manual p.42",
+          "quote": "If “Tough” is applied to a “Balanced” unit, it will have"
+        },
+        {
+          "ref": "Manual p.42",
+          "quote": "its stats balanced, then its defense doubled."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R19 (its mod-stack and column order, and its duplicate rule; not its printed-first order)",
+          "quote": "attrs in type-line order, then augment-granted attrs in mod-stack order, then"
+        },
+        {
+          "ref": "R19 (its mod-stack and column order, and its duplicate rule; not its printed-first order)",
+          "quote": "column-shared attrs** (column order, front to back). Duplicates don't stack — an"
+        },
+        {
+          "ref": "R19 (its mod-stack and column order, and its duplicate rule; not its printed-first order)",
+          "quote": "\"order gained\" is the engine's reading. (Engine 2026-07-16.)"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "08-cards2.test.ts",
+        "430-cr-attributes-1.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "Round-1 revision. The Manual Q&A on p.42 names the exact case R19 calls an engine call: Tough augmented onto a Balanced unit is doubled, then balanced. R19 puts a unit's own printed attributes before its augments' and says \"the Manual doesn't specify an order for printed-vs-granted-vs-shared\", which p.42 answers for this pair. Printed text outranks R-rulings, so the rule states the Manual; R19 still supplies the mod-stack order, the front-to-back column order and the duplicate rule. The verifier's probe measured the engine balancing first (F-U19-5; D-U19-1). The Manual's \"applied to\" case (an effect granting Tough) is stated as printed; the guard test covers only two augments on a plain host. Round 2: the verifier noted the mod order's direction was implicit. R19 names it \"order gained\", which the guard test pins as first attached first (Rampart Guardian then Child of Aether makes a 3/1 a 3/3); the Manual's \"top to bottom\" does not say which mod is on top, so that clause rests on R19's engine reading alone: D-U19-12.",
+    "sourceHashes": {
+      "R19": "a8effeef282ac888aa6eecce0c38d16861edf9ce178156dc5deaa109ff8eb7b3"
+    },
+    "engineDiffers": [
+      "F-U19-5"
+    ]
+  },
+  {
+    "key": "attr.general.pure",
+    "parent": "attr.general",
+    "order": 13,
+    "text": "A Pure card, and every card interacting with it, ignores all its other attributes in that interaction (see rule 802.25). This includes the attributes that change stats: in an interaction with a Pure card, Tough, Balanced, Inverted and Unaware do not apply.",
+    "examples": [
+      {
+        "text": "Rampart Guardian (a 0/4 with Tough) is dealt 5 damage by a Pure source. In that interaction it ignores Tough, so its defense is 4 and it dies. (illustrative; engine differs, F-U19-1: the engine keeps Tough on and it survives as a 0/8)",
+        "test": null
+      },
+      {
+        "text": "An Unaware source dealing 3 damage to a Pure unit pumped from 2/3 to 4/5 does not read it at its printed 2/3: it survives, where a pumped non-Pure 2/3 dies.",
+        "test": "430-cr-attributes-1.test.ts::cr:attr.general.pure — Unaware is off in a Pure pairing outside combat: an Unaware source does not collapse a pumped Pure recipient to its printed stats"
+      }
+    ],
+    "see": [
+      "802.25"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Just a Unit",
+          "quote": "Pure cards and cards they are interacting with ignore all other attributes."
+        },
+        {
+          "ref": "Manual p.42",
+          "quote": "counters, 4. Attributes like Tough, 5. Inverted, 6.Unaware"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R289 (its per-pairing switch, which turns a Pure pairing's Unaware off)",
+          "quote": "are off against it, and so are its own {Vulnerable} and {Unaware}."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "430-cr-attributes-1.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "Printed text read literally outranks R-rulings (authority order). R289 says Tough, Balanced and Inverted \"still read (they are stat layers, R61)\" — that sentence is the ruling's engine description, not an owner quote, and R61 says only that STATS are not attributes. R289 itself turns Unaware off in a noncombat Pure pairing, while R106 says the combat Unaware collapse \"survives {Pure}\". So the rulings disagree with each other and with the print: D-U19-2. The pilot (D608-48) kept engine law here; this draft follows the authority order instead, and the owner should see the difference. Round 1: the verifier measured Tough still applying against a Pure source (probe) and Unaware switched off in a noncombat Pure pairing; both recorded on F-U19-1 and D-U19-2. Round 2: the verifier confirmed the rule and measured Balanced also staying on against a Pure source (a Balanced 4/1 survives 3 as a 4/4), added to F-U19-1. The R289/R61 conflict it asked to list for the owner is D-U19-2, which now asks the owner directly.",
+    "engineDiffers": [
+      "F-U19-1",
+      "F-U19-2"
+    ],
+    "sourceHashes": {
+      "R289": "81a5ae74249706f28fe64de238210a9a0ff35fa09a5ed556ac5c6dedd648781e"
+    },
+    "rebuttal": "Text kept. CONTROL's authority order puts printed text read literally above R-rulings, and Pure's printed reminder ignores \"all other attributes\"; Manual p.42 is cited only because it names Tough an attribute (\"4. Attributes like Tough\"), which is the point R289's \"they are stat layers\" disputes. Owner decision 2 has the rule state current law and flag the engine: engineDiffers F-U19-1/F-U19-2, D-U19-2. The verifier's probe (a Pure source's 5 leaves Rampart Guardian a Tough 0/8) measures F-U19-1; it does not make R289 outrank the card."
+  },
+  {
+    "key": "attr.flying",
+    "parent": "802",
+    "order": 2,
+    "text": "Flying is a combat attribute. Its reminder text reads \"Only flying units can block flying units.\"",
+    "examples": [
+      {
+        "text": "A Flying 3/1 attacks; a ground unit may not block it, and a unit with Flying may.",
+        "test": "430-cr-attributes-1.test.ts::cr:attr.flying — Air Plant prints the reminder, and only a flying unit may block a Flying attacker"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Air Plant",
+          "quote": "Only flying units can block flying units."
+        },
+        {
+          "ref": "Manual p.24",
+          "quote": "the Flying attribute and the entire column can not be"
+        }
+      ],
+      "designer": [],
+      "ours": [
+        {
+          "ref": "glossary: Flying",
+          "quote": "Only flying units can block flying units."
+        }
+      ],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "430-cr-attributes-1.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "attr.flying.blocking",
+    "parent": "attr.flying",
+    "order": 1,
+    "text": "An attacking column that has Flying can't be blocked by a unit that does not have Flying.",
+    "examples": [
+      {
+        "text": "A ground 2/2 cannot block a column holding Ephemeral Skywalker (Flying).",
+        "test": "02-combat.test.ts::combat math: columns, flying, piercing overflow, deaths"
+      },
+      {
+        "text": "A plain ground unit is neither offered nor allowed as a blocker against a Flying column.",
+        "test": "40-light-c.test.ts::Just a Unit: {Pure} blocks a Flying column, and only it can"
+      }
+    ],
+    "see": [
+      "606.2c"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Greed Angel",
+          "quote": "Only flying units can block flying units."
+        },
+        {
+          "ref": "Manual p.24",
+          "quote": "blocked unless the blocking unit has flying."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "02-combat.test.ts",
+        "40-light-c.test.ts",
+        "422-cr-attacking-blocking.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Whether a non-Flying unit may block a Flying column together with a Flying unit in the same blocking column is not settled by the sources: D-U19-7.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "attr.flying.column",
+    "parent": "attr.flying",
+    "order": 2,
+    "text": "Because Flying is shared, a unit attacking in the same column as a Flying unit has Flying too, and the whole column can't be blocked by units that do not have Flying (see rule 802.1).",
+    "examples": [
+      {
+        "text": "A token attacking behind a Flying unit has Flying while it is in that column.",
+        "test": "421-cr-regions-formations.test.ts::cr:combat.columns.definition.shared-attributes — Flying on the front unit of a column is shared"
+      }
+    ],
+    "see": [
+      "802.1"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.24",
+          "quote": "other unit in front or behind it, both of those units have"
+        },
+        {
+          "ref": "Rulebook 2023 p.12",
+          "quote": "Ghost attacks with another unit in front or behind it, both of those units have the"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "421-cr-regions-formations.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "attr.flying.removed",
+    "parent": "attr.flying",
+    "order": 3,
+    "text": "If the Flying unit leaves an attacking column before blockers are declared, the other units in that column lose Flying, and the column can then be blocked by units without Flying.",
+    "examples": [
+      {
+        "text": "A player attacks with Smoke Ghost (Flying) and a plain 1/1 token in one column; the opponent kills Smoke Ghost before combat and blocks the token with a unit that does not fly. (illustrative)",
+        "test": null
+      },
+      {
+        "text": "Ephemeral Skywalker (Flying) attacks with a 1/1 token in one column; the Skywalker is destroyed before blocks, the token loses Flying, and Rune Channeler, which does not fly, blocks it.",
+        "test": "430-cr-attributes-1.test.ts::cr:attr.flying.removed — after the Flying unit leaves the attacking column, a ground unit may block the rest"
+      }
+    ],
+    "see": [
+      "802.1",
+      "606"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.12",
+          "quote": "with Smoke Ghost and a plain 1/1 token, if the opponent kills the Smoke Ghost before"
+        },
+        {
+          "ref": "Rulebook 2023 p.12",
+          "quote": "combat, they can block the token without flying units because the token would no"
+        },
+        {
+          "ref": "Manual p.24",
+          "quote": "ABOVE, THE DEFENDING PLAYER REMOVES BLOODWIND REVENANT IN ORDER TO BLOCK THE COLUMN"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "430-cr-attributes-1.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "No test plays this out; 423's Swift version of the same leave-the-column rule is bound under 802.1.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "attr.flying.pure",
+    "parent": "attr.flying",
+    "order": 4,
+    "text": "Flying does not restrict a block when the attacking column or the blocking unit includes a Pure card. A Pure unit can block a Flying column.",
+    "examples": [
+      {
+        "text": "Just a Unit (Pure, no Flying) blocks a column holding Ephemeral Skywalker (Flying) and kills it.",
+        "test": "40-light-c.test.ts::Just a Unit: {Pure} blocks a Flying column, and only it can"
+      }
+    ],
+    "see": [
+      "802.25"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Just a Unit",
+          "quote": "Pure cards and cards they are interacting with ignore all other attributes."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R61",
+          "quote": "- **Declaring blocks** — one Pure card in either column and neither evasion"
+        },
+        {
+          "ref": "R61",
+          "quote": "rule survives it: Flying, Evasive, and Sneaky's lone-attacker immunity. A"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "40-light-c.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The test covers a Pure BLOCKER; a Pure unit inside the Flying attacking column is R61's other half and has no guard here.",
+    "sourceHashes": {
+      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
+    }
+  },
+  {
+    "key": "attr.flying.lured",
+    "parent": "attr.flying",
+    "order": 5,
+    "text": "A unit without Flying is not able to block a Flying column, so an Alluring trigger cannot compel it to block that column (see rules 606.2e and 802.15).",
+    "examples": [
+      {
+        "text": "A lured unit with no Flying, facing a Flying Alluring column, may leave that column unblocked.",
+        "test": "53-playtest-round7.test.ts::R84: a lured unit with no {Flying} is not able against a Flying column"
+      }
+    ],
+    "see": [
+      "606.2e",
+      "802.15"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R84",
+          "quote": "all ({Feeble}; no {Flying} against a Flying column; R20's lone-{Sneaky}"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "53-playtest-round7.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
+    }
+  },
+  {
+    "key": "attr.deadly",
+    "parent": "802",
+    "order": 3,
+    "text": "Deadly is a combat attribute. Its reminder text reads \"Any damage from a deadly source will kill a unit.\"",
+    "examples": [
+      {
+        "text": "Tidepool Terror (1/2 Deadly) is blocked by a 5/9; its 1 damage kills the blocker.",
+        "test": "430-cr-attributes-1.test.ts::cr:attr.deadly — Rotspore Herald prints the reminder, and 1 combat damage from a Deadly attacker kills a 5/9 blocker"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Rotspore Herald",
+          "quote": "Any damage from a deadly source will kill a unit."
+        },
+        {
+          "ref": "Manual p.25",
+          "quote": "who has the “Deadly” attribute, they can instantly kill"
+        }
+      ],
+      "designer": [],
+      "ours": [
+        {
+          "ref": "glossary: Deadly",
+          "quote": "Any damage from a deadly source will kill a unit."
+        }
+      ],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "430-cr-attributes-1.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Pilot key kept. The pilot's sentence on column sharing moved to the general rule (802.1).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "attr.deadly.any-amount",
+    "parent": "attr.deadly",
+    "order": 1,
+    "text": "A unit dealt any nonzero amount of damage by a Deadly source is destroyed, whatever its defense. A Deadly source that deals 0 damage destroys nothing.",
+    "examples": [
+      {
+        "text": "A Deadly source dealing 2 noncombat damage destroys a 5/6.",
+        "test": "82-attr-interactions.test.ts::Deadly: 2 points of NON-COMBAT damage kills a 5/6 outright"
+      },
+      {
+        "text": "Zero damage from a Deadly source destroys nothing.",
+        "test": "82-attr-interactions.test.ts::Deadly: ZERO damage kills nothing"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Rotspore Herald",
+          "quote": "Any damage from a deadly source will kill a unit."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R21 (its nonzero-kill sentence)",
+          "quote": "Any **nonzero** damage from a Deadly source kills the damaged unit, regardless of"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "82-attr-interactions.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R21": "c16390a9d33690be83ffdf59839ed7e0e3bee9f98b7f69322832e3c1ca48e215"
+    }
+  },
+  {
+    "key": "attr.deadly.no-cap",
+    "parent": "attr.deadly",
+    "order": 2,
+    "text": "Deadly does not reduce the damage its source deals. A Deadly source deals all of its damage; Deadly changes only how much of it is lethal.",
+    "examples": [
+      {
+        "text": "A 10-power Deadly column blocked by a 1/1 deals all 10 to it.",
+        "test": "134-column-and-substep.test.ts::R157 §11 — a 10-power {Deadly} column deals all 10 to a 1/1 blocker"
+      }
+    ],
+    "see": [
+      "608.6d"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 §11",
+          "quote": "Deadly doesn't have a cap?? A 10/10 deadly unit still deals 10 damage to"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "134-column-and-substep.test.ts",
+        "05-rulings.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Pilot cited R114 as a designer source under a register ref the schema no longer accepts; R157 §11 (owner, verbatim) states the rule directly.",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
+    }
+  },
+  {
+    "key": "attr.deadly.combat-share",
+    "parent": "attr.deadly",
+    "order": 3,
+    "text": "In combat damage assignment, lethal damage for each unit a Deadly half-column deals damage to is 1 (see rule 608.6e). Once the front unit has been assigned at least 1, the dealing player may assign damage to the unit behind it.",
+    "examples": [
+      {
+        "text": "A Deadly and Piercing column over two blockers assigns 1 to each, and the rest may go to the player.",
+        "test": "387-raq-combat.test.ts::RAQ Excessive: Deadly + Piercing over two blockers"
+      }
+    ],
+    "see": [
+      "608.6e",
+      "608.6b"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353888077625561108#3",
+          "quote": "With Deadly you need to assign atleast 1 damage to front unit"
+        },
+        {
+          "ref": "RAQ 1353888077625561108#6",
+          "quote": "Atleast 1 damage to front, atleast 1 damage to back and rest can go to Opponent Health."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R23",
+          "quote": "Deadly's 1-is-lethal applies to the pool."
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R21",
+          "relation": "its \"auto-assignment ... sends everything past 1-per-blocker through\" is only the default since R319 made the excess elective; its engine-call flag is resolved by the RAQ"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts",
+        "100-elective-assign.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R23": "04ef097d6068557fac2a6fffbbbf1b13e15d998f142ea3b79c9b8242ea6173e1",
+      "RAQ 1353888077625561108#3": "66c91c974f97a373e4461c01315e9276f92dca3565803a7736d38a030f2e2df2",
+      "RAQ 1353888077625561108#6": "6d01b38c9afcd84e60f587ef5271145274a2679eb3584062c18f27d111c6b292"
+    }
+  },
+  {
+    "key": "attr.deadly.timing",
+    "parent": "attr.deadly",
+    "order": 4,
+    "text": "A unit dealt combat damage by a Deadly source is destroyed in the same damage sub-step, before the next sub-step begins (see rule 608.7b).",
+    "examples": [
+      {
+        "text": "Paired with a Swift unit in its column, a Deadly unit kills what it hits before that unit can strike back. (illustrative)",
+        "test": "430-cr-attributes-1.test.ts::cr:attr.deadly.timing — a Deadly and Swift column kills its blocker in the Swift sub-step, before the blocker strikes"
+      }
+    ],
+    "see": [
+      "608.7b"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.25",
+          "quote": "anything before it has a chance to fight back."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R21 (its same-sub-step kill)",
+          "quote": "the same damage sub-step, before the next sub-step's recalc. Deadly works on effect"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "430-cr-attributes-1.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R21 states it as an engine call; the Manual's Swift + Deadly combo (Dune Drifter with Tidepool Terror) only works if the kill lands inside the Swift sub-step.",
+    "sourceHashes": {
+      "R21": "c16390a9d33690be83ffdf59839ed7e0e3bee9f98b7f69322832e3c1ca48e215"
+    }
+  },
+  {
+    "key": "attr.deadly.noncombat",
+    "parent": "attr.deadly",
+    "order": 5,
+    "text": "Deadly applies to all damage its source deals, not only combat damage, including damage dealt through spells and abilities.",
+    "examples": [
+      {
+        "text": "A plain Deadly effect source destroys a unit it could never damage to death.",
+        "test": "206-deadly-everywhere.test.ts::R237: a plain {Deadly} effect source kills a unit"
+      }
+    ],
+    "see": [
+      "112.7"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R237",
+          "quote": "Yes, deadly works on spell effects and everything. Just like powerful. So a"
+        },
+        {
+          "ref": "R21 (its effect-damage sentence)",
+          "quote": "damage too, and Deadly kills count for Reaping draws. Players don't \"die\" to Deadly —"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "206-deadly-everywhere.test.ts",
+        "82-attr-interactions.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R21": "c16390a9d33690be83ffdf59839ed7e0e3bee9f98b7f69322832e3c1ca48e215",
+      "R237": "ec152f51160f9f8410800e8323fd9f676fdf45864242ec64e8d1e35ce6ae3cc7"
+    }
+  },
+  {
+    "key": "attr.deadly.spells",
+    "parent": "attr.deadly",
+    "order": 6,
+    "text": "A spell or a spell token can have Deadly. Damage it deals is then Deadly damage.",
+    "examples": [
+      {
+        "text": "With Rotspore Herald in the region, a Fireball 1 kills any unit it hits.",
+        "test": "206-deadly-everywhere.test.ts::R237: \"a fireball 1 with deadly would kill any unit\""
+      },
+      {
+        "text": "Deadly donated to a spell on the stack kills through that spell.",
+        "test": "206-deadly-everywhere.test.ts::R237: a {Deadly} donated to a SPELL on the stack kills through the spell"
+      }
+    ],
+    "see": [
+      "302",
+      "304"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R237",
+          "quote": "fireball 1 with deadly would kill any unit.\"**"
+        },
+        {
+          "ref": "R125",
+          "quote": "damage sources, the owner: *\"Rotspore also applies to all spells and spell"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "206-deadly-everywhere.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R125": "349a75c7891354248b00e90d386d39cb71bf772baa118887f837a7f7e6055e8d",
+      "R237": "ec152f51160f9f8410800e8323fd9f676fdf45864242ec64e8d1e35ce6ae3cc7"
+    }
+  },
+  {
+    "key": "attr.deadly.poisonous",
+    "parent": "attr.deadly",
+    "order": 7,
+    "text": "A source with both Deadly and Poisonous that deals damage to a unit both destroys it and puts the -1/-1 counters on it (see rule 112.10).",
+    "examples": [
+      {
+        "text": "Deadly and Poisonous effect damage still destroys the unit: the counter form is still damage.",
+        "test": "206-deadly-everywhere.test.ts::R237: {Deadly} + {Poisonous} effect damage still kills"
+      }
+    ],
+    "see": [
+      "112.10",
+      "802.18"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R237",
+          "quote": "yeah it'll get instakilled by deadly but also trigger to"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "206-deadly-everywhere.test.ts",
+        "82-attr-interactions.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Caleb Gannon, 2023-08-23, quoted in R237 from #rules-questions; no RAQ claim carries it, so it is typed owner.",
+    "sourceHashes": {
+      "R237": "ec152f51160f9f8410800e8323fd9f676fdf45864242ec64e8d1e35ce6ae3cc7"
+    }
+  },
+  {
+    "key": "attr.deadly.prevention",
+    "parent": "attr.deadly",
+    "order": 8,
+    "text": "If all the damage a Deadly source would deal to a unit is prevented, no damage is dealt, and Deadly does not destroy the unit (see rule 112.11).",
+    "examples": [
+      {
+        "text": "Prevention stops both the Deadly kill and the Poisonous counters.",
+        "test": "82-attr-interactions.test.ts::Deadly + Poisonous: PREVENTION still stops both halves"
+      },
+      {
+        "text": "A shielded blocker dealt combat damage by a Deadly column is not destroyed.",
+        "test": "423-cr-combat-damage.test.ts::cr:combat.damage.dealing.prevention — a shielded blocker dealt COMBAT damage gets no damage event, nothing marked, and no Deadly kill"
+      }
+    ],
+    "see": [
+      "112.11",
+      "608.7a"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R98 (its prevented-damage-is-not-dealt rule)",
+          "quote": "silent), **no Poisonous -1/-1 counters**, **no {Deadly} kill**, **no {Resonant} rider** and"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "82-attr-interactions.test.ts",
+        "423-cr-combat-damage.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R98": "3b5eca7b78135e3b83d9772ba1d9b4a61e98a52ee192747ede43080eb4f13a41"
+    }
+  },
+  {
+    "key": "attr.deadly.players",
+    "parent": "attr.deadly",
+    "order": 9,
+    "text": "Deadly has no effect on damage dealt to a player.",
+    "examples": [
+      {
+        "text": "An unblocked Carapace Devourer (3/3, Deadly) costs the defending player exactly 3 life.",
+        "test": "430-cr-attributes-1.test.ts::cr:attr.deadly.players — an unblocked Deadly 3/3 costs the defending player exactly 3 life"
+      }
+    ],
+    "see": [
+      "112.5"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R21 (its players sentence)",
+          "quote": "damage too, and Deadly kills count for Reaping draws. Players don't \"die\" to Deadly —"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "430-cr-attributes-1.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R21 (an engine call): 'Players don't \"die\" to Deadly — it only shortens units.' The printed reminder (\"will kill a unit\") names only units.",
+    "sourceHashes": {
+      "R21": "c16390a9d33690be83ffdf59839ed7e0e3bee9f98b7f69322832e3c1ca48e215"
+    }
+  },
+  {
+    "key": "attr.deadly.pure",
+    "parent": "attr.deadly",
+    "order": 10,
+    "text": "Deadly does not apply in an interaction with a Pure card (see rule 802.25).",
+    "examples": [
+      {
+        "text": "Just a Unit (Pure) blocking a Deadly unit is not killed by 1 damage.",
+        "test": "40-light-c.test.ts::Just a Unit: {Pure} switches off Deadly"
+      },
+      {
+        "text": "A Pure recipient is not destroyed by a Deadly source's noncombat damage.",
+        "test": "290-pure-outside-combat.test.ts::§2 a Pure recipient: the source's Powerful and Deadly do nothing to it"
+      }
+    ],
+    "see": [
+      "802.25",
+      "608.6e"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Just a Unit",
+          "quote": "Pure cards and cards they are interacting with ignore all other attributes."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R61",
+          "quote": "exchange: no Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed,"
+        },
+        {
+          "ref": "R289 (its per-pairing switch)",
+          "quote": "{Deadly}, {Piercing}, {Electric}, {Poisonous}, {Resonant}, {Blessed} and"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "40-light-c.test.ts",
+        "290-pure-outside-combat.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R289": "81a5ae74249706f28fe64de238210a9a0ff35fa09a5ed556ac5c6dedd648781e",
+      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
+    }
+  },
+  {
+    "key": "attr.swift",
+    "parent": "802",
+    "order": 4,
+    "text": "Swift is a combat attribute. Its reminder text reads \"Swift units deal combat damage first.\"",
+    "examples": [
+      {
+        "text": "Dune Drifter (2/1 Swift) is blocked by a 2/2; the blocker dies before it strikes, and the Drifter survives undamaged.",
+        "test": "430-cr-attributes-1.test.ts::cr:attr.swift — Rime Wraith prints the reminder, and a Swift 2/1 kills a 2/2 blocker before it can strike back"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Rime Wraith",
+          "quote": "Swift units deal combat damage first."
+        },
+        {
+          "ref": "Manual p.25",
+          "quote": "Dune Drifter has the “Swift” attribute, which allows it to"
+        }
+      ],
+      "designer": [],
+      "ours": [
+        {
+          "ref": "glossary: Swift",
+          "quote": "Swift units deal combat damage first."
+        }
+      ],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "430-cr-attributes-1.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "attr.swift.schedule",
+    "parent": "attr.swift",
+    "order": 1,
+    "text": "A half-column that has Swift deals its combat damage in the Swift sub-step, before the normal and Sluggish sub-steps (see rule 608.2a).",
+    "examples": [
+      {
+        "text": "Swift strikes first, then normal, then Sluggish.",
+        "test": "423-cr-combat-damage.test.ts::cr:combat.damage.substeps — Swift, then normal, then Sluggish"
+      }
+    ],
+    "see": [
+      "608.2",
+      "608.2a"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Rime Wraith",
+          "quote": "Swift units deal combat damage first."
+        },
+        {
+          "ref": "Manual p.25",
+          "quote": "deal combat damage first. Paired with Tidepool Terror,"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "423-cr-combat-damage.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "attr.swift.kill-first",
+    "parent": "attr.swift",
+    "order": 2,
+    "text": "A unit destroyed by Swift damage in the Swift sub-step deals no combat damage in the later sub-steps.",
+    "examples": [
+      {
+        "text": "A Swift attacker kills a 2/2 blocker, which never strikes back.",
+        "test": "423-cr-combat-damage.test.ts::cr:combat.damage.overview.simultaneous — a Swift attacker deals its damage first"
+      }
+    ],
+    "see": [
+      "608.7b"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.25",
+          "quote": "who has the “Deadly” attribute, they can instantly kill"
+        },
+        {
+          "ref": "Manual p.25",
+          "quote": "anything before it has a chance to fight back."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "423-cr-combat-damage.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The pilot bound 02-combat's \"R3/Swift\" test, whose title asserts superseded law (F-U12-2); rebound to the 423 CR test.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "attr.swift.with-sluggish",
+    "parent": "attr.swift",
+    "order": 3,
+    "text": "A half-column with both Swift and Sluggish deals combat damage twice: once in the Swift sub-step and once in the Sluggish sub-step, with normal damage from other units in between (see rule 608.2c).",
+    "examples": [
+      {
+        "text": "A Swift and Sluggish column strikes in the Swift and Sluggish sub-steps, not in normal.",
+        "test": "423-cr-combat-damage.test.ts::cr:combat.damage.substeps.swift-and-sluggish"
+      }
+    ],
+    "see": [
+      "608.2c",
+      "802.5"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.43",
+          "quote": "A: It deals combat damage twice, going first and last,"
+        },
+        {
+          "ref": "Manual p.43",
+          "quote": "with normal damage from other units happening"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1363298910528864318#2",
+          "quote": "It's still possible to give this column Sluggish attribute and it will deal damage during sluggish-combat-damage (for effective doublestrike)"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 §5",
+          "quote": "Both apply. It's Algomancy's answer to double strike. A Swift+Sluggish unit"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "423-cr-combat-damage.test.ts",
+        "297-damage-substeps-are-steps.test.ts",
+        "134-column-and-substep.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
+      "RAQ 1363298910528864318#2": "9a14388c3403ea1748e43c0000f1dd01cffe8b12f8d9069ceca019a04a08af6e"
+    }
+  },
+  {
+    "key": "attr.swift.struck",
+    "parent": "attr.swift",
+    "order": 4,
+    "text": "A half-column that has dealt combat damage in the Swift sub-step does not deal combat damage in the normal sub-step, even if it has since lost Swift (see rule 608.2e).",
+    "examples": [
+      {
+        "text": "A column that dealt Swift damage deals no normal damage, even once its Swift unit is gone.",
+        "test": "388-raq-blocks-and-windows.test.ts::RAQ Swift: a column that dealt Swift damage deals no normal damage"
+      }
+    ],
+    "see": [
+      "608.2e"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1363298910528864318#1",
+          "quote": "it's marked with 'I did Swift damage', which means it won't be able to deal regular-combat-damage; even if original Swift unit is removed from that column"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        "R320"
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "388-raq-blocks-and-windows.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R320": "251b623d5c8476aca365b1e8438a2c174de15e8c2e238a32a6ceca1f63972087",
+      "RAQ 1363298910528864318#1": "f69fe64d58dd8da986837748f23976036e837eb8729b0dd4255d9b2250dd1c33"
+    }
+  },
+  {
+    "key": "attr.swift.split",
+    "parent": "attr.swift",
+    "order": 5,
+    "text": "When a Swift half-column strikes and another half-column will strike in a later sub-step, the combat damage step is split: the abilities that triggered on the Swift damage go on the stack and resolve, with priority, before normal damage is dealt (see rules 608.3b and 608.9c).",
+    "examples": [
+      {
+        "text": "A Swift-only battle gets one boundary between the Swift and normal sub-steps, not two.",
+        "test": "297-damage-substeps-are-steps.test.ts::R295 §3b an EMPTY sub-step opens no window"
+      },
+      {
+        "text": "Flowstone Arcanite's counters from the Swift step land at the boundary, in time to save an ally.",
+        "test": "21-fixes.test.ts::Flowstone Arcanite (R295): the Swift-step counters land at the boundary"
+      }
+    ],
+    "see": [
+      "608.3b",
+      "608.9c"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1540678747953569832#2",
+          "quote": "presence of Swift or/and Sluggish opens new stacks which must be resolved before you move to next combat damage step (swift->normal->sluggish)"
+        },
+        {
+          "ref": "RAQ 1363298910528864318#0",
+          "quote": "There *may* be additional opportunity windows between swift-regular-sluggish"
+        }
+      ],
+      "ours": [
+        {
+          "ref": "glossary: Swift",
+          "quote": "triggers from that damage resolve before normal damage."
+        }
+      ],
+      "rulings": [
+        "R295"
+      ],
+      "history": [
+        {
+          "ruling": "R31",
+          "relation": "superseded: it resolved sub-step triggers at once as special actions, with no priority"
+        },
+        {
+          "ruling": "R261",
+          "relation": "narrowed by R295: its hold of combat-damage triggers until after combat now applies only to an unsplit step"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "297-damage-substeps-are-steps.test.ts",
+        "21-fixes.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "RAQ 1540678747953569832 is not in this unit's pack (it is in the register); added here as the pilot did. The glossary line is our own text and cites R117, which does not say this (pilot D608-17).",
+    "sourceHashes": {
+      "R295": "e30311733f4edf882d1892f41c15af9a598b6ffaeb78879961a86198e2a15c18",
+      "RAQ 1363298910528864318#0": "3bfd6b42b0de5ecc8690c43b87713aece9c7627312eeed9ca7313163b2b4dac2",
+      "RAQ 1540678747953569832#2": "c606d1a891a2c53e293717e8c62f1e2487fe5a75c188a2814b3b3bab5c88d228"
+    }
+  },
+  {
+    "key": "attr.swift.pure",
+    "parent": "attr.swift",
+    "order": 6,
+    "text": "In an exchange involving a Pure card, Swift does not apply, so the exchange strikes in the normal sub-step (see rule 608.2d).",
+    "examples": [
+      {
+        "text": "Dune Drifter (2/1, Swift) is blocked by Just a Unit (2/3, Pure): both strike in the normal sub-step, and the Drifter dies.",
+        "test": "430-cr-attributes-1.test.ts::cr:attr.swift.pure — a Swift attacker blocked by a Pure unit strikes in the normal sub-step, together with the blocker"
+      }
+    ],
+    "see": [
+      "608.2d",
+      "802.25"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Just a Unit",
+          "quote": "Pure cards and cards they are interacting with ignore all other attributes."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R61",
+          "quote": "Swift or Sluggish in it, the exchange strikes in the normal sub-step."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "430-cr-attributes-1.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
+    }
+  },
+  {
+    "key": "attr.sluggish",
+    "parent": "802",
+    "order": 5,
+    "text": "Sluggish is a combat attribute. Its reminder text reads \"Sluggish units deal combat damage last.\"",
+    "examples": [
+      {
+        "text": "Ambling Mountaintop (4/5 Sluggish) is blocked by a 5/4; the blocker strikes first and kills it, and is never struck.",
+        "test": "430-cr-attributes-1.test.ts::cr:attr.sluggish — Rime Wraith prints the reminder, and a Sluggish 4/5 dies to a 5/4 blocker before it can strike"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Rime Wraith",
+          "quote": "Sluggish units deal combat damage last."
+        }
+      ],
+      "designer": [],
+      "ours": [
+        {
+          "ref": "glossary: Sluggish",
+          "quote": "Sluggish units deal combat damage last."
+        }
+      ],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "430-cr-attributes-1.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "attr.sluggish.schedule",
+    "parent": "attr.sluggish",
+    "order": 1,
+    "text": "A half-column that has Sluggish deals its combat damage in the Sluggish sub-step, after the Swift and normal sub-steps (see rule 608.2a).",
+    "examples": [
+      {
+        "text": "Swift strikes first, then normal, then Sluggish.",
+        "test": "423-cr-combat-damage.test.ts::cr:combat.damage.substeps — Swift, then normal, then Sluggish"
+      }
+    ],
+    "see": [
+      "608.2",
+      "608.2a"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Rime Wraith",
+          "quote": "Sluggish units deal combat damage last."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "423-cr-combat-damage.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "attr.sluggish.after-triggers",
+    "parent": "attr.sluggish",
+    "order": 2,
+    "text": "Because a Sluggish half-column strikes in a later sub-step of a split step, abilities that triggered on the earlier sub-steps' damage resolve before it deals its damage (see rule 608.9c).",
+    "examples": [
+      {
+        "text": "Adversary of the Deep (Sluggish) grows from the 6 life lost in the normal sub-step before it strikes, and deals 8.",
+        "test": "297-damage-substeps-are-steps.test.ts::R295 §1 the report"
+      }
+    ],
+    "see": [
+      "608.9c",
+      "608.3b"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1540678747953569832#2",
+          "quote": "presence of Swift or/and Sluggish opens new stacks which must be resolved before you move to next combat damage step (swift->normal->sluggish)"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R295",
+          "quote": "so that it gets its counters BEFORE dealing damage. So there should have been 6"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "297-damage-substeps-are-steps.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R295": "e30311733f4edf882d1892f41c15af9a598b6ffaeb78879961a86198e2a15c18",
+      "RAQ 1540678747953569832#2": "c606d1a891a2c53e293717e8c62f1e2487fe5a75c188a2814b3b3bab5c88d228"
+    }
+  },
+  {
+    "key": "attr.sluggish.after-normal",
+    "parent": "attr.sluggish",
+    "order": 3,
+    "text": "A half-column that has dealt combat damage in the normal sub-step does not deal combat damage in the Sluggish sub-step, even if it has since gained Sluggish. A half-column that dealt damage in the Swift sub-step and has gained Sluggish deals damage again in the Sluggish sub-step (see rule 608.2e).",
+    "examples": [
+      {
+        "text": "A plain column strikes in the normal sub-step, then gains Sluggish; it does not strike again.",
+        "test": "388-raq-blocks-and-windows.test.ts::RAQ Swift: a column that dealt normal damage deals no Sluggish damage"
+      },
+      {
+        "text": "A Swift column strikes in the Swift sub-step, gains Sluggish, and strikes again in the Sluggish sub-step.",
+        "test": "388-raq-blocks-and-windows.test.ts::RAQ Swift: a Swift column that gains Sluggish strikes again"
+      }
+    ],
+    "see": [
+      "608.2e"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1363298910528864318#3",
+          "quote": "it's marked with 'I did Regular damage' which means it won't be able to deal sluggish-combat-damage; even if it were to gain Sluggish"
+        },
+        {
+          "ref": "RAQ 1363298910528864318#2",
+          "quote": "It's still possible to give this column Sluggish attribute and it will deal damage during sluggish-combat-damage (for effective doublestrike)"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        "R320"
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "388-raq-blocks-and-windows.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R320": "251b623d5c8476aca365b1e8438a2c174de15e8c2e238a32a6ceca1f63972087",
+      "RAQ 1363298910528864318#2": "9a14388c3403ea1748e43c0000f1dd01cffe8b12f8d9069ceca019a04a08af6e",
+      "RAQ 1363298910528864318#3": "cbb707bcad01ac4069d276f6c5d4ec40fb77ee9268a88b0c24e640fcfdd7ebf0"
+    }
+  },
+  {
+    "key": "attr.sluggish.pure",
+    "parent": "attr.sluggish",
+    "order": 4,
+    "text": "In an exchange involving a Pure card, Sluggish does not apply, so the exchange strikes in the normal sub-step (see rule 608.2d).",
+    "examples": [
+      {
+        "text": "Ambling Mountaintop (4/5, Sluggish) is blocked by Just a Unit (2/3, Pure): both strike in the normal sub-step.",
+        "test": "430-cr-attributes-1.test.ts::cr:attr.sluggish.pure — a Sluggish attacker blocked by a Pure unit strikes in the normal sub-step, together with the blocker"
+      }
+    ],
+    "see": [
+      "608.2d",
+      "802.25"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Just a Unit",
+          "quote": "Pure cards and cards they are interacting with ignore all other attributes."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R61",
+          "quote": "Swift or Sluggish in it, the exchange strikes in the normal sub-step."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "430-cr-attributes-1.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
+    }
+  },
+  {
+    "key": "attr.tough",
+    "parent": "802",
+    "order": 6,
+    "text": "Tough is an attribute. A Tough unit's defense is doubled.",
+    "examples": [
+      {
+        "text": "Rampart Guardian (0/4, Tough) is a 0/8, and a unit it is augmented onto has its defense doubled.",
+        "test": "08-cards2.test.ts::Rampart Guardian: Tough doubles defense (layer 4), own and via augment"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.42",
+          "quote": "will have its defense doubled, then its stats balanced."
+        },
+        {
+          "ref": "Manual p.35",
+          "quote": "for example can be augmented to grant the “Tough”"
+        }
+      ],
+      "designer": [],
+      "ours": [
+        {
+          "ref": "glossary: Tough",
+          "quote": "Tough units have their defense doubled."
+        }
+      ],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "08-cards2.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The card's own reminder (\"Tough units have their defense doubled.\") is printed under Rampart Guardian's type line and is not in the transcription: D-U19-8. The pilot drafted this at engine basis because R19 and the Manual Q&A were not in its pack.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "attr.tough.after-counters",
+    "parent": "attr.tough",
+    "order": 1,
+    "text": "Tough doubles a unit's defense after counters and other +X/+X changes to it have been applied.",
+    "examples": [
+      {
+        "text": "Rampart Guardian (0/4, Tough) with a +1/+1 counter is a 1/10.",
+        "test": "387-raq-combat.test.ts::RAQ Tough: a 0/4 Tough unit with a +1/+1 counter is a 1/10"
+      },
+      {
+        "text": "Rampart Guardian (0/4, Tough) with a -1/-1 counter has defense 6: the counter makes it 3, then Tough doubles it.",
+        "test": "430-cr-attributes-1.test.ts::cr:attr.tough.after-counters — a 0/4 Tough unit with a -1/-1 counter has defense 6: the counter applies first, then the doubling"
+      }
+    ],
+    "see": [
+      "206.4",
+      "802.1"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.42",
+          "quote": "place before the defense is doubled, so a 0/4 tough"
+        },
+        {
+          "ref": "Manual p.42",
+          "quote": "unit with a -1/-1 counter on it would become a -1/6."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1362832912579559664#0",
+          "quote": "That's 1/5 after including counter and 1/10 after including Tough"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts",
+        "430-cr-attributes-1.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1362832912579559664#0": "b4cd853b8983578138527033130379dfe0efa0fb80feb67a36bf79eee311096a"
+    }
+  },
+  {
+    "key": "attr.tough.power",
+    "parent": "attr.tough",
+    "order": 2,
+    "text": "Tough does not change a unit's power.",
+    "examples": [
+      {
+        "text": "A 0/4 Tough unit with a -1/-1 counter is a -1/6: its power is not doubled. (illustrative)",
+        "test": "430-cr-attributes-1.test.ts::cr:attr.tough.power — a 0/4 Tough unit with a -1/-1 counter is a -1/6: its power is not doubled"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.42",
+          "quote": "unit with a -1/-1 counter on it would become a -1/6."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R226",
+          "quote": "defense eats its own base. Power is untouched by `{Tough}` and merely flips:"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "430-cr-attributes-1.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R226": "4cd6248b0e9667c055143ab217404c07abbe030729eaf6bfa32a61cde765a89a"
+    }
+  },
+  {
+    "key": "attr.tough.doubling",
+    "parent": "attr.tough",
+    "order": 3,
+    "text": "If an effect doubles a Tough unit's defense, the defense the unit then has is double what it had. The doubling is a stat change applied before Tough doubles the result, so if the unit later loses Tough, that change stays and is no longer doubled.",
+    "examples": [
+      {
+        "text": "Burgeon on a 1/10 Tough unit makes it 1/20 (a +0/+5 under Tough); if Monke then takes its Tough, it is a 1/10.",
+        "test": "387-raq-combat.test.ts::RAQ Tough: Burgeon on that 1/10 makes it 1/20, and losing Tough to Monke leaves 1/10"
+      },
+      {
+        "text": "Burgeon doubling Rampart Guardian's defense shows the doubled number, not four times its defense.",
+        "test": "140-layers-and-riders.test.ts::Burgeon doubling a {Tough} unit's defense gives the printed number"
+      }
+    ],
+    "see": [
+      "709",
+      "712"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1362832912579559664#1",
+          "quote": "So Burgeon 'under the hood' gave it +0/+5"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts",
+        "140-layers-and-riders.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "medium",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1362832912579559664#1": "46cb7c6bd0a59a6d4fae28a4257aeaf05bea5d5d56d732e9e37de27dfd3d2f6e"
+    }
+  },
+  {
+    "key": "attr.balanced",
+    "parent": "802",
+    "order": 7,
+    "text": "Balanced is an attribute. Its reminder text reads \"The power and defense of balanced units are equal to the greater of the two.\"",
+    "examples": [
+      {
+        "text": "Child of Aether (2/0, Balanced) is a 2/2.",
+        "test": "08-cards2.test.ts::Child of Aether: Balanced (power & defense = max) keeps a 2/0 alive"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Brough",
+          "quote": "The power and defense of balanced units are equal to the greater of the two."
+        }
+      ],
+      "designer": [],
+      "ours": [
+        {
+          "ref": "glossary: Balanced",
+          "quote": "The power and defense of balanced units are equal to the greater of the two."
+        }
+      ],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "08-cards2.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "attr.balanced.after-changes",
+    "parent": "attr.balanced",
+    "order": 1,
+    "text": "Balanced compares the unit's power and defense after its counters and other stat changes, and after any attribute that applied before it, have been applied.",
+    "examples": [
+      {
+        "text": "A 1/4 with Tough and Balanced: Tough makes it 1/8, then Balanced makes it 8/8. (illustrative)",
+        "test": null
+      },
+      {
+        "text": "A 1/3 with two +1/+1 counters and Balanced is a 5/5.",
+        "test": "430-cr-attributes-1.test.ts::cr:attr.balanced.after-changes — Balanced reads after counters: a 1/3 with two +1/+1 counters and Balanced is a 5/5"
+      }
+    ],
+    "see": [
+      "206.4",
+      "802.1"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.42",
+          "quote": "will have its defense doubled, then its stats balanced."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R93",
+          "quote": "\"1/4 tough balanced is 8/8 — Tough is +0/+4, Balanced is +7/0. If we"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "430-cr-attributes-1.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "Caleb Gannon's worked example, quoted in R93. The order between Tough and Balanced is rule attr.general.application-order.",
+    "sourceHashes": {
+      "R93": "73186b8c262fceca3f8e8f4bb6096062273e36d0810c6cc93495021144038a67"
+    }
+  },
+  {
+    "key": "attr.inverted",
+    "parent": "802",
+    "order": 8,
+    "text": "Inverted is an attribute. Its reminder text reads \"Invert the stat changes of inverted units. For example, -1/+2 would become +1/-2.\"",
+    "examples": [
+      {
+        "text": "Its Dark Bubb's reminder, verbatim: a -1/+2 change on an Inverted unit becomes +1/-2.",
+        "test": "43-dark-c.test.ts::Its Dark Bubb: the printed reminder text, verbatim"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Its Dark Bubb",
+          "quote": "Invert the stat changes of inverted units. For example, -1/+2 would become +1/-2."
+        },
+        {
+          "ref": "Manual p.25",
+          "quote": "attribute, which reverses its stat changes. It’s -7/-7"
+        }
+      ],
+      "designer": [],
+      "ours": [
+        {
+          "ref": "glossary: Inverted",
+          "quote": "Invert the stat changes of inverted units. For example, -1/+2 would become +1/-2."
+        }
+      ],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "43-dark-c.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "attr.inverted.net",
+    "parent": "attr.inverted",
+    "order": 1,
+    "text": "Inverted inverts the net change to a unit's stats. An Inverted unit's power is its base power minus the net change to its power, and its defense is its base defense minus the net change to its defense. It is worked out on the total change, not on each change separately.",
+    "examples": [
+      {
+        "text": "Malformed Monstrosity (10/9) with its -7/-7, in a column with Reality Bender, is a 17/16.",
+        "test": "79-round17-layers.test.ts::R93 layer 5: the owner's Malformed Monstrosity"
+      },
+      {
+        "text": "With several sources changing its stats, an Inverted unit inverts the net change, not each source.",
+        "test": "43-dark-c.test.ts::Its Dark Bubb: MULTI-SOURCE — layer 5 negates the NET change, not each source on its own"
+      }
+    ],
+    "see": [
+      "206.4"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.25",
+          "quote": "attribute, which reverses its stat changes. It’s -7/-7"
+        },
+        {
+          "ref": "Manual p.25",
+          "quote": "ability now becomes +7/+7 turning it into a 17/16."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R93",
+          "quote": "i.e. `base − (current − base)` — negate the accumulated delta from base. Caleb Gannon"
+        },
+        {
+          "ref": "R93",
+          "quote": "> **calebgannon:** \"yes … it is a mathematical operation, not a linguistic operation\""
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "79-round17-layers.test.ts",
+        "43-dark-c.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R93": "73186b8c262fceca3f8e8f4bb6096062273e36d0810c6cc93495021144038a67"
+    }
+  },
+  {
+    "key": "attr.inverted.attributes",
+    "parent": "attr.inverted",
+    "order": 2,
+    "text": "The changes Inverted inverts include those that Tough and Balanced make. Inverting Tough removes the defense Tough added; it does not halve the defense.",
+    "examples": [
+      {
+        "text": "A 1/4 with Tough and Balanced is an 8/8; with Inverted too it is a -6/0.",
+        "test": "79-round17-layers.test.ts::R93 layer 5: Caleb's worked example — a 1/4 Tough Balanced Inverted is a -6/0"
+      }
+    ],
+    "see": [
+      "802.6",
+      "802.7"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R93",
+          "quote": "include inverted it gains +0/-4, -7/+0 → To become a -6/0\""
+        },
+        {
+          "ref": "R93",
+          "quote": "So Tough inverted is not \"halve the defense\", it is \"lose the +0/+4 you gained\""
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "79-round17-layers.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Caleb Gannon's worked example, quoted in R93 from #rules-questions; typed owner because no RAQ claim carries it.",
+    "sourceHashes": {
+      "R93": "73186b8c262fceca3f8e8f4bb6096062273e36d0810c6cc93495021144038a67"
+    }
+  },
+  {
+    "key": "attr.inverted.base",
+    "parent": "attr.inverted",
+    "order": 3,
+    "text": "Setting a unit's base stats is not a stat change that Inverted inverts: the new base stats are what Inverted inverts from.",
+    "examples": [
+      {
+        "text": "A unit made base 3/3 by Aberrant Statweaver, with no other changes, is a 3/3 whether or not it is Inverted.",
+        "test": "79-round17-layers.test.ts::R93 layer 5: a base REWRITE is the thing inverted FROM, never inverted itself"
+      }
+    ],
+    "see": [
+      "206.5"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R93",
+          "quote": "(R66) — redefines what base *is*, so it is the thing inverted FROM and is never"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "79-round17-layers.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Settled by the owner on 2026-08-22 (R93 addendum) after seeing both worked examples. A _passer post in #rules-questions (not a RAQ write-up; found in the export) and the owner's own later R157 §14 point the other way: D-U19-3.",
+    "sourceHashes": {
+      "R93": "73186b8c262fceca3f8e8f4bb6096062273e36d0810c6cc93495021144038a67"
+    }
+  },
+  {
+    "key": "attr.inverted.tough",
+    "parent": "attr.inverted",
+    "order": 4,
+    "text": "If a unit has both Tough and Inverted, its defense is minus twice the net change to its defense from base. So it has 0 or less defense, and dies, unless that net change is a reduction, in which case its defense is twice the reduction.",
+    "examples": [
+      {
+        "text": "A 1/4 with Tough and Inverted is a 1/0, in either grant order, and dies.",
+        "test": "79-round17-layers.test.ts::R226: the TWO-attribute case, in either grant order"
+      },
+      {
+        "text": "A 1/3 with one -1/-1 counter, Tough and Inverted survives as a 2/2.",
+        "test": "79-round17-layers.test.ts::R226: the special case his wording misses"
+      },
+      {
+        "text": "Inverted on the front unit of a column and Tough on the back unit: both units have both attributes, and both die.",
+        "test": "79-round17-layers.test.ts::R226: the column wipe"
+      }
+    ],
+    "see": [
+      "802.6",
+      "713"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R226",
+          "quote": "> ### **final defense = −2Δ.** The base cancels out completely."
+        },
+        {
+          "ref": "R226",
+          "quote": "> works. So tough + inverted always kills the unit since +0/+X is just -0/-X"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "79-round17-layers.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "The owner's words (\"always kills\") are the special case of R226's law for a net change of zero or more; R226 pins the law. See D-U19-9.",
+    "sourceHashes": {
+      "R226": "4cd6248b0e9667c055143ab217404c07abbe030729eaf6bfa32a61cde765a89a"
+    }
+  },
+  {
+    "key": "attr.unaware",
+    "parent": "802",
+    "order": 9,
+    "text": "Unaware is an attribute. An Unaware card, and every card interacting with it, ignores all stat changes: each is read at the stats printed on it.",
+    "examples": [
+      {
+        "text": "Bubb with two +1/+1 counters is still a 5/6. A 3/3 with four +1/+1 counters attacks into Bubb: it deals 3 and dies to 5.",
+        "test": "430-cr-attributes-1.test.ts::cr:attr.unaware — Unaware Bubb ignores its own counters, and a pumped 3/3 blocked by Bubb is read at its printed 3/3"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1402292180499955884#3",
+          "quote": "If you used Squish to make Bubb deal it's defense to Robot 10, then the Robot will die as Bubb is Unaware"
+        }
+      ],
+      "ours": [
+        {
+          "ref": "glossary: Unaware",
+          "quote": "Unaware cards and units they are interacting with ignore all stat changes."
+        }
+      ],
+      "rulings": [
+        {
+          "ref": "R106",
+          "quote": "> \"Unaware means that it looks ONLY at what is the literal printed text on all cards"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R10",
+          "relation": "superseded by R106; R10 counted targeting as interacting"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "430-cr-attributes-1.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The glossary line quoted under ours is the reminder printed under Bubb's type line (client/ui/scan-reminders.json), which the transcription lacks: D-U19-8.",
+    "sourceHashes": {
+      "R106": "fcdf4679f553417968ef6edaa505171e1cd1a4ecbcacaea97f6fb17fce6f0e83",
+      "RAQ 1402292180499955884#3": "393270501459afa8f838be9e16afe7e364ff990cf4db27b2fde53826b61bf395"
+    }
+  },
+  {
+    "key": "attr.unaware.self",
+    "parent": "attr.unaware",
+    "order": 1,
+    "text": "An Unaware card's own power and defense are always the ones printed on it, for every purpose, including whether it has died. Counters, temporary changes, continuous effects and the other stat attributes do not change them.",
+    "examples": [
+      {
+        "text": "A +1/+1 counter on Bubb (5/6, Unaware) leaves it a 5/6.",
+        "test": "92-unaware.test.ts::a +1/+1 counter on Bubb leaves it a 5/6"
+      },
+      {
+        "text": "Bubb survives 100 -1/-1 counters.",
+        "test": "92-unaware.test.ts::Bubb would also survive 100 -1/-1 counters just fine"
+      },
+      {
+        "text": "Tough donated onto Bubb does nothing.",
+        "test": "92-unaware.test.ts::{Tough} donated onto Bubb does nothing"
+      },
+      {
+        "text": "A Robot token given Unaware by Bubb ignores its own +1/+1 counters and dies a 0/0.",
+        "test": "393-raq-mods.test.ts::RAQ Reconfigure vs Despawn: moving Bubb and its Growing Plague onto a Robot"
+      }
+    ],
+    "see": [
+      "206.4",
+      "713"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353847640214999170#1",
+          "quote": "Since now Robot is Unaware it will die and then trigger Growing Plague Despawn."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R106",
+          "quote": "> matter how many +1/+1 counters it has. Bubb would also survive 100 -1/-1 counters just"
+        },
+        {
+          "ref": "R106",
+          "quote": "Layer 6 returns **layer 1 alone**. An Unaware card's own numbers never move off the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "92-unaware.test.ts",
+        "393-raq-mods.test.ts",
+        "79-round17-layers.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R106": "fcdf4679f553417968ef6edaa505171e1cd1a4ecbcacaea97f6fb17fce6f0e83",
+      "RAQ 1353847640214999170#1": "aa53daaea457ede26807bac41ac3c597fe1234150aa478b6b8fb010492d48946"
+    }
+  },
+  {
+    "key": "attr.unaware.base",
+    "parent": "attr.unaware",
+    "order": 2,
+    "text": "Setting a unit's base stats is a stat change too. An Unaware unit whose base stats an effect sets is still read at its printed stats.",
+    "examples": [
+      {
+        "text": "Aberrant Statweaver (\"your units are base 3/3\") leaves Bubb a 5/6.",
+        "test": "92-unaware.test.ts::a base REWRITE is ignored too"
+      }
+    ],
+    "see": [
+      "206.5"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 §14",
+          "quote": "Literally any change to a unit's stats counts. If they're different from the"
+        },
+        {
+          "ref": "R106",
+          "quote": "card. So a Statweaver leaves Bubb a 5/6."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "92-unaware.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R106 also quotes Caleb: Unaware cards \"will only look at BASE STAT PRINTED on cards\".",
+    "sourceHashes": {
+      "R106": "fcdf4679f553417968ef6edaa505171e1cd1a4ecbcacaea97f6fb17fce6f0e83",
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
+    }
+  },
+  {
+    "key": "attr.unaware.interaction",
+    "parent": "attr.unaware",
+    "order": 3,
+    "text": "When an Unaware card deals damage or is dealt damage, every card in that interaction is read at its printed stats: the other card as well as the Unaware one.",
+    "examples": [
+      {
+        "text": "Unaware Bubb squishing a Robot 10 kills it: the Robot is read as its printed 0/0.",
+        "test": "388-raq-blocks-and-windows.test.ts::RAQ Squish: Unaware Bubb squishing a Robot 10 kills it"
+      },
+      {
+        "text": "A Robot 10 squishing Unaware Bubb deals its printed defense, 0.",
+        "test": "388-raq-blocks-and-windows.test.ts::RAQ Squish: a Robot 10 squishing Unaware Bubb"
+      },
+      {
+        "text": "Two units fight: Bubb reads a Robot 7 as a 0/0 and kills it.",
+        "test": "92-unaware.test.ts::two units FIGHT: Bubb reads a Robot 7 as a 0/0"
+      }
+    ],
+    "see": [
+      "112.6"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1402292180499955884#3",
+          "quote": "If you used Squish to make Bubb deal it's defense to Robot 10, then the Robot will die as Bubb is Unaware"
+        },
+        {
+          "ref": "RAQ 1402292180499955884#4",
+          "quote": "Squish to make Robot 10 deal its defense as damage to Bubb will cause no harm to Bubb"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R106",
+          "quote": "> 'involved' (self or others when dealing damage or in combat when dealing/receiving). So"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "388-raq-blocks-and-windows.test.ts",
+        "92-unaware.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R106": "fcdf4679f553417968ef6edaa505171e1cd1a4ecbcacaea97f6fb17fce6f0e83",
+      "RAQ 1402292180499955884#3": "393270501459afa8f838be9e16afe7e364ff990cf4db27b2fde53826b61bf395",
+      "RAQ 1402292180499955884#4": "05c049a89f9714e2361e3928bd2edf700d8633f0d224478e63f90884d3bc694b"
+    }
+  },
+  {
+    "key": "attr.unaware.combat",
+    "parent": "attr.unaware",
+    "order": 4,
+    "text": "In combat, the interaction is the exchange between an attacking half-column and the half-column blocking it. If a unit on either side is Unaware, every unit on both sides deals and is dealt combat damage at its printed stats.",
+    "examples": [
+      {
+        "text": "Bubb blocks a 3/3 pumped to 5/5 and takes 3, the attacker's printed power.",
+        "test": "92-unaware.test.ts::Bubb blocks a pumped 3/3 and takes the attacker's PRINTED 3"
+      },
+      {
+        "text": "An Unaware attacker reads its exchange the same way an Unaware blocker does.",
+        "test": "92-unaware.test.ts::an Unaware ATTACKER collapses the exchange the same way a blocker does"
+      },
+      {
+        "text": "In an Unaware exchange the front blocker is priced at its printed defense, less marked damage.",
+        "test": "423-cr-combat-damage.test.ts::cr:combat.damage.assignment.lethal-defined — in an Unaware exchange"
+      }
+    ],
+    "see": [
+      "608.5c",
+      "608.6e"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R106",
+          "quote": "> 'involved' (self or others when dealing damage or in combat when dealing/receiving). So"
+        },
+        {
+          "ref": "R106",
+          "quote": "- `assignCombatDamage`: power dealt and toughness assigned against, with **both columns of"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "92-unaware.test.ts",
+        "05-rulings.test.ts",
+        "423-cr-combat-damage.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "The whole-column scope follows from column sharing: every unit in an Unaware unit's column is Unaware (rule 802.1), and the opposing column is what they are interacting with.",
+    "sourceHashes": {
+      "R106": "fcdf4679f553417968ef6edaa505171e1cd1a4ecbcacaea97f6fb17fce6f0e83"
+    }
+  },
+  {
+    "key": "attr.unaware.death",
+    "parent": "attr.unaware",
+    "order": 5,
+    "text": "A unit dealt damage in such an interaction is destroyed if the damage is lethal for its printed defense, even if the stats it has outside the interaction would let it survive.",
+    "examples": [
+      {
+        "text": "Bubb blocking a Robot token kills it, however many +1/+1 counters it has.",
+        "test": "92-unaware.test.ts::\"Bubb blocking a Robot token would kill it"
+      },
+      {
+        "text": "Haboob's 1 damage kills any unit with a printed defense of 1.",
+        "test": "92-unaware.test.ts::\"Haboob kills anything that has 1 defense printed at the card level\""
+      }
+    ],
+    "see": [
+      "713"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R106",
+          "quote": "> \"Unaware means that it looks ONLY at what is the literal printed text on all cards"
+        },
+        {
+          "ref": "R106",
+          "quote": "> fine. Haboob kills anything that has 1 defense printed at the card level.\""
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "92-unaware.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R106": "fcdf4679f553417968ef6edaa505171e1cd1a4ecbcacaea97f6fb17fce6f0e83"
+    }
+  },
+  {
+    "key": "attr.unaware.outside",
+    "parent": "attr.unaware",
+    "order": 6,
+    "text": "Outside such an interaction, an Unaware card does not change the stats of the other cards.",
+    "examples": [
+      {
+        "text": "A Robot token that nobody Unaware is fighting is its full size.",
+        "test": "92-unaware.test.ts::NEGATIVE CONTROL: a Robot token that nobody Unaware is fighting is its full size"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R106",
+          "quote": "participants only — outside an interaction a Robot 20 is a 20/20 and stays one. It sits"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "92-unaware.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R106": "fcdf4679f553417968ef6edaa505171e1cd1a4ecbcacaea97f6fb17fce6f0e83"
+    }
+  },
+  {
+    "key": "attr.unaware.spells",
+    "parent": "attr.unaware",
+    "order": 7,
+    "text": "A spell can be Unaware. A spell has no stats of its own, so its Unaware only makes the cards it deals damage to be read at their printed stats.",
+    "examples": [
+      {
+        "text": "Haboob (an Unaware spell) deals 1 damage to each unit and kills every unit with a printed defense of 1.",
+        "test": "92-unaware.test.ts::\"Haboob kills anything that has 1 defense printed at the card level\""
+      }
+    ],
+    "see": [
+      "302"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R106",
+          "quote": "> fine. Haboob kills anything that has 1 defense printed at the card level.\""
+        },
+        {
+          "ref": "R106",
+          "quote": "modifier applied' and any Unaware units (or Spells like Haboob) will only look at BASE"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "92-unaware.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R106": "fcdf4679f553417968ef6edaa505171e1cd1a4ecbcacaea97f6fb17fce6f0e83"
+    }
+  },
+  {
+    "key": "attr.unaware.targets",
+    "parent": "attr.unaware",
+    "order": 8,
+    "text": "Unaware does not stop a card being targeted. An effect can put counters or other stat changes on an Unaware card; they stay on it but do not change its stats while it is Unaware.",
+    "examples": [
+      {
+        "text": "Poison with X = 6, targeting Bubb (a 5/6, Unaware), puts six -1/-1 counters on it; Bubb is still a 5/6. (illustrative)",
+        "test": "430-cr-attributes-1.test.ts::cr:attr.unaware.targets — Poison X=6 may target Unaware Bubb: six -1/-1 counters go on, and Bubb stays a 5/6"
+      },
+      {
+        "text": "A Robot 10 may Squish Unaware Bubb, targeting Bubb. The Robot, interacting with Unaware Bubb, is read at its printed 0/0, so it deals 0 and Bubb takes no harm.",
+        "test": "388-raq-blocks-and-windows.test.ts::RAQ Squish: a Robot 10 squishing Unaware Bubb deals its printed defense, 0"
+      }
+    ],
+    "see": [
+      "110"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1402292180499955884#4",
+          "quote": "Squish to make Robot 10 deal its defense as damage to Bubb will cause no harm to Bubb"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R281",
+          "quote": "*\"You can target things with unaware, of course, but if that thing does a stat"
+        },
+        {
+          "ref": "R281",
+          "quote": "get 6 counters, but those counters won't do anything.\"* R106's \"one open edge\""
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R10",
+          "relation": "superseded by R106: it counted targeting as interacting"
+        },
+        {
+          "ruling": "R206",
+          "relation": "its Unaware row (\"targeting is deliberately not implemented\") amended by R281"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "388-raq-blocks-and-windows.test.ts",
+        "430-cr-attributes-1.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "A _passer write-up in the RAQ thread \"Graft 101\" says the same in passing (\"Bubb would gain +1/+1 buff (which won't do much since he is Unaware)\"); the register carries no claim for it, so it is not cited. R106's own \"open edge\" paragraph is still unmarked: D-U19-6. Round 1: Poison prints \"Put X -1/-1 counters on target unit.\"; the owner's \"Poison 6\" is X = 6. Round 2: example 2 corrected. The 0 is the Robot's printed defense (Robot prints 0/0), not Bubb's (Bubb prints 5/6); the verifier measured interactionStats(Robot, [Bubb]) = 0/0. RAQ 1402292180499955884#4 is cited because Squish targets Bubb (\"another target unit\"), so it also shows an Unaware card can be targeted. Basis mixed: the RAQ shows targeting an Unaware card; R281 (owner) states the counters clause.",
+    "sourceHashes": {
+      "R281": "3015e7c98d15e7daf8e1f194b93c2344f1655dc4c3777bc050d1a45310510acb",
+      "RAQ 1402292180499955884#4": "05c049a89f9714e2361e3928bd2edf700d8633f0d224478e63f90884d3bc694b"
+    }
+  },
+  {
+    "key": "attr.powerful",
+    "parent": "802",
+    "order": 10,
+    "text": "Powerful is a combat attribute. Its reminder text reads \"Powerful sources deal double damage\".",
+    "examples": [
+      {
+        "text": "Chitin Shredder (1/2 Powerful) deals 3 effect damage as 6, and unblocked costs the defending player 2 life.",
+        "test": "430-cr-attributes-1.test.ts::cr:attr.powerful — Emberflame Enlightener prints the reminder, and a Powerful source deals double in combat and by effect"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Emberflame Enlightener",
+          "quote": "Powerful sources deal double damage"
+        }
+      ],
+      "designer": [],
+      "ours": [
+        {
+          "ref": "glossary: Powerful",
+          "quote": "Powerful sources deal double damage"
+        }
+      ],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "430-cr-attributes-1.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "attr.powerful.combat",
+    "parent": "attr.powerful",
+    "order": 1,
+    "text": "A Powerful half-column's combat damage is doubled once, as a whole, before it is divided among its recipients, whether they are units or a player. A unit without Powerful in a Powerful column has its damage doubled along with the rest (see rule 608.5b).",
+    "examples": [
+      {
+        "text": "Chitin Shredder (Powerful) deals double combat damage to a player.",
+        "test": "09-attrs.test.ts::Powerful: Chitin Shredder deals double combat damage to a player"
+      },
+      {
+        "text": "A vanilla unit in front of Chitin Shredder has its damage doubled too.",
+        "test": "09-attrs.test.ts::Powerful: column-shares"
+      }
+    ],
+    "see": [
+      "608.5b"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1362838395298119912#2",
+          "quote": "2/4 Resonant Powerful would deal 4 combat damage to enemy unit"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R23",
+          "quote": "**Powerful** doubles the source's total damage once, **before** assignment/overflow (a"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "09-attrs.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "\"Before it is divided\" is R23's engine call; the designer confirms only that combat damage is doubled (U12's pilot item D608-10).",
+    "sourceHashes": {
+      "R23": "04ef097d6068557fac2a6fffbbbf1b13e15d998f142ea3b79c9b8242ea6173e1",
+      "RAQ 1362838395298119912#2": "13be376dafc911e98b9fd60517f7fc84ba94b25dcdfa1017a51f24d16bd972ec"
+    }
+  },
+  {
+    "key": "attr.powerful.additive",
+    "parent": "attr.powerful",
+    "order": 2,
+    "text": "If a modifier that adds to the damage also applies, the addition is made first and Powerful doubles the result (see rule 112.9).",
+    "examples": [
+      {
+        "text": "A Powerful Bellowing Boulder's 1 damage with Conduit of Pain is (1+1)x2 = 4 to each unit.",
+        "test": "387-raq-combat.test.ts::RAQ Resonant: Conduit adds its 1 BEFORE Powerful doubles"
+      }
+    ],
+    "see": [
+      "112.9"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1362838395298119912#4",
+          "quote": "A: (1+1)x2 damage to each unit = 4 damage to each unit"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        "R316"
+      ],
+      "history": [
+        {
+          "ruling": "R104",
+          "relation": "applied Conduit of Pain after the doubling; replaced on this point by R316"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "Stated for noncombat damage only: the pool's one additive modifier (Conduit of Pain) excludes combat damage.",
+    "sourceHashes": {
+      "R316": "0a120883d7cfa92ba527097fad739d9bf9c28e09964452ec7c89cef9578bb128",
+      "RAQ 1362838395298119912#4": "17213edf2cc843dab7504dfd0d633bd4f4c5fc3d7997ea9ffc883f4aed2df901"
+    }
+  },
+  {
+    "key": "attr.powerful.noncombat",
+    "parent": "attr.powerful",
+    "order": 3,
+    "text": "Powerful also doubles damage its source deals through spells and abilities, to units and players alike.",
+    "examples": [
+      {
+        "text": "Powerful doubles effect damage from a Powerful source.",
+        "test": "09-attrs.test.ts::Powerful: doubles effect damage from a Powerful source"
+      }
+    ],
+    "see": [
+      "112.9"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1362838395298119912#4",
+          "quote": "A: (1+1)x2 damage to each unit = 4 damage to each unit"
+        },
+        {
+          "ref": "RAQ 1362838395298119912#3",
+          "quote": "put effect on stack to deal (4+1)x2 = 10 damage to enemy face"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R237",
+          "quote": "Yes, deadly works on spell effects and everything. Just like powerful. So a"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "09-attrs.test.ts",
+        "206-deadly-everywhere.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R237": "ec152f51160f9f8410800e8323fd9f676fdf45864242ec64e8d1e35ce6ae3cc7",
+      "RAQ 1362838395298119912#3": "5d2874b098ec7b0da74051103612b657047dddc39cc12900bbbd2b931fc71940",
+      "RAQ 1362838395298119912#4": "17213edf2cc843dab7504dfd0d633bd4f4c5fc3d7997ea9ffc883f4aed2df901"
+    }
+  },
+  {
+    "key": "attr.powerful.spells",
+    "parent": "attr.powerful",
+    "order": 4,
+    "text": "A spell can have Powerful. Damage a Powerful spell deals is doubled.",
+    "examples": [
+      {
+        "text": "With Emberflame Enlightener in its region, a player's spell deals double damage.",
+        "test": "12-fire-a.test.ts::Emberflame Enlightener: your SPELLS gain {Powerful} too"
+      }
+    ],
+    "see": [
+      "302"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Emberflame Enlightener",
+          "quote": "[Augment] Your units and spells gain {g}powerful."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        "R94"
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "12-fire-a.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R94": "9dfaa17128fa1b9a95d19b4997d6321eade9ec1f9b04e251de4f34b13d0f1d8b"
+    }
+  },
+  {
+    "key": "attr.powerful.unit-source",
+    "parent": "attr.powerful",
+    "order": 5,
+    "text": "When a spell makes a unit deal damage, as Squish, Fight and Battle do, the unit is the source: the unit's own Powerful, including Powerful it shares from its column, applies, and Powerful on the spell does not (see rule 112.6).",
+    "examples": [
+      {
+        "text": "Squish makes a Powerful ally deal double its defense.",
+        "test": "388-raq-blocks-and-windows.test.ts::RAQ Squish: the unit is the source"
+      },
+      {
+        "text": "A Powerful Squish does not double.",
+        "test": "388-raq-blocks-and-windows.test.ts::RAQ Squish: a Powerful Squish does not double"
+      },
+      {
+        "text": "Squish on a 1/3 that shares Powerful from Chitin Shredder in its column deals 6.",
+        "test": "430-cr-attributes-1.test.ts::cr:attr.powerful.unit-source — Squish on a unit that shares Powerful from its column deals double"
+      }
+    ],
+    "see": [
+      "112.6"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1402292180499955884#0",
+          "quote": "you would need to target ally unit which is Powerful to deal double damage"
+        },
+        {
+          "ref": "RAQ 1402292180499955884#1",
+          "quote": "It doesn't matter if Squish is Powerful"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        "R318",
+        "R294"
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "388-raq-blocks-and-windows.test.ts",
+        "399-raq-fix-combat.test.ts",
+        "430-cr-attributes-1.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R294": "8cae16d380577db83dfb428eb40c37313643ed54a5a3131e6ef3efdc40475495",
+      "R318": "b13b3ca34a471fdb76cb9272f2929ad8b0eec17d7ea5cff2cba441ffdae5947a",
+      "RAQ 1402292180499955884#0": "8ca0618915f46ba0c16263c38e217d8b045a1e4767421a8e648967c065ada9d9",
+      "RAQ 1402292180499955884#1": "349d662f096c2d881835be8a87a653bd4c6b51a650ab71bfbaf64c6a6d9841a7"
+    }
+  },
+  {
+    "key": "attr.powerful.pure",
+    "parent": "attr.powerful",
+    "order": 6,
+    "text": "Powerful does not apply in an interaction with a Pure card (see rule 802.25).",
+    "examples": [
+      {
+        "text": "A Pure source's own Powerful does not double its damage.",
+        "test": "290-pure-outside-combat.test.ts::§1 a Pure source: its own Powerful does not double"
+      }
+    ],
+    "see": [
+      "802.25"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Just a Unit",
+          "quote": "Pure cards and cards they are interacting with ignore all other attributes."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R61",
+          "quote": "exchange: no Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "290-pure-outside-combat.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
+    }
+  },
+  {
+    "key": "attr.vulnerable",
+    "parent": "802",
+    "order": 11,
+    "text": "Vulnerable is an attribute. A Vulnerable unit is dealt double the damage that would be dealt to it.",
+    "examples": [
+      {
+        "text": "Crumbling Ancient (Vulnerable) is dealt double the combat damage assigned to it.",
+        "test": "09-attrs.test.ts::Vulnerable: Crumbling Ancient marks double the combat damage it receives"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1372451771632320512#0",
+          "quote": "you need 4 damage to kill it, because this 4 damage would be doubled on him"
+        }
+      ],
+      "ours": [
+        {
+          "ref": "glossary: Vulnerable",
+          "quote": "Vulnerable cards receive double damage."
+        }
+      ],
+      "rulings": [
+        {
+          "ref": "R23",
+          "quote": "victim *receives*: in combat assignment only half the pool is needed for lethal and the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "09-attrs.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "The card's own reminder (\"Vulnerable cards receive double damage.\") is printed under Crumbling Ancient's type line and is not in the transcription: D-U19-8.",
+    "sourceHashes": {
+      "R23": "04ef097d6068557fac2a6fffbbbf1b13e15d998f142ea3b79c9b8242ea6173e1",
+      "RAQ 1372451771632320512#0": "19a3404f9c39f50680d06325e5d5a322bbf6e4f4949ef8bf8fbf75e318fe3fa4"
+    }
+  },
+  {
+    "key": "attr.vulnerable.lethal",
+    "parent": "attr.vulnerable",
+    "order": 1,
+    "text": "Because the damage is doubled when it is dealt, lethal damage for a Vulnerable unit, when assigning, is half its remaining defense, rounded up (see rule 608.6e).",
+    "examples": [
+      {
+        "text": "Arc Lightning (6 damage, Electric) on a Vulnerable 3/8: 4 of the 6 destroy it, and the other 2 may jump on.",
+        "test": "387-raq-combat.test.ts::RAQ Vulnerable: Arc Lightning on a Vulnerable 3/8"
+      },
+      {
+        "text": "A 10-power Piercing column blocked by a Vulnerable 3/7 assigns it 4 (half of 7, rounded up), and 6 go through.",
+        "test": "430-cr-attributes-1.test.ts::cr:attr.vulnerable.lethal — a Vulnerable 3/7 needs 4 (half of 7 rounded up), so a 10-power Piercing column sends 6 through"
+      },
+      {
+        "text": "A Vulnerable 3/8 with 2 damage marked needs 3, so a 10-power Piercing column sends 7 through.",
+        "test": "430-cr-attributes-1.test.ts::cr:attr.vulnerable.lethal — lethal is half the remaining defense: a Vulnerable 3/8 with 2 damage marked needs 3, so 7 of 10 pierce"
+      }
+    ],
+    "see": [
+      "608.6e"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1372451771632320512#0",
+          "quote": "you need 4 damage to kill it, because this 4 damage would be doubled on him"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R120 (its lethal-floor arithmetic)",
+          "quote": "rounded up under {Vulnerable}, 1 under {Deadly}, printed defense in an {Unaware}"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts",
+        "430-cr-attributes-1.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "\"Rounded up\" is R120's engine text; the designer's example has even defense (U12 D-U12-17).",
+    "sourceHashes": {
+      "R120": "031593f655a8323fa0f718e8c5a55727d6843359937f85d752fc77de445a4230",
+      "RAQ 1372451771632320512#0": "19a3404f9c39f50680d06325e5d5a322bbf6e4f4949ef8bf8fbf75e318fe3fa4"
+    }
+  },
+  {
+    "key": "attr.vulnerable.receipt",
+    "parent": "attr.vulnerable",
+    "order": 2,
+    "text": "Damage assigned to a Vulnerable unit counts as that much of the source's damage; the unit is then dealt double that amount. Any damage the source keeps on a Vulnerable unit, including the rest of a column's damage, is doubled on that unit.",
+    "examples": [
+      {
+        "text": "A Piercing attacker may put all 10 of its damage into a lone Vulnerable 3/8, which is dealt 20.",
+        "test": "399-raq-fix-combat.test.ts::R319: a Piercing attacker may put all 10 into a lone Vulnerable 3/8"
+      }
+    ],
+    "see": [
+      "608.6d",
+      "608.7"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1372451771632320512#4",
+          "quote": "You could assign all 10 damage to Crumbling, which would then get doubled to 20"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R23",
+          "quote": "victim *receives*: in combat assignment only half the pool is needed for lethal and the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "09-attrs.test.ts",
+        "399-raq-fix-combat.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R23": "04ef097d6068557fac2a6fffbbbf1b13e15d998f142ea3b79c9b8242ea6173e1",
+      "RAQ 1372451771632320512#4": "c0cb696285859a76caf8c5a328ef57f3dbb7330ef74a4ddfe29d70ba791f50ca"
+    }
+  },
+  {
+    "key": "attr.vulnerable.piercing",
+    "parent": "attr.vulnerable",
+    "order": 3,
+    "text": "Piercing excess past a Vulnerable unit is measured in the source's damage before the doubling: only the source damage beyond what the unit needs is excess (see rule 802.16).",
+    "examples": [
+      {
+        "text": "A 10-power Piercing column blocked by a Vulnerable 3/8 assigns 4 to it, and 6 goes to the player.",
+        "test": "387-raq-combat.test.ts::RAQ Vulnerable: a 10-power Piercing column into a Vulnerable 3/8 assigns 4"
+      }
+    ],
+    "see": [
+      "802.16"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1372451771632320512#3",
+          "quote": "you are required to assing atleast 4 damage to Crumbling (which gets doubled due to Vulnerable) and excess damage is 10-4=6, which can go face"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        "R23"
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts",
+        "09-attrs.test.ts",
+        "82-attr-interactions.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R23": "04ef097d6068557fac2a6fffbbbf1b13e15d998f142ea3b79c9b8242ea6173e1",
+      "RAQ 1372451771632320512#3": "ea23f808b78cd79313aac3fbff1c8949a14188079fda3436adcefe3e6b8dea75"
+    }
+  },
+  {
+    "key": "attr.vulnerable.powerful",
+    "parent": "attr.vulnerable",
+    "order": 4,
+    "text": "If a Powerful source deals damage to a Vulnerable unit, both apply: the source's damage is doubled, and the unit is dealt double that.",
+    "examples": [
+      {
+        "text": "Powerful (source) and Vulnerable (receiver) both apply to one effect hit.",
+        "test": "82-attr-interactions.test.ts::Powerful (source) and Vulnerable (receiver) both apply to one effect hit"
+      }
+    ],
+    "see": [
+      "112.9"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R103 (its pricing order)",
+          "quote": "1. {Powerful} doubles the source's damage first (already in the per-hit loop)."
+        },
+        {
+          "ref": "R103 (its pricing order)",
+          "quote": "2. The victim is priced in what it RECEIVES, so {Vulnerable}'s receive-side"
+        },
+        "R23"
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "82-attr-interactions.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Tested for noncombat damage only; R23 implies the same for combat. No designer source.",
+    "sourceHashes": {
+      "R103": "6b17215709fe377c2ddb2f947b1704122dc895c01b6c26357d55d4b3323ed247",
+      "R23": "04ef097d6068557fac2a6fffbbbf1b13e15d998f142ea3b79c9b8242ea6173e1"
+    }
+  },
+  {
+    "key": "attr.vulnerable.pure",
+    "parent": "attr.vulnerable",
+    "order": 5,
+    "text": "A Pure Vulnerable unit, and a Vulnerable unit in an interaction with a Pure card, is not dealt double damage.",
+    "examples": [
+      {
+        "text": "A Pure source hitting a Vulnerable unit deals only what it says.",
+        "test": "290-pure-outside-combat.test.ts::§2 a Pure recipient's own Vulnerable is off too"
+      },
+      {
+        "text": "Crumbling Ancient (Vulnerable) made Pure is dealt 2 by a 2-damage effect, not 4.",
+        "test": "430-cr-attributes-1.test.ts::cr:attr.vulnerable.pure — a Vulnerable unit that is itself Pure is dealt 2 by a 2-damage effect, not 4"
+      }
+    ],
+    "see": [
+      "802.25"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Just a Unit",
+          "quote": "Pure cards and cards they are interacting with ignore all other attributes."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R61",
+          "quote": "Afflicting or Thieving, and the victim's Vulnerable is off too. With no"
+        },
+        {
+          "ref": "R289 (its per-pairing switch)",
+          "quote": "are off against it, and so are its own {Vulnerable} and {Unaware}."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "290-pure-outside-combat.test.ts",
+        "430-cr-attributes-1.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "The bound test makes the SOURCE Pure, although its title names a Pure recipient (F-U19-4). The pilot's round-2 probe found Oorblak's redirect doubling damage onto a Pure Vulnerable Oorblak (F-U19-3).",
+    "engineDiffers": [
+      "F-U19-3"
+    ],
+    "sourceHashes": {
+      "R289": "81a5ae74249706f28fe64de238210a9a0ff35fa09a5ed556ac5c6dedd648781e",
+      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
+    }
+  },
+  {
+    "key": "attr.feeble",
+    "parent": "802",
+    "order": 12,
+    "text": "Feeble is an attribute. A Feeble unit can't block.",
+    "examples": [
+      {
+        "text": "Spectrogenesis creates three Wisps (Feeble); none of them can block.",
+        "test": "08-cards2.test.ts::Spectrogenesis: three Wisps; Feeble means they cannot block"
+      },
+      {
+        "text": "When a Feeble unit is refused as a blocker, the client names it.",
+        "test": "86-ui-block-refusal.test.ts::#77: {Feeble} — the unit that cannot block is the one that is named"
+      },
+      {
+        "text": "Bripp prints Feeble.",
+        "test": "430-cr-attributes-1.test.ts::cr:attr.feeble — Bripp prints Feeble, so the block-refusal guards that use it are not vacuous"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Spectrogenesis",
+          "quote": "They are 0/1 units that can't block"
+        }
+      ],
+      "designer": [],
+      "ours": [
+        {
+          "ref": "glossary: Feeble",
+          "quote": "Feeble units can't block."
+        }
+      ],
+      "rulings": [
+        {
+          "ref": "R294",
+          "quote": "> is. It won't let the Feeble unit block, even if it has another unit in the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "08-cards2.test.ts",
+        "86-ui-block-refusal.test.ts",
+        "430-cr-attributes-1.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Spectrogenesis's reminder describes its Wisps, whose type line prints {Feeble}. The attribute's own reminder (\"Feeble units can't block.\") is printed under Bripp's type line and is not in the transcription: D-U19-8.",
+    "sourceHashes": {
+      "R294": "8cae16d380577db83dfb428eb40c37313643ed54a5a3131e6ef3efdc40475495"
+    }
+  },
+  {
+    "key": "attr.feeble.own",
+    "parent": "attr.feeble",
+    "order": 1,
+    "text": "Whether a unit can block depends on its own Feeble only. A Feeble unit can't block even if it shares a column with units that are not Feeble, and Feeble that a unit would share from its column does not stop it blocking.",
+    "examples": [
+      {
+        "text": "The block check asks Feeble of the unit, not of its column.",
+        "test": "298-column-attrs-outside-combat.test.ts::R294 §4 {Feeble} block legality is still the unit's own question"
+      }
+    ],
+    "see": [
+      "802.1",
+      "606.2"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R294",
+          "quote": "> is. It won't let the Feeble unit block, even if it has another unit in the"
+        },
+        {
+          "ref": "R294",
+          "quote": "So block legality is the unit's own question, and the {Alluring} trigger is found"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "298-column-attrs-outside-combat.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "The second sentence rests on R294's summary (\"block legality is the unit's own question\"), not on the owner's words, which address only the Feeble unit itself. The guard is a source-text test, not a played board.",
+    "sourceHashes": {
+      "R294": "8cae16d380577db83dfb428eb40c37313643ed54a5a3131e6ef3efdc40475495"
+    }
+  },
+  {
+    "key": "attr.feeble.pure",
+    "parent": "attr.feeble",
+    "order": 2,
+    "text": "A Pure unit that is Feeble can block: Pure makes it ignore its own Feeble (see rule 802.25).",
+    "examples": [
+      {
+        "text": "Just a Unit (Pure) granted Feeble can still be declared as a blocker.",
+        "test": "430-cr-attributes-1.test.ts::cr:attr.feeble.pure — a Pure unit granted Feeble is accepted as a blocker"
+      }
+    ],
+    "see": [
+      "802.25"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Just a Unit",
+          "quote": "Pure cards and cards they are interacting with ignore all other attributes."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R61",
+          "quote": "Pure unit's own Feeble does not stop it blocking, either."
+        },
+        {
+          "ref": "R206 (its Feeble row)",
+          "quote": "| **Feeble** | \"It cannot block.\" | …unless it is {Pure}"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "177-glossary-conformance.test.ts",
+        "430-cr-attributes-1.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "No played test: the 177 guard compares the glossary row with the engine source.",
+    "sourceHashes": {
+      "R206": "e541d1d77f492dad0529d4075a87a0ef576c5834f85a1817d3388dedc61d9ea3",
+      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
+    }
+  },
+  {
+    "key": "attr.feeble.lured",
+    "parent": "attr.feeble",
+    "order": 3,
+    "text": "A Feeble unit is not able to block, so an Alluring trigger that targets it cannot compel it to block (see rules 606.2e and 802.15).",
+    "examples": [
+      {
+        "text": "A lured Feeble unit is not compelled to block the Alluring column.",
+        "test": "53-playtest-round7.test.ts::R84: a {Feeble} lured unit is not able, so it is not compelled"
+      }
+    ],
+    "see": [
+      "606.2e",
+      "802.15"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R84",
+          "quote": "all ({Feeble}; no {Flying} against a Flying column; R20's lone-{Sneaky}"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "53-playtest-round7.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
+    }
+  }
+]

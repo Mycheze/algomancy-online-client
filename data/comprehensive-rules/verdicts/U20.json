@@ -1,0 +1,5712 @@
+[
+  {
+    "key": "attr.afflicting",
+    "textHash": "b8e74aca020acf07",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:afflictingRot",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "42-dark-b.test.ts",
+        "pattern": "Umbral Decay: two -1/-1 counters",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Umbral Decay",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "glossary: Afflicting (ours)",
+        "supports": "yes",
+        "note": "not an authority"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "its source kills units by -1/-1 counters as well as by damage (Caleb"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.afflicting.any-kill",
+    "textHash": "f358a0587b150ecc",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:killRiders",
+        "agrees": true,
+        "note": "Afflicting is a KILL_RIDER on the same diff as Reaping"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "37-attrs-wight.test.ts",
+        "pattern": "R48 {Afflicting}: a -1/-1 COUNTER kill gives the dead unit's controller a rot",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "156-reaping-and-formation.test.ts",
+        "pattern": "Umbral Decay: an {Afflicting} counter-kill rots and draws NOTHING",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R48",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R184",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "static readonly KILL_RIDERS: readonly Attr[] = ['Afflicting', 'Reaping'];"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.afflicting.combat",
+    "textHash": "4de872acdcc946e6",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U20-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:afflictingAftermath",
+        "agrees": true,
+        "note": "combat seam: a kill diff per damage-source bucket gives the dead units' controllers a rot"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/37-attrs-wight.test.ts",
+        "pattern": "R48 {Afflicting}: a plain COMBAT kill counts too",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.afflicting.pure (control): against a plain 2/3 the kill gives a rot",
+        "passed": true,
+        "demonstrates": "yes (combat kill gives a rot)"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Umbral Decay",
+        "supports": "yes",
+        "note": "\"when an afflicting source kills\" with no combat exclusion"
+      },
+      {
+        "ref": "R48 (its Afflicting half)",
+        "supports": "partly",
+        "note": "about -1/-1 counter kills as well as damage kills; does not mention combat"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/37-attrs-wight.test.ts",
+        "text": "assert.equal(rotOf(h, D), 1, 'and its controller gains a rot');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.afflicting.one-rot",
+    "textHash": "eaac9e36bdb6f1da",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:afflictingKills",
+        "agrees": true,
+        "note": "one rot per affected controller per kill event"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "37-attrs-wight.test.ts",
+        "pattern": "R48 {Afflicting}: ONE rot per controller per kill event",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R48",
+        "supports": "yes",
+        "note": "flagged in R48 as the owner's reading; no designer statement"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "kills anything. ⚠ One rot per affected controller per kill event, however"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.afflicting.pure",
+    "textHash": "dc216ebbc3b43ed8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:exchangeAt",
+        "agrees": true,
+        "note": "Pure exchange: no Afflicting bucket"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.afflicting.pure: an Afflicting column that kills Just a Unit gives its controller no rot",
+        "passed": true,
+        "demonstrates": true
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.afflicting.pure (control): against a plain 2/3 the kill gives a rot",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Just a Unit",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R61",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Afflicting or Thieving, and the victim's Vulnerable is off too. With no"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.afflicting.rot",
+    "textHash": "54e870c2bc6fafdf",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:afflictingKills",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "37-attrs-wight.test.ts",
+        "pattern": "R48 {Afflicting}: a -1/-1 COUNTER kill gives the dead unit's controller a rot",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "42-dark-b.test.ts",
+        "pattern": "Umbral Decay: a survivor just shrinks, and nobody gains a rot",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Umbral Decay",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "its source kills units by -1/-1 counters as well as by damage (Caleb"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.alluring",
+    "textHash": "061519f266d21287",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:ALLURING_EFFECT",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "15-water-b.test.ts",
+        "pattern": "Tempest Wrangler: {Alluring} 1/3",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "glossary: Alluring (ours)",
+        "supports": "yes",
+        "note": "not an authority"
+      },
+      {
+        "ref": "R84",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "client/ui/scan-reminders.json",
+        "supports": "yes",
+        "note": "uncited, but it is the scan of the type-line reminder and matches verbatim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ui/scan-reminders.json",
+        "text": "When an alluring column attacks, target enemy can't attack and must block it this combat if able."
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Text is right. The only cited sources are ours + R84; the printed reminder is in client/ui/scan-reminders.json and should be cited as printed."
+  },
+  {
+    "key": "attr.alluring.able",
+    "textHash": "952e834bb38f7954",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:canBlockAlone",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "388-raq-blocks-and-windows.test.ts",
+        "pattern": "RAQ Alluring: a lone lured unit cannot block an Evasive column",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1460216519731577027#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R84",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**\"Able\" is a property of the unit and that column only** — region, controller,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.alluring.after-resolution",
+    "textHash": "891eb53c42762f96",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:rekeyColumns",
+        "agrees": true,
+        "note": "duty dropped with the column; allured mark kept"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "53-playtest-round7.test.ts",
+        "pattern": "R84: killing the allurer AFTER it resolves frees the block but not the attack",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R84",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "4. **Once it has resolved, killing the allurer does not undo it.** Asked whether"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.alluring.allurer-gone",
+    "textHash": "cb9ee23494fb25b5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:ALLURING_EFFECT",
+        "agrees": true,
+        "note": "resolution checks the source is still in an attacking column that is still Alluring"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "53-playtest-round7.test.ts",
+        "pattern": "R84: killing the allurer while the trigger is ON the stack fizzles it",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R84",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "standing in an attack column, and that column must still be {Alluring}. Nothing"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (!b || !src || ci < 0 || !alluringColumn(g, ci)) {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.alluring.cannot-attack",
+    "textHash": "59a1446d10290e00",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "lured unit cannot be sent"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:validFormation",
+        "agrees": true,
+        "note": "guard on declaring"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "53-playtest-round7.test.ts",
+        "pattern": "R84: a lured unit cannot be sent out to counterattack",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R84",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(!t.allured, `Alluring: ${t.card} was lured and cannot counterattack`);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.alluring.evasive",
+    "textHash": "3d89bb6317599f5d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:allureViolation",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "388-raq-blocks-and-windows.test.ts",
+        "pattern": "RAQ Alluring: with three units, A+B or A+C may block the Evasive column, but never B+C",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "388-raq-blocks-and-windows.test.ts",
+        "pattern": "RAQ Alluring: with two units, the lured one blocks the Evasive column with the other, or nobody blocks it",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1460216519731577027#1",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1460216519731577027#2",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R84",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "he can block with either A+B or A+C, but he cannot declare block with B+C"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.alluring.lone-sneaky",
+    "textHash": "71b5b68708a258c5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:canBlockAlone",
+        "agrees": true,
+        "note": "a lone Sneaky attacker makes the lured unit not able, unless e.pure(atkUnits,[u])"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "53-playtest-round7.test.ts",
+        "pattern": "R84: a lone {Sneaky} + {Alluring} attacker is not a stuck state",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R84",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "compels nobody (R20 forbids blocking it, so nobody is able), and an {Alluring}"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (atkUnits.length === 1 && e.colAttrs(atkUnits).has('Sneaky') && !e.pure(atkUnits, [u.id])) return false;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.alluring.must-block",
+    "textHash": "559b6b8b499254ed",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:allureViolation",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "53-playtest-round7.test.ts",
+        "pattern": "R84 UFAB",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1460216519731577027#2",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R84",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **If `blocks[ci]` is non-empty, `A` must be one of its members.**"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.alluring.one-per-column",
+    "textHash": "6b92482f85d45749",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:queueAlluringTriggers",
+        "agrees": true,
+        "note": "one per column"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "53-playtest-round7.test.ts",
+        "pattern": "R84: {Alluring} does not stack",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R84",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "5. **It does not stack.** *\"Nah alluring doesn't stack\"* … *\"It's just one"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.alluring.per-column",
+    "textHash": "248416bb533a6357",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:queueAlluringTriggers",
+        "agrees": true,
+        "note": "one trigger per Alluring column; each trigger asks its own target"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "53-playtest-round7.test.ts",
+        "pattern": "R84: two Alluring COLUMNS are two triggers, and may name the same unit",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "53-playtest-round7.test.ts",
+        "pattern": "R84: two Alluring columns naming DIFFERENT units compel both",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R84",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Two Alluring columns may name the **same** unit, and it cannot block both."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.alluring.pure-column",
+    "textHash": "11118c5ddbb5dc71",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:alluringColumn",
+        "agrees": true,
+        "note": "returns null when any unit in the column has Pure, so no trigger is queued"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "53-playtest-round7.test.ts",
+        "pattern": "R84 + R61: an Alluring column that is itself {Pure} never even triggers",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R61",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R84",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (e.pure(live)) return null;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.alluring.pure-target",
+    "textHash": "70fe9a2975b11874",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:canBlockAlone",
+        "agrees": true,
+        "note": "pure -> no Flying/Evasive; Feeble ignored with own Pure"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "53-playtest-round7.test.ts",
+        "pattern": "R84 + R61: a {Pure} lured unit is able against a Flying Alluring column",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "53-playtest-round7.test.ts",
+        "pattern": "R84 + R61: a {Pure} lured unit discharges an EVASIVE Alluring column alone",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R61",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **Alluring** (R84) — a Pure blocker is \"able\" against anything, so a *lured*"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.alluring.source",
+    "textHash": "5c0938b78bc1caad",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:queueAlluringTriggers",
+        "agrees": true,
+        "note": "srcId = the unit with own Alluring, else the first"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "298-column-attrs-outside-combat.test.ts",
+        "pattern": "R294 §4b {Alluring} still originates from the unit that prints it",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R294",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R84",
+        "supports": "partly",
+        "note": "one target per column; not the origin point"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "const srcId = live.find(id => e.ownAttrs(e.entity(id)!).has('Alluring')) ?? live[0]!;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.alluring.tax-and-negate",
+    "textHash": "08a2025dd603c451",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:queueAlluringTriggers",
+        "agrees": true,
+        "note": "a kind: triggered queue item, so the trigger-tax gate and negation apply"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ trigger-like attributes: Crevice Lurker taxes the Alluring trigger",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ trigger-like attributes: Containment Protocol negates a waiting Alluring trigger",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1366446116274442291#0",
+        "supports": "yes",
+        "note": "calebgannon"
+      },
+      {
+        "ref": "R84",
+        "supports": "yes",
+        "note": "Caleb: goes to stack and can be negated"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "3. **It goes on the stack and can be negated.** *\"'Alluring' effect goes to"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.alluring.trigger",
+    "textHash": "82a17a0ed4122835",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U20-r2",
+    "engine": [
+      {
+        "loc": "apply.ts:queueAlluringTriggers",
+        "agrees": true,
+        "note": "one trigger per live Alluring attack column, queued at the attackDeclared seam"
+      },
+      {
+        "loc": "apply.ts:ALLURING_EFFECT",
+        "agrees": true,
+        "note": "targets what:'enemyUnit'; target chosen as the trigger goes on the stack (R67)"
+      },
+      {
+        "loc": "engine.ts:pushUnitTargets",
+        "agrees": true,
+        "note": "enemyUnit candidates come from unitsIn(region): the battle region only"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/53-playtest-round7.test.ts",
+        "pattern": "R84: the minimal form",
+        "passed": true,
+        "asserts_claim": "yes: the trigger asks for a target (toBlockStep picks the blocker) and the lured unit must block the Alluring column"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.alluring.trigger: the Alluring target is chosen by the ATTACKING player, not the defender",
+        "passed": true,
+        "demonstrates": "yes: decision seat is the attacker, options are the enemy unit"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R84",
+        "supports": "yes",
+        "note": "Caleb: single target unit; goes to stack; target chosen by attacker as it goes on the stack from the battle region's enemy units"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "its target is chosen as it goes onto the stack (R67), by the attacker, from the"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "1. **It targets ONE enemy unit.** Asked \"Does alluring stop a whole enemy from"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "what: 'enemyUnit',"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.alluring.two-duties",
+    "textHash": "25d605220a4b2c6d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:allureViolation",
+        "agrees": true,
+        "note": "a unit blocking any of its lured columns is excused from every duty"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.alluring.two-duties: one unit lured by two columns blocks one; the other column may be blocked by another unit",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R84",
+        "supports": "yes",
+        "note": "owner judgement call (Bena 2026-08-22)"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**Discharging either duty excuses the rest**, and the \"must be among its"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (cols.some(ci => (blocks[ci] ?? []).includes(u.id))) continue;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.blessed",
+    "textHash": "e31013f8389025ec",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:blessedGain",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "40-light-c.test.ts",
+        "pattern": "Godray: 3 damage to any target",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Blessed Thing",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Godray",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "glossary: Blessed (ours)",
+        "supports": "yes",
+        "note": "not an authority"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (attrsVs(undefined).has('Blessed')) this.blessedGain(ctx.controller, n, ctx.sourceName);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.blessed.column",
+    "textHash": "ad99311b4af107de",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:effectSourceAttrs",
+        "agrees": true,
+        "note": "effAttrs (column-shared)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "298-column-attrs-outside-combat.test.ts",
+        "pattern": "R294 §1 the report",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R294",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> The whole card gets the attributes while it's in the column. And so when it"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.blessed.damage-only",
+    "textHash": "21e245b00d5dca9f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "gain uses received amount; non-damage kills never call blessedGain"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "156-reaping-and-formation.test.ts",
+        "pattern": "{Blessed} does not fire on a non-damage kill",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R98",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**no {Blessed} gain** — every one of those is keyed on damage having been dealt."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.blessed.gain",
+    "textHash": "4a6725bd256e9cbb",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": ""
+      },
+      {
+        "loc": "client/engine/src/engine.ts:commitUnitDamage",
+        "agrees": true,
+        "note": ""
+      },
+      {
+        "loc": "client/engine/src/engine.ts:commitPlayerDamage",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "37-attrs-wight.test.ts",
+        "pattern": "R48 {Blessed}: combat damage to a player gains too",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "37-attrs-wight.test.ts",
+        "pattern": "R48 {Blessed}: combat damage to a UNIT gains as well",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "37-attrs-wight.test.ts",
+        "pattern": "R48 {Blessed}: effect damage gains its controller exactly that much life",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Blessed Thing",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (hit.blessedTo !== undefined) this.blessedGain(hit.blessedTo, received, hit.blessedFrom ?? 'combat');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.blessed.own-damage",
+    "textHash": "eb20c32e1fa43c7f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "Blessed gain precedes loseLife for a player recipient"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "40-light-c.test.ts",
+        "pattern": "Godray: aimed at a player it damages AND heals on the same check",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.blessed.own-damage: Godray aimed at its own controller at 3 life does not kill them",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R48",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "source cannot kill its own controller through its own damage (Caleb"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Confirmed. The bound example (Godray aimed at the OPPONENT) does not exercise the own-controller case; the probe does."
+  },
+  {
+    "key": "attr.blessed.pure",
+    "textHash": "c28d9915edb4f38e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "Blessed read through attrsVs"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "290-pure-outside-combat.test.ts",
+        "pattern": "§4 a Pure {Blessed} source gains nothing",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Just a Unit",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R61",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (attrsVs(undefined).has('Blessed')) this.blessedGain(ctx.controller, n, ctx.sourceName);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.blessed.simultaneous",
+    "textHash": "af90c1a4b7d23c4c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:commitPlayerDamage",
+        "agrees": true,
+        "note": "Blessed gains before loseLife"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "37-attrs-wight.test.ts",
+        "pattern": "R48 {Blessed}: the gain lands BEFORE the lethal check",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R48",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "a trigger on the stack, so it applies before the lethal check and a blessed"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.electric",
+    "textHash": "4d0890407a89f7aa",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Vulnerable: Arc Lightning on a Vulnerable 3/8",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Envoy of Lightning",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Arc Lightning",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "glossary: Electric (ours)",
+        "supports": "yes",
+        "note": "not an authority"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const nexts = this.adjacentInFormation(victim.id).filter(u => !visited.has(u.id));"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.electric.adjacency",
+    "textHash": "09b8bc10e9c68f8a",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U20-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:adjacentInFormation",
+        "agrees": true,
+        "note": "returns [] with no battle, and [] for any unit not in the attacking or blocking grid"
+      },
+      {
+        "loc": "engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "Electric walk takes neighbours only from adjacentInFormation; with none, the remainder stays on the unit (R317 dead end)"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.electric.adjacency: outside a battle no unit is adjacent, so Electric excess stays on the unit it hit and nothing is asked",
+        "passed": true,
+        "demonstrates": "yes (the illustrative example)"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-r2-probes.test.ts",
+        "title": "attr.electric.adjacency: during a battle, a unit in no formation has no adjacent unit even beside other idle units",
+        "passed": true,
+        "demonstrates": "yes (not in a formation, during battle)"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Envoy of Lightning",
+        "supports": "partly",
+        "note": "says excess goes to \"an adjacent unit\"; it does not say adjacency is formation adjacency. That comes from R75 (not cited) and the engine"
+      },
+      {
+        "ref": "engine.ts:adjacentInFormation",
+        "supports": "yes",
+        "note": "basis mixed is honest"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "adjacentInFormation(id: EntityId): Entity[] {"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Adjacency itself is [R75](#r75--joining-a-formation-is-a-choice-and-adjacent-means-sides-and-abovebelow)'s"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Minor: the text cites \"rule 603.2\" while see[] lists 603.2b. R75 (adjacent means sides and above/below, in a formation) would be a better ruling citation than Envoy alone."
+  },
+  {
+    "key": "attr.electric.atomic",
+    "textHash": "2c655d2d96efd318",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "whole path planned, then one commit; checkDeaths after"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "05-rulings.test.ts",
+        "pattern": "R4: electric excess follows a controller-chosen non-overlapping path, atomically",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R4",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "the chosen path (it is excess damage, resolved atomically within the damage event)."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.electric.chooser",
+    "textHash": "9d26bdc987b00d3b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": false,
+        "note": "electricPath is asked of ctx.controller (the effect's controller), while pierceKeep asks dealerSeat (the source unit's controller)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "05-rulings.test.ts",
+        "pattern": "R4: electric excess follows a controller-chosen non-overlapping path, atomically",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.electric.chooser: the Electric path is asked of the EFFECT's controller even when the source unit is the opponent's",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R4",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R317",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "The **Electric source's controller** chooses the path. There are **no formation changes"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "kind: 'electricPath', seat: ctx.controller,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Ruling confirmed (R4, R317) and the flagged divergence (F-U20-1) is real: with an opponent's unit as the source (as Battle/Fight make it), the probe shows the path is asked of the effect's controller. The bound example cannot see this (caster = source controller)."
+  },
+  {
+    "key": "attr.electric.dead-end",
+    "textHash": "692f6628c473d622",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "dead end adds the remainder to the victim (or pierceKeep with Piercing)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Vulnerable: Electric damage with nowhere to jump is still dealt",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1372451771632320512#2",
+        "supports": "yes",
+        "note": "verbatim in the export thread; the pack lists no #2 claim for it"
+      },
+      {
+        "ref": "R317",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "no {Piercing} is read: it stays on the last unit — dealt, never lost (R114's \"ALL"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.electric.jump",
+    "textHash": "5492e6164d672320",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Vulnerable: Arc Lightning on a Vulnerable 3/8",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Envoy of Lightning",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1372451771632320512#0",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "you need 4 damage to kill it, because this 4 damage would be doubled on him"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.electric.lethal",
+    "textHash": "0447114be234ce70",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "poolToKill: Vulnerable mult, Deadly 1, dealt map"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Vulnerable: Arc Lightning on a Vulnerable 3/8",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1372451771632320512#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R103",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R80",
+        "supports": "partly",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "read by both {Electric} and {Piercing}. That is deliberate: the previous inline"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.electric.no-revisit",
+    "textHash": "12c2bc73cf003c25",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "visited set filters the next units"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "05-rulings.test.ts",
+        "pattern": "R4: electric excess follows a controller-chosen non-overlapping path, atomically",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "glossary: Electric (ours)",
+        "supports": "yes",
+        "note": "not an authority"
+      },
+      {
+        "ref": "R206",
+        "supports": "partly",
+        "note": "an engine description; R4 (\"non-overlapping path\", uncited) is the ruling"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const nexts = this.adjacentInFormation(victim.id).filter(u => !visited.has(u.id));"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.electric.optional",
+    "textHash": "8196fe987b3353ff",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "electricPath offers keep:<unit> beside each neighbour"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Vulnerable: Electric \"can be\"",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1372451771632320512#1",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R317",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "So at every hop the source's controller chooses the next unit **or keeps the excess"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.electric.single-target",
+    "textHash": "4c0228046f2d2519",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets (Envoy of Lightning) + client/engine/src/engine.ts:stackItemGrants",
+        "agrees": true,
+        "note": "grant keyed on the cast-time target count"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "12-fire-a.test.ts",
+        "pattern": "Envoy of Lightning: your single-target spell effects are Electric",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Envoy of Lightning",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1397256636921417748#0",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "If Twin Flame is played with only 1 target, is it Electric thanks to Envoy? Yes, it will be Electric"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.electric.single-target.declared",
+    "textHash": "ebcbd35d03f3b65b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:stackItemGrants",
+        "agrees": true,
+        "note": "cast-time part.targets length (R94)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "12-fire-a.test.ts",
+        "pattern": "Envoy of Lightning: two DECLARED targets is not \"a single target\", even after one is removed",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1397256636921417748#1",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R94",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "No, it still has 2 targets, but one of them is invalid"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.evasive",
+    "textHash": "adc051b1b8e2b9e3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "07-cards.test.ts",
+        "pattern": "Curio Drifter: Evasive requires two blockers",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1460216519731577027#0",
+        "supports": "partly",
+        "note": "on-topic only: about Alluring+Evasive, not the reminder text"
+      },
+      {
+        "ref": "glossary: Evasive (ours)",
+        "supports": "partly",
+        "note": "ours paraphrases it"
+      },
+      {
+        "ref": "R84",
+        "supports": "partly",
+        "note": ""
+      },
+      {
+        "ref": "client/ui/scan-reminders.json",
+        "supports": "yes",
+        "note": "uncited printed reminder"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ui/scan-reminders.json",
+        "text": "Evasive units require two blockers."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.evasive.pure",
+    "textHash": "e72753c3afa1f97e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "pure -> atkAttrs empty"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "40-light-c.test.ts",
+        "pattern": "Just a Unit: {Pure} blocks an Evasive column alone",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R61",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R84",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "rule survives it: Flying, Evasive, and Sneaky's lone-attacker immunity. A"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.evasive.two-blockers",
+    "textHash": "736435aaf9758813",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "07-cards.test.ts",
+        "pattern": "Curio Drifter: Evasive requires two blockers",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1460216519731577027#0",
+        "supports": "partly",
+        "note": "about Alluring+Evasive"
+      },
+      {
+        "ref": "R84",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (atkAttrs.has('Evasive')) e.need(col.length >= 2, 'Evasive requires two blockers');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.lethal",
+    "textHash": "003c90924ac0d146",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:commitPlayerDamage",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "44-hybrids-ld-a.test.ts",
+        "pattern": "Gublin: {Lethal}",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Gublin",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "glossary: Lethal (ours)",
+        "supports": "yes",
+        "note": "not an authority"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (hit.attrs.has('Lethal')) this.killPlayer(hit.seat, `${hit.label} is Lethal`);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.lethal.combat-only",
+    "textHash": "2886b7300bc52f1f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:commitPlayerDamage",
+        "agrees": true,
+        "note": "only combat playerHits read Lethal; dealEffectDamageAll never reads it"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.lethal.combat-only: Lethal noncombat damage to a player does not kill them",
+        "passed": true,
+        "demonstrates": true
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.lethal.combat-only: a blocked Lethal unit deals ordinary combat damage to its blocker",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Gublin",
+        "supports": "yes",
+        "note": "\"combat damage\" ... \"kill a player\""
+      },
+      {
+        "ref": "R166",
+        "supports": "partly",
+        "note": "on-topic"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (hit.attrs.has('Lethal')) this.killPlayer(hit.seat, `${hit.label} is Lethal`);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.lethal.kills",
+    "textHash": "0bc4ea5aec872495",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:commitPlayerDamage",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "44-hybrids-ld-a.test.ts",
+        "pattern": "Gublin: {Lethal}",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "37-attrs-wight.test.ts",
+        "pattern": "R48 {Lethal}: any combat damage from a lethal unit kills the player",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Gublin",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (hit.attrs.has('Lethal')) this.killPlayer(hit.seat, `${hit.label} is Lethal`);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.lethal.replaced",
+    "textHash": "8174bb164668e8cd",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:commitPlayerDamage",
+        "agrees": true,
+        "note": "Lethal reads playerHits, pre-replacement"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "37-attrs-wight.test.ts",
+        "pattern": "R48 {Lethal} still kills THROUGH the Blightsea replacement",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.lethal.replaced (side measurement): a Lethal column fully redirected into Oorblak still kills the player",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R98",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R238",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> **\"Yes, blightsea pollup says it deals damage as, so its still damage. Just"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Confirmed for Blightsea Polyp (Caleb was shown exactly Lethal + Rot Jelly). Note the engine applies the same to Oorblak, whose damage is dealt to Oorblak instead of the player: a Lethal column fully redirected into Oorblak still kills the player (measured). No source rules on that case; the rule's \"replaced\" wording would cover it."
+  },
+  {
+    "key": "attr.modular",
+    "textHash": "3d356743412099db",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:payModularMod",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "43-dark-c.test.ts",
+        "pattern": "Spellbind: {Modular} carrier",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Spellbind",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "glossary: Modular (ours)",
+        "supports": "yes",
+        "note": "not an authority"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**A mod that does nothing is a legal play.** That is the half of the ruling that"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.modular.anything",
+    "textHash": "007f6cd33238b13c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:payModularMod",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "91-modular.test.ts",
+        "pattern": "R105: the {Modular} menu offers every card you can pay for",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "91-modular.test.ts",
+        "pattern": "R105: a card in the BIN is offered beside the hand",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R105",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "So **the cost is the whole filter**: every card in your hand and bin whose cost"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.modular.attributes",
+    "textHash": "0e01cad483732344",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:stackModAttrs",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "91-modular.test.ts",
+        "pattern": "R105: a type-line [Augment] mod really donates",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R105",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "| a **type-line** `[Augment]` attribute | is **donated to the resolving effect** | R79's channel, by a different timing. |"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.modular.graft",
+    "textHash": "a442e65f546b0b3c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:payModularMod",
+        "agrees": true,
+        "note": "graft effect appended as an extra part"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "91-modular.test.ts",
+        "pattern": "R105: a GRAFT mod still contributes its [Switch] effect as an extra part",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.33",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R105",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "The resulting ability is treated as a single ability, so it will all resolve at once, from top"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.modular.not-played",
+    "textHash": "c7ba2a2d66a6a2a2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:payModularMod",
+        "agrees": true,
+        "note": "no spawned/played event for the mod"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "91-modular.test.ts",
+        "pattern": "R105: \"you still pay their costs\"",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1537748882501668934#0",
+        "supports": "yes",
+        "note": "verbatim in the export; client/ledgers/raq.ts"
+      },
+      {
+        "ref": "R37",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "whether it comes from your hand, your bin, or a glimpse — is NOT \"playing a"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.modular.not-shared",
+    "textHash": "a0462af8a7d5703a",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U20-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:effAttrs",
+        "agrees": false,
+        "note": "Modular sits in ownAttrs, so colAttrs/effAttrs share it to column-mates; no observable effect since Modular is read only off the card at play (collectModular) and no unit prints it"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/298-column-attrs-outside-combat.test.ts",
+        "pattern": "(§5, not run by name)",
+        "passed": true,
+        "asserts_claim": "no: §5 guards that no unit prints Modular",
+        "note": "executed at wave end: whole file 9/9 pass"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-r2-probes.test.ts",
+        "title": "attr.modular.not-shared: a unit given Modular in an attacking column — does its column-mate read Modular?",
+        "passed": true,
+        "demonstrates": "yes: the divergence is real at the attribute-set level (column-mate effAttrs has Modular); latent"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R294",
+        "supports": "yes",
+        "note": "owner: \"Modular is also special\"; R294: object attributes do not share vertically"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "And, asked about a third: *\"Modular is also special. But doesn't matter yet cause"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "{Modular} (how a card is played) describe the card as an **object**. Those do not"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.modular.text-augment",
+    "textHash": "8510e755b0836f5c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:payModularMod",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "91-modular.test.ts",
+        "pattern": "R105: an [Augment]-TEXT mod is accepted and does nothing",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R105",
+        "supports": "yes",
+        "note": "Caleb 2025-04-24 quoted"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "*\"spells cannot gain static abilities like that, so the only useful thing you can do is give them attributes\"* (Caleb 2025-04-24)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.modular.unstable",
+    "textHash": "59fba2a24a3b9c1d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:isUnstable",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "91-modular.test.ts",
+        "pattern": "R105: the flashback line",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "91-modular.test.ts",
+        "pattern": "R105: a NEGATED modded Spellbind is erased too",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "91-modular.test.ts",
+        "pattern": "R105: an UNMODDED {Modular} spell is not Unstable",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.35",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R105",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "As long as a card is modded, it has the unstable attrib-"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.modular.when",
+    "textHash": "6b1977f8456c731c",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U20-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:collectModular",
+        "agrees": true,
+        "note": "asks for mods from hand or bin as the Modular card is played, before costs and targets"
+      },
+      {
+        "loc": "engine.ts:payModularMod",
+        "agrees": true,
+        "note": "mod cost is paid; mod is recorded on the stack item and adds a part"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/37-attrs-wight.test.ts",
+        "pattern": "{Modular}: mods are applied at cast time",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/37-attrs-wight.test.ts",
+        "pattern": "{Modular}: the caster may decline",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/91-modular.test.ts",
+        "pattern": "BIN is offered beside the hand",
+        "passed": true,
+        "asserts_claim": "yes (the bin half)"
+      },
+      {
+        "file": "client/engine/test/91-modular.test.ts",
+        "pattern": "you still pay their costs",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Spellbind",
+        "supports": "yes",
+        "note": "printed reminder states hand/bin, as it is played, still pay costs"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "prompt: `${item.label} is {Modular}: apply a mod from your hand or bin (you still pay its cost)`,"
+      },
+      {
+        "file": "client/engine/test/37-attrs-wight.test.ts",
+        "text": "assert.deepEqual(item.mods, [{ card: 'T37 Graft Mod', from: 'hand' }], 'visible on the stack item');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.piercing",
+    "textHash": "014ce04ac4fbf2cc",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:assignCombatDamage",
+        "agrees": true,
+        "note": ""
+      },
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "14-water-a.test.ts",
+        "pattern": "Protective Adaptations: the target also gains piercing until regroup",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Protective Adaptations",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.11",
+        "supports": "partly",
+        "note": "says excess carries over for a Piercing unit, in combat"
+      },
+      {
+        "ref": "glossary: Piercing (ours)",
+        "supports": "yes",
+        "note": "not an authority"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "R103 still holds everywhere else: the arithmetic ({Powerful} first, {Vulnerable}"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.piercing.column",
+    "textHash": "6671141f31266331",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:effectSourceAttrs",
+        "agrees": true,
+        "note": "effAttrs"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "388-raq-blocks-and-windows.test.ts",
+        "pattern": "RAQ Squish: Bubb in a column with Good Whale squishes with Piercing",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1402292180499955884#5",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R294",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Since Bubb will be the source of damage and he has Piercing, then any excess damage can be dealt to enemy player."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.piercing.combat",
+    "textHash": "f94cb3e7f2b842a9",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U20-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:electionWalk",
+        "agrees": true,
+        "note": "each victim offered from its lethal floor up; the last may be given everything (overkill)"
+      },
+      {
+        "loc": "engine.ts:assignCombatDamage",
+        "agrees": true,
+        "note": "leftover not given to a unit pushed to playerHits for a Piercing strike"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/387-raq-combat.test.ts",
+        "pattern": "RAQ Excessive: Piercing pays lethal to the front AND the back",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-r2-probes.test.ts",
+        "title": "attr.piercing.combat: 10 Piercing into a 1/2 front and 1/3 back — the floors offered are 2 and then 3",
+        "passed": true,
+        "demonstrates": "yes: the \"must assign lethal\" floor is enforced per unit"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353888077625561108#4",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1353888077625561108#5",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R114 (its designer line)",
+        "supports": "partly",
+        "note": "background: all damage is dealt to units, Piercing the exception"
+      },
+      {
+        "ref": "R319 (its combat ruling)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "You may still overkill front or back units, however with Piercing any excess damage you won't assign to front or back unit will be assigned to Opponent Health."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "So a Piercing strike is assigned like any other: each unit in front must be"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.piercing.dead-block",
+    "textHash": "2310b344ee6c6ed2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:assignCombatDamage",
+        "agrees": true,
+        "note": "blockedEver && no blockers: Piercing -> full power to player, else nothing"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Piercing: a Piercing column whose blocker died before damage puts its full power into the player",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Piercing: a blocked NON-Piercing column whose blocker died deals nothing to the player",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1365594171867664445#1",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R13",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R185",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (atkAttrs.has('Piercing')) toPlayer = pow;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.piercing.deadly",
+    "textHash": "e27ed9dac95b1c97",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:victimShare",
+        "agrees": true,
+        "note": "deadly -> poolNeed 1"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Excessive: Deadly + Piercing over two blockers",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "134-column-and-substep.test.ts",
+        "pattern": "R157 §11 — {Deadly} + {Piercing}: 1 kills the blocker and the other 9 pierce",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353888077625561108#6",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R103",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (deadly && recvCap > 0) poolNeed = 1;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.piercing.defending",
+    "textHash": "7a80b9debbc2d7b4",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U20-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:assignCombatDamage",
+        "agrees": true,
+        "note": "a blocking half with no live attackers deals nothing; with attackers, Piercing leftover pushed to the attacking player; side-blocks open an empty attacking column"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/387-raq-combat.test.ts",
+        "pattern": "RAQ Piercing: a defending Piercing column with an attacker in front of it",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/400-raq-fix-blocks.test.ts",
+        "pattern": "R321 a Piercing side-blocker deals no combat damage",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/64-formation-collapse.test.ts",
+        "pattern": "a hole deals and takes no damage",
+        "passed": true,
+        "asserts_claim": "yes (attackers-all-gone clause)"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1365594171867664445#3",
+        "supports": "yes",
+        "note": "only with piercing AND an enemy unit in front"
+      },
+      {
+        "ref": "R72 (its attackers-gone half)",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R321",
+        "supports": "yes",
+        "note": "side-block deals no combat damage, Piercing included"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "as defender you can only deal combat damage to opponents face if your blocking columns has piercing AND there is enemy unit in front of them"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**A blocking column whose attackers are all dead deals nothing, Piercing"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- A side-block deals **no combat damage**, Piercing included — _passer:"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.piercing.elective",
+    "textHash": "b236216d6a08ddad",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:electionWalk",
+        "agrees": true,
+        "note": "Piercing strike is a question, last victim included"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "399-raq-fix-combat.test.ts",
+        "pattern": "R319: a Piercing attacker may put all 10 into a lone Vulnerable 3/8",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "399-raq-fix-combat.test.ts",
+        "pattern": "R319: a Piercing split may keep part of the excess on the back unit and send the rest",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353888077625561108#5",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1372451771632320512#4",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R319",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "any of the excess on the units (the last one included) — whatever no unit is"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.piercing.electric",
+    "textHash": "a02eacd28bf200a8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "Electric dead end on a Piercing source calls pierceKeep (elective) and sends the rest to victim.controller"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "405-raq-noncombat-piercing.test.ts",
+        "pattern": "R340 Electric + Piercing: where the chain dead-ends, the Piercing half is elective too",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R103",
+        "supports": "partly",
+        "note": "composition sentence; its automatic half is superseded"
+      },
+      {
+        "ref": "R340",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (attrsVs(victim).has('Piercing')) {"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "closure asks the question at both places the method pierces: a plain hit"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.piercing.excess",
+    "textHash": "2e85e9196bd2f990",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:victimShare",
+        "agrees": true,
+        "note": ""
+      },
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "poolToKill"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "82-attr-interactions.test.ts",
+        "pattern": "Piercing + Powerful: the excess is what is left after the doubling",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Vulnerable: a 10-power Piercing column into a Vulnerable 3/8 assigns 4 and 6 goes to the player",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "82-attr-interactions.test.ts",
+        "pattern": "Piercing: a unit named twice in one batch is overkilled ONCE",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1372451771632320512#3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R103",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R23",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "3. Damage earlier hits in the same batch already assigned to that victim counts"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.piercing.noncombat",
+    "textHash": "257c1980d46ac5cb",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "pierceKeep"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "405-raq-noncombat-piercing.test.ts",
+        "pattern": "R340 Squish: Bubb with Good Whale's Piercing",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "405-raq-noncombat-piercing.test.ts",
+        "pattern": "R340 control: no Piercing, no question",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1402292180499955884#5",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R340",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "may keep any of the excess on it. Whatever it is not given goes to its"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.piercing.noncombat-chooser",
+    "textHash": "d32cf6954e8759c1",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U20-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "dealerSeat = controller of ctx.sourceId entity if in play, else ctx.controller; pierceKeep asks dealerSeat"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/405-raq-noncombat-piercing.test.ts",
+        "pattern": "R340 Battle: the question belongs to the Piercing unit's controller",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.piercing.noncombat-chooser: with no source unit (a spell), the EFFECT's controller places the Piercing excess, not the damaged unit's controller",
+        "passed": true,
+        "demonstrates": "yes (spell clause)"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.piercing.noncombat-chooser: a source unit that has left play — the effect's controller places the excess",
+        "passed": true,
+        "demonstrates": "yes (left-play clause)"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R340",
+        "supports": "yes",
+        "note": "both quoted sentences state the rule exactly"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**Who decides.** The dealing player is the controller of the source unit (R318:"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "When the source is not a unit in play (a spell, or a unit that has died), the"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const dealerSeat = (ctx.sourceId !== undefined ? this.entity(ctx.sourceId)?.controller : undefined)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.piercing.prevention",
+    "textHash": "3cce3180478448b0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:victimShare",
+        "agrees": true,
+        "note": "planned against real toughness; preventUnitDamage runs at commit"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Excessive: with Piercing, 5 to the shielded Tomb",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "82-attr-interactions.test.ts",
+        "pattern": "Piercing vs a damage-shielded unit",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1353888077625561108#10",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R103",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**as if it were unprotected**."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.piercing.pure",
+    "textHash": "8e5fdb2a59a09cbc",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:exchangeAt",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.piercing.pure: a 6-power Piercing column blocked by Just a Unit sends nothing to the defending player",
+        "passed": true,
+        "demonstrates": true
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.piercing.pure (control): the same 6-power Piercing column blocked by a plain 2/3 sends 3 to the player",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Just a Unit",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R61",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "exchange: no Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.piercing.recipients",
+    "textHash": "01a91f834bfd2c65",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "excess added to first.controller per unit"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "82-attr-interactions.test.ts",
+        "pattern": "Piercing in a BATCH: each unit's excess goes to THAT unit's controller",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Protective Adaptations",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (n - kept > 0) add({ seat: first.controller }, n - kept);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.piercing.redirect",
+    "textHash": "6fe3e19b739d5cba",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U20-r2",
+    "engine": [
+      {
+        "loc": "cards/sets/batch-earth-b.ts:Oorblak replaceCombatDamageToPlayer",
+        "agrees": true,
+        "note": "single Oorblak: absorbs lethal, Piercing leftover reaches the player"
+      },
+      {
+        "loc": "cards/sets/batch-earth-b.ts:Oorblak replaceCombatDamageToPlayer",
+        "agrees": false,
+        "note": "with two Oorblaks the leftover is redirected again into the second one (the flagged engineDiffers)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/387-raq-combat.test.ts",
+        "pattern": "RAQ Oorblak: 10 Piercing combat damage redirected into a 2/4 Oorblak",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/17-earth-b.test.ts",
+        "pattern": "Oorblak: Caleb's case",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.piercing.redirect: with TWO Oorblaks, 10 Piercing combat damage — is the excess redirected again?",
+        "passed": true,
+        "demonstrates": "yes: the divergence is real; both Oorblaks die and only 2 reach the player"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "RAQ 1397188292239163454#0",
+        "supports": "yes",
+        "note": "4 kill it, leftover 6 still Piercing to the face; replacement effects apply once"
+      },
+      {
+        "ref": "R237",
+        "supports": "partly",
+        "note": "about the Deadly floor on the redirect path; on-topic, not the not-redirected-again clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "he takes 4 damage which is enough to kill him and leftover 6 damage is still Piercing so it goes to players face"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "replacement effects only apply once in an effect Unless a new trigger occurs"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Ruling confirmed against the designer; the flagged divergence is real (two Oorblaks: the leftover is redirected a second time). Whether \"apply once\" forbids a SECOND Oorblak redirecting is a reading of Caleb's line, not something the thread states."
+  },
+  {
+    "key": "attr.piercing.same-damage",
+    "textHash": "03934cea17fb9e9d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "excess added to the same batch as a player recipient"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "82-attr-interactions.test.ts",
+        "pattern": "Piercing: 5 effect damage to a 1/1 kills it and the other 4 hit its controller",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "glossary: Piercing (ours)",
+        "supports": "yes",
+        "note": "not an authority"
+      },
+      {
+        "ref": "R103",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R340",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "and the excess landing in the same R80 batch with nothing on the stack in between."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.piercing.unblocked",
+    "textHash": "544eda62d0a6f1fb",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:assignCombatDamage",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Piercing: an unblocked Piercing column hits the player",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1365594171867664445#0",
+        "supports": "partly",
+        "note": "the cited sentence is the claim line; _passer's answer is \"Yes\" to that question"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "toPlayer = pow;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.poisonous",
+    "textHash": "567366ef5fa3e8cc",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "09-attrs.test.ts",
+        "pattern": "Poisonous: Noxious Sporefiend deals combat damage as permanent -1/-1 counters",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Blightmound",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "glossary: Poisonous (ours)",
+        "supports": "yes",
+        "note": "not an authority"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (!poisonous) u.damage += through;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.poisonous.deadly",
+    "textHash": "5c7e44e3668bc65b",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U20-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "counters added, then Deadly lethal pushes the unit into killed and destroys it"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/82-attr-interactions.test.ts",
+        "pattern": "Deadly DOES kill through Poisonous",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R237",
+        "supports": "yes",
+        "note": "Caleb 2023-08-23 verbatim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> **Caleb Gannon:** *\"**yeah it'll get instakilled by deadly but also trigger to"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Basis \"owner\" undersells it: R237 quotes Caleb directly (designer), though not via RAQ."
+  },
+  {
+    "key": "attr.poisonous.form",
+    "textHash": "971f7738ddd7782e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": ""
+      },
+      {
+        "loc": "client/engine/src/engine.ts:commitUnitDamage",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "09-attrs.test.ts",
+        "pattern": "Poisonous: Noxious Sporefiend deals combat damage as permanent -1/-1 counters",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "09-attrs.test.ts",
+        "pattern": "Poisonous: effect damage becomes -1/-1 counters and can kill",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Blightmound",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R237",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (!poisonous) u.damage += through;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.poisonous.is-damage",
+    "textHash": "6ad50b161862762d",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U20-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "a Poisonous hit fires the 'damage' event (poisonous: true) and then adds -1/-1 counters"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/206-deadly-everywhere.test.ts",
+        "pattern": "un-prevented {Poisonous} hit fires",
+        "passed": true,
+        "asserts_claim": "partly: asserts the Tomb trigger made a unit, not the two counters or the 2/2 size"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-r2-probes.test.ts",
+        "title": "attr.poisonous.is-damage: Noxious Sporefiend dealing 2 to Awoken Tomb puts -2/-2 of counters on it and makes a 2/2",
+        "passed": true,
+        "demonstrates": "yes: counters -2, no marked damage, one new 2/2"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "RAQ 1354148437355925554#0",
+        "supports": "yes",
+        "note": "Poisonous damage counts as damage dealt"
+      },
+      {
+        "ref": "R237",
+        "supports": "yes",
+        "note": "Caleb quote, and the Awoken Tomb example verbatim"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "It says 'damage units in the form of -1/-1 counters'. If it was replacing the damage it would say"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "*\"Poisonous damage does count as damage. **If it was replacing the damage it"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "this.fireEvent('damage', ev);   // \"when I am dealt damage\" (Awoken Tomb)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None in the rule. The bound test asserts only that the trigger fired; the probe measures the counters and the 2/2 the example names."
+  },
+  {
+    "key": "attr.poisonous.lethal",
+    "textHash": "cafd7f13adeefc08",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "poolToKill is attribute-blind to Poisonous"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "82-attr-interactions.test.ts",
+        "pattern": "Piercing + Poisonous: the counters are lethal at the same number, so the rest still pierces",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R103",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**{Poisonous} pierces on the same arithmetic.** `checkDeaths` kills on"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.poisonous.players",
+    "textHash": "01cf03a5321b80ac",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "player recipients take loseLife; poisonous branch is unit-only"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.poisonous.players: Poisonous damage to a player is ordinary life loss",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Blightmound",
+        "supports": "partly",
+        "note": "says \"damage units\"; ordinary player damage is inferred"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (!poisonous) u.damage += through;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.poisonous.powerful",
+    "textHash": "0937a805878ebd23",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "Powerful doubles n before the poisonous branch"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "206-deadly-everywhere.test.ts",
+        "pattern": "R237: {Powerful} doubles a {Poisonous} effect hit too",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R237",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "damage dealt. Caleb 2023-08-23 says a damage-doubler doubles the counters, so"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.poisonous.prevention",
+    "textHash": "16ad2814fd100341",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:commitUnitDamage",
+        "agrees": true,
+        "note": "received <= 0 -> continue before counters"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Poisonous: a shielded Jollyglop hit by a Poisonous unit",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1354148437355925554#1",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R98",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "Jollyglop doesn't trigger, won't get -2/-2 from Poisonous but will receive +2/+2 counters from Phytochemical Protection."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.poisonous.pure",
+    "textHash": "ec641e82b67324ba",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:exchangeAt",
+        "agrees": true,
+        "note": "pure exchange -> empty attribute sets, so no Poisonous on the hit; damage is marked"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.poisonous.pure: a Poisonous column blocked by Just a Unit marks ordinary damage, no -1/-1 counters",
+        "passed": true,
+        "demonstrates": true
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.poisonous.pure (control): against a plain 2/3 the Poisonous hit is a -1/-1 counter",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Just a Unit",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R61",
+        "supports": "yes",
+        "note": "lists Poisonous among the attributes off in a Pure exchange"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "exchange: no Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed,"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const attrsOf = (ids: EntityId[]) => pure ? new Set<string>() : this.colAttrs(ids);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.poisonous.resonant",
+    "textHash": "6fa9e84f2597ebe8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "the rider is queued from the poisonous branch with the amount dealt"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.poisonous.resonant: a Poisonous Resonant hit of 2 puts two -1/-1 counters on the unit and queues a Resonant trigger for 2",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R237",
+        "supports": "yes",
+        "note": "Caleb 2025-11-27 quoted"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "poisonous branch, and Caleb 2025-11-27: *\"Poisonous still triggers resonant\"*."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.pure",
+    "textHash": "30c918363d5d1355",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:pure",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "40-light-c.test.ts",
+        "pattern": "Just a Unit: the exchange is attribute-blind in BOTH directions",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Just a Unit",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "glossary: Pure (ours)",
+        "supports": "yes",
+        "note": "not an authority"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "is scoped to a single **interaction** and switches *both* sides of it off at"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.pure.blocking",
+    "textHash": "7b62f505551c575e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "40-light-c.test.ts",
+        "pattern": "Just a Unit: {Pure} blocks a Flying column, and only it can",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "40-light-c.test.ts",
+        "pattern": "Just a Unit: {Pure} blocks an Evasive column alone",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R61",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Pure unit's own Feeble does not stop it blocking, either."
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(!e.ownAttrs(u).has('Feeble') || e.ownAttrs(u).has('Pure'),"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.pure.column",
+    "textHash": "4f466d3261a997a0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "pureWith reads effAttrs (column-shared) for the recipient; source via effectSourceAttrs (effAttrs)"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.pure.column: a unit attacking in a column with Just a Unit is dealt plain damage by a Powerful effect (1, not 2)",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R294",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "adjacent) share all of their attributes.\"* So both sides of a non-combat damage"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.pure.combat-damage",
+    "textHash": "6297dae8fce879ca",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:exchangeAt",
+        "agrees": true,
+        "note": "pure -> both attribute sets empty"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:commitUnitDamage",
+        "agrees": true,
+        "note": "Vulnerable multiplier gated on !hit.pure"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:strikes",
+        "agrees": true,
+        "note": "sub-step reads pure"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "40-light-c.test.ts",
+        "pattern": "Just a Unit: {Pure} switches off Deadly",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "53-playtest-round7.test.ts",
+        "pattern": "R117 threads {Pure}",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R61",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Afflicting or Thieving, and the victim's Vulnerable is off too. With no"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Swift or Sluggish in it, the exchange strikes in the normal sub-step."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.pure.combat-interaction",
+    "textHash": "2bbfe5801daf288f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:exchangeAt",
+        "agrees": true,
+        "note": "pure(atk, blk)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "40-light-c.test.ts",
+        "pattern": "Just a Unit: the exchange is attribute-blind in BOTH directions",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Just a Unit",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R61",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**attack-column / block-column pair**, which is exactly that interaction. So"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.pure.noncombat",
+    "textHash": "8f2421d85392332d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "attrsVs(recipient) per pairing"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "290-pure-outside-combat.test.ts",
+        "pattern": "§3 one batch, two recipients",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R289",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**THE INTERACTION UNIT OUTSIDE COMBAT IS THE EFFECT AND EACH RECIPIENT.**"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.pure.noncombat.others",
+    "textHash": "93697e8c6502aaa6",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "290-pure-outside-combat.test.ts",
+        "pattern": "§3 one batch, two recipients",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R289",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "layer ON.** Pure is a fact about the pairing, not about the batch: a"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.pure.noncombat.recipient",
+    "textHash": "54d1460322dd9c59",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "pureWith(u) gates the Vulnerable multiplier and collapsed()"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "290-pure-outside-combat.test.ts",
+        "pattern": "§2 a Pure recipient: the source's Powerful and Deadly do nothing to it",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "290-pure-outside-combat.test.ts",
+        "pattern": "§2 a Pure recipient's own Vulnerable is off too",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R289",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **A Pure recipient takes plain damage from anyone.** The source's attributes"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.pure.noncombat.source",
+    "textHash": "24623c69b5fbf3a9",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "srcPure -> attrsVs() empty for every recipient; collapsed() is false when pureWith"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "290-pure-outside-combat.test.ts",
+        "pattern": "§1 a Pure source",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R289",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **A Pure source deals plain damage to everyone.** Its own {Powerful},"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const pureWith = (u: Entity | undefined): boolean => srcPure || (!!u && this.effAttrs(u).has('Pure'));"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.pure.not-targeting",
+    "textHash": "ffdcd986d09eb864",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:castable (target menu)",
+        "agrees": true,
+        "note": "no Pure read in target legality"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.pure.not-targeting: a \"target\" damage spell can target Just a Unit",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R289",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**NOT TOUCHED, and why.** Targeting. No printed target restriction in the pool"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.pure.own",
+    "textHash": "5599fb29d9a072e0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:alluringColumn",
+        "agrees": true,
+        "note": ""
+      },
+      {
+        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "Feeble ignored with own Pure"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "53-playtest-round7.test.ts",
+        "pattern": "R84 + R61: an Alluring column that is itself {Pure} never even triggers",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Just a Unit",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R61",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "attributes\", its own other attributes included."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.pure.stat-attributes",
+    "textHash": "5dffc9db3fd46f9b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:victimShare",
+        "agrees": true,
+        "note": "effStats unaffected by pure"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.pure.stat-attributes: a Tough 1/4 still has 8 defense blocking Just a Unit (5 power): it survives",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "glossary: Pure (ours)",
+        "supports": "yes",
+        "note": "not an authority"
+      },
+      {
+        "ref": "R61",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R289",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Stats are not attributes: a Pure 2/3 still dies to 3 damage."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.pure.unaware-combat",
+    "textHash": "ba786f5a4ae5ddd9",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:exchangeAt",
+        "agrees": true,
+        "note": "`collapsed` is computed from Unaware without a Pure gate"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.pure.unaware-combat: Bubb (Unaware) blocking a buffed Just a Unit — both read at printed stats",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R106",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "The collapse survives {Pure}: R61 switches the ATTRIBUTE layer off for an exchange, and"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const collapsed = [...atk, ...blk].some(id => {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.reaping",
+    "textHash": "827654dcd8623afa",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:reapingDraw",
+        "agrees": true,
+        "note": "the draw half; the loses-until-regroup half is not built (R283)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "07-cards.test.ts",
+        "pattern": "Flame of History: Reaping",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "glossary: Reaping (ours)",
+        "supports": "yes",
+        "note": "not an authority"
+      },
+      {
+        "ref": "R283",
+        "supports": "yes",
+        "note": "quotes the scan"
+      },
+      {
+        "ref": "client/ui/scan-reminders.json",
+        "supports": "yes",
+        "note": "uncited printed reminder"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ui/scan-reminders.json",
+        "text": "When a reaping source kills one or more units, draw a card. It loses reaping until regroup."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.reaping.any-kill",
+    "textHash": "b6d3de64c6a38320",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:killRiders",
+        "agrees": true,
+        "note": "kill diff covers damage, counters, stat swaps, deletes"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "156-reaping-and-formation.test.ts",
+        "pattern": "Invasive Reassignment: a kill by a STAT SWAP pays {Reaping}",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "156-reaping-and-formation.test.ts",
+        "pattern": "Noxious Demise: a kill by a -1/-1 COUNTER pays {Reaping}",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "156-reaping-and-formation.test.ts",
+        "pattern": "Invasive Reassignment: a swap that kills NOBODY draws nothing",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R184",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R21",
+        "supports": "partly",
+        "note": "Deadly kills only"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "source act, see who is gone. That covers damage, counters, stat swaps, deletes"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.reaping.draw",
+    "textHash": "42b7fcb1dd55c814",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "one reapingDraw when killed.length > 0"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:killRiders",
+        "agrees": true,
+        "note": "kill-diff path pays once"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "07-cards.test.ts",
+        "pattern": "Flame of History: Reaping",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "156-reaping-and-formation.test.ts",
+        "pattern": "Seismomancy: a kill by DAMAGE still pays {Reaping} exactly once",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R283",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "scan reminder (client/ui/scan-reminders.json)",
+        "supports": "yes",
+        "note": "not cited, but the printed reminder says \"draw a card\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "*\"kills ONE OR MORE units, draw A CARD\"* — singular, for any number of bodies."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (srcAttrs.has('Reaping') && !this.killWatch?.reaps && killed.length) {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.reaping.loses",
+    "textHash": "99f3e1ebccda5192",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U20-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:killRiders",
+        "agrees": false,
+        "note": "draws but never removes Reaping from the source; R283 §2 says the clause is deliberately not built (unreachable: all four printers are spells)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/263-reaping-counts-the-kill.test.ts",
+        "pattern": "R283 §4 nothing in the pool can give a UNIT reaping",
+        "passed": true,
+        "asserts_claim": "no (guards that the divergence is unreachable in the pool)"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-r2-probes.test.ts",
+        "title": "attr.reaping.loses: a unit with Reaping that kills and draws still has Reaping, and a second kill draws again",
+        "passed": true,
+        "demonstrates": "yes: the engineDiffers divergence is real (latent): the source keeps Reaping and draws on a second kill"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R283",
+        "supports": "yes",
+        "note": "quotes the printed reminder \"It loses reaping until regroup\" and records that the engine does not build it"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ui/scan-reminders.json",
+        "text": "When a reaping source kills one or more units, draw a card. It loses reaping until regroup."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "### 2. \"It loses reaping until regroup\" is deliberately NOT built"
+      }
+    ],
+    "basis_ok": false,
+    "problem": "Ruling text is right and the engine divergence is real (probe). Basis should be printed: the sentence is the printed type-line reminder on every Reaping card (client/ui/scan-reminders.json), which R283 quotes; add it as a printed source. Note: the illustrative example has a unit kill a blocker in combat, and the engine pays no Reaping draw for combat kills at all (see bugs), so the example is doubly unreachable."
+  },
+  {
+    "key": "attr.resonant",
+    "textHash": "2809e8c0fe12d0b7",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:queueResonant",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "09-attrs.test.ts",
+        "pattern": "Resonant: Resonant Form combat damage to a unit also hits its controller",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1362838395298119912#1",
+        "supports": "partly",
+        "note": "the cited words are the printed reminder that the RAQ index quotes, not _passer's answer"
+      },
+      {
+        "ref": "glossary: Resonant (ours)",
+        "supports": "yes",
+        "note": "not an authority"
+      },
+      {
+        "ref": "R315",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "client/ui/scan-reminders.json",
+        "supports": "yes",
+        "note": "uncited printed reminder"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ui/scan-reminders.json",
+        "text": "Whenever a resonant source deals damage to a unit, it deals that much damage to that unit's controller."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.resonant.amount",
+    "textHash": "06fc2fd70cf98dfe",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "queueResonant is passed `through` = received after Vulnerable doubling and prevention"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:commitUnitDamage",
+        "agrees": true,
+        "note": "combat rider uses `received`; a fully prevented hit `continue`s before queueing"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.resonant.amount: a Resonant source dealing 2 to a Vulnerable unit queues a Resonant trigger for 4",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R315",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "The amount is what the unit **received** (\"that much damage\"): after {Vulnerable},"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (received <= 0) { shielded.add(id); continue; }"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.resonant.combat-timing",
+    "textHash": "37110e8cb2e419be",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:commitUnitDamage",
+        "agrees": true,
+        "note": "queued; R261/R295 hold triggers to after combat or the sub-step boundary"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "399-raq-fix-combat.test.ts",
+        "pattern": "R315: the Resonant rider waits on the stack after combat",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R315",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "the hit, and `commitUnitDamage` queues the rider. R261 holds it to after combat,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.resonant.each-unit",
+    "textHash": "20a8a72ca4f2ec4f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "queueResonant per damaged unit"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Resonant: Bellowing Boulder with Resonant + Powerful + Conduit",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1362838395298119912#5",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R315",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- Effect damage: `dealEffectDamageAll` queues the rider for each damaged unit,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.resonant.modifiers",
+    "textHash": "11abf7f344b1b85b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:RESONANT_EFFECT",
+        "agrees": true,
+        "note": "rider resolves as dealEffectDamageAll from the source: amountDelta then Powerful"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Resonant: a Powerful Resonant 2/4 deals 4 combat damage",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Resonant: Conduit of Pain adds 1 to the Resonant damage",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1362838395298119912#1",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1362838395298119912#2",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R315",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "So everything that prices damage from that source prices the rider: {Powerful}"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.resonant.not-combat",
+    "textHash": "f2e2d6abf3a5e26b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:RESONANT_EFFECT",
+        "agrees": true,
+        "note": "resolves through dealEffectDamageAll (noncombat), not commitPlayerDamage"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Resonant: the extra damage is not combat damage",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1362838395298119912#0",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "extra damage from Resonant effect wouldn't be considered as 'combat damage'"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.resonant.order",
+    "textHash": "e5659c4b650351f2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "amountDelta before Powerful"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "387-raq-combat.test.ts",
+        "pattern": "RAQ Resonant: Resonant + Powerful + Conduit — 4 combat, then (4+1)x2 = 10 to the face",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1362838395298119912#3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R316",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "## R316 — Additive damage modifiers apply before {Powerful} doubles"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.resonant.pure",
+    "textHash": "33cde1ccea0a0efa",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:exchangeAt",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.resonant.pure: a Resonant column blocked by Just a Unit triggers no Resonant",
+        "passed": true,
+        "demonstrates": true
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.resonant.pure (control): against a plain 2/3 the Resonant trigger fires",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Just a Unit",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R61",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "exchange: no Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.resonant.source-gone",
+    "textHash": "054723f3a589ed67",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:effectSourceAttrs",
+        "agrees": true,
+        "note": "reads lastKnownOf(sourceId) when the source has left play"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.resonant.source-gone: a Powerful Resonant source that leaves play before its trigger resolves still deals doubled damage",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R325",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "formation it stood in), it reads the source's **last-known state**: what the"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "return new Set(lk ? lk.attrs : this.card(sourceName)?.attrs ?? []);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.resonant.tax-and-negate",
+    "textHash": "9f798fbfb975530f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:queueResonant",
+        "agrees": true,
+        "note": "queued as a triggered stack item under the source; R121 gate taxes it"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ trigger-like attributes: Crevice Lurker taxes Resonant",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "399-raq-fix-combat.test.ts",
+        "pattern": "R315: the Resonant rider waits on the stack after combat",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1366446116274442291#1",
+        "supports": "yes",
+        "note": "designer intent for Crevice Lurker"
+      },
+      {
+        "ref": "R315",
+        "supports": "yes",
+        "note": "the negate half is our ruling; the RAQ question on Containment Protocol is unanswered"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Crevice Lurker taxes it, and Containment Protocol can negate it."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.resonant.trigger",
+    "textHash": "84c36f1e1143d331",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:queueResonant",
+        "agrees": true,
+        "note": "trigger carries the source card and resolves as damage from it"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "399-raq-fix-combat.test.ts",
+        "pattern": "R315: the Resonant rider waits on the stack after combat",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "399-raq-fix-combat.test.ts",
+        "pattern": "R315: effect damage riders too",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1362838395298119912#2",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R315",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "the resonant source**, put on the stack as that source's trigger — not life loss"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.resonant.units-only",
+    "textHash": "4526dc5a9b5fd58e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "player recipients never queue the rider"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.resonant.units-only: Resonant damage to a player queues no Resonant trigger",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "RAQ 1362838395298119912#1",
+        "supports": "partly",
+        "note": "the cited words are the printed reminder quoted in the RAQ index, not _passer"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ui/scan-reminders.json",
+        "text": "Whenever a resonant source deals damage to a unit, it deals that much damage to that unit's controller."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.sneaky",
+    "textHash": "36f8eeb67b1f75df",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "08-cards2.test.ts",
+        "pattern": "Whispering Mantid: Sneaky",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "glossary: Sneaky (ours)",
+        "supports": "yes",
+        "note": "not an authority"
+      },
+      {
+        "ref": "R20",
+        "supports": "partly",
+        "note": "names the clause only"
+      },
+      {
+        "ref": "client/ui/scan-reminders.json",
+        "supports": "yes",
+        "note": "uncited printed reminder"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ui/scan-reminders.json",
+        "text": "Sneaky units can't be blocked if attacking alone."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.sneaky.alone",
+    "textHash": "c1d787496de14285",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "08-cards2.test.ts",
+        "pattern": "Whispering Mantid: Sneaky",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R20",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A Sneaky column cannot be blocked iff its unit is **the only attacking unit in the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.sneaky.pure",
+    "textHash": "7e755dfad5183c50",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "blockingWith.length === 0 || e.pure(atkUnits, blockingWith)"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.sneaky.pure: Just a Unit (Pure) can block a lone Sneaky attacker; a plain unit cannot",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R61",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "rule survives it: Flying, Evasive, and Sneaky's lone-attacker immunity. A"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.sneaky.side-block",
+    "textHash": "180bfc98ee39c8f3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "side-block keys are excluded from blockingWith"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "422-cr-attacking-blocking.test.ts",
+        "pattern": "cr:combat.blocks.side.blocks-nothing — a side-block beside a lone Sneaky attacker",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R321",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "nothing, so it does not count as blocking a lone {Sneaky} attacker, and it"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.sneaky.spell-tokens",
+    "textHash": "2d8f1f161a21c735",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "the lone-Sneaky test counts b.columns only; riding spell tokens are kept apart from columns by doDeclareAttack"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.sneaky.spell-tokens: a Sneaky unit attacking with only a riding spell token is still alone and cannot be blocked",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R20",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "formation** (spell tokens riding along don't count as company). Two Sneaky units"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "const atkUnits = b.columns.flat().filter(id => e.entity(id));"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.sneaky.two-sneaky",
+    "textHash": "8e46c09c3d41a2c9",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "atkUnits.length > 1"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.sneaky.two-sneaky: two Sneaky units attacking in two columns are not alone, and both can be blocked",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R20",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "formation** (spell tokens riding along don't count as company). Two Sneaky units"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.thieving",
+    "textHash": "fdab3cc9be995f28",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:thievingDraws",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "09-attrs.test.ts",
+        "pattern": "Thieving: Slink draws when its column deals combat damage to a player",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "glossary: Thieving (ours)",
+        "supports": "yes",
+        "note": "not an authority"
+      },
+      {
+        "ref": "R24",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "client/ui/scan-reminders.json",
+        "supports": "yes",
+        "note": "uncited printed reminder"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ui/scan-reminders.json",
+        "text": "Whenever a thieving source deals combat damage to an opponent, draw a card."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.thieving.combat-only",
+    "textHash": "c751de60502ec9af",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "Thieving never read outside combat"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.thieving.combat-only: a Thieving source's noncombat damage to an opponent draws nothing",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R24",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "\"Combat damage to an opponent → draw\" = **one card per Thieving column that deals combat"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.thieving.draw",
+    "textHash": "06ee708b7881c714",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:assignCombatDamage",
+        "agrees": true,
+        "note": "thievingDraw per column hitting a player"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:thievingDraws",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "09-attrs.test.ts",
+        "pattern": "Thieving: Slink draws when its column deals combat damage to a player",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R24",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "\"Combat damage to an opponent → draw\" = **one card per Thieving column that deals combat"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.thieving.per-column",
+    "textHash": "0ada30e7a59f2aeb",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U20-r2",
+    "engine": [
+      {
+        "loc": "engine.ts:assignCombatDamage",
+        "agrees": true,
+        "note": "thievingDraw incremented once per column (colAttrs) that hits a player in a sub-step"
+      },
+      {
+        "loc": "engine.ts:thievingDraws",
+        "agrees": true,
+        "note": "draws the per-seat tally"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/388-raq-blocks-and-windows.test.ts",
+        "pattern": "RAQ Thieving: two Thieving units in one column",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1460213341011050536#0",
+        "supports": "yes",
+        "note": "one card; the column is the source"
+      },
+      {
+        "ref": "R24",
+        "supports": "yes",
+        "note": "one card per connecting column per damage sub-step, not per point"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "No, you get to draw only 1 card. (Background: The source of combat damage is column"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "damage to a player** in a damage sub-step (unblocked or Piercing overflow), not one per"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (atkAttrs.has('Thieving')) L.thievingDraw[b.attacker] = (L.thievingDraw[b.attacker] ?? 0) + 1;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.thieving.piercing",
+    "textHash": "ba1608d84cd5dd0e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:assignCombatDamage",
+        "agrees": true,
+        "note": "blocked Piercing leftover > 0 -> thievingDraw"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U20/u20-probes.test.ts",
+        "title": "attr.thieving.piercing: a blocked Thieving + Piercing column whose excess reaches the player draws a card",
+        "passed": true,
+        "demonstrates": true
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R24",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "damage to a player** in a damage sub-step (unblocked or Piercing overflow), not one per"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "attr.thieving.replaced",
+    "textHash": "4f2abad67ab9e6a4",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U20-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:assignCombatDamage",
+        "agrees": true,
+        "note": "thievingDraw counted when the hit is assigned, before commitPlayerDamage applies replacements"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R238",
+        "supports": "yes",
+        "note": "owner ruling; R238 itself notes Caleb was shown Lethal only and the Thieving extension is inference"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **{Thieving} and {Lethal}** already read `L.playerHits` (pre-replacement) and"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  }
+]

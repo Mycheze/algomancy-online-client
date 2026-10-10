@@ -1,0 +1,292 @@
+[
+  {
+    "id": "D-U18-1",
+    "kind": "a-sources-disagree",
+    "rule": "keywords.actions.trash.unstable-death",
+    "tier": 1,
+    "summary": "Is an {Unstable} card that dies in play trashed? The printed reminder and Caleb make {Unstable} replace the bin entry, so the card never enters a bin and is not trashed. R137 (owner) rules that it enters the bin, is trashed there and is then erased, and the engine does that. The same question as D-U07-3, seen from the trash rule.",
+    "sides": [
+      {
+        "source": "card: Abyssal Evocation",
+        "quote": "(If they would enter a bin, erase them instead.)"
+      },
+      {
+        "source": "R137 (its body-trash ruling)",
+        "quote": "*\"Unstable units still die, they just get erased instead of ending up in the"
+      },
+      {
+        "source": "R137 (its body-trash ruling)",
+        "quote": "therefore no trash\". That reading is what the engine implemented until today,"
+      },
+      {
+        "source": "R137 (its body-trash ruling)",
+        "quote": "**An Unstable card that dies enters a bin, is trashed there, and is only then"
+      },
+      {
+        "source": "R244 (its attribution and mod-erase halves)",
+        "quote": "Trashing means it goes to the BIN. But the unit that died was unstable, so"
+      }
+    ],
+    "resolution": "Question for the owner (answer it once, with D-U07-3). Caleb's \"erased instead of ending up in the bin\" has two readings: (A) the card never enters the bin, so it is not trashed; (B) it does not stay in the bin, so it may pass through it and be trashed. The printed reminder (\"If they would enter a bin, erase them instead\") reads only as (A), and R137 itself calls (A) the plain sense. The owner's own words in R244 (\"Trashing means it goes to the BIN. But the unit that died was unstable, so it didn't go to the bin\") argue (A) as well, though R244 kept the body's trash. Under the authority order print and designer outrank an owner call, so keywords.actions.trash.unstable-death states (A) at low confidence and F-U18-1 records the engine divergence. If the owner keeps R137 as a deliberate divergence, restate that rule as (B) and close F-U18-1 with F-U07-6."
+  },
+  {
+    "id": "D-U18-2",
+    "kind": "g-other",
+    "rule": "keywords.actions.trash",
+    "tier": 4,
+    "summary": "No printed text in the current pool defines trashing, and no designer words are quoted for it. R40 credits its definition to Void Scavenger's reminder text (a card cut from the set) and to a Caleb ruling of 2025-02-01 that it does not quote.",
+    "sides": [
+      {
+        "source": "R40 (its bin-entry definition, for cards)",
+        "quote": "per-battle trash count is required (Dropslime, Muck Rummager). (Printed: Void"
+      },
+      {
+        "source": "R40 (its bin-entry definition, for cards)",
+        "quote": "Scavenger reminder text; Caleb 2025-02-01; broadened by Bena 2026-08-19.)"
+      },
+      {
+        "source": "card: Dropslime",
+        "quote": "When I am trashed, [Switch1] I deal damage equal to the number of cards trashed in this battle to any target."
+      }
+    ],
+    "resolution": "The trash rules carry basis owner. Fourteen cards print trash text without defining it. If Caleb's 2025-02-01 words can be found in the Discord export, add them as a designer source. Question for the owner only if a judge's CR defines trashing differently (for example, only for cards entering the bin from play)."
+  },
+  {
+    "id": "D-U18-3",
+    "kind": "g-other",
+    "rule": "keywords.actions.trash.ways",
+    "tier": 4,
+    "summary": "R40 lists \"milling\" as a way of trashing, but no card prints \"mill\" and no printed or designer source defines it. In this client a card goes from the deck to a bin through rot and debt.",
+    "sides": [
+      {
+        "source": "R40 (its bin-entry definition, for cards)",
+        "quote": "Discarding, sacrificing, milling and dying in combat all trash. A spell or"
+      },
+      {
+        "source": "R306",
+        "quote": "An Unstable CARD still is (R137). Rot and debt trash cards from a deck or hand,"
+      }
+    ],
+    "resolution": "The rule keeps the word because a card moved from the deck to a bin does enter a bin from outside the stack, which is the definition. Define \"mill\" in the glossary as \"put from the deck into the bin\" if a judge's CR uses the word."
+  },
+  {
+    "id": "D-U18-4",
+    "kind": "d-raq-open",
+    "rule": "keywords.actions.rockfall.repeated",
+    "tier": 1,
+    "summary": "Do abilities triggered by one rockfall resolve before the next rockfall of the same effect? The designer's write-up said they do, when Meteor Shower made three copies of itself. The card now prints one spell (\"Rockfall 3 three times\"), the RAQ register marks the claim outdated, and the engine lets the triggers wait until the whole spell has resolved.",
+    "sides": [
+      {
+        "source": "RAQ 1353899470156206152#2",
+        "quote": "any check for triggers will happen in-between resolving each Rockfall 3"
+      },
+      {
+        "source": "card: Meteor Shower",
+        "quote": "Rockfall 3 three times."
+      },
+      {
+        "source": "RAQ 1353899470156206152#4",
+        "quote": "They resolve one by one and you always must choose alive unit (or none if you don't have any in that Region)."
+      },
+      {
+        "source": "R80",
+        "quote": "three batches for the same reason."
+      }
+    ],
+    "resolution": "Question for the owner. The designer's words \"any check for triggers will happen in-between resolving each Rockfall 3\" have two readings: (1) a general statement about rockfalls, so triggers resolve between the rockfalls of one Meteor Shower too (a Mirage Scuttler chosen three times grows between hits); (2) a statement about three separate spell copies, which the card no longer makes, so triggers wait for the one spell to finish. \"They resolve one by one\" (claim #4) fits either. The register's own note already asks the owner this. keywords.actions.rockfall.repeated says neither."
+  },
+  {
+    "id": "D-U18-5",
+    "kind": "g-other",
+    "rule": "keywords.actions.recall.destination",
+    "tier": 4,
+    "summary": "R262 says it knowingly overrules a Manual sentence sending a recalled unit to its owner's hand. No such sentence is in the printed pages the extract carries; the printed recall reminders say \"your hand\", \"their hand\" and \"their controller's hands\", which agree with R262 or are neutral.",
+    "sides": [
+      {
+        "source": "R262",
+        "quote": "recall goes to its *owner's* hand, and a stolen unit recalled now bounces into"
+      },
+      {
+        "source": "card: Cosmic Reversal",
+        "quote": "(Negate them and put them into their controller's hands.)"
+      },
+      {
+        "source": "card: Tidal Reversion",
+        "quote": "(Return it to their hand.)"
+      }
+    ],
+    "resolution": "The rule states R262 (controller's hand) with basis owner. If the Manual sentence R262 names exists in a printed source the extract lacks, print outranks an owner call and this becomes a question for the owner with both texts quoted; otherwise R262's \"overruled, knowingly\" overstates the conflict, and its note should name the source it means."
+  },
+  {
+    "id": "D-U18-6",
+    "kind": "g-other",
+    "rule": "keywords.actions.fight",
+    "tier": 4,
+    "summary": "Sources silent on whether the two hits of a fight are simultaneous, so that a unit killed by its opponent's damage still deals its own. Print says only \"They deal damage to each other\". R80 makes a fight two damage batches, one per fighter, and checks deaths once per batch.",
+    "sides": [
+      {
+        "source": "card: Fight",
+        "quote": "(They deal damage to each other equal to their power.)"
+      },
+      {
+        "source": "R80",
+        "quote": "**different sources** (each unit deals its own damage), and a batch is per"
+      },
+      {
+        "source": "R80",
+        "quote": "- **deaths are checked once**, after all of it is marked, which is what"
+      }
+    ],
+    "resolution": "keywords.actions.fight states only the printed text. The engine's test (16-earth-a, \"mutual power damage\") has both units deal their damage. Question for the owner only if a judge's CR rules that the first fighter's damage can kill the second before it strikes."
+  },
+  {
+    "id": "D-U18-7",
+    "kind": "g-other",
+    "rule": "keywords.actions.glimpse",
+    "tier": 4,
+    "summary": "Sources silent on a glimpse of more cards than the deck can supply. The engine's test glimpses nothing from an empty deck; 408.2b says the recycle pile becomes the new deck when more cards are needed.",
+    "sides": [
+      {
+        "source": "R45",
+        "quote": "Glimpse N reveals the top N cards of the deck, caches exactly **one** of the"
+      },
+      {
+        "source": "file: client/engine/test/36-cache-prophecy.test.ts",
+        "quote": "// an empty deck glimpses nothing rather than throwing"
+      }
+    ],
+    "resolution": "No rule written. The test empties the deck from inside the engine, with no recycle pile to fall back on, so it does not show what happens at a table. Question for the owner only if a judge's CR rules on it: does a glimpse that runs past the end of the deck shuffle the recycle pile in (408.2b) and keep revealing, or reveal fewer?"
+  },
+  {
+    "id": "D-U18-8",
+    "kind": "g-other",
+    "rule": "keywords.actions.cache.no-permission",
+    "tier": 2,
+    "summary": "403.3a and R303 name only two permissions that make a cached card usable: a fulfilled prophecy and a live glimpse. Murkdrop Distiller and Big Glimpse Card grant a play of the cards they cache in their own text.",
+    "sides": [
+      {
+        "source": "R303",
+        "quote": "may be played only while a prophecy on it is fulfilled or a glimpse stamp is live — and"
+      },
+      {
+        "source": "card: Murkdrop Distiller",
+        "quote": "you may cache it. If you do, you may play it until end of turn."
+      },
+      {
+        "source": "card: Big Glimpse Card",
+        "quote": "You may play those cards until end of turn, ignoring affinity."
+      }
+    ],
+    "resolution": "keywords.actions.cache.no-permission adds \"the text of the effect that cached it\" as a third permission, because printed text wins. Widen 403.3a (U07) the same way. Whether such a card-text permission also covers mods (R303's table) is not stated; question for the owner only if a judge's CR rules on it."
+  },
+  {
+    "id": "D-U18-9",
+    "kind": "g-other",
+    "rule": "keywords.actions.delete",
+    "tier": 1,
+    "summary": "Is a deleted unit a unit that dies? The Manual names the two side by side. No source says a deletion is a death; the engine treats it as one (it fires the death event, so \"When I die\" and \"whenever a unit dies\" see it).",
+    "sides": [
+      {
+        "source": "Manual p.13",
+        "quote": "a unit dies or is deleted, it is placed in the bin (discard"
+      },
+      {
+        "source": "R70",
+        "quote": "| `verb` | `dies` / `is deleted` / `is sacrificed` |"
+      },
+      {
+        "source": "card: Unstable Singularity",
+        "quote": "When I die, [Switch1] Delete target unit."
+      }
+    ],
+    "resolution": "Question for the owner. The Manual's \"When a unit dies or is deleted, it is placed in the bin\" has two readings: (1) deletion is one way of dying, named separately because a card says \"delete\"; (2) deletion and death are different events that end in the same bin, so a deleted unit does not trigger \"When I die\". The Manual says a sacrifice causes a unit \"to die\" and says no such thing of a deletion. keywords.actions.delete states only where the unit goes. The permissive reading (and the engine's) is (1)."
+  },
+  {
+    "id": "D-U18-10",
+    "kind": "f-register-chain-wrong",
+    "rule": "keywords.actions.glimpse.permission.ends",
+    "tier": 2,
+    "summary": "R206 tightened the Glimpse glossary row on the ground that an expired glimpse card is still moddable, and the register records that as amending R190's \"stays cached, inert\". R303 (later) made an expired glimpse refuse every verb, mods included, and R45 now says R303 \"makes inert mean it\". The R206 Glimpse tightening still reads as current: no edge or heading mark records that R303 reversed it.",
+    "sides": [
+      {
+        "source": "R206 (its Glimpse row tightening)",
+        "quote": "over-broad — an expired glimpse card is still public, targetable and moddable),"
+      },
+      {
+        "source": "R303",
+        "quote": "was a mod zone with no door on it. A glimpsed card you failed to play stayed a live graft"
+      },
+      {
+        "source": "R45",
+        "quote": "makes \"inert\" mean it: the same permission, and the same \"ignoring affinity\","
+      },
+      {
+        "source": "file: client/ui/glossary.ts",
+        "quote": "and still moddable out of the zone at full price."
+      }
+    ],
+    "resolution": "Add a supersession edge R303 → R206 (relation: reversed; scope: the Glimpse row's \"moddable\" half) and mark R206's heading. R190's \"stays cached, inert\" is right again on the mod question; the R206 → R190 edge should say it was amended only on \"public, targetable\". Fix the glossary row (F-U18-2)."
+  },
+  {
+    "id": "D-U18-11",
+    "kind": "c-owner-call-only",
+    "rule": "keywords.actions.trash.trasher",
+    "tier": 3,
+    "summary": "Every rule about who trashes and what is trashed rests on owner calls with no designer source: the trasher is the player whose bin the card enters (R40, R250), a mod's trash belongs to the host's controller (R244), a token is never trashed (R306), and an exchange trashes the unit that leaves (R157 §3).",
+    "sides": [
+      {
+        "source": "R250 (its §4, zones follow control)",
+        "quote": "| who trashed it? | its CONTROLLER (R244, unchanged) |"
+      },
+      {
+        "source": "R244 (its attribution and mod-erase halves)",
+        "quote": "**1. Where a mod IS trashed, the HOST'S CONTROLLER trashes it.** Not the mod's"
+      },
+      {
+        "source": "R306",
+        "quote": "trashed.* A token is not a card (R133's first half, which stands), so a token"
+      },
+      {
+        "source": "R157 (§3)",
+        "quote": "> *\"It's not a death, but it is a despawn and trashing. Weird corner case.\"*"
+      }
+    ],
+    "resolution": "The rules ship with basis owner, as the engine's law. Fourteen cards print trash triggers, so these calls decide real games; they are the first to compare against a judge's CR. Question for the owner only if the judge's CR attributes a trash differently."
+  },
+  {
+    "id": "D-U18-12",
+    "kind": "a-sources-disagree",
+    "rule": "keywords.actions.glimpse.whose-deck",
+    "tier": 3,
+    "summary": "Whose deck does a glimpse read when an effect makes another player glimpse? Caleb's words quoted in R157 §18 say \"the deck\" is the effect controller's; the reminder on Celestial Purge and Dematerialize says the glimpser reveals from \"their deck\". The engine reads the glimpser's deck. It only matters in constructed, where each seat has its own deck.",
+    "sides": [
+      {
+        "source": "R157 (§18)",
+        "quote": "> 'The deck' always refers to the deck of the effect's controller. The targeted"
+      },
+      {
+        "source": "card: Dematerialize",
+        "quote": "(They reveal the top three cards of their deck and cache one. Until end of turn, they may play it as if it was in their hand, ignoring affinity. Recycle the rest.)"
+      }
+    ],
+    "resolution": "Followed the printed reminder: the glimpser reveals from their own deck. Caleb's sentence answered a question about Big Glimpse Card, where the effect's controller is the glimpser, so on that card the two readings agree; the reminder is the specific text for a glimpse the effect hands to another player. Question for the owner only if a judge's CR reads Caleb's sentence as covering \"Its controller Glimpses\": then a constructed Celestial Purge would reveal from the caster's deck."
+  },
+  {
+    "id": "D-U18-13",
+    "kind": "c-owner-call-only",
+    "rule": "keywords.actions.recycle",
+    "tier": 3,
+    "summary": "The recycle mark has no printed or designer source. Print says only that recycling puts a card \"on the bottom of the deck\"; R296 records the mark and the reshuffle as an unwritten rule the owner learned from a judge-level player. The same item as D-U07-12, seen from the keyword action.",
+    "sides": [
+      {
+        "source": "Manual p.16",
+        "quote": "recycled (put on the bottom of the deck) and each"
+      },
+      {
+        "source": "R296",
+        "quote": "**past the mark**, into the recycle pile, not onto the bottom of the live deck."
+      }
+    ],
+    "resolution": "The rule states both: print for \"bottom of the deck\", R296 for the mark. Answer once with D-U07-12."
+  }
+]

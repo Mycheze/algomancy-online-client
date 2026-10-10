@@ -1,0 +1,146 @@
+[
+  {
+    "id": "F-U16-1",
+    "title": "Two R208 test titles assert the erased-pile behaviour R219 reversed",
+    "summary": "In 178-played-item-and-erased-mods, the Slag Spewer test is titled \"an erase paid as a COST still announces itself with info — Q3 is OPEN\" and the Suppression Field test \"... and the pile is untouched\". Both titles state R208's held behaviour (a mod erased off a living host files nothing on the erased pile), which R219 reversed. Both bodies now assert the R219 behaviour: the erased mod is on the pile. The titles say the opposite of what the tests check.",
+    "evidence": [
+      {
+        "file": "client/engine/test/178-played-item-and-erased-mods.test.ts",
+        "quote": "R208 Suppression Field: mods leave host and game, the host lives, and the pile is untouched"
+      },
+      {
+        "file": "client/engine/test/178-played-item-and-erased-mods.test.ts",
+        "quote": "'a real nontoken mod card leaving the game files the pile, wherever it leaves from'"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "`E.eraseMod` files the pile now, so the ruling is one line at one site — which"
+      }
+    ],
+    "rule": "effects.stripping.what.erase-mods"
+  },
+  {
+    "id": "F-U16-2",
+    "title": "A copy-layer test title still calls stripping a veto",
+    "summary": "The 44-hybrids-ld-a test \"R118: R62 suppression is a veto ABOVE copy\" and its message \"R62 sits ABOVE layer 0\" describe R62's veto, which R328 reversed (stripping is applied in timestamp order). The test strips after the copy is made, so its assertions still hold under R328, but no test pins a copy that begins after a strip (see D-U16-6), and the title asserts superseded law.",
+    "evidence": [
+      {
+        "file": "client/engine/test/44-hybrids-ld-a.test.ts",
+        "quote": "R118: R62 suppression is a veto ABOVE copy — a silenced copy radiates nothing"
+      },
+      {
+        "file": "client/engine/test/44-hybrids-ld-a.test.ts",
+        "quote": "'R62 sits ABOVE layer 0: a silenced copy radiates nothing, all faces at once'"
+      }
+    ],
+    "rule": "effects.stripping.copied-text"
+  },
+  {
+    "id": "F-U16-3",
+    "title": "A unit stripped by a continuous effect (Monke, Transmogrifant) keeps applying its own static abilities",
+    "summary": "Transmogrifant and Monke make other units \"lose all attributes and abilities\", and R62 says a static is an ability, but static-vs-static resolves in one pass that skips only a holder with the one-time stamp. The verifier's probe measured a 1/1 token at 3/5 with Sandstone Defender under Transmogrifant, where the printed text gives 3/3. R62 justifies the one pass only by the mutual case (two Monkes); the one-sided case falls out of the same shortcut.",
+    "evidence": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "*entity flag* is set, not one silenced by another static. So a unit silenced by"
+      },
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "quote": "\"text\": \"[Augment] Your other units gain +2/+2 and lose all attributes and abilities.\","
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U16/u16-probes.test.ts",
+        "quote": "effects.stripping.what.abilities: a unit silenced by a CONTINUOUS strip (Transmogrifant) stops radiating its static"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U16/u16-r2-probes.test.ts",
+        "quote": "assert.deepEqual(effStats(h, tok), [3, 5], 'engine: the statically-stripped unit keeps radiating');"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "**Unchanged:** static-vs-static still resolves in one pass (`staticsFor` reads only"
+      }
+    ],
+    "rule": "effects.stripping.what.abilities"
+  },
+  {
+    "id": "F-U16-4",
+    "title": "Tough augmented onto a printed-Balanced unit: the engine balances first, the Manual's \"augmented onto\" sentence doubles first",
+    "summary": "Manual p.42: \"if Tough is augmented onto a Balanced unit ... it will have its defense doubled, then its stats balanced.\" The engine (R19's own call: printed attributes before mod attributes) gives the reverse: the verifier's probe measured Child of Aether (2/0 Balanced) with a Tough augment at 2/4, where that sentence gives 2/2. The same answer's last sentence (\"applied to\") gives balanced, then doubled, so this waits on the owner's reading (D-U16-1).",
+    "evidence": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "quote": "“Tough” is augmented onto a “Balanced” unit, or if a"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "quote": "will have its defense doubled, then its stats balanced."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "⚠ Engine call: the Manual doesn't specify an order for printed-vs-granted-vs-shared;"
+      }
+    ],
+    "rule": "effects.continuous.layers.attribute-order"
+  },
+  {
+    "id": "F-U16-5",
+    "title": "A unit silenced by a continuous stripper (Monke, Transmogrifant) keeps radiating its own static abilities",
+    "summary": "Measured by the U16 probe u16-probes.test.ts (Transmogrifant case). Printed Monke/Transmogrifant make other units \"lose all attributes and abilities\", and R62 itself says \"a static is an ability\", but E.staticsFor only skips a holder whose own entity stamp is set (textStrippedShallow). So a Sandstone Defender under Transmogrifant still gives +0/+2: probe measured a 1/1 token at 3/5 instead of 3/3. R62 justifies one-pass resolution only for the mutual case (two Monkes); the non-mutual case falls out of the same shortcut.",
+    "evidence": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "*entity flag* is set, not one silenced by another static. So a unit silenced by"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "quote": "      // SPELL stops radiating immediately, while two units whose statics"
+      },
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "quote": "\"text\": \"[Augment] Your other units gain +2/+2 and lose all attributes and abilities.\","
+      }
+    ],
+    "rule": "effects.stripping.what.abilities"
+  },
+  {
+    "id": "F-U16-6",
+    "title": "Tough augmented onto a printed-Balanced unit: engine balances first, the Manual p.42 first clause doubles first",
+    "summary": "Manual p.42: \"if Tough is augmented onto a Balanced unit ... it will have its defense doubled, then its stats balanced.\" The engine (R19 ⚠ engine call: printed attrs before mod attrs) gives the reverse: Child of Aether (2/0 Balanced) augmented with Rampart Guardian reads 2/4, where the Manual clause gives 2/2. The same Manual answer then says \"applied to\" gives balanced-then-doubled, so the printed text contradicts itself; it needs an owner/designer call. Not in the R register.",
+    "evidence": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "quote": "“Tough” is augmented onto a “Balanced” unit, or if a"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "quote": "will have its defense doubled, then its stats balanced."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "⚠ Engine call: the Manual doesn't specify an order for printed-vs-granted-vs-shared;"
+      }
+    ],
+    "rule": "effects.continuous.layers.attribute-order"
+  },
+  {
+    "id": "F-U16-7",
+    "title": "A unit stripped of abilities by a continuous static keeps radiating its own statics",
+    "summary": "Transmogrifant prints that your other units 'lose all attributes and abilities', but the engine's static walks (staticsFor/textStrippedShallow) read only the entity's own suppressed stamp. So Sandstone Defender under Transmogrifant still gives +0/+2: a 1/1 token measures 3/5, not 3/3. This contradicts the printed text, not a current R-ruling (R62/R328 describe the one-pass behaviour), so it is an engine-vs-printed divergence. The rule records it as F-U16-3.",
+    "evidence": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "quote": "\"text\": \"[Augment] Your other units gain +2/+2 and lose all attributes and abilities.\","
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "**Unchanged:** static-vs-static still resolves in one pass (`staticsFor` reads only"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U16/u16-r2-probes.test.ts",
+        "quote": "assert.deepEqual(effStats(h, tok), [3, 5], 'engine: the statically-stripped unit keeps radiating');"
+      }
+    ],
+    "rule": "effects.stripping.what.abilities"
+  }
+]

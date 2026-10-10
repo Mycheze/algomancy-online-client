@@ -1,0 +1,4703 @@
+[
+  {
+    "key": "annexd.confirm.dials",
+    "textHash": "1428fc19c9e5830b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui stepper (StepperAction.submit false)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "124-counter-stepper.test.ts",
+        "pattern": "\"All\" sets the count to the max and does NOT submit",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R139",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R197 (its §1)",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "test:126-assign-split.test.ts",
+        "supports": "partly",
+        "note": "cited test file, no bound example from it"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**\"All\" SETS the count and does NOT submit**, and that is the whole point: on a"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.confirm.dials.commit",
+    "textHash": "1d560855a3a63cb0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts decisionBarHtml commitbtn",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "260-cost-ramp-and-bin-targets.test.ts",
+        "pattern": "R280 §3 that is enough is a full button, and the plain declines stay quiet",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R280",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**Ruled: `doneCost` is not a decline.** It is the affirmative end of a ramp —"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.confirm.dials.counters",
+    "textHash": "f0e2f0689c1a8e16",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts castCostOptions/payCastCost counterFrom n",
+        "agrees": true,
+        "note": "n up to min(u.counters, owed)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "124-counter-stepper.test.ts",
+        "pattern": "R139: the pick max is the biggest SINGLE stack, not the whole ally pool",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R139",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R139",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "  `{counterFrom: id, n: k}` for k up to `min(u.counters, owed)`."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.confirm.dials.damage-split",
+    "textHash": "4c5f908c4f29b45c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:electionWalk",
+        "agrees": true,
+        "note": "one victim at a time; last victim auto-filled"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "126-assign-split.test.ts",
+        "pattern": "R149 (1): the total is forced — under and over allocations are refused, with the remainder said out loud",
+        "passed": true,
+        "asserts_claim": "partly - asserts the per-victim scalar and the remainder shown, and that only splits the engine would not take are refused; the back unit's auto-fill is not asserted here"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R149",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R149",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "1. **The sum is already forced by construction, and never by the client.** An"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.confirm.dials.number",
+    "textHash": "2af84e4f972770aa",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts (numberEntry, numtake)",
+        "agrees": true,
+        "note": "value on the wire"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "168-three-card-divergences.test.ts",
+        "pattern": "R197 §1c Prediction Prophet: THE CLIENT CAN EXPRESS IT — the numeric bar dials past the old cap and puts the VALUE on the wire, not an index",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R197 (its §1)",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "  `ui/main.ts` a real bar: a typed box **first** and a −10/−1/+1/+10 dial"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.confirm.dials.ramp",
+    "textHash": "dcc564c71e1e7528",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts startCostRamp/numDec",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "260-cost-ramp-and-bin-targets.test.ts",
+        "pattern": "R280 §4 one confirm walks the ramp to the dialled X and then stops",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "260-cost-ramp-and-bin-targets.test.ts",
+        "pattern": "R280 §2b the dial goes DOWN as well as up, and never below what is already paid",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R280",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R280",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Down is free because **nothing is spent until Confirm** — that is the \"and had"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.confirm.never-refuse",
+    "textHash": "50871314510d95e4",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts:act (confirm gate)",
+        "agrees": true,
+        "note": "confirm does not alter candidates"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "278-ally-misclick.test.ts",
+        "pattern": "R288 §4 the question changes no legality: same candidates, same outcome",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R74",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R288",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**IT IS A QUESTION, NEVER A FILTER.** The owner says it twice — *\"we shouldn't"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**The ruling is a warning, not a prohibition.** X = 0 stays legal and the option"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.confirm.never-refuse.ally",
+    "textHash": "4a60203da5f0f885",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/dsl.ts:mixedAllegiance + ui/main.ts act()",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "278-ally-misclick.test.ts",
+        "pattern": "R288 §1 Fight aimed at a second unit of your own asks whether you meant it",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "278-ally-misclick.test.ts",
+        "pattern": "R288 §5 \"no\" sends nothing and leaves the same pick open",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R288",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R288",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**WHAT \"NO\" DOES.** Nothing has been sent, so there is nothing to undo: the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.confirm.never-refuse.regroup",
+    "textHash": "b82bfda59aa9f0cc",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts confirmBarHtml(pass) armed by passEndsBattlePhase",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "165-token-loss-warning.test.ts",
+        "pattern": "[66] control: the Regroup confirm still fires on the pass that reaches Regroup",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R266",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R266",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "and it fires on the pass that would reach Regroup and on no other window of the same battle."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.confirm.never-refuse.x-zero",
+    "textHash": "fbda90b54687e7f1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts collectCastCosts xZeroWarning",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "42-dark-b.test.ts",
+        "pattern": "Necromantic Rebuke: stopping at X = 0 is offered WITH a warning, and stays legal (R74)",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R74",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R74",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**The ruling is a warning, not a prohibition.** X = 0 stays legal and the option"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.confirm.not-only-log",
+    "textHash": "fd818a026ef233ad",
+    "verdict": "partial",
+    "round": 3,
+    "verifier": "U24-r3",
+    "engine": [
+      {
+        "loc": "client/ui/inspect.ts:tokenLossNotice + client/ui/main.ts:tokenLossBarHtml",
+        "agrees": true,
+        "note": "the regroup spell-token erase is drawn as a .promptbar pending row in the prompt slot for the losing seat"
+      },
+      {
+        "loc": "client/ui/toast.ts:costToast (R276 cost-toast tier)",
+        "agrees": true,
+        "note": "every other costly log-only announcement (18 structural + 5 pool sites) now earns a toast; the 3 not toasted are the token bar and the two fizzled stack-strip marks. So the losses R266 listed are no longer log-only."
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/244-log-is-not-the-only-surface.test.ts",
+        "pattern": "the loss is put in front of the player who lost it",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/256-cost-toasts.test.ts",
+        "pattern": "(whole file)",
+        "passed": true,
+        "asserts_claim": "yes - every tier-1 costly absence (21) is toasted or already surfaced (18 + 3)"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R266 \"An announcement the player is expected to act on...\"",
+        "supports": "yes",
+        "note": "the rule text is this sentence, owner-quoted at the head of R266"
+      },
+      {
+        "ref": "R266 \"Nineteen tier-1 announcements remain log-only...\"",
+        "supports": "no",
+        "note": "stale: R276 (owner call 2026-08-30) built the shared cost-toast tier and 256 asserts every costly absence now has a surface; used as divergence evidence it is superseded"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**An announcement the player is expected to act on, or to have lost something by, must reach a surface other than the log.** The log is the record; it is not the notice."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "CT-142 asked which log-only announcements deserve a surface and refused to guess,"
+      },
+      {
+        "file": "client/ui/test/256-cost-toasts.test.ts",
+        "text": "test('[R276] the derived tier-1 population, and every member of it earns a toast', () => {"
+      },
+      {
+        "file": "client/ui/test/244-log-is-not-the-only-surface.test.ts",
+        "text": "assert.match(after, /class=\"promptbar pending\"[\\s\\S]{0,400}spell tokens lost/,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "The ruling and its example are confirmed. The engineDiffers flag (F-U24-4) is not borne out if it rests on R266's \"nineteen tier-1 announcements remain log-only\": R276 then gave every costly log-only announcement a toast (256-cost-toasts: 18 toasted + 3 already surfaced of 21 tier-1 sites, plus 5 card-pool sites). Only the 18 routine, non-costly announcements are still log-only. Drop or restate the divergence, and drop the stale second R266 quote."
+  },
+  {
+    "key": "annexd.confirm.not-only-log.coalesce",
+    "textHash": "1179842f1339812e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/toast.ts:costToastHtml/visibleCostToasts",
+        "agrees": true,
+        "note": "×N coalescing and +N more line"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "256-cost-toasts.test.ts",
+        "pattern": "[R276] identical sentences in one batch coalesce into one row with a count",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R276",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R276",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ui/toast.ts",
+        "text": "    ? `<div class=\"costtoastmore\">+${more} more — all of it is in the log</div>` : '';"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.confirm.not-only-log.toast",
+    "textHash": "7deed4f5c49f2290",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/toast.ts:costToast",
+        "agrees": true,
+        "note": "no seat filter; both seats see it"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "256-cost-toasts.test.ts",
+        "pattern": "[R276] a spell that resolves with nothing to aim at produces a toast, end to end",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "256-cost-toasts.test.ts",
+        "pattern": "[R276] an ordinary resolution produces no toast at all",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R276",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R276",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R276",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ui/toast.ts",
+        "text": "export const COST_TOAST_HEAD = '⚠ this did nothing';"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "either way. **Both seats see every toast.**"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.confirm.not-only-log.token-loss",
+    "textHash": "80e3b9c7ba98e347",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U24-r2",
+    "engine": [
+      {
+        "loc": "client/ui/inspect.ts:tokenLossNotice",
+        "agrees": true,
+        "note": "picks erased+seat+ids+no cards; filters to mySeat so the other player is not shown it"
+      },
+      {
+        "loc": "client/ui/main.ts:tokenLossUp/gcStaleUi",
+        "agrees": true,
+        "note": "latched, drawn in the promptbar; cleared on tokenlossclose, on resync (flashReset) and when phase becomes battle"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/244-log-is-not-the-only-surface.test.ts",
+        "pattern": "the loss is put in front of the player who lost it, in the promptbar area",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/244-log-is-not-the-only-surface.test.ts",
+        "pattern": "a net client is not shown the opponent loss, and the notice goes stale at the next battle",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/165-token-loss-warning.test.ts",
+        "pattern": "(whole file)",
+        "passed": true,
+        "asserts_claim": "yes - CT-55 decline route announced per seat"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R266",
+        "supports": "yes",
+        "note": "notice (not warning); net clients see only their own loss; stays until dismissed / resync / next battle"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ui/inspect.ts",
+        "text": "    if (mySeat !== null && seat !== mySeat) continue;"
+      },
+      {
+        "file": "client/ui/main.ts",
+        "text": "  if (tokenLossUp && h.state.phase === 'battle') tokenLossUp = null;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Minor omission only: a resync (flashReset) also drops the notice; not a wrong statement."
+  },
+  {
+    "key": "annexd.confirm.say-so",
+    "textHash": "a69c087c6c17fc5a",
+    "verdict": "confirmed",
+    "round": 3,
+    "verifier": "U24-r3",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards (Bloated Manablub, Cull empty-collection branches: g.ev info)",
+        "agrees": true,
+        "note": "the R187/R209 repairs are one info line per branch; the loops were not made to run"
+      },
+      {
+        "loc": "client/engine/test/65-effect-conformance SILENT_KNOWN",
+        "agrees": true,
+        "note": "the only remaining entry is Trench Stalker, run: () => {} that cannot be reached in a game"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/158-silent-region-branches.test.ts",
+        "pattern": "Bloated Manablub",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/179-empty-collection-branches.test.ts",
+        "pattern": "Cull —",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R187",
+        "supports": "yes",
+        "note": "\"nothing happened\" is legitimate, not saying so is not; board behaviour unchanged"
+      },
+      {
+        "ref": "R209 rule statement",
+        "supports": "yes",
+        "note": "per-clause, seats or picks, even when another clause speaks"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> **A printed clause that promises a per-seat outcome and then resolves over an"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "does nothing; *\"nothing happened\" is a legitimate outcome, not SAYING so never"
+      },
+      {
+        "file": "client/engine/test/179-empty-collection-branches.test.ts",
+        "text": "assert.equal(snapshot(b.g), before, 'Cull: nobody had a unit, so nothing died');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Minor: R187 and R209 are rulings derived from the card-todo work (CARD-TODO #70/#74/#81), not owner calls, so \"owner\" as the basis is generous."
+  },
+  {
+    "key": "annexd.confirm.say-so.no-damage",
+    "textHash": "8362edb487423829",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealEffectDamageAll",
+        "agrees": true,
+        "note": "guard on hits.length"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "93-engine-defects.test.ts",
+        "pattern": "a damage batch handed an empty hit list announces that there was nothing to damage",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R109",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "`dealEffectDamageAll` handed an empty hit list used to return in silence. Every *\"I deal N"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.confirm.say-so.no-opponent",
+    "textHash": "f454dccb24c4cc9c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards Bloated Manablub info branch",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "158-silent-region-branches.test.ts",
+        "pattern": "Bloated Manablub — \"Each opponent loses 3 life\" in a region holding no opponent says so and takes no life",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R187",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "| Bloated Manablub | ability #0 + graft | \"Each opponent loses 3 life\" |"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.confirm.say-so.no-target",
+    "textHash": "a726c75aac99351b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/dsl.ts (shared no-target helper)",
+        "agrees": true,
+        "note": "emits the exact sentence"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "196-empty-target-fizzle.test.ts",
+        "pattern": "R227 spell:Luminous Arc: no target → fizzles and logs (CT-89 #1)",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R223",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R227",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/dsl.ts",
+        "text": "  g.ev('info', `${ctx.sourceName}: it has no legal target — nothing happens.`);"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> **\"Fizzle, and say so in the log.\"**"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.confirm.say-so.per-clause",
+    "textHash": "43803b9e79c3dd4d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards (Recall)",
+        "agrees": true,
+        "note": "179 drives it"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "179-empty-collection-branches.test.ts",
+        "pattern": "Recall — the life loss happens, the recall does not, and the card now says which",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R209",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> THAT CLAUSE, even when another clause of the same card is speaking.**"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.display.copies",
+    "textHash": "88e1f451956be59d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts unitHtml via E.nameOf",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "198-copy-art.test.ts",
+        "pattern": "R229 §1: a Borrower of Forms is DRAWN as the card it borrowed",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R229",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R229",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "## R229 — a copy is DRAWN as the card it copied, and stays marked as a copy"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.display.copies.marked",
+    "textHash": "e77db5df6e97470d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts unitHtml",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "198-copy-art.test.ts",
+        "pattern": "R229 §3b: a copy is marked even when the borrowed body matches its own",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R229",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R229",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "what bins, and the markings below — keeps reading"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "  changed, so one marking has to be independent of the numbers. `unitHtml` now"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.display.copies.projection",
+    "textHash": "2a0617dda8529c9e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts unitHtml via E.nameOf",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "198-copy-art.test.ts",
+        "pattern": "R229 §3: an Ancient One keeps its OWN art — a projection is not an identity",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R229",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "`Ancient One` **projects** with `facets: ['statics', 'activated', 'behavior']`"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.display.declarations",
+    "textHash": "d5e0f8c515d28209",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts battleHtml",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "253-combat-orientation.test.ts",
+        "pattern": "the live attack and the declared attack put the same units in the same halves",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R273",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**A live view of a declaration is the declaration, minus commitment.** It may"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.display.hand",
+    "textHash": "e96461bb72bb8c36",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/inspect.ts:handOffers/handOfferBadge",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "155-hand-affordances.test.ts",
+        "pattern": "R183 §2: a {Battle} spell in deployment is NOT drawn like a castable deployment card",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R183",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**Casting is the unmarked case.** A plainly castable card in hand keeps the exact"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.display.hand.cached",
+    "textHash": "58ded0e7cbfd1643",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts hand-side cache copy",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "155-hand-affordances.test.ts",
+        "pattern": "R183 §4: a playable cached card is drawn at the right of the hand AND left in the cache row",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R183",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R183",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "* **The click is the SAME `data-act=\"cache\" data-p data-i` the cache row uses**,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.display.hand.resource-menu",
+    "textHash": "3bf9f64a063dc322",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts legalActions recycleForResource",
+        "agrees": true,
+        "note": "all seven offered"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "34-constructed.test.ts",
+        "pattern": "deckElements: it is a PRESENTATION default — all seven stay legal",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R99",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R99",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R299",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R299",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "test:308-recycle-for-prismite.test.ts",
+        "supports": "partly",
+        "note": "cited test file, no bound example from it"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "faithful to the game.\"* The client should DEFAULT the menu to `deckElements[mySeat]` and keep"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**only behind the expander**. The owner's layout (2026-09-19): the main menu is *\"all"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.display.live-values",
+    "textHash": "054afe346716edab",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U24-r2",
+    "engine": [
+      {
+        "loc": "client/ui/cardtext.ts:liveX/substituteX",
+        "agrees": true,
+        "note": "bare X replaced by Entity.x or a unit token's counters; X glued to / + - and [x] untouched; reminder spans carved out"
+      },
+      {
+        "loc": "client/ui/cardtext.ts:namedCardOf/substituteNamed",
+        "agrees": true,
+        "note": "'my last named card' replaced by Entity.named (or the host's for an augment)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/127-token-x-and-dormant.test.ts",
+        "pattern": "R151/CT-33: a Poison created with X=5",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/127-token-x-and-dormant.test.ts",
+        "pattern": "X/X, +X/+X and -X/-X are STAT notation",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/259-card-text-surface.test.ts",
+        "pattern": "CT-163: the box of the card that named says WHICH card it named",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R151",
+        "supports": "yes",
+        "note": "census table: bare X substituted; X/X, +X/+X, -X/-X, [x] never; reminder carved out"
+      },
+      {
+        "ref": "R279",
+        "supports": "yes",
+        "note": "§1 named card substituted (only §2 is replaced by R336)"
+      },
+      {
+        "ref": "R246",
+        "supports": "partly",
+        "note": "supports that a board-read X on the stack is a forecast; does not itself say the text box is not rewritten"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ui/cardtext.ts",
+        "text": "  if (u.token && u.kind === 'unit') return u.counters;"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "| `X` (bare) | 59 | **substituted** — this is the value |"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.display.live-values.burst",
+    "textHash": "2cb99f083739e986",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts (burst castChain groups on t.card)",
+        "agrees": true,
+        "note": "per R254"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "233-burst-count-and-size.test.ts",
+        "pattern": "§1b a group of one name at different sizes prints every size — the report verbatim",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "358-burst-order-ui.test.ts",
+        "pattern": "§3 a token wears its X as a die face, not \"X=n\" in the stat corner",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R254 (its §1, §3 and §4)",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R309",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**1. A burst group is a NAME, and the board counts by group.** The spell-token"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "  Each spell token wears its X as a large die face (pips for 1 to 6, the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.display.live-values.named-card",
+    "textHash": "fc011f13b9a64bca",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/cardtext.ts:namedCardOf",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "259-card-text-surface.test.ts",
+        "pattern": "CT-163: the box of the card that named says WHICH card it named",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R279 (its §1, §3 and §4)",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R279 (its §1, §3 and §4)",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- `Entity.named === ''` is a REAL value — \"name no card (release my last"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.display.live-values.token-x",
+    "textHash": "cb7c56e297a9e246",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/cardtext.ts:liveX/substituteX",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "127-token-x-and-dormant.test.ts",
+        "pattern": "R151/CT-33: a Poison created with X=5 says \"Put 5 -1/-1 counters\", from the engine",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "127-token-x-and-dormant.test.ts",
+        "pattern": "R151/CT-33: a Robot reads its X off its COUNTERS, so it stays true as they change",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R151",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R151",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "broken one. Reminder text **names** the variable; it does not use it."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.display.live-values.x-forecast",
+    "textHash": "a204abfb168718a1",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U24-r2",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts:stackPreviewX",
+        "agrees": true,
+        "note": "empty if stackItemX has a committed X; narrows by declared mode (and declared player target) when exactly one row matches; else all rows"
+      },
+      {
+        "loc": "client/ui/main.ts:xPreviewFor",
+        "agrees": true,
+        "note": "forecast from CardBehavior.xPreviewRows/xPreview only"
+      },
+      {
+        "loc": "client/ui/main.ts stack focus viewer",
+        "agrees": true,
+        "note": "worded 'X = n right now'"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/225-stack-readout.test.ts",
+        "pattern": "§1a Retribution Thing wears its X on the stack",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/225-stack-readout.test.ts",
+        "pattern": "§1c a paid X still wins",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/225-stack-readout.test.ts",
+        "pattern": "§1b the declared mode narrows the forecast",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R246",
+        "supports": "yes",
+        "note": "forecast public, committed X silences it, declared mode narrows, card's own answer"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ui/main.ts",
+        "text": "  if (stackItemX(it).length) return [];   // it already committed a number"
+      },
+      {
+        "file": "client/ui/main.ts",
+        "text": "    `<div class=\"xnow\">X = ${r.x} right now${"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Unstated extra: a declared player target narrows the forecast the same way (Soul Siphon). Not a wrong statement."
+  },
+  {
+    "key": "annexd.display.live-values.x-not-forecast",
+    "textHash": "0568dba842da5c8f",
+    "verdict": "partial",
+    "round": 3,
+    "verifier": "U24-r3",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts:xPreviewFor / stackPreviewX",
+        "agrees": true,
+        "note": "a stack forecast comes only from a card xPreview/xPreviewRows hook (and only in the battle phase); a card with no hook shows none"
+      },
+      {
+        "loc": "client/ui/test/225-stack-readout.test.ts:X_NOT_FORECAST_YET",
+        "agrees": true,
+        "note": "Burden of Life is listed: \"X is your life total, which is on the screen already, twice\""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/225-stack-readout.test.ts",
+        "pattern": "1e",
+        "passed": true,
+        "asserts_claim": "yes for the engine fact: the 18 board-read-X cards with no hook are inventoried and have no hook"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R246 \"cards are left: their X is read from the board at resolution and only a card\"",
+        "supports": "partly",
+        "note": "this records a GAP (\"What is still not shown\"), not a rule. R246's ruling is that a board-read X IS public and shown as a forecast, and the owner asked for \"all cards with an X\". The test names the list X_NOT_FORECAST_YET"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**A card's X, when the rules read it from the board rather than from a payment,"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> stack). All cards with an X in them need to show their X value when on the"
+      },
+      {
+        "file": "client/ui/test/225-stack-readout.test.ts",
+        "text": "'Burden of Life': 'X is your life total, which is on the screen already, twice',"
+      },
+      {
+        "file": "client/ui/test/225-stack-readout.test.ts",
+        "text": "const X_NOT_FORECAST_YET: Record<string, string> = {"
+      }
+    ],
+    "basis_ok": false,
+    "problem": "The engine statement is true, but it records a known gap as if it were a rule, and gives the owner as the basis. The owner asked that every X card show its X on the stack. R246 rules that a board-read X is public and shown as a forecast, and lists the 18 hookless cards as \"not forecast yet\". Restate it as a digital limitation with an engineDiffers flag, or set the basis to engine. The ruling is: a board-read X should be forecast, and these 18 cards are not yet."
+  },
+  {
+    "key": "annexd.display.menus",
+    "textHash": "9a6710c9770ffd27",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts contextmenu / inspect.ts boardMenuEntries",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "216-menu-scoping.test.ts",
+        "pattern": "§1 right-clicking a CARD shows card things, and nothing about the field",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "216-menu-scoping.test.ts",
+        "pattern": "§3 a card BACK is not a dead click: an unreadable card gets the table menu",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R241",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R241",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R253",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "test:232-log-modal.test.ts",
+        "supports": "partly",
+        "note": "cited test file, no bound example from it"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**An unreadable card is not a card, for menu purposes.** A back offers no card"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.display.menus.log",
+    "textHash": "eaade0fa77049f06",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts logPanelHtml",
+        "agrees": true,
+        "note": "pacing curtain (R80) and story/verbose fold still apply"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "252-viewport-and-log.test.ts",
+        "pattern": "R272 §1a a log longer than the old 80-line window is shown WHOLE",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R253",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R272",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "test:232-log-modal.test.ts",
+        "supports": "partly",
+        "note": "cited test file, no bound example from it"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**R272c — the game log modal shows the whole log.** The 80-line window in"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "right-click menu offers **📜 View game log**; it opens an `.overlay.mainonly`"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.display.reminders",
+    "textHash": "306b2bf08948bc5e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/glossary.ts",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "177-glossary-conformance.test.ts",
+        "pattern": "R248: a row the pool prints a reminder for SHOWS that reminder, verbatim",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "245-printed-reminder-reach.test.ts",
+        "pattern": "R267: the card library is consulted LAST, never over the pool or the manual",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R248",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R252 (its order of channels)",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R267",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "test:231-manual-text.test.ts",
+        "supports": "partly",
+        "note": "cited test file, no bound example from it"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**PRINTED (pool) BEATS MANUAL BEATS CARD LIBRARY BEATS AUTHORED**, extending"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "  heading that NAMES the term.** Without it the file becomes a second authored"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.display.reminders.browser",
+    "textHash": "be8fbde2621bc399",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/cardpanel.ts glossaryFor",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "236-browser-glossary-reach.test.ts",
+        "pattern": "CT-129: an attribute a card grants from its text box gets a reminder row",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R257 (its union rule)",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**A pinned card in the browser explains every glossary term the card NAMES,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.display.reminders.fuller-rule",
+    "textHash": "bdb3d22194cf0927",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/glossary.ts rule field",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "227-reminder-text.test.ts",
+        "pattern": "R248: Piercing shows the sentence the card prints and keeps the one it does not",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R248",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R252 (its order of channels)",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "   reminder in the card browser. Nothing may shorten a row by removing content:"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.display.reminders.no-numbers",
+    "textHash": "b627cd8688095956",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/glossary.ts",
+        "agrees": true,
+        "note": "227 renders whole pool"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "227-reminder-text.test.ts",
+        "pattern": "R248: rendering every card in the pool leaks no R-number",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R248",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "4. **`ruling` is machinery and never renders.** An R-number is meaningful only"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.display.stack-states",
+    "textHash": "f8aefbce859648d4",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/flash.ts:rowState",
+        "agrees": true,
+        "note": "one function, five states"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "251-fizzle-label-and-mod-strips.test.ts",
+        "pattern": "R271 §1b THE REPORT: the strip says the spell fizzled, not that it resolved",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R271",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R271",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "— `resolving` (R78), `answered` (R68), `fizzled`, `resolved`, `waiting` — and"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.display.stack-states.mods",
+    "textHash": "426ba2e965c32406",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/inspect.ts:modStrips",
+        "agrees": true,
+        "note": "one builder, two callers"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "251-fizzle-label-and-mod-strips.test.ts",
+        "pattern": "R271 §4a a modded stack item composes the same picture as a modded unit",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R271",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "at all, so the client drew two different pictures of one object. One builder"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.display.text-box",
+    "textHash": "e15b977eb0ed8a0a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/cardtext.ts printedTextBox / main.ts textBoxHtml",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "262-type-line-attributes.test.ts",
+        "pattern": "R282: a card whose only rules content is a type-line attribute stops saying no rules text",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "262-type-line-attributes.test.ts",
+        "pattern": "R282: a card with no attribute and no text still says nothing, and the guard does not reach it",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R282",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R282",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A card whose printed text box is empty prints, as its text box, the markers its"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.display.text-box.modal",
+    "textHash": "bf52d8bce85226e5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/cardtext.ts / inspect.ts stackAbilityRows",
+        "agrees": true,
+        "note": "narrowing needs the engine; falls back to printed sentence on a redacted view"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "122-cardtext-markup.test.ts",
+        "pattern": "R284: a MODAL bracket draws two boxes with the \"or\" outside them",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "122-cardtext-markup.test.ts",
+        "pattern": "R284: a COST bracket still draws exactly one box",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R284",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R284",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Once declared, `ui/inspect.ts stackAbilityRows` narrows the clause to the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.display.text-box.prophecy",
+    "textHash": "7acccaacfab900a5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/cardtext.ts:prophecyBanner",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "259-card-text-surface.test.ts",
+        "pattern": "CT-165: the printed prophecy banner is IN the box, on every card that prints one",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R279 (its §1, §3 and §4)",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R279 (its §1, §3 and §4)",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "1. `prophecyBanner()` reconstructs the printed line — `[0] Prophecy — One Turn"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.display.text-box.spent",
+    "textHash": "875a94f1f039bdea",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/cardtext.ts:budgetMarker",
+        "agrees": true,
+        "note": "[Switch1] if printed, else [Once]"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "228-spent-marker.test.ts",
+        "pattern": "R249: a spent bounded GRAFT ability wears the [Switch1] its own card prints",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "228-spent-marker.test.ts",
+        "pattern": "R249: a spent [once] ability wears [Once] — the same code, the other card",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R249",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R249",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**A spent once-per-turn note wears the marker printed on the clause that budget"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**The fallback is `[Once]`, and it is R135's answer kept exactly where its"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.display.text-box.transform",
+    "textHash": "64554997ffbd9488",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/inspect.ts:transformFaces",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "50-ui-inspect.test.ts",
+        "pattern": "the inspector says what Scholar of the Void transforms into, before the hand is discarded",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R101 (its inspector row)",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "something a scan can ever confirm. Passing `live` reads the entity's own card name, so a"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.display.text-box.unstable",
+    "textHash": "a4ee289949b2fa85",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/cardtext.ts AttrLine/AttrOrigin",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "251-fizzle-label-and-mod-strips.test.ts",
+        "pattern": "R271 §5b the acquired kind says WHICH way in, on the same line",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R271",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R271",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "line, with `AttrOrigin` carrying the reason `unstableWhy` used to spell out in"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.modes.concession",
+    "textHash": "e56d6ee8c68170f2",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U24-r2",
+    "engine": [
+      {
+        "loc": "client/server/rooms.ts:applyToRoom",
+        "agrees": true,
+        "note": "room.winner stamped as for lethal; room.concession = { seat, turn } stamped"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:doConcede",
+        "agrees": true,
+        "note": "concede ends the game for the conceder"
+      },
+      {
+        "loc": "client/server/concession.ts:concessionWeight",
+        "agrees": true,
+        "note": "weight decided by turn"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/291-concession-weight.test.ts",
+        "pattern": "R290 §1 a walkover says so, names the conceder and the turn, and says it was not counted",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R290",
+        "supports": "yes",
+        "note": "result unchanged (R65), a weight beside it decided by state.turn"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/server/rooms.ts",
+        "text": "    room.concession = { seat: action.seat, turn: before.turn };"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "is a WEIGHT beside the result, and the weight is decided by one number: the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.modes.concession.early",
+    "textHash": "4a9531a4683c1f71",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/server/rating.ts:foldRatings",
+        "agrees": true,
+        "note": "K x 0.5, counts as a rated game"
+      },
+      {
+        "loc": "client/server/accounts.ts:foldSeat",
+        "agrees": true,
+        "note": "fast-game achievements gated"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "291-concession-weight.test.ts",
+        "pattern": "R290 §1 an early concession says half weight, and that it still counts",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U24/u24-verify-probes.test.ts",
+        "title": "annexd.modes.concession.early: a turn-2 concession moves rating at half K and counts as a rated game",
+        "passed": true,
+        "demonstrates": "yes - +10 vs +20 for a full game"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R290",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R290",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R290",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "| **early** | turn 2 | `EARLY_MAX_TURN = 2`, `EARLY_K_SCALE = 0.5` |"
+      },
+      {
+        "file": "client/server/rating.ts",
+        "text": "    const scale = weight === 'early' ? EARLY_K_SCALE : 1;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.modes.concession.normal",
+    "textHash": "95cbae487393cf00",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/server/concession.ts:concessionWeight",
+        "agrees": true,
+        "note": "turn>=3 or no stamp -> normal"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "291-concession-weight.test.ts",
+        "pattern": "R290 §1 ⭐ a normal concession (turn 3+) and a game with no concession say NOTHING",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U24/u24-verify-probes.test.ts",
+        "title": "annexd.modes.concession.early: a turn-2 concession moves rating at half K and counts as a rated game",
+        "passed": true,
+        "demonstrates": "yes - a turn-3 concession moved +20, a full K exchange"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R290",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R290",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "| **normal** | turn ≥ 3, or no concession | — |"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.modes.concession.rated-only",
+    "textHash": "fd90d800494a3652",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/server/rating.ts:foldRatings",
+        "agrees": true,
+        "note": "filter(isRated) before the walkover branch"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U24/u24-verify-probes.test.ts",
+        "title": "annexd.modes.concession.rated-only: an unrated walkover moves nobody",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R290",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R290",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "top of that gate, never beside it. An unrated walkover moves nobody."
+      },
+      {
+        "file": "client/server/rating.ts",
+        "text": "  for (const game of [...history].filter(isRated).sort(ratingOrder)) {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.modes.concession.walkover",
+    "textHash": "fb0c4ccf2efcb75d",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U24-r2",
+    "engine": [
+      {
+        "loc": "client/server/concession.ts:concessionWeight",
+        "agrees": true,
+        "note": "turn <= WALKOVER_MAX_TURN (1) is walkover; WALKOVER_PENALTY = 5"
+      },
+      {
+        "loc": "client/server/rating.ts:foldRatings",
+        "agrees": true,
+        "note": "conceder -= 5, winner untouched, games not incremented"
+      },
+      {
+        "loc": "client/server/accounts.ts:foldSeat",
+        "agrees": true,
+        "note": "returns before first increment for a walkover"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/291-concession-weight.test.ts",
+        "pattern": "R290 §1 a walkover says so, names the conceder and the turn, and says it was not counted",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/291-concession-weight.test.ts",
+        "pattern": "R290 §2 a walkover row is tagged \"not counted\" and dimmed whole",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U24/u24-r2-verify-probes.test.ts",
+        "title": "annexd.modes.concession.walkover: rated walkover costs the conceder 5, pays the winner nothing, counts as no rated game",
+        "passed": true,
+        "demonstrates": "yes - bob START-5, alice START, games 0 for both"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R290",
+        "supports": "yes",
+        "note": "tier table + walkover bullet state every clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/server/rating.ts",
+        "text": "      conceder.rating -= WALKOVER_PENALTY;"
+      },
+      {
+        "file": "client/server/concession.ts",
+        "text": "export const WALKOVER_PENALTY = 5;"
+      },
+      {
+        "file": "client/server/accounts.ts",
+        "text": "  if (weight === 'walkover') return;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.modes.custom-rules",
+    "textHash": "a7e550474559273f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts createGame (deal only for draft)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "296-custom-draft-deal.test.ts",
+        "pattern": "BL-43 §1c a custom deal is ignored outside a live draft",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R292",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R292",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "DEAL, never how a card works:"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.modes.custom-rules.beginner",
+    "textHash": "ae8ab4f65c6f8e72",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/customrules.ts preset",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "298-custom-rules-ui.test.ts",
+        "pattern": "BL-43 ui §2 the Beginner preset sends two elements, simple cards and packs of 5",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R292",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R292",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "holds; they are the reporter's suggestion. The Beginner preset (two elements,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.modes.custom-rules.floor",
+    "textHash": "983a030b70ed6637",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U24-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/draftdeal.ts:minPool",
+        "agrees": true,
+        "note": "2*openingHand + 4*packSize + 6*draftDraw (64 standard)"
+      },
+      {
+        "loc": "client/ui/customrules.ts:poolCheck/checkCustomRules",
+        "agrees": true,
+        "note": "worst element set must clear the floor; error message names the fix"
+      },
+      {
+        "loc": "client/server/main.ts room create",
+        "agrees": true,
+        "note": "400 with the error before a room code is reserved"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/296-custom-draft-deal.test.ts",
+        "pattern": "BL-43 §5 minPool: the standard game needs 64, the beginner deal 44",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/297-custom-rules-resolve.test.ts",
+        "pattern": "BL-43 resolve §8 too small a pool is refused with a message that names the fix",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R292",
+        "supports": "yes",
+        "note": "formula, 64/44, refused before the room exists"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/draftdeal.ts",
+        "text": "  return 2 * d.openingHand + 4 * d.packSize + 6 * d.draftDraw;"
+      },
+      {
+        "file": "client/server/main.ts",
+        "text": "      const verdict = checkCustomRules(body['rules'], fixed);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Unstated: when the lobby will choose the elements, every element set of that size must clear the floor."
+  },
+  {
+    "key": "annexd.modes.custom-rules.knobs",
+    "textHash": "aa9d2dc8a30423b5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/draftdeal.ts:DEAL_BOUNDS/DEAL_DEFAULTS",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "296-custom-draft-deal.test.ts",
+        "pattern": "BL-43 §2a pack size: packs of 5 at the deal, the commit leaves 5, and the turn-4 refresh deals 5",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "296-custom-draft-deal.test.ts",
+        "pattern": "BL-43 §2c two elements: the rulebook pair by default, a chosen pair when given, 113 cards",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R292",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R292",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R292",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R292",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R292",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/draftdeal.ts",
+        "text": "  elements: [2, 7], packSize: [3, 15], openingHand: [1, 15], draftDraw: [0, 5], startingLife: [1, 99],"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.modes.custom-rules.not-counted",
+    "textHash": "3cec0198d26d9be2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/server/rating.ts:isRated / accounts.ts:foldSeat",
+        "agrees": true,
+        "note": "custom excluded"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "298-custom-rules-ui.test.ts",
+        "pattern": "BL-43 ui §7 a custom row in the match history says it was not counted",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R292",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R292",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R292",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "toward no profile total, achievement, deck record, rating or game-length"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.modes.custom-rules.simple",
+    "textHash": "f8ade1ef577ab443",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/customrules.ts resolveCustomRules",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "297-custom-rules-resolve.test.ts",
+        "pattern": "BL-43 resolve §3 Simple cards only leaves out exactly the cards that are not simple",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R292",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **Simple cards only**: only cards with the silver complexity symbol (the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.modes.custom-rules.standard",
+    "textHash": "0ee9f5d3f6f39676",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/draftdeal.ts:sanitizeDraftDeal",
+        "agrees": true,
+        "note": "standard deal -> undefined"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "296-custom-draft-deal.test.ts",
+        "pattern": "BL-43 §1b no deal and a deal left at the defaults deal the identical game in every mode",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R292",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/draftdeal.ts",
+        "text": "  return isStandardDeal(deal) ? undefined : deal;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.modes.learn-to-play",
+    "textHash": "aef9c69201ff0574",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/lessondeal.ts:LessonDeal",
+        "agrees": true,
+        "note": "lesson deal rides constructed; bot policy in ui/bot.ts"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "305-lesson-flow.test.ts",
+        "pattern": "§2 §3 in every element the core lessons open in order early, and the game ends with the end lesson",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R297",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "The owner, 2026-09-17, asking for a *Learn to Play* mode: one learner against a"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.modes.learn-to-play.bot-card",
+    "textHash": "b0a5953609abb7ea",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/registry.ts (lessonOnly filtered from DECK_LIST)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "303-lesson-deal.test.ts",
+        "pattern": "§5 Training Construct lives only in lesson deals",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R297",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R297",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "The bot's only card: *\"Create an X/X unit.\"* — an X-cost deploy spell with `xMin` 1, no"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.modes.learn-to-play.bot-play",
+    "textHash": "762c5e669d3f159b",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U24-r2",
+    "engine": [
+      {
+        "loc": "client/ui/learn.ts:TUTORIAL_DEAL",
+        "agrees": true,
+        "note": "shardsPerTurn [0,1], firstShardTurn 1, shardState open"
+      },
+      {
+        "loc": "client/ui/bot.ts:tutorialBotV1",
+        "agrees": true,
+        "note": "largest offered X (production passes no twoUnitsAt: learn.ts tutorialBotV1()); attack with most units; block with fewest (none)"
+      },
+      {
+        "loc": "client/ui/solo.ts:view",
+        "agrees": true,
+        "note": "learner view is viewFor(state, LEARNER, ...) so the bot's hand is redacted"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/304-tutorial-bot.test.ts",
+        "pattern": "§2 every Construct is cast at the largest X its mana allows (one Shard a turn)",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/304-tutorial-bot.test.ts",
+        "pattern": "§3 it attacks with every unit it has and never blocks",
+        "passed": true,
+        "asserts_claim": "yes - never-blocks asserted directly; 'every unit' asserted as a multi-unit attack occurring"
+      },
+      {
+        "file": "client/ui/test/306-solo-backend.test.ts",
+        "pattern": "§1 the bot's hand and deck never reach the learner by name",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R297",
+        "supports": "yes",
+        "note": "one Shard a turn, firstShardTurn 1, largest unit, never blocks, attacks with everything, hand hidden"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ui/learn.ts",
+        "text": "  shardsPerTurn: [0, 1], firstShardTurn: 1, shardState: 'open',"
+      },
+      {
+        "file": "client/ui/learn.ts",
+        "text": "  const server = new SoloServer(deal, tutorialBotV1(), resume, {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.modes.learn-to-play.deal",
+    "textHash": "505c76344f2a9a35",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/learn.ts:TUTORIAL_DEAL",
+        "agrees": true,
+        "note": "openingHand [0,1], drawPerTurn [2,1]"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:startTurn",
+        "agrees": true,
+        "note": "lesson draw per seat, no constructed draw"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "303-lesson-deal.test.ts",
+        "pattern": "§1 hands and draws are per seat, turn 1 included, with no bottom step",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U24/u24-verify-probes.test.ts",
+        "title": "annexd.modes.learn-to-play.bot-play: with the shipped tutorial deal the Tutorial Bot already holds a Shard on turn 1",
+        "passed": true,
+        "demonstrates": "yes - the learner holds exactly 2 cards on turn 1"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R297",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R297",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R297",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ui/learn.ts",
+        "text": "  openingHand: [0, 1], drawPerTurn: [2, 1], stacked: [true, false],"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.modes.scenarios",
+    "textHash": "8aaa0515061fef6d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/server/history.ts syncGamesDir / main.ts recordFinishedGame",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "186-scenario-library.test.ts",
+        "pattern": "§3 history.ts refuses to fold a scenario room into anybody's record",
+        "passed": true,
+        "asserts_claim": "yes",
+        "note": "client/server test: read, not run (the brief forbids running client/server tests); executed at wave end: whole file 12/12 pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R216 (its scenario-room half)",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R216 (its scenario-room half)",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **A scenario room is a fixture, not a game.** It is skipped by the stats fold"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Bound example test is in client/server/test; read (it asserts the example) but not run per the brief."
+  },
+  {
+    "key": "annexd.modes.scenarios.gated",
+    "textHash": "5e9dd133036126de",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/server scenario routes",
+        "agrees": true,
+        "note": "404 without token"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "185-scenario-determinism.test.ts",
+        "pattern": "§2 an ordinary room is untouched by the tester existing",
+        "passed": true,
+        "asserts_claim": "partly - asserts the example (an ordinary room is untouched), not the gating itself",
+        "note": "client/server test: read, not run (the brief forbids running client/server tests); executed at wave end: whole file 12/12 pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R216 (its scenario-room half)",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> **With no `ALGO_TESTER_TOKEN` in the environment, the scenario routes do not"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Bound example test is in client/server/test; read (it asserts the example) but not run per the brief."
+  },
+  {
+    "key": "annexd.modes.single-card-duel",
+    "textHash": "131c2859602b3084",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:checkSingleDeck",
+        "agrees": true,
+        "note": "exactly 30 of one deck card"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U24/u24-verify-probes.test.ts",
+        "title": "annexd.modes.single-card-duel.makes-units: unit cards and declared unit-token creators make units; a plain spell does not",
+        "passed": true,
+        "demonstrates": "partly - 30 copies is accepted as a single-card deck, 29 is not"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R298",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R298",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "It is the ONE exception to the Manual's two-copy cap, and it is not a new mode: the room"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.modes.single-card-duel.blind",
+    "textHash": "8de5bd95908f80f5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/server/rooms.ts waiting payload (have)",
+        "agrees": true,
+        "note": "not probed; e2e guard not run"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R298",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R298",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "comes in game.\"* The waiting room tells each seat only whether the opponent's card is in"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.modes.single-card-duel.draw",
+    "textHash": "3596deefb896463a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:startTurn",
+        "agrees": true,
+        "note": "singleCard takes the flat draw 2 and skips startConstructedDraw"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": true,
+        "note": "singleCard set when both decks pass checkSingleDeck"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U24/u24-verify-probes.test.ts",
+        "title": "annexd.modes.single-card-duel.draw: a duel has no bottom step, turn 1 starts on six cards, turn 2 draws a flat 2",
+        "passed": true,
+        "demonstrates": "yes - 6 cards on turn 1, no bottomDone, exactly one draw of 2 per seat on turn 2"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R298",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R298",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R298",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "    if (this.s.mode === 'constructed' && !this.s.lesson && !this.s.singleCard) this.startConstructedDraw();"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "does there — the turn's 2 plus 1), and the draw-4/bottom-2 never runs. The opening hand is"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "No test bound; the e2e guard server/e2e/test-single-card.ts was not run. Probe measures it."
+  },
+  {
+    "key": "annexd.modes.single-card-duel.ladder",
+    "textHash": "ba197536b181fa0b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/server/cardladder.ts:foldCardLadder",
+        "agrees": true,
+        "note": "mirrors counted only; walkover excluded; early scaled; CARD_RANKED_AFTER = PUBLIC_AFTER = 5"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U24/u24-verify-probes.test.ts",
+        "title": "annexd.modes.single-card-duel.ladder: mirrors and walkovers do not rate cards; an early concession counts at half weight; a duel never rates players",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R298",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R298",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R298",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/server/cardladder.ts",
+        "text": "    if (c0 === c1) { standing(c0).mirrors++; continue; }"
+      },
+      {
+        "file": "client/server/cardladder.ts",
+        "text": "  return concessionWeight(g) !== 'walkover';"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.modes.single-card-duel.makes-units",
+    "textHash": "a72bb94ec3adec21",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:makesUnits",
+        "agrees": true,
+        "note": "unit/spellUnit kind or createsOf includes a unit"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U24/u24-verify-probes.test.ts",
+        "title": "annexd.modes.single-card-duel.makes-units: unit cards and declared unit-token creators make units; a plain spell does not",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R298",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R298",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "  return isUnit(name) || createsOf(name).some(isUnit);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.modes.single-card-duel.no-units",
+    "textHash": "96901bc5c3695e57",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/server/rooms.ts setRoomDeck singleDraw",
+        "agrees": true,
+        "note": "read via R298; not probed (room-level)"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R298",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R298",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R298",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "does not deal: it keeps the pair as `Room.singleDraw`, clears both cards, and leaves the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.modes.single-card-duel.records",
+    "textHash": "a973fa9ad54babdf",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/server/rating.ts:isRated",
+        "agrees": true,
+        "note": ""
+      },
+      {
+        "loc": "client/server/accounts.ts:foldSeat",
+        "agrees": true,
+        "note": ""
+      },
+      {
+        "loc": "client/server/cardladder.ts:foldCardLadder",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U24/u24-verify-probes.test.ts",
+        "title": "annexd.modes.single-card-duel.ladder: mirrors and walkovers do not rate cards; an early concession counts at half weight; a duel never rates players",
+        "passed": true,
+        "demonstrates": "yes - foldRatings of a duel row is empty"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R298",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R298",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/server/rating.ts",
+        "text": "  if (game.single) return false;"
+      },
+      {
+        "file": "client/server/accounts.ts",
+        "text": "  if (game.single) return;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.reveal.beats",
+    "textHash": "61123674661c2af8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/flash.ts",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "160-simultaneous-trigger-beats.test.ts",
+        "pattern": "R189 THE REPORT: a trigger sweep puts every trigger on the strip in ONE frame",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R189 (its pacing rule)",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> **A batch that is simultaneous in the rules must look simultaneous, and a"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.reveal.beats.never-gates",
+    "textHash": "4b92d17432842a3d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/flash.ts",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "160-simultaneous-trigger-beats.test.ts",
+        "pattern": "R189 a beat explains and never gates: the board under it is already final",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R189 (its pacing rule)",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R189 (its pacing rule)",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "nothing about when anything resolves. The board underneath a beat was final"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.reveal.glimpse",
+    "textHash": "73ac811111c632e8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/server/rooms.ts hold + view.ts playbackFrames",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "159-glimpse-reveal-visibility.test.ts",
+        "pattern": "Oracle of Foretelling: its reveal is inside the hidden deployment segment, and waits for the barrier (R310)",
+        "passed": true,
+        "asserts_claim": "yes",
+        "note": "client/server test: read, not run (the brief forbids running client/server tests); executed at wave end: whole file 6/6 pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R310",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R310",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "test:203-reveal-waits-for-the-barrier.test.ts",
+        "supports": "partly",
+        "note": "cited test file, no bound example from it (server suite, not run)"
+      },
+      {
+        "ref": "test:371-glimpse-in-the-recap.test.ts",
+        "supports": "partly",
+        "note": "cited test file, no bound example from it"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "that step produces. The other seat gets it at the barrier, in the recap"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Bound example test is in client/server/test; read (it asserts the example) but not run per the brief."
+  },
+  {
+    "key": "annexd.reveal.glimpse.learn-to-play",
+    "textHash": "1efe8e6b8709b678",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/solo.ts applyOne",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "371-glimpse-in-the-recap.test.ts",
+        "pattern": "R310 §2: Learn to Play holds the bot's glimpse for the recap, and the recap pops it",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R310",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "from `server/view.ts`. All three hidden-step runners now hold an action's"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.reveal.glimpse.once",
+    "textHash": "6daa156f495582be",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U24-r2",
+    "engine": [
+      {
+        "loc": "client/server/view.ts:playbackFrames",
+        "agrees": true,
+        "note": "held glimpse flushed once inside the frame of the action that made it"
+      },
+      {
+        "loc": "client/ui/main.ts:applyUpdate playback branch",
+        "agrees": true,
+        "note": "runs the glimpse absorb when the frame plays (371)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/371-glimpse-in-the-recap.test.ts",
+        "pattern": "R310 §1: the opponent's glimpse notice pops when its recap frame plays, not before",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/server/test/203-reveal-waits-for-the-barrier.test.ts",
+        "pattern": "R310 §2: the barrier delivers the reveal exactly once, and the finished log holds it once",
+        "passed": true,
+        "asserts_claim": "yes by reading; NOT RUN (server test); reproduced by probe",
+        "note": "executed at wave end: whole file 9/9 pass"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U24/u24-r2-verify-probes.test.ts",
+        "title": "annexd.reveal.glimpse.once: the barrier delivers the glimpse to the other player once, and the log holds one line",
+        "passed": true,
+        "demonstrates": "yes - nothing before barrier; held queue carries one glimpsed; room history and opponent log each hold one"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R310",
+        "supports": "yes",
+        "note": "\"The glimpse is flushed exactly once, inside the playback frame\"; \"After the barrier it appears exactly once.\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **Barrier and recap.** The glimpse is flushed exactly once, inside the"
+      },
+      {
+        "file": "client/server/test/203-reveal-waits-for-the-barrier.test.ts",
+        "text": "  assert.equal(room.events.filter(e => e.type === 'glimpsed').length, 1,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Scope note: applies to hidden steps; a resource-step close arrives without a playback but still pops once."
+  },
+  {
+    "key": "annexd.reveal.glimpse.own",
+    "textHash": "81d0bf368bf87c88",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U24-r2",
+    "engine": [
+      {
+        "loc": "client/server/rooms.ts:applyToRoom/unheldFor",
+        "agrees": true,
+        "note": "the actor's own events are never held; the opponent's copy is parked in heldEvents"
+      },
+      {
+        "loc": "client/server/view.ts:visibleToSeat/redactEvent",
+        "agrees": true,
+        "note": "glimpsed carries cards to the actor on the tick"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/server/test/203-reveal-waits-for-the-barrier.test.ts",
+        "pattern": "R310 §1: inside deployment the opponent is sent nothing of a Glimpse",
+        "passed": true,
+        "asserts_claim": "yes - asserts the glimpser gets the reveal with the cards in order and the opponent nothing; NOT RUN (server test, brief forbids); reproduced by probe",
+        "note": "executed at wave end: whole file 9/9 pass"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U24/u24-r2-verify-probes.test.ts",
+        "title": "annexd.reveal.glimpse.own: the glimpser is sent their own revealed cards on the glimpsing action; the opponent nothing",
+        "passed": true,
+        "demonstrates": "yes - Oracle of Foretelling in deployment: actor wire carries one glimpsed event with the top-5 cards, opponent wire empty"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R310",
+        "supports": "yes",
+        "note": "\"The glimpser still sees their own reveal live, because it is their own action.\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "sees their own reveal live, because it is their own action."
+      },
+      {
+        "file": "client/server/test/203-reveal-waits-for-the-barrier.test.ts",
+        "text": "assert.equal(mine.length, 1, 'the glimpser is sent their own reveal on the tick it happens');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.reveal.glimpse.public",
+    "textHash": "21bc60b99b9376cc",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/server/view.ts:visibleToSeat",
+        "agrees": true,
+        "note": "glimpsed has no privateTo"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "159-glimpse-reveal-visibility.test.ts",
+        "pattern": "Foretell: the Glimpse 1 reveal is public to the opponent (R41/R45)",
+        "passed": true,
+        "asserts_claim": "yes",
+        "note": "client/server test: read, not run (the brief forbids running client/server tests); executed at wave end: whole file 6/6 pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R310",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R310",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **Privacy.** A glimpse is still not private (`privateTo` is unset). The hold"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Bound example test is in client/server/test; read (it asserts the example) but not run per the brief."
+  },
+  {
+    "key": "annexd.reveal.hidden-names",
+    "textHash": "a8a9507931cab8c0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/server/view.ts:redactEvent",
+        "agrees": true,
+        "note": "handEntered names stripped"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "172-event-channel-secrecy.test.ts",
+        "pattern": "R202 §2: no event names a card in a zone the state channel hides — the invariant, not the instance",
+        "passed": true,
+        "asserts_claim": "yes",
+        "note": "client/server test: read, not run (the brief forbids running client/server tests); executed at wave end: whole file 8/8 pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R202",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R202",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "(hand size is already public from the card backs); only the names go."
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Bound example test is in client/server/test; read (it asserts the example) but not run per the brief."
+  },
+  {
+    "key": "annexd.reveal.hidden-names.look-at",
+    "textHash": "364d23d4ce95ea00",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:revealHandTo + privateTo lines",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "173-look-at-a-hand.test.ts",
+        "pattern": "R197b §1 Thought Extraction: aimed at YOUR OWN hand, the opponent is the one seat it leaked to",
+        "passed": true,
+        "asserts_claim": "yes",
+        "note": "client/server test: read, not run (the brief forbids running client/server tests); executed at wave end: whole file 14/14 pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R197b",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R197b",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "*\"**Look at** target player's hand\"* is a private look — you see it, the table"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Bound example test is in client/server/test; read (it asserts the example) but not run per the brief."
+  },
+  {
+    "key": "annexd.reveal.hidden-names.moved-card",
+    "textHash": "6fda52eb38b2fce3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards (Bripp) privateTo line",
+        "agrees": true,
+        "note": "generalisation backed by R202's hidden-zone invariant"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "173-look-at-a-hand.test.ts",
+        "pattern": "R197b §1 Bripp: \"Look at target player's hand\" — and the card it recycles is not named to the table either",
+        "passed": true,
+        "asserts_claim": "yes",
+        "note": "client/server test: read, not run (the brief forbids running client/server tests); executed at wave end: whole file 14/14 pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R197b",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R197b",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "name is not the table's. It is split: a `privateTo` line carries the NAME to"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Bound example test is in client/server/test; read (it asserts the example) but not run per the brief."
+  },
+  {
+    "key": "annexd.reveal.hidden-steps",
+    "textHash": "621448ac7b6a9ac5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:hiddenSegment",
+        "agrees": true,
+        "note": "planning (resource), haste, deploy"
+      },
+      {
+        "loc": "client/server/view.ts:playbackFrames",
+        "agrees": true,
+        "note": "recap at haste/deploy close"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "203-reveal-waits-for-the-barrier.test.ts",
+        "pattern": "R310 §4: of everything a hidden step emits, nothing reaches the other seat before the barrier",
+        "passed": true,
+        "asserts_claim": "yes",
+        "note": "client/server test: read, not run (the brief forbids running client/server tests); executed at wave end: whole file 9/9 pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R310",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R310",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R78",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R310",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R310",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "round: a glimpse waits for the reveal in every hidden step (the resource step,"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "  pops the notice again. A resource-step close still arrives whole, without a"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.reveal.hidden-steps.battle",
+    "textHash": "a6bfe9c7fc17f41a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:hiddenSegment",
+        "agrees": true,
+        "note": "null in battle"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "159-glimpse-reveal-visibility.test.ts",
+        "pattern": "Premonition: the Glimpse X reveal is public to the opponent (R41/R45)",
+        "passed": true,
+        "asserts_claim": "yes",
+        "note": "client/server test: read, not run (the brief forbids running client/server tests); executed at wave end: whole file 6/6 pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R310",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **Battle.** Nothing is held in battle, so a battle glimpse (Premonition,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Bound example test is in client/server/test; read (it asserts the example) but not run per the brief."
+  },
+  {
+    "key": "annexd.reveal.hidden-steps.counts",
+    "textHash": "29546f6dd54c23a5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/server/view.ts:viewFor",
+        "agrees": true,
+        "note": "haste/deploy: shared counts from the snapshot"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "203-reveal-waits-for-the-barrier.test.ts",
+        "pattern": "R310 §1: the shared deck and recycle counts do not move under a hidden Glimpse",
+        "passed": true,
+        "asserts_claim": "yes",
+        "note": "client/server test: read, not run (the brief forbids running client/server tests); executed at wave end: whole file 9/9 pass"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R310",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R310",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "  served as they were when the step opened, to both seats alike. The cost is"
+      },
+      {
+        "file": "client/server/view.ts",
+        "text": "      v.sharedDeck = [...frozenOpp.sharedDeck];"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Bound example test is in client/server/test; read (it asserts the example) but not run per the brief."
+  },
+  {
+    "key": "annexd.reveal.hidden-steps.frozen",
+    "textHash": "729e7a858349ead4",
+    "verdict": "confirmed",
+    "round": 3,
+    "verifier": "U24-r3",
+    "engine": [
+      {
+        "loc": "client/server/view.ts:viewFor (frozenOpp branch)",
+        "agrees": true,
+        "note": "the opponent players/entities/decks are served from the segment-start snapshot; the shared deck/recycle counts are frozen for both seats in haste/deploy"
+      },
+      {
+        "loc": "client/server/view.ts:viewFor done-flags",
+        "agrees": true,
+        "note": "planningDone/draftDone/bottomDone/deployDone live; hasteDone of the other seat mapped to false"
+      },
+      {
+        "loc": "client/server/rooms.ts held events (unheldFor/openSegment)",
+        "agrees": true,
+        "note": "the other seat's events are held to the barrier and delivered as playback frames"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/306-solo-backend.test.ts",
+        "pattern": "inside deployment the bot's cast is frozen out",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U24/u24-r3-verify-probes.test.ts",
+        "title": "annexd.reveal.hidden-steps.frozen: resource step — the other player's \"done\" is live while the step is open",
+        "passed": true,
+        "demonstrates": "yes"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U24/u24-r3-verify-probes.test.ts",
+        "title": "annexd.reveal.hidden-steps.frozen: haste step — the other player's readiness is hidden while it is open, your own is not",
+        "passed": true,
+        "demonstrates": "yes"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U24/u24-r3-verify-probes.test.ts",
+        "title": "annexd.reveal.hidden-steps.frozen: deployment — the other player's units are served as the step began",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R78 note",
+        "supports": "partly",
+        "note": "on topic (viewFor freezes the other seat in a segment), but R78 is about resolving; the freeze is better cited from the view.ts contract"
+      },
+      {
+        "ref": "R310",
+        "supports": "yes",
+        "note": "events held to the barrier"
+      },
+      {
+        "ref": "R228 done-flag clause",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R236",
+        "supports": "yes",
+        "note": "haste readiness hidden"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/server/view.ts",
+        "text": "if (v.hasteDone) v.hasteDone = v.hasteDone.map((done, s) => (s === seat ? done : false));"
+      },
+      {
+        "file": "client/server/view.ts",
+        "text": "// done-flags stay live and public — planningDone / draftDone / bottomDone"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "construction:** `viewFor` no longer serves the OTHER seat's per-seat haste"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Not a defect: in the haste step and deployment the shared deck and recycle counts are frozen for BOTH players, including your own plays (R310). The rule only describes the other player's side, so it is incomplete there but not wrong."
+  },
+  {
+    "key": "annexd.reveal.hidden-steps.haste-ready",
+    "textHash": "716c6a1520e77105",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/server/view.ts hasteDone redaction",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "205-haste-auto-ready.test.ts",
+        "pattern": "R236 §3a: the opponent is not served my haste readiness while the step is open",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R236",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R236",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "* **Your own flag is untouched** — you must be able to see that you are done."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.reveal.pending-choice",
+    "textHash": "dbeffb9af46b5a46",
+    "verdict": "confirmed",
+    "round": 3,
+    "verifier": "U24-r3",
+    "engine": [
+      {
+        "loc": "client/server/view.ts:pendingAskFor",
+        "agrees": true,
+        "note": "returns {seat, source?} only; null when frozenOpp (a hidden segment); source only when the id is already in the receiving seat's entities"
+      },
+      {
+        "loc": "client/server/view.ts:viewFor",
+        "agrees": true,
+        "note": "nulls decision and suspension for the non-asking seat; kind/prompt/options never cross"
+      },
+      {
+        "loc": "client/ui/inspect.ts:waitingNote",
+        "agrees": true,
+        "note": "names the asker and the source card only"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/50-ui-inspect.test.ts",
+        "pattern": "the pause bar names the effect an opponent is answering",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U24/u24-r3-verify-probes.test.ts",
+        "title": "annexd.reveal.pending-choice: inside a hidden step the other player is not told a question is pending; outside it they would be",
+        "passed": true,
+        "demonstrates": "yes - inside deployment pendingAsk is undefined for the watcher; with no freeze the same state serves pendingAsk.seat"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R247 heading",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R247 \"The FACT that a seat owes an answer...\"",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R247 kind refused",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R247 addendum source public when already in view",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R247 frozenOpp gate",
+        "supports": "yes",
+        "note": "hidden-segment clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/server/view.ts",
+        "text": "if (asker === undefined || asker === seat || frozenOpp) return null;"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "decision **KIND**. Kind was considered and refused: \"they are choosing targets\""
+      },
+      {
+        "file": "client/engine/test/50-ui-inspect.test.ts",
+        "text": "assert.equal(note, 'Waiting for Rashi (Tempest Wrangler)', `the bar names the effect: ${note}`);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.reveal.pending-choice.source",
+    "textHash": "75306f4eed621527",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/server/view.ts:pendingAskFor",
+        "agrees": true,
+        "note": "returns null when frozenOpp (hidden segment); source is an entity id looked up in the seat view"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "50-ui-inspect.test.ts",
+        "pattern": "R247: the pause bar names the effect an opponent is answering, off the server stub",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R247",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R247",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**The SOURCE of a pending question is public when — and only when — it is"
+      },
+      {
+        "file": "client/server/view.ts",
+        "text": "  if (asker === undefined || asker === seat || frozenOpp) return null;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.reveal.public-zones",
+    "textHash": "204ffe0e6eaf24c4",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/server/view.ts:viewFor",
+        "agrees": true,
+        "note": "no cache redaction"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "36-cache-prophecy.test.ts",
+        "pattern": "R41: the cache is PUBLIC — both seats read the same zone, unredacted",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R41",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Both players can see every cached card and which prophecy is attached to it."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.reveal.public-zones.bin",
+    "textHash": "7e52ff893921bcf9",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts binTargetIndexes",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "260-cost-ramp-and-bin-targets.test.ts",
+        "pattern": "R280 §7b the opponent sees the target too, which is the half the report is really about",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R280",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R280",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**Ruled: a bin card something on the stack is aiming at is surfaced onto the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.reveal.public-zones.deck-elements",
+    "textHash": "07df9e562fb322d4",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/server/view.ts:viewFor",
+        "agrees": true,
+        "note": "no deckElements redaction present"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R99",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R99",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "### ⚠ OPEN QUESTION FOR THE OWNER — is deck element identity PUBLIC at game start?"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.reveal.public-zones.erased",
+    "textHash": "6ea560c33c464d5e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui/main.ts contextmenu",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "216-menu-scoping.test.ts",
+        "pattern": "§2 both field entries are still reachable — from bare table",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R241",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R65 (its erased-pile half)",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "| bare table | 🚫 each player's erased pile · 🏳 concede |"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.reveal.public-zones.prophecy-meter",
+    "textHash": "82b485cf0681852e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui (cache zone line meter)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "294-prophecy-meter.test.ts",
+        "pattern": "§4 it meters the OPPONENT's cache too — the zone is public (R41)",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R302",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R302",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "as your own, showing THAT seat's witnessed count. A hidden clock on a public zone is the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.reveal.public-zones.prophecy-state",
+    "textHash": "81dd4ef17bc91298",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/ui (prophecy meter)",
+        "agrees": true,
+        "note": "test 294 §4"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "294-prophecy-meter.test.ts",
+        "pattern": "§4 a state condition puts no meter on the board — there is nothing to count",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R302",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R302",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Only counting conditions get a meter. A state condition (\"your life is 5 or less\") has"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.reveal.resolving",
+    "textHash": "42e16676af57f280",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts resolveTop/beginResolving",
+        "agrees": true,
+        "note": "not in s.stack, not redacted"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "67-resolving-and-stack-viruses.test.ts",
+        "pattern": "R78: a resolving item cannot be responded to, negated or targeted",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R78",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R78",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "is `resolving.label` and *whose* effect it is is `resolving.controller` —"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.reveal.resolving.battle-only",
+    "textHash": "5fd1e8378016079c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:beginResolving",
+        "agrees": true,
+        "note": "marker only in battle"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R78",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R78",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "    if (this.s.phase === 'battle') this.s.resolving = item;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.reveal.resolving.only-answer",
+    "textHash": "df17f184170417ea",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts dispatch",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "72-resolution-window.test.ts",
+        "pattern": "R85 the mid-resolution board is a PREVIEW: only decide and concede are legal on it",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R85",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "`apply`'s `dispatch` closes it a second time: every action except `decide` and"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "annexd.reveal.resolving.partial",
+    "textHash": "19eac5ab22c78b27",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U24-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:resolveParts / resumeResolve (Suspension.snapshot)",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "72-resolution-window.test.ts",
+        "pattern": "R85 Insidious Invitation: at the OPPONENT’s prompt, the caster’s play is already on the table",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R85",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      },
+      {
+        "ref": "R85",
+        "supports": "yes",
+        "note": "quote found verbatim under its heading in client/docs/digital-rules.md"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Between the question and the answer, the state on the table is the real,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  }
+]

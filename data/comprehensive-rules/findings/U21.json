@@ -1,0 +1,38 @@
+[
+  {
+    "id": "F-U21-1",
+    "rule": "keywords.abilities.unstable.granted",
+    "title": "Test title still labels the bin-play timing question OPEN after a ruling answered it",
+    "summary": "A 12-fire-a test title marks \"a bin-played card obeys its PRINTED timing\" as an open question. R197 records that R157 §12 ruled a bin-play grant does not waive printed timing, which is what the test asserts. The behaviour is settled; only the title (and R96's own \"OPEN\" heading) still reads as undecided. A test-title fix, not an engine bug.",
+    "evidence": [
+      {
+        "file": "client/engine/test/12-fire-a.test.ts",
+        "quote": "test('Abyssal Evocation: ⚠ OPEN — a bin-played card obeys its PRINTED timing', () => {"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "⚠ **R157 §12 rules the opposite: a bin-play grant does NOT waive printed"
+      }
+    ]
+  },
+  {
+    "id": "F-U21-2",
+    "rule": "keywords.abilities.unstable.until-regroup",
+    "title": "Three test titles claim more than their tests assert",
+    "summary": "Each title names a behaviour the body never checks. The 12-fire-a Abyssal Evocation test says \"until regroup\" ends the stamp but never reaches regroup. The 403 R336 test says the Borrower dies to the bin but never kills it (26-metal-a's R336 test does). The R43 \"One Battle Passes\" title says both battles tick, but the test counts only one round. Each needs an assertion added or its title narrowed. These are test problems, not engine bugs: the round-1 verifier measured the engine and it agrees.",
+    "evidence": [
+      {
+        "file": "client/engine/test/12-fire-a.test.ts",
+        "quote": "test('Abyssal Evocation: a bin-played SPELL UNIT stamps its BODY, and \"until regroup\" ends it', () => {"
+      },
+      {
+        "file": "client/engine/test/403-raq-fix-mods.test.ts",
+        "quote": "test('R336: a Borrower that copied a modded unit dies to the bin; a mod put on it later makes it Unstable the usual way', () => {"
+      },
+      {
+        "file": "client/engine/test/36-cache-prophecy.test.ts",
+        "quote": "test('R43: \"One Battle Passes\" — both battles of a turn tick it, counted forward', () => {"
+      }
+    ]
+  }
+]

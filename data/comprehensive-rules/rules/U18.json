@@ -1,0 +1,2348 @@
+[
+  {
+    "key": "keywords.actions.general",
+    "parent": "801",
+    "order": 1,
+    "text": "Card text uses some verbs with a fixed game meaning: these are keyword actions, defined in this section. Where a card prints reminder text for a keyword action, the printed reminder states its meaning, and it wins over any paraphrase of it.",
+    "examples": [
+      {
+        "text": "Premonition prints the reminder for glimpse, so the glimpse reminder a player is shown is that printed sentence, and our longer paraphrase is kept only as the rule behind it.",
+        "test": "429-cr-keyword-actions.test.ts::cr:keywords.actions.general — where a card prints the reminder for a keyword action, the reminder a player is shown is that printed sentence and not our paraphrase"
+      }
+    ],
+    "see": [
+      "802",
+      "803"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R206 (its rule 1: printed text wins)",
+          "quote": "1. **Printed text wins.** Where a card prints a reminder and the glossary"
+        },
+        {
+          "ref": "R206 (its rule 1: printed text wins)",
+          "quote": "disagrees, the card is right and the glossary is behind. This is the third"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "429-cr-keyword-actions.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "No source defines the term \"keyword action\"; the first sentence is a framing sentence for the section. R206 states the precedence of printed reminders over our glossary paraphrase. The keyword list here is the verbs the pack evidences: trash, discard, sacrifice, delete, erase, recall, cache, glimpse, recycle, fight, rockfall, exchange, prophesy.",
+    "sourceHashes": {
+      "R206": "e541d1d77f492dad0529d4075a87a0ef576c5834f85a1817d3388dedc61d9ea3"
+    }
+  },
+  {
+    "key": "keywords.actions.trash",
+    "parent": "801",
+    "order": 2,
+    "text": "A card is trashed when it enters a bin from any zone except the stack.",
+    "examples": [
+      {
+        "text": "A card discarded from a hand enters a bin from the hand, so it is trashed.",
+        "test": "35-rot-debt-trash.test.ts::R40: discarding from hand trashes, by the owner of the bin it enters"
+      },
+      {
+        "text": "A card that leaves a cache for a bin is trashed.",
+        "test": "36-cache-prophecy.test.ts::R41: a card leaving the cache for a BIN is trashed (R40 classifies it automatically)"
+      }
+    ],
+    "see": [
+      "405.4"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R306",
+          "quote": "with its noun restored: *a card entering a bin from anywhere but the stack is"
+        },
+        {
+          "ref": "R40 (its bin-entry definition, for cards)",
+          "quote": "Trashing: a card entering a bin from anywhere but the stack"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R40",
+          "relation": "its 2026-08-21 token amendment reversed by R306"
+        },
+        {
+          "ruling": "R133",
+          "relation": "its tokens-are-trashed half withdrawn by R306"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "35-rot-debt-trash.test.ts",
+        "36-cache-prophecy.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R40 credits the definition to Caleb 2025-02-01 and Void Scavenger's reminder text, but no designer words are quoted and Void Scavenger is cut from the set: D-U18-2. Restates 405.4 from the action's side.",
+    "sourceHashes": {
+      "R306": "63ddd3a55f5ae1c3565593e3bc4c1c6ad19bb0124baf0ac5f651e7ad794e765f",
+      "R40": "1fe34b8e0dd03488280eb472ae0af3e23d897d51b0b722ec7513a739275c6789"
+    }
+  },
+  {
+    "key": "keywords.actions.trash.ways",
+    "parent": "keywords.actions.trash",
+    "order": 1,
+    "text": "Discarding a card, sacrificing it, milling it and a card dying into a bin are all ways of trashing it.",
+    "examples": [
+      {
+        "text": "Milling a card from the deck trashes it, one trash per card.",
+        "test": "35-rot-debt-trash.test.ts::R40: milling from the deck trashes one event per card"
+      },
+      {
+        "text": "A unit card that is sacrificed, or that dies, enters a bin from play and is trashed.",
+        "test": "35-rot-debt-trash.test.ts::R40: sacrificing and dying both trash — the card enters a bin from PLAY"
+      }
+    ],
+    "see": [
+      "keywords.actions.discard",
+      "keywords.actions.sacrifice",
+      "keywords.actions.delete"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R40 (its bin-entry definition, for cards)",
+          "quote": "Discarding, sacrificing, milling and dying in combat all trash. A spell or"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "35-rot-debt-trash.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R40 says \"dying in combat\"; the definition (a bin from anywhere but the stack) covers every death into a bin, which is how the rule is written. No card prints \"mill\": D-U18-3.",
+    "sourceHashes": {
+      "R40": "1fe34b8e0dd03488280eb472ae0af3e23d897d51b0b722ec7513a739275c6789"
+    }
+  },
+  {
+    "key": "keywords.actions.trash.not-from-stack",
+    "parent": "keywords.actions.trash",
+    "order": 2,
+    "text": "A card that goes to a bin from the stack is not trashed, whether it resolved, was negated or failed to resolve. A card played for free during another effect's resolution and then put into the bin counts as coming from the stack.",
+    "examples": [
+      {
+        "text": "A spell going to the bin after it resolves is not trashed.",
+        "test": "35-rot-debt-trash.test.ts::R40: a spell going to the bin after RESOLVING is not trashed (it comes from the stack)"
+      },
+      {
+        "text": "A negated spell going to the bin is not trashed.",
+        "test": "35-rot-debt-trash.test.ts::R40: a NEGATED spell is not trashed either"
+      },
+      {
+        "text": "A spell Tides of the Cosmos plays for free off the deck goes to the bin afterwards and is not trashed.",
+        "test": "15-water-b.test.ts::R146: Tides plays an ORDINARY spell for free → the bin, and it is NOT a trash"
+      }
+    ],
+    "see": [
+      "405.4a",
+      "704.2a"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R40 (its bin-entry definition, for cards)",
+          "quote": "ability going to the bin after resolving does NOT (it comes from the stack),"
+        },
+        {
+          "ref": "R40 (its bin-entry definition, for cards)",
+          "quote": "so negating a spell is not trashing; erasing never touches the bin and so is"
+        },
+        {
+          "ref": "R146",
+          "quote": "**Answer: `from: 'stack'` — it is NOT a trash.** Written down explicitly so a"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "35-rot-debt-trash.test.ts",
+        "15-water-b.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "\"failed to resolve\" (fizzle) is read into R40's \"from the stack\" sentence: a fizzled card leaves the stack too. The inline-play sentence is R146's decision.",
+    "sourceHashes": {
+      "R146": "b10694e95019e609b8999d033086b28612f6b68c67226f0b0e6b4a3b9bd2ef35",
+      "R40": "1fe34b8e0dd03488280eb472ae0af3e23d897d51b0b722ec7513a739275c6789"
+    }
+  },
+  {
+    "key": "keywords.actions.trash.not-erase",
+    "parent": "keywords.actions.trash",
+    "order": 3,
+    "text": "Erasing a card is not trashing it: an erased card never enters a bin.",
+    "examples": [
+      {
+        "text": "Banishment erases a unit: no death and no trash happen.",
+        "test": "145-erase-routes.test.ts::R172 (vii): Banishment still fires no 'died' and no 'trashed'"
+      }
+    ],
+    "see": [
+      "407.1c",
+      "keywords.actions.erase"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R40 (its bin-entry definition, for cards)",
+          "quote": "so negating a spell is not trashing; erasing never touches the bin and so is"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "145-erase-routes.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Restates 407.1c from the trash side.",
+    "sourceHashes": {
+      "R40": "1fe34b8e0dd03488280eb472ae0af3e23d897d51b0b722ec7513a739275c6789"
+    }
+  },
+  {
+    "key": "keywords.actions.trash.tokens",
+    "parent": "keywords.actions.trash",
+    "order": 4,
+    "text": "A token is never trashed, because only a card can be trashed. A unit token that dies still enters the bin and still dies, but its trip through the bin is not a trash: no \"when I am trashed\" ability triggers for it, its own included.",
+    "examples": [
+      {
+        "text": "A token unit dying in battle does not raise the count of cards trashed in that battle.",
+        "test": "338-tokens-are-not-trashed.test.ts::R306: a token unit dying in battle does not bump the trashed ledger that Dropslime reads"
+      },
+      {
+        "text": "A token copy of Dropslime that dies does not trigger its own \"When I am trashed\".",
+        "test": "338-tokens-are-not-trashed.test.ts::R306: a token copy of an own-trash card does not fire its own when-I-am-trashed"
+      }
+    ],
+    "see": [
+      "108.2e",
+      "304.10a"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R306",
+          "quote": "trashed.* A token is not a card (R133's first half, which stands), so a token"
+        },
+        {
+          "ref": "R306",
+          "quote": "A dying token still **enters the bin** and is then erased from it by the"
+        },
+        {
+          "ref": "R306",
+          "quote": "- no \"when I am trashed\", **its own included** (a token copy of Dropslime)."
+        },
+        {
+          "ref": "R306",
+          "quote": "Its **death** is untouched. A token is still a unit, and \"whenever a unit dies\""
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R40",
+          "relation": "its 2026-08-21 amendment (tokens can be trashed) reversed by R306"
+        },
+        {
+          "ruling": "R133",
+          "relation": "its second half (tokens are trashed) withdrawn by R306"
+        },
+        {
+          "ruling": "R137",
+          "relation": "its token-symmetry argument amended by R306"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "338-tokens-are-not-trashed.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "That a dying token enters the bin is also the designer's (RAQ 1355689559609839787#4, \"they enter your hand/bin and then are instantly erased\"), but that claim says nothing about trashing, so it is not cited as the basis.",
+    "sourceHashes": {
+      "R306": "63ddd3a55f5ae1c3565593e3bc4c1c6ad19bb0124baf0ac5f651e7ad794e765f"
+    }
+  },
+  {
+    "key": "keywords.actions.trash.trasher",
+    "parent": "keywords.actions.trash",
+    "order": 5,
+    "text": "The player whose bin the card enters is the player who trashes it. A unit that dies goes to its controller's bin, so its controller trashes it; when an effect sends the card to another player's bin, that player trashes it.",
+    "examples": [
+      {
+        "text": "A stolen unit that dies goes to the bin of the player who controls it, and that player trashes it.",
+        "test": "229-cosmic-and-control.test.ts::R250: a stolen unit that dies is trashed by its CONTROLLER, into the controller bin"
+      },
+      {
+        "text": "Pull Under deletes an enemy unit and puts it into the caster's bin: the caster trashes it, once.",
+        "test": "15-water-b.test.ts::Pull Under: an ENEMY unmodded victim is trashed by the CASTER, exactly once (R40, binTo)"
+      }
+    ],
+    "see": [
+      "405.3",
+      "711"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R40 (its trasher sentence, for a card that is not a mod)",
+          "quote": "not trashing. The trasher is the owner of the bin the card enters. A"
+        },
+        {
+          "ref": "R250 (its §4, zones follow control)",
+          "quote": "| which zone does it go to? | its CONTROLLER's |"
+        },
+        {
+          "ref": "R250 (its §4, zones follow control)",
+          "quote": "| who trashed it? | its CONTROLLER (R244, unchanged) |"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R244",
+          "relation": "its §1 destination paragraph (a card goes to its owner's bin) reversed by R250"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "229-cosmic-and-control.test.ts",
+        "15-water-b.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "\"owner of the bin\" in R40 means the player whose bin it is, not the card's owner. R250 makes the bin the controller's; since then trasher and bin owner coincide (test 229 'no live caller can make the trasher and the bin owner differ any more').",
+    "sourceHashes": {
+      "R250": "85f8949b08f8ce75cfdb86bf8e04db453b4f36aa27bd63c5b44ca693e61ffc53",
+      "R40": "1fe34b8e0dd03488280eb472ae0af3e23d897d51b0b722ec7513a739275c6789"
+    }
+  },
+  {
+    "key": "keywords.actions.trash.mods-left-behind",
+    "parent": "keywords.actions.trash",
+    "order": 6,
+    "text": "When a modded unit is recalled or cached, each nontoken mod it carried is left behind in a bin and is trashed there. The host's controller trashes it, not the mod's owner.",
+    "examples": [
+      {
+        "text": "A mod left in the bin when its host is recalled is trashed by the host's controller.",
+        "test": "224-mod-trash.test.ts::R244: a mod trashed on a recall is trashed by the host controller, not by its owner"
+      },
+      {
+        "text": "Caching the host attributes the left-behind mods the same way.",
+        "test": "224-mod-trash.test.ts::R244: a cached host attributes its left-behind mods the same way a recalled one does"
+      }
+    ],
+    "see": [
+      "410.4",
+      "403.7"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R244 (its attribution and mod-erase halves)",
+          "quote": "- **Recalled or cached** — the host leaves for a hand or a cache and the mod is"
+        },
+        {
+          "ref": "R244 (its attribution and mod-erase halves)",
+          "quote": "LEFT BEHIND in a bin, where it stays. It is a card in a bin. It is trashed."
+        },
+        {
+          "ref": "R244 (its attribution and mod-erase halves)",
+          "quote": "**1. Where a mod IS trashed, the HOST'S CONTROLLER trashes it.** Not the mod's"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R137",
+          "relation": "its section 'The mods ride with it' reversed by R244"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "224-mod-trash.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R244": "080c30954c21cbfd6d041bc15712a2dc0db9582ff06e979cf06690adcac0b11f"
+    }
+  },
+  {
+    "key": "keywords.actions.trash.mods-erased-with-host",
+    "parent": "keywords.actions.trash",
+    "order": 7,
+    "text": "A nontoken mod that is erased together with its {Unstable} host is not trashed. The host's departure is the whole unit's; the mod has no trash of its own.",
+    "examples": [
+      {
+        "text": "A nontoken mod on an {Unstable} host that dies is erased with it and fires no trash ability.",
+        "test": "224-mod-trash.test.ts::R244: a nontoken mod erased with its Unstable host is not trashed at all"
+      }
+    ],
+    "see": [
+      "405.4",
+      "720"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R244 (its attribution and mod-erase halves)",
+          "quote": "**2. A nontoken mod erased with its {Unstable} host is not trashed at all.** It"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R137",
+          "relation": "its section 'The mods ride with it' reversed by R244"
+        },
+        {
+          "ruling": "R152",
+          "relation": "its §2 (a nontoken mod on an Unstable host is trashed) superseded by R244"
+        },
+        {
+          "ruling": "R153",
+          "relation": "its step 4 (each nontoken mod is trashed) superseded by R244"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "224-mod-trash.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Pull Under keeps its victim's mods in the bin (R137/R244 keepBinned) and so does trash them: an effect that names the bin overrides the erase.",
+    "sourceHashes": {
+      "R244": "080c30954c21cbfd6d041bc15712a2dc0db9582ff06e979cf06690adcac0b11f"
+    }
+  },
+  {
+    "key": "keywords.actions.trash.unstable-death",
+    "parent": "keywords.actions.trash",
+    "order": 8,
+    "text": "An {Unstable} card that dies in play is erased instead of entering the bin, so it is not trashed. An {Unstable} card that goes to a bin from an inactive zone (a hand, the deck or a cache) enters the bin and is trashed.",
+    "examples": [
+      {
+        "text": "Aberrant Statweaver (printed {Unstable}) discarded from a hand goes to the bin and is trashed: the hand is inactive.",
+        "test": "125-active-zone.test.ts::R145: a printed-Unstable card DISCARDED FROM HAND bins and TRASHES — hand is inactive"
+      }
+    ],
+    "see": [
+      "405.5",
+      "400",
+      "803"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Abyssal Evocation",
+          "quote": "(If they would enter a bin, erase them instead.)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R145 (the Unstable glossary line it quotes)",
+          "quote": "\"Unstable\": \"If an unstable card would enter a bin from an active"
+        },
+        {
+          "ref": "R145",
+          "quote": "A card leaving an **inactive** zone for a bin is **binned and trashed"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R137",
+          "relation": "STILL CURRENT as an owner ruling and NOT followed here: a dying {Unstable} card enters the bin, is trashed there and is only then erased. It records itself as a deliberate divergence from the printed reminder and from Caleb; under the authority order print and designer outrank it (D-U18-1, F-U18-1)"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "125-active-zone.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "low",
+    "engineDiffers": [
+      "F-U18-1"
+    ],
+    "notes": "States the printed reading, as 405.5 (zones.bin.unstable) does, because print and Caleb outrank R137. R137 (owner) deliberately rules the other way: the card enters the bin, is trashed there and is then erased, and the engine does that. Open question D-U18-1 (the same as D-U07-3). If the owner keeps R137, restate the first sentence as: an {Unstable} card that dies enters the bin, is trashed there, and is then erased.",
+    "sourceHashes": {
+      "R145": "dc76fc0a317d5bd6bd6de5ed5a24eb9d84407f6b45dcbb85d2e8978fe56f98e3"
+    },
+    "rebuttal": "Kept. The verifier is right that R137 and the engine trash a dying {Unstable} card, but the rule states the printed reading on purpose: the authority order puts printed text and Caleb above our R-rulings, and the reminder (\"If they would enter a bin, erase them instead.\") and Caleb's glossary line quoted in R145 (\"would enter a bin from an active zone\") both replace the bin entry. R137 records itself as diverging from both. The rule already carries engineDiffers F-U18-1 and D-U18-1 asks the owner, matching 405.5 (zones.bin.unstable). The R40 erase quote, which did not support the clause, is replaced by R145; R137 is now listed in history."
+  },
+  {
+    "key": "keywords.actions.trash.count-cards-only",
+    "parent": "keywords.actions.trash",
+    "order": 9,
+    "text": "An effect that counts cards trashed counts only cards. A token dying never adds to the count.",
+    "examples": [
+      {
+        "text": "Dropslime deals damage equal to the cards trashed this battle, and the tokens that died in it do not count.",
+        "test": "338-tokens-are-not-trashed.test.ts::R306: Dropslime deals damage for the CARDS trashed this battle and not for the tokens"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Dropslime",
+          "quote": "I deal damage equal to the number of cards trashed in this battle to any target."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R306",
+          "quote": "| Dropslime | \"damage equal to the number of cards trashed in this battle\" | the count is cards only; a token dying never raises it |"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "338-tokens-are-not-trashed.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Follows from keywords.actions.trash.tokens; kept as its own rule because counting effects are where it shows.",
+    "sourceHashes": {
+      "R306": "63ddd3a55f5ae1c3565593e3bc4c1c6ad19bb0124baf0ac5f651e7ad794e765f"
+    }
+  },
+  {
+    "key": "keywords.actions.discard",
+    "parent": "801",
+    "order": 3,
+    "text": "To discard a card is to put it from a hand into the bin. A discarded card is trashed. Discarding is not playing the card, and a cached card cannot be discarded.",
+    "examples": [
+      {
+        "text": "A card discarded from a hand is trashed by the player whose bin it enters.",
+        "test": "35-rot-debt-trash.test.ts::R40: discarding from hand trashes, by the owner of the bin it enters"
+      },
+      {
+        "text": "A card held in a cache offers no discard, and an attempt to discard it from there is refused.",
+        "test": "429-cr-keyword-actions.test.ts::cr:keywords.actions.discard — a discard from a hand puts nothing on the stack and is not played, and a cached card cannot be discarded"
+      }
+    ],
+    "see": [
+      "402.5",
+      "403.4",
+      "keywords.actions.trash"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R40 (its bin-entry definition, for cards)",
+          "quote": "Discarding, sacrificing, milling and dying in combat all trash. A spell or"
+        },
+        {
+          "ref": "R65 (its discard-me section)",
+          "quote": "Discarding is not playing (R37) — nothing reaches the stack, nothing"
+        },
+        {
+          "ref": "R311 (its \"Discard me\" bullet)",
+          "quote": "is not in your hand, so it can't be discarded from there."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "35-rot-debt-trash.test.ts",
+        "429-cr-keyword-actions.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "The hand-to-bin move and \"not playing\" are also 402.5 (U07, from R65); the cache exclusion is also 403.4 (R311). Round 1: Manual p.44 dropped (it only names the discard pile); R65 and R311 now cited for the two clauses they state.",
+    "sourceHashes": {
+      "R311": "dff09246da3a81a8b90c1f386c3bdd5a463e44e7086278b0d4116e6bfd877122",
+      "R40": "1fe34b8e0dd03488280eb472ae0af3e23d897d51b0b722ec7513a739275c6789",
+      "R65": "e9ed084b299e697c3a8550bce01553259bfc5d6601416e6e6fc3adb041378a6d"
+    }
+  },
+  {
+    "key": "keywords.actions.sacrifice",
+    "parent": "801",
+    "order": 4,
+    "text": "To sacrifice a unit is for a player to choose a unit they control and put it into their bin. A sacrificed unit dies.",
+    "examples": [
+      {
+        "text": "Immolate sacrifices a unit to draw a card.",
+        "test": "12-fire-a.test.ts::Immolate: sacrifice a unit to draw a card"
+      }
+    ],
+    "see": [
+      "111.3",
+      "111.8"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.41",
+          "quote": "Sacrifice is a term denoting that a player will take a permanent of their choice and put it into their bin, causing it"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "12-fire-a.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The Manual's word is \"permanent\"; every sacrifice in the pool names a unit. The quote's next line reads \"to die.\". A sacrificed card is trashed: keywords.actions.trash.ways.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "keywords.actions.sacrifice.control",
+    "parent": "keywords.actions.sacrifice",
+    "order": 1,
+    "text": "A player can sacrifice only something they control. An effect may make an opponent sacrifice something; that opponent sacrifices one of their own units and chooses which.",
+    "examples": [
+      {
+        "text": "General Smof: after combat each present player sacrifices a unit of their own choice.",
+        "test": "12-fire-a.test.ts::General Smof: after combat, each present player sacrifices a unit of their choice"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.41",
+          "quote": "You cannot sacrifice something you don’t control. You can"
+        },
+        {
+          "ref": "Manual p.41",
+          "quote": "make an opponent sacrifice something they control, but"
+        },
+        {
+          "ref": "Manual p.41",
+          "quote": "they would get to decide what to sacrifice."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "12-fire-a.test.ts",
+        "429-cr-keyword-actions.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "keywords.actions.sacrifice.region",
+    "parent": "keywords.actions.sacrifice",
+    "order": 2,
+    "text": "A player can sacrifice only a unit in the region where the effect or cost happens, never one of their units in another region.",
+    "examples": [
+      {
+        "text": "Ghord's sacrifice makes each opponent in Ghord's region sacrifice a unit there, and reaches no other region.",
+        "test": "396-raq-timing.test.ts::RAQ Another set: a Ghord sacrifice reaches only the opponent units in its own region"
+      }
+    ],
+    "see": [
+      "601.1e",
+      "111.3"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.41",
+          "quote": "You cannot sacrifice units that are in a different region, even if they"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1454169054402314362#0",
+          "quote": "Yes everything in the game is region specific."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "Restates 601.1e for the action. RAQ 1454169054402314362#0 is not in the U18 pack: added.",
+    "sourceHashes": {
+      "RAQ 1454169054402314362#0": "4948c1881274500d06ed76c23f405dbebb16d265e89961225a7fdbc579825628"
+    }
+  },
+  {
+    "key": "keywords.actions.sacrifice.none-available",
+    "parent": "keywords.actions.sacrifice",
+    "order": 3,
+    "text": "A player told to sacrifice a unit who has no unit in the region sacrifices nothing.",
+    "examples": [
+      {
+        "text": "Cull's \"each player sacrifices a unit\" with nobody holding a unit in the region kills nothing.",
+        "test": "179-empty-collection-branches.test.ts::Cull — \"each player sacrifices a unit\" with nobody holding a unit here says so and kills nothing"
+      }
+    ],
+    "see": [
+      "101.5"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.41",
+          "quote": "region and play the effect “Each player sacrifices a unit”."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "179-empty-collection-branches.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "The Manual's note (\"This can be beneficial, for example if you have no units in a region and play the effect 'Each player sacrifices a unit'\") implies the empty-handed player sacrifices nothing; it does not say it in so many words.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "keywords.actions.delete",
+    "parent": "801",
+    "order": 5,
+    "text": "To delete a unit is to remove it from play into the bin, as when a unit dies. Unless the effect names another bin, it goes to the bin a dying unit would go to.",
+    "examples": [
+      {
+        "text": "Throw off a Cliff deletes a unit with 4 or more defense: it goes to the bin, as a death.",
+        "test": "182-correctness-sample.test.ts::Throw off a Cliff: only defense>=4 is offered, and the target is DELETED (bin, a death)"
+      }
+    ],
+    "see": [
+      "301.5",
+      "405.2",
+      "405.3"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "a unit dies or is deleted, it is placed in the bin (discard"
+        },
+        {
+          "ref": "card: Throw off a Cliff",
+          "quote": "Delete target unit with 4 or more defense."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "182-correctness-sample.test.ts",
+        "429-cr-keyword-actions.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "The Manual lists \"dies or is deleted\" side by side and does not say whether a deletion is a death. The engine treats it as one (test 182, \"a death\"; R70's died-event verb table lists `is deleted`). D-U18-9 records that no source states it, so the rule says only where the unit goes.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "keywords.actions.delete.named-bin",
+    "parent": "keywords.actions.delete",
+    "order": 1,
+    "text": "An effect that deletes a unit and names where it goes overrides the usual bin. Pull Under puts the deleted unit and all of its mods into its caster's bin, where they stay.",
+    "examples": [
+      {
+        "text": "Pull Under deletes the target; it and its mods land in the caster's bin, not erased and not in the owner's bin.",
+        "test": "15-water-b.test.ts::Pull Under: deletes the target; it and its mods land in YOUR bin (not erased, not owner-binned)"
+      }
+    ],
+    "see": [
+      "keywords.actions.trash.trasher"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Pull Under",
+          "quote": "Delete target unit. If you do, put it and"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "15-water-b.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Pull Under's full text: \"Delete target unit. If you do, put it and {/n}all of its mods into your bin.\" (the {/n} markup keeps the second half out of a single quote). That the card's own destination beats {Unstable}'s erase is R137's \"Pull Under keeps its override\" (R137 is cited only in history elsewhere; its Pull Under section stands).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "keywords.actions.erase",
+    "parent": "801",
+    "order": 6,
+    "text": "To erase a card is to take it out of the game: it goes to the erased pile. When card text says \"erase\", the erased pile is where the card goes.",
+    "examples": [
+      {
+        "text": "Celestial Purge erases its target unit: it goes to no bin.",
+        "test": "14-water-a.test.ts::Celestial Purge: erases target unit (no bin)"
+      }
+    ],
+    "see": [
+      "407.1",
+      "407.2",
+      "410.2"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R219",
+          "quote": "> **\"Obviously the card says where it should end up. It's erased… It should just"
+        },
+        {
+          "ref": "R219",
+          "quote": "\"erase\". That names the destination.** R65 exists *because* of his earlier"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "14-water-a.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "A pointer to 407. Printed: Rulebook 2023 p.15 \"erased (permanantly removed from the game)\" also exists; not cited because the line carries the typo and the pack did not give it.",
+    "sourceHashes": {
+      "R219": "91a197c7e851ffbf143b3dcf56a422b3db8045cd2765a61677648786776c30bb"
+    }
+  },
+  {
+    "key": "keywords.actions.erase.not-death",
+    "parent": "keywords.actions.erase",
+    "order": 1,
+    "text": "Erasing a unit is neither a death nor a trash. It is a despawn.",
+    "examples": [
+      {
+        "text": "Banishment erases a unit: no death and no trash, but its despawn is seen.",
+        "test": "145-erase-routes.test.ts::R172 (vii): Banishment still fires no 'died' and no 'trashed'"
+      }
+    ],
+    "see": [
+      "407.1c",
+      "410.2"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R40 (its bin-entry definition, for cards)",
+          "quote": "so negating a spell is not trashing; erasing never touches the bin and so is"
+        },
+        {
+          "ref": "R172 (§1 and its what-did-not-widen note)",
+          "quote": "an ERASE is a despawn"
+        },
+        {
+          "ref": "R172 (§1 and its what-did-not-widen note)",
+          "quote": "An erase is still not a death and still not a trash."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "145-erase-routes.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "\"not trashing\" is R40; \"not a death\" and \"a despawn\" are R172 (cited from round 1; U07 states them as 407.1c and 410.2).",
+    "sourceHashes": {
+      "R172": "f2dcff3abbd86d856448719117ab0e47d8b54c70d14a0e56e2d890eeeebcfc2d",
+      "R40": "1fe34b8e0dd03488280eb472ae0af3e23d897d51b0b722ec7513a739275c6789"
+    }
+  },
+  {
+    "key": "keywords.actions.recall",
+    "parent": "801",
+    "order": 7,
+    "text": "To recall a card is to put it into a hand. Printed recalls take a card from play, from a bin, from the stack or from a cache.",
+    "examples": [
+      {
+        "text": "Vaporweave Eidolon recalls itself from play for [zero].",
+        "test": "15-water-b.test.ts::Vaporweave Eidolon: [zero]: recall me — a free activated self-recall"
+      },
+      {
+        "text": "Eldritch Reclaimer recalls a unit from its controller's bin to their hand.",
+        "test": "14-water-a.test.ts::Eldritch Reclaimer: recalls a unit from your bin to your hand, spawns 4/2"
+      },
+      {
+        "text": "Prismatic Observer recalls an enemy's cached card to its owner's hand.",
+        "test": "38-light-a.test.ts::Prismatic Observer: sacrifice to recall a cached card (either cache, in battle) and gain 3 life"
+      }
+    ],
+    "see": [
+      "402.4",
+      "410.2"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Eldritch Reclaimer",
+          "quote": "(Put it into your hand.)"
+        },
+        {
+          "ref": "card: Vaporweave Eidolon",
+          "quote": "Recall me. {i}(Put me into your hand.)"
+        },
+        {
+          "ref": "card: Cosmic Reversal",
+          "quote": "(Negate them and put them into their controller's hands.)"
+        },
+        {
+          "ref": "card: Prismatic Observer",
+          "quote": "Recall up to one target cached card."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "15-water-b.test.ts",
+        "14-water-a.test.ts",
+        "38-light-a.test.ts",
+        "429-cr-keyword-actions.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Round 1: the cache added (Prismatic Observer). The zone list is what the printed pool recalls from, not a closed rule.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "keywords.actions.recall.destination",
+    "parent": "keywords.actions.recall",
+    "order": 1,
+    "text": "A unit recalled from play goes to the hand of the player who controls it, not necessarily its owner, unless the effect names another hand. Recalling does not change who owns the card.",
+    "examples": [
+      {
+        "text": "A stolen unit that is recalled goes to the thief's hand, not its owner's.",
+        "test": "246-zones-follow-control.test.ts::R262 §1: a stolen unit recalled goes to the THIEF hand, not the owner"
+      },
+      {
+        "text": "Cosmic Reversal recalls a stolen spell unit to the seat that controls it.",
+        "test": "229-cosmic-and-control.test.ts::R250: a STOLEN spell unit is recalled to the seat that CONTROLS it"
+      }
+    ],
+    "see": [
+      "102",
+      "711"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R262",
+          "quote": "| `recall` → **hand** | `opts.to ?? u.owner` | `opts.to ?? u.controller` |"
+        },
+        {
+          "ref": "R262",
+          "quote": "**1. The Manual's recall sentence is overruled, knowingly.** The Manual says a"
+        },
+        {
+          "ref": "R262",
+          "quote": "**3. An explicit `to` still wins.** `opts.to` is how a card whose PRINTED TEXT"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "246-zones-follow-control.test.ts",
+        "229-cosmic-and-control.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R262 is not in the U18 pack (sections 102/402/...): added. R262 says it knowingly overrules a Manual sentence sending a recall to its owner's hand; that sentence is not in the printed pages the extract carries (D-U18-5). The printed reminders agree with R262 or are neutral: Cosmic Reversal \"their controller's hands\", Tidal Reversion \"(Return it to their hand.)\".",
+    "sourceHashes": {
+      "R262": "285c09786add087f0d8ecb5046ca62c5f17bc6467b4bf16b1cdcae859881edf8"
+    }
+  },
+  {
+    "key": "keywords.actions.recall.unstable",
+    "parent": "keywords.actions.recall",
+    "order": 2,
+    "text": "A recalled {Unstable} unit goes to the hand as a card. {Unstable} changes only a move into a bin, so a recall is not affected by it.",
+    "examples": [
+      {
+        "text": "Recalling an {Unstable} unit puts the card in its hand; it is not erased.",
+        "test": "125-active-zone.test.ts::R145: RECALLING an Unstable unit puts the CARD IN HAND — Unstable never fires"
+      }
+    ],
+    "see": [
+      "803",
+      "410.4"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Abyssal Evocation",
+          "quote": "(If they would enter a bin, erase them instead.)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "125-active-zone.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "Derived: the printed reminder speaks only of entering a bin, and the test asserts the consequence. The unit's mods go to the bin (410.4) and are trashed there (keywords.actions.trash.mods-left-behind).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "keywords.actions.recall.from-bin",
+    "parent": "keywords.actions.recall",
+    "order": 3,
+    "text": "Recalling a card from a bin moves it from that bin to its player's hand. \"Recall target unit in your bin\" can reach only a card in that player's own bin.",
+    "examples": [
+      {
+        "text": "Delver of Mysteries recalls a chosen spell from its controller's bin.",
+        "test": "12-fire-a.test.ts::Delver of Mysteries: recalls a chosen spell from the bin, then spawns 2/2"
+      },
+      {
+        "text": "Eldritch Reclaimer, cast with both players in the battle, offers a unit in its caster's own bin and never one in the opponent's bin.",
+        "test": "429-cr-keyword-actions.test.ts::cr:keywords.actions.recall.from-bin — Eldritch Reclaimer offers a unit in its own bin and never one in the opponent bin, even with both players in the battle"
+      }
+    ],
+    "see": [
+      "405.7"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Eldritch Reclaimer",
+          "quote": "Recall target unit in your bin."
+        },
+        {
+          "ref": "card: Delver of Mysteries",
+          "quote": "Recall target spell in your bin."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "12-fire-a.test.ts",
+        "429-cr-keyword-actions.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "keywords.actions.recall.from-stack",
+    "parent": "keywords.actions.recall",
+    "order": 4,
+    "text": "Recalling a spell effect on the stack negates it and puts the card into its controller's hand. A recalled spell token enters its controller's hand and is then erased.",
+    "examples": [
+      {
+        "text": "Cosmic Reversal recalls the other spell effects on the stack to their controllers' hands.",
+        "test": "14-water-a.test.ts::Cosmic Reversal: recalls all other spell effects on the stack to hands"
+      },
+      {
+        "text": "Dream Lapse recalls a cast Fireball token: it enters the hand (Rider of the Tides hears it) and is erased.",
+        "test": "403-raq-fix-mods.test.ts::R335: Dream Lapse recalls a cast Fireball token"
+      }
+    ],
+    "see": [
+      "704.4",
+      "410.5b"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Cosmic Reversal",
+          "quote": "(Negate them and put them into their controller's hands.)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R335",
+          "quote": "Token Spell technically enter your hand if you Recall them and are instantly erased"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "14-water-a.test.ts",
+        "403-raq-fix-mods.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The token sentence is the designer's (RAQ 1355689559609839787#3), quoted in R335; cited through R335 because the pack gives the RAQ claim through it.",
+    "sourceHashes": {
+      "R335": "a64cd8c064631a89300a212d31e5dd2ecf07fd7e02e8d15f31d3a7365d11b52b"
+    }
+  },
+  {
+    "key": "keywords.actions.recall.nothing-to-recall",
+    "parent": "keywords.actions.recall",
+    "order": 5,
+    "text": "When an effect tells a player to recall a unit and they have none to recall, the recall does nothing, but the rest of the effect still happens unless it depends on the recall (\"If you do\").",
+    "examples": [
+      {
+        "text": "Recall (\"Each player recalls a unit and loses 2 life\"): a player with no unit to recall still loses 2 life.",
+        "test": "179-empty-collection-branches.test.ts::Recall — the life loss happens, the recall does not, and the card now says which"
+      },
+      {
+        "text": "Shoreline Specter: if the recall is declined, the life drain that follows \"If you do\" does not happen.",
+        "test": "182-correctness-sample.test.ts::Shoreline Specter: DECLINE the recall and the 2-life drain does not happen"
+      }
+    ],
+    "see": [
+      "101.5"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Shoreline Specter",
+          "quote": "[Augment] After combat, you may recall target ally. {/n}If you do, each opponent loses 2 life."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R30",
+          "quote": "The life loss is unconditional per present player: a player with no unit to"
+        },
+        {
+          "ref": "R30",
+          "quote": "recall still loses 2. (Do as much as you can; the two clauses are not linked"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "179-empty-collection-branches.test.ts",
+        "182-correctness-sample.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "R30's heading carries ⚠ (provisional); see D-U01-15. Shoreline Specter's printed \"If you do\" is the counterexample the rule names.",
+    "sourceHashes": {
+      "R30": "e7c2373b72ed97eb303382b135763419e5615c1da0ef3030b93bf9212ca66efd"
+    }
+  },
+  {
+    "key": "keywords.actions.cache",
+    "parent": "801",
+    "order": 8,
+    "text": "To cache a card is to put it into a player's cache. A unit cached from play goes to its controller's cache unless the effect names another, and its mods go to the bin.",
+    "examples": [
+      {
+        "text": "A stolen unit that is cached goes to the thief's cache.",
+        "test": "246-zones-follow-control.test.ts::R262 §1: a stolen unit cached goes to the THIEF cache"
+      },
+      {
+        "text": "Grob caches a stolen unit into its controller's cache, as its text says.",
+        "test": "135-exchange-and-zones.test.ts::R157 §27: Grob caches a STOLEN unit into the CONTROLLER’s cache"
+      }
+    ],
+    "see": [
+      "403.1",
+      "403.7",
+      "410.5c"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Grob",
+          "quote": "Up to one target unit's controller caches it."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R262",
+          "quote": "| `cacheUnit` → **cache** | `opts.to ?? u.owner` | `opts.to ?? u.controller` |"
+        },
+        {
+          "ref": "R157 (§27)",
+          "quote": "> *\"Controller's cache — the printed text wins. Printed text always wins.\"*"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "246-zones-follow-control.test.ts",
+        "135-exchange-and-zones.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The mods half restates 403.7 (R46). R262 and R46 are not in the U18 pack: added.",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
+      "R262": "285c09786add087f0d8ecb5046ca62c5f17bc6467b4bf16b1cdcae859881edf8"
+    }
+  },
+  {
+    "key": "keywords.actions.cache.no-permission",
+    "parent": "keywords.actions.cache",
+    "order": 1,
+    "text": "Caching a card does not by itself let anyone use it. A cached card can be played or used as a mod only while a permission on it is live: a glimpse that cached it this turn, a fulfilled prophecy, or the text of the effect that cached it.",
+    "examples": [
+      {
+        "text": "Murkdrop Distiller caches a trashed card; its own text then lets its controller play it until end of turn.",
+        "test": "182-correctness-sample.test.ts::Murkdrop Distiller: a trashed card may be cached, and cached is where it goes"
+      }
+    ],
+    "see": [
+      "403.3",
+      "403.3a",
+      "keywords.actions.glimpse"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Murkdrop Distiller",
+          "quote": "you may cache it. If you do, you may play it until end of turn."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R303",
+          "quote": "Being in the cache is not permission to do *anything* with a card (R41). A cached card"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "182-correctness-sample.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "403.3a lists only a glimpse and a fulfilled prophecy; Murkdrop Distiller and Big Glimpse Card grant the play in their own text (D-U18-8). The example test asserts the caching; whether it asserts the play permission was not checked by the drafter.",
+    "sourceHashes": {
+      "R303": "362c6d1e5a9c15d8912809d210e41b88548997fd1e9c63acbfa5b730f81e130c"
+    }
+  },
+  {
+    "key": "keywords.actions.glimpse",
+    "parent": "801",
+    "order": 9,
+    "text": "Glimpse N means: reveal the top N cards of the deck, cache one of them, and recycle the rest.",
+    "examples": [
+      {
+        "text": "Oracle of Foretelling's Glimpse 5 caches one of the five revealed cards.",
+        "test": "14-water-a.test.ts::Oracle of Foretelling: Glimpse 5 caches ONE of the five"
+      },
+      {
+        "text": "Glimpse N reveals N, caches exactly one of the glimpser's choice and recycles the rest.",
+        "test": "36-cache-prophecy.test.ts::R45: Glimpse N reveals N, caches exactly ONE of the glimpser's choice and recycles the rest"
+      }
+    ],
+    "see": [
+      "403",
+      "408.2a"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Premonition",
+          "quote": "(Reveal the top X cards of the deck and cache one. Until end of turn, you may play it as if it was in your hand, ignoring affinity. Recycle the rest.)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R45",
+          "quote": "Glimpse N reveals the top N cards of the deck, caches exactly **one** of the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "14-water-a.test.ts",
+        "36-cache-prophecy.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The recycled cards go past the mark into the recycle pile (408.2a).",
+    "sourceHashes": {
+      "R45": "d60323d5966f1b63cccd9187354aa66801b416197dda93338b1e5c855969d117"
+    }
+  },
+  {
+    "key": "keywords.actions.glimpse.choice",
+    "parent": "keywords.actions.glimpse",
+    "order": 1,
+    "text": "The player who glimpses chooses which of the revealed cards to cache.",
+    "examples": [
+      {
+        "text": "Choosing the last revealed card caches it and recycles the two above it.",
+        "test": "36-cache-prophecy.test.ts::R45: choosing the LAST revealed card recycles the two above it, in order"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R45",
+          "quote": "glimpser's choice, and recycles the other N-1 to the bottom of the deck."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "36-cache-prophecy.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "The printed reminder says \"cache one\" without saying who picks; R45 gives the pick to the glimpser.",
+    "sourceHashes": {
+      "R45": "d60323d5966f1b63cccd9187354aa66801b416197dda93338b1e5c855969d117"
+    }
+  },
+  {
+    "key": "keywords.actions.glimpse.one",
+    "parent": "keywords.actions.glimpse",
+    "order": 2,
+    "text": "Glimpse 1 reveals the top card of the deck and caches it. There is no choice to make and nothing to recycle.",
+    "examples": [
+      {
+        "text": "Glimpse 1 raises no decision.",
+        "test": "36-cache-prophecy.test.ts::R45: Glimpse 1 raises no decision"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Visionary Construct",
+          "quote": "(Reveal the top card of the deck and cache it. Until end of turn, you may play it as if it was in your hand, ignoring affinity.)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R45",
+          "quote": "The N=1 cards read \"reveal the top card and cache it\" only because cache-one"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "36-cache-prophecy.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R45": "d60323d5966f1b63cccd9187354aa66801b416197dda93338b1e5c855969d117"
+    }
+  },
+  {
+    "key": "keywords.actions.glimpse.repeated",
+    "parent": "keywords.actions.glimpse",
+    "order": 3,
+    "text": "\"Glimpse 1, X times\" is X separate glimpses of one card each, not one Glimpse X.",
+    "examples": [
+      {
+        "text": "Glook discards X cards when activated and then glimpses 1, X times.",
+        "test": "167-variable-ability-costs.test.ts::R196 Glook \"[once] Discard X cards: Glimpse 1, X times\""
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Glook",
+          "quote": "[once] Discard X cards: Glimpse 1, X times."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R45",
+          "quote": "one-card glimpses, not one Glimpse X. `Big Glimpse Card` is a deliberate"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "167-variable-ability-costs.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "The example test is about when Glook's discard cost is paid; it may not assert the X separate glimpses. No test title found that does.",
+    "sourceHashes": {
+      "R45": "d60323d5966f1b63cccd9187354aa66801b416197dda93338b1e5c855969d117"
+    }
+  },
+  {
+    "key": "keywords.actions.glimpse.whose-deck",
+    "parent": "keywords.actions.glimpse",
+    "order": 4,
+    "text": "A glimpse reveals from the glimpser's own deck. When an effect makes another player glimpse (\"Its controller Glimpses 3\"), that player reveals from their own deck, not from the deck of the player who controls the effect. In live draft every player's deck is the one shared deck.",
+    "examples": [
+      {
+        "text": "Celestial Purge cast by one player erases an enemy unit; the unit's controller is the glimpser, chooses the card to cache and caches it in their own cache. (The test game uses one shared deck, so it does not show whose deck is read.)",
+        "test": "14-water-a.test.ts::Celestial Purge: erases target unit (no bin); its controller Glimpses 3"
+      },
+      {
+        "text": "In constructed, a player who glimpses reveals the top of their own deck, caches from it and recycles the rest into their own pile; the other player's deck is untouched.",
+        "test": "429-cr-keyword-actions.test.ts::cr:keywords.actions.glimpse.whose-deck — in constructed a glimpse reads the deck of the glimpser and leaves the other deck untouched"
+      }
+    ],
+    "see": [
+      "401",
+      "902"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Dematerialize",
+          "quote": "(They reveal the top three cards of their deck and cache one. Until end of turn, they may play it as if it was in their hand, ignoring affinity. Recycle the rest.)"
+        },
+        {
+          "ref": "card: Celestial Purge",
+          "quote": "Its controller Glimpses 3."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 (§18, its shared-deck sentence)",
+          "quote": "> *\"Your deck. It will be shared during live draft and solo in constructed."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "14-water-a.test.ts",
+        "429-cr-keyword-actions.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "Round 1: the first sentence no longer says \"the deck of the effect's controller\". R157 §18 quotes that phrase, but it answered Big Glimpse Card, where the controller is the glimpser; on Celestial Purge and Dematerialize the reminder names \"their deck\", the glimpser's. The conflict is D-U18-12. No test runs a constructed game where the two readings differ.",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
+    }
+  },
+  {
+    "key": "keywords.actions.glimpse.permission",
+    "parent": "keywords.actions.glimpse",
+    "order": 5,
+    "text": "Until end of turn, the glimpser may play the cached card as if it were in their hand, ignoring affinity.",
+    "examples": [
+      {
+        "text": "A card with affinity its glimpser cannot meet can be played from the cache, for its mana only.",
+        "test": "36-cache-prophecy.test.ts::R45: a card with no affinity is ILLEGAL from hand but LEGAL from cache, for mana only"
+      }
+    ],
+    "see": [
+      "403.3a",
+      "403.3b"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Premonition",
+          "quote": "(Reveal the top X cards of the deck and cache one. Until end of turn, you may play it as if it was in your hand, ignoring affinity. Recycle the rest.)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R45",
+          "quote": "Until end of turn the cached card may be played as if it were in the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "36-cache-prophecy.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R45": "d60323d5966f1b63cccd9187354aa66801b416197dda93338b1e5c855969d117"
+    }
+  },
+  {
+    "key": "keywords.actions.glimpse.permission.cost-timing",
+    "parent": "keywords.actions.glimpse",
+    "order": 6,
+    "text": "A card played under a glimpse permission still costs its mana, and still obeys its printed timing. Only the affinity requirement is waived.",
+    "examples": [
+      {
+        "text": "A glimpsed card whose mana cannot be paid is refused.",
+        "test": "315-cache-mod-permission.test.ts::R303: the glimpse waives the pips, NOT the mana — broke means refused"
+      },
+      {
+        "text": "A glimpsed {Battle} card cannot be played in deployment.",
+        "test": "36-cache-prophecy.test.ts::R45: glimpse still obeys timing, and a short deck glimpses fewer"
+      }
+    ],
+    "see": [
+      "403.3c",
+      "403.3d"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R45",
+          "quote": "glimpser's hand, **ignoring affinity** (Caleb 2024-10-28) but still paying its"
+        },
+        {
+          "ref": "R45",
+          "quote": "mana cost (Caleb 2023-08-13) and still obeying timing restrictions (Caleb"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "315-cache-mod-permission.test.ts",
+        "36-cache-prophecy.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R45 attributes each limit to a dated Caleb statement but quotes none of them, so the basis is the ruling. The printed reminder's \"as if it was in your hand\" supports both limits.",
+    "sourceHashes": {
+      "R45": "d60323d5966f1b63cccd9187354aa66801b416197dda93338b1e5c855969d117"
+    }
+  },
+  {
+    "key": "keywords.actions.glimpse.permission.mods",
+    "parent": "keywords.actions.glimpse",
+    "order": 7,
+    "text": "The same permission lets the glimpser apply the cached card as a mod, on the same terms (its mana, ignoring affinity): an augment or graft during deployment, and a {Virus} during battle.",
+    "examples": [
+      {
+        "text": "A live glimpse grafts for the card's mana, ignoring affinity.",
+        "test": "315-cache-mod-permission.test.ts::R303: a LIVE glimpse grafts for the card's mana, ignoring affinity"
+      },
+      {
+        "text": "A glimpsed {Virus} in the cache goes onto an enemy unit in battle.",
+        "test": "370-cached-virus-in-battle.test.ts::R311: a glimpsed Virus in the cache goes onto an ENEMY unit in battle, ignoring affinity"
+      }
+    ],
+    "see": [
+      "403.3b",
+      "721",
+      "722",
+      "723"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1537748882501668934#3",
+          "quote": "and Glimpse which would allow you to 'play' Viruses during Battle"
+        },
+        {
+          "ref": "RAQ 1537748882501668934#4",
+          "quote": "OR 'play' regular mods like Augment / Graft during Deployment phase."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R303",
+          "quote": "| glimpse, this turn only (R45) | the card's mana, ignoring affinity | the card's mana, ignoring affinity |"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "315-cache-mod-permission.test.ts",
+        "370-cached-virus-in-battle.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "The price half is R303 (owner); the permission half is the designer's.",
+    "sourceHashes": {
+      "R303": "362c6d1e5a9c15d8912809d210e41b88548997fd1e9c63acbfa5b730f81e130c",
+      "RAQ 1537748882501668934#3": "58d15a8f21bd69d98736c68f7e52c872ebcbec1bd08dd995eedac13a2d589288",
+      "RAQ 1537748882501668934#4": "df4d0cd9f8f8f6ffe2cb2d5cb96411c53fe72b7bdf7ebd4d83a69d41061fd0ec"
+    }
+  },
+  {
+    "key": "keywords.actions.glimpse.permission.prophesy",
+    "parent": "keywords.actions.glimpse",
+    "order": 8,
+    "text": "While the permission is live, a glimpsed card with a prophecy banner may be prophesied where it stands in the cache, in the same window and for the same cost as from the hand. Doing so uses up the glimpse permission.",
+    "examples": [
+      {
+        "text": "A glimpsed card with a banner may be prophesied where it stands in the cache.",
+        "test": "36-cache-prophecy.test.ts::R308: a GLIMPSED card with a banner may be prophesied where it stands in the cache"
+      }
+    ],
+    "see": [
+      "403.8",
+      "keywords.actions.prophesy",
+      "803"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R308",
+          "quote": "prophesied too: same window (deployment, or the haste step for a banner with a"
+        },
+        {
+          "ref": "R308",
+          "quote": "- The glimpse permission is spent. The hand-like permission is what the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "36-cache-prophecy.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Restates 403.8 from the glimpse side.",
+    "sourceHashes": {
+      "R308": "47693b2fe9ccc286cfd3da7af7fa8f3094811a44ef742035394f73c86395eb8f"
+    }
+  },
+  {
+    "key": "keywords.actions.glimpse.permission.ends",
+    "parent": "keywords.actions.glimpse",
+    "order": 9,
+    "text": "The permission ends at end of turn. The card stays in the cache, and it can no longer be played, prophesied or applied as a mod there.",
+    "examples": [
+      {
+        "text": "An expired glimpse is not a graft, not an augment, not anything.",
+        "test": "315-cache-mod-permission.test.ts::R303: an expired glimpse is not a graft, not an augment, not anything"
+      },
+      {
+        "text": "Premonition's permission dies with the turn; the card stays cached.",
+        "test": "14-water-a.test.ts::Premonition: Glimpse X where X is your water affinity; the permission dies with the turn, the card stays"
+      }
+    ],
+    "see": [
+      "403.5"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Premonition",
+          "quote": "(Reveal the top X cards of the deck and cache one. Until end of turn, you may play it as if it was in your hand, ignoring affinity. Recycle the rest.)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R45",
+          "quote": "2025-12-28). The permission expires at end of turn; the card stays in cache,"
+        },
+        {
+          "ref": "R303",
+          "quote": "| expired glimpse, unfulfilled banner, or neither | refused | refused |"
+        },
+        {
+          "ref": "R308",
+          "quote": "- A cached card with no permission, or whose glimpse has expired, still cannot"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R190",
+          "relation": "its Glimpse glossary row's \"stays cached, inert\" amended by R206; R303 later restored \"inert\" (D-U18-10)"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "315-cache-mod-permission.test.ts",
+        "14-water-a.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R206 presents its Glimpse tightening (an expired glimpse card is still moddable) as current, and R303 reverses it: D-U18-10. Our glossary row still says moddable: F-U18-2 (a text finding, not an engine divergence).",
+    "sourceHashes": {
+      "R303": "362c6d1e5a9c15d8912809d210e41b88548997fd1e9c63acbfa5b730f81e130c",
+      "R308": "47693b2fe9ccc286cfd3da7af7fa8f3094811a44ef742035394f73c86395eb8f",
+      "R45": "d60323d5966f1b63cccd9187354aa66801b416197dda93338b1e5c855969d117"
+    }
+  },
+  {
+    "key": "keywords.actions.recycle",
+    "parent": "801",
+    "order": 10,
+    "text": "To recycle a card is to put it on the bottom of the deck. A recycled card goes past the deck's mark into the recycle pile.",
+    "examples": [
+      {
+        "text": "Tides of the Cosmos recycles the revealed cards it did not play.",
+        "test": "15-water-b.test.ts::Tides of the Cosmos: reveal 8, play up to two with total cost ≤ 8 for free, recycle the rest"
+      },
+      {
+        "text": "A recycled card stays behind the mark while the deck still has cards.",
+        "test": "300-recycle-mark.test.ts::R296 §1 a recycled card stays behind the mark while the deck still has cards"
+      }
+    ],
+    "see": [
+      "408.1",
+      "408.2",
+      "106.6"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.7",
+          "quote": "and can be picked up from outside the game by recycling a card in your hand (putting it on the bottom of the deck). There is no player interaction during this step."
+        },
+        {
+          "ref": "Manual p.16",
+          "quote": "recycled (put on the bottom of the deck) and each"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R190 (its Recycle row)",
+          "quote": "never does. Recycling has a single meaning in Algomancy — put a card on the bottom"
+        },
+        {
+          "ref": "R296",
+          "quote": "A deck has a **mark** at the original end of the library. A recycled card goes"
+        },
+        {
+          "ref": "R296",
+          "quote": "**past the mark**, into the recycle pile, not onto the bottom of the live deck."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "15-water-b.test.ts",
+        "300-recycle-mark.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The first sentence is printed; the mark and the recycle pile are R296, an owner report of an unwritten rule with no printed or designer source (D-U18-13, the same as D-U07-12). Also 408.2.",
+    "sourceHashes": {
+      "R190": "2c143552cacb38910f6dc1519d8a523d96382a92393de01fc335337f1c1a60a1",
+      "R296": "d53f03d41df34d3f07ac7687b7104a2376c6e1fc4108537d53fe87f48c0f1a56"
+    }
+  },
+  {
+    "key": "keywords.actions.fight",
+    "parent": "801",
+    "order": 11,
+    "text": "When two units fight, each deals damage equal to its power to the other.",
+    "examples": [
+      {
+        "text": "Battle: two target units fight, dealing damage to each other.",
+        "test": "16-earth-a.test.ts::Battle: two target units fight (mutual power damage; both targets at cast)"
+      }
+    ],
+    "see": [
+      "112"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Fight",
+          "quote": "(They deal damage to each other equal to their power.)"
+        },
+        {
+          "ref": "card: Eminence of the Barrens",
+          "quote": "(We deal damage to each other equal to our power.)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "16-earth-a.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Whether the two hits are simultaneous is not stated: D-U18-6. A unit with negative power deals 0 (Manual p.42; 206).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "keywords.actions.fight.source",
+    "parent": "keywords.actions.fight",
+    "order": 1,
+    "text": "Each fighting unit is the source of the damage it deals, with its own current attributes. Attributes the fight spell itself has do not apply to that damage.",
+    "examples": [
+      {
+        "text": "A fighter that gained {Powerful} deals double damage.",
+        "test": "399-raq-fix-combat.test.ts::R318: Fight — a fighter that GAINED Powerful deals double"
+      },
+      {
+        "text": "A {Powerful} virus on the Fight spell does not double either fighter's damage.",
+        "test": "399-raq-fix-combat.test.ts::R318: Fight — a Powerful virus on the Fight spell does not double either fighter"
+      }
+    ],
+    "see": [
+      "112.6",
+      "802"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1402292180499955884#0",
+          "quote": "you would need to target ally unit which is Powerful to deal double damage"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R318",
+          "quote": "So the unit dealing the damage is the source, with its **live** attributes (its"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "399-raq-fix-combat.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "RAQ thread 1402292180499955884 and R318 are not in the U18 pack (they are filed under 112 and 802.9/802.10): added. Restates 112.6 for fights.",
+    "sourceHashes": {
+      "R318": "b13b3ca34a471fdb76cb9272f2929ad8b0eec17d7ea5cff2cba441ffdae5947a",
+      "RAQ 1402292180499955884#0": "8ca0618915f46ba0c16263c38e217d8b045a1e4767421a8e648967c065ada9d9"
+    }
+  },
+  {
+    "key": "keywords.actions.fight.not-spell-damage",
+    "parent": "keywords.actions.fight",
+    "order": 2,
+    "text": "Damage dealt in a fight is dealt by the units, not by the spell or ability that made them fight. Abilities that look for damage dealt by a spell effect do not see it.",
+    "examples": [
+      {
+        "text": "Squish damage is the unit dealing it, so Ember of Life does not trigger; the designer's answer covers Fight and Battle the same way.",
+        "test": "388-raq-blocks-and-windows.test.ts::RAQ Squish: Squish damage is the unit dealing it, so Ember of Life does not trigger"
+      },
+      {
+        "text": "Fight makes a 3-power unit deal 3 damage, and Ember of Life does not trigger; a spell dealing damage in the same setup does trigger it.",
+        "test": "429-cr-keyword-actions.test.ts::cr:keywords.actions.fight.not-spell-damage — the 3 damage Fight makes a unit deal does not trigger Ember of Life"
+      }
+    ],
+    "see": [
+      "112.6"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1402292180499955884#2",
+          "quote": "Damage resulting from Squish/Fight/Battle won't trigger Ember of Life"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "388-raq-blocks-and-windows.test.ts",
+        "429-cr-keyword-actions.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "No test asserts it for Fight itself, only for Squish; the designer's claim names all three.",
+    "sourceHashes": {
+      "RAQ 1402292180499955884#2": "30c449bb3e1370052f39b492d631e7ffe5517ca96c81a635fb06bb19d54478ec"
+    }
+  },
+  {
+    "key": "keywords.actions.fight.lost-one",
+    "parent": "keywords.actions.fight",
+    "order": 3,
+    "text": "A fight needs both of its units. If one of them is gone when the fight would happen, nothing happens: the remaining unit deals and is dealt no damage. The effect does not fizzle.",
+    "examples": [
+      {
+        "text": "Fight that loses one of its two targets does nothing to the survivor.",
+        "test": "390-raq-stack.test.ts::RAQ fizzles: Fight that loses one of its two targets does nothing to the survivor"
+      }
+    ],
+    "see": [
+      "704.6c",
+      "101.5"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.43",
+          "quote": "if one of the targets for a fight or an exchange is removed, the effect will not be able to happen (it takes"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1354013430805434389#1",
+          "quote": "Does Fight/Battle/Squish / Organic Exchange fizzle if it lost only one target? It won't fizzle, but will do nothing."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts",
+        "429-cr-keyword-actions.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "Restates 704.6c for fights. RAQ thread 1354013430805434389 is not in the U18 pack: added.",
+    "sourceHashes": {
+      "RAQ 1354013430805434389#1": "e83f85c2edb0a47374957f320ca086a87b90532a5c955f159204e0096b1019f0"
+    }
+  },
+  {
+    "key": "keywords.actions.rockfall",
+    "parent": "801",
+    "order": 12,
+    "text": "Rockfall N means: each player chooses one of their units, and the source of the rockfall deals N damage to each chosen unit.",
+    "examples": [
+      {
+        "text": "A Fast Pile of Rocks dies and rockfalls 4: each player picks one of their own units, and each takes exactly 4.",
+        "test": "182-correctness-sample.test.ts::A Fast Pile of Rocks: on MY death each player picks one of THEIR OWN units for exactly 4"
+      }
+    ],
+    "see": [
+      "112"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: A Fast Pile of Rocks",
+          "quote": "(Each player chooses one of their units. I deal 4 damage to each of the chosen units.)"
+        },
+        {
+          "ref": "card: Meteor Shower",
+          "quote": "(To rockfall 3: Each player chooses one of their units. I deal 3 damage to each of the chosen units.)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "182-correctness-sample.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "\"Each player\" is each player in the region (601.1b).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "keywords.actions.rockfall.chooses",
+    "parent": "keywords.actions.rockfall",
+    "order": 1,
+    "text": "Rockfall chooses; it does not target. No targets are declared when it goes on the stack, and an effect that stops targeting cannot stop it.",
+    "examples": [
+      {
+        "text": "Boon of Protection has nothing to negate when a Meteor Shower falls on its unit.",
+        "test": "396-raq-timing.test.ts::RAQ Meteor Shower: rockfall chooses rather than targets, so Boon of Protection has nothing to negate"
+      }
+    ],
+    "see": [
+      "110"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353899470156206152#3",
+          "quote": "Rockfall is 'choosing' effect rather than 'targeting', so it cannot be negated by things like Boon of Protection."
+        },
+        {
+          "ref": "RAQ 1353899470156206152#3",
+          "quote": "It also means that no targets have to be declared when effects goes on stack"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1353899470156206152#3": "4a1f989e8e8a52924853a3febd106acf1e6f7d84db65a7c3cb8f31d76e3683c6"
+    }
+  },
+  {
+    "key": "keywords.actions.rockfall.living-unit",
+    "parent": "keywords.actions.rockfall",
+    "order": 2,
+    "text": "Each player must choose a living unit of theirs in the region. A player with no unit there chooses none, and takes no part in that rockfall.",
+    "examples": [
+      {
+        "text": "Meteor Shower with no unit anywhere to hit announces each empty rockfall.",
+        "test": "93-engine-defects.test.ts::Meteor Shower with no unit anywhere to hit announces each empty rockfall"
+      }
+    ],
+    "see": [
+      "601.1b"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353899470156206152#4",
+          "quote": "They resolve one by one and you always must choose alive unit (or none if you don't have any in that Region)."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "93-engine-defects.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "\"Living\" matters for a repeated rockfall: a unit killed by an earlier rockfall cannot be chosen by a later one.",
+    "sourceHashes": {
+      "RAQ 1353899470156206152#4": "d5427bf9e0aaf457b7dcf397581cb20f332ef855d05381becc46e40f79ba1097"
+    }
+  },
+  {
+    "key": "keywords.actions.rockfall.repeated",
+    "parent": "keywords.actions.rockfall",
+    "order": 3,
+    "text": "\"Rockfall N, X times\" is X rockfalls carried out one after another. Each player chooses again for each of them, and each rockfall is a separate source of damage.",
+    "examples": [
+      {
+        "text": "Meteor Shower rockfalls 3 three times: each player picks each time, and the damage stacks up.",
+        "test": "17-earth-b.test.ts::Meteor Shower: rockfall 3 three times — each player picks, damage stacks up"
+      }
+    ],
+    "see": [
+      "112"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Meteor Shower",
+          "quote": "Rockfall 3 three times."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1353899470156206152#4",
+          "quote": "They resolve one by one and you always must choose alive unit (or none if you don't have any in that Region)."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R80",
+          "quote": "Meteor Shower making several Rockfalls: *\"Each copy of Rockfall is a separate"
+        },
+        {
+          "ref": "R80",
+          "quote": "three batches for the same reason."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "17-earth-b.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "R80 (not in the U18 pack) quotes Caleb 2025-03-20: each rockfall is a separate source. Whether abilities triggered by one rockfall resolve before the next is open: D-U18-4. This rule does not say.",
+    "sourceHashes": {
+      "R80": "c5434669a23a89ae01595c26a66f57923d91ebfd7c0a53b47033f70e1d79d860",
+      "RAQ 1353899470156206152#4": "d5427bf9e0aaf457b7dcf397581cb20f332ef855d05381becc46e40f79ba1097"
+    }
+  },
+  {
+    "key": "keywords.actions.exchange",
+    "parent": "801",
+    "order": 13,
+    "text": "\"Exchange\" is printed in four senses, each read from its card: exchanging a unit in play for a unit card in a bin (Hooba-Mon, Necromorph), exchanging control of two units (Organic Exchange), exchanging control of a unit for a spell another player played (Hexbane Shiitake), and exchanging the base stats of two units (Body Swap).",
+    "examples": [
+      {
+        "text": "Organic Exchange swaps control of two units.",
+        "test": "24-wood-b.test.ts::Organic Exchange: control swaps and the attack slot passes to the exchanged unit"
+      },
+      {
+        "text": "Hexbane Shiitake gives itself away and takes control of an enemy spell.",
+        "test": "23-wood-a.test.ts::Hexbane Shiitake: exchanges the carrier for an enemy spell and retargets it ([once])"
+      },
+      {
+        "text": "Body Swap exchanges two units' base stats.",
+        "test": "26-metal-a.test.ts::Body Swap: exchanges the base stats of two target units until regroup"
+      }
+    ],
+    "see": [
+      "711",
+      "106.8"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Necromorph",
+          "quote": "Exchange target unit in play for target unit with cost less than or equal to it in its controller's bin."
+        },
+        {
+          "ref": "card: Organic Exchange",
+          "quote": "Exchange control of two target units and swap their positions."
+        },
+        {
+          "ref": "card: Body Swap",
+          "quote": "Exchange the base stats of two target units until regroup."
+        },
+        {
+          "ref": "card: Hexbane Shiitake",
+          "quote": "you may exchange control of me for that spell"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "24-wood-b.test.ts",
+        "23-wood-a.test.ts",
+        "26-metal-a.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "An index of the printed senses, not a definition. A Prismite exchange (106.8) is a further, resource-step sense with no card text. Round 1: Hexbane Shiitake moved out of the two-units sense into its own (a unit for a spell).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "keywords.actions.exchange.unit-for-bin",
+    "parent": "keywords.actions.exchange",
+    "order": 1,
+    "text": "When a unit in play is exchanged for a unit card in a bin, the unit leaving play despawns and goes to the bin, where it is trashed, but it does not die.",
+    "examples": [
+      {
+        "text": "Necromorph's exchange fires no death trigger, but the unit despawns and is trashed.",
+        "test": "135-exchange-and-zones.test.ts::R157 §3: Necromorph’s exchange fires NO death trigger — but it despawns and it trashes"
+      },
+      {
+        "text": "Hooba-Mon exchanging an unmodded host: the host goes to the bin and stays there.",
+        "test": "42-dark-b.test.ts::R146 control: Hooba-Mon exchanges an UNMODDED host → it still BINS and stays there"
+      }
+    ],
+    "see": [
+      "410.2a",
+      "410.4d",
+      "704.6c"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 (§3)",
+          "quote": "> *\"It's not a death, but it is a despawn and trashing. Weird corner case.\"*"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "135-exchange-and-zones.test.ts",
+        "42-dark-b.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "A modded (so {Unstable}) unit exchanged this way is erased with its mods (410.4d); whether it is trashed on the way is D-U18-1 / D-U07-16. Losing either unit makes the exchange do nothing (Manual p.43; 704.6c).",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980"
+    }
+  },
+  {
+    "key": "keywords.actions.prophesy",
+    "parent": "801",
+    "order": 14,
+    "text": "To prophesy a card is to pay the cost on its prophecy banner and put it into the cache with its prophecy attached. Prophecy itself is 803.",
+    "examples": [
+      {
+        "text": "A glimpsed Vengeance is offered its prophecy in deployment.",
+        "test": "36-cache-prophecy.test.ts::R308: the real card — a glimpsed Vengeance is offered its prophecy in deployment"
+      }
+    ],
+    "see": [
+      "803",
+      "403.8"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R42 (its cache-with-the-prophecy-attached definition)",
+          "quote": "with its prophecy attached. Only a card that says so may be prophesied from"
+        },
+        {
+          "ref": "R308",
+          "quote": "trailing [Haste], R277), same cost (the banner's mana and affinity, R301)."
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R42",
+          "relation": "its no-affinity cost corrected by R301; its window amended by R277; its source zone amended by R308"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "36-cache-prophecy.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "A pointer to 803 (U21). R42 is not in the U18 pack: added for the definition. When and from where a card may be prophesied belong to 803.",
+    "sourceHashes": {
+      "R308": "47693b2fe9ccc286cfd3da7af7fa8f3094811a44ef742035394f73c86395eb8f",
+      "R42": "0cabff7c580b27609be02ba24c31e41a18554c7829734d450a6abfeecdc1c81c"
+    }
+  }
+]

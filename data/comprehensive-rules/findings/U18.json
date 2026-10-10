@@ -1,0 +1,54 @@
+[
+  {
+    "id": "F-U18-1",
+    "rule": "keywords.actions.trash.unstable-death",
+    "title": "Engine trashes a dying {Unstable} card in the bin; the printed reminder erases it instead of binning it",
+    "summary": "Under R137 the engine pushes a dying {Unstable} card into the bin, trashes it there (firing \"when I am trashed\" and the trash watchers, and raising the per-battle count), then sweeps it to the erased pile. The printed reminder replaces the bin entry with an erase, so under the authority order the card is never trashed. The same divergence as F-U07-6, seen from the trash rule; merge them in Stage D. A divergence pending the owner's answer to D-U18-1 / D-U07-3, not necessarily a bug.",
+    "evidence": [
+      {
+        "file": "client/engine/test/224-mod-trash.test.ts",
+        "quote": "R137 GUARD: the BODY of an Unstable unit that dies is still trashed, mods or no mods"
+      },
+      {
+        "file": "client/engine/test/35-rot-debt-trash.test.ts",
+        "quote": "R137: a modded unit dying is binned, TRASHED, and only then erased (R40 inverted)"
+      }
+    ]
+  },
+  {
+    "id": "F-U18-2",
+    "rule": "keywords.actions.glimpse.permission.ends",
+    "title": "Glossary Glimpse row still says an expired glimpse card is moddable at full price",
+    "summary": "The player-facing Glimpse reminder in client/ui/glossary.ts ends \"public, targetable, and still moddable out of the zone at full price\". R303 (2026-09-20) made an expired glimpse refuse every verb, mods included, and the Cache row in the same file already says \"once it lapses the card is inert\". The two rows contradict each other on screen. A text fix in ours, not an engine change; test 177 cannot see it because the row cites R45/R190, which are live.",
+    "evidence": [
+      {
+        "file": "client/ui/glossary.ts",
+        "quote": "and still moddable out of the zone at full price."
+      },
+      {
+        "file": "client/engine/test/315-cache-mod-permission.test.ts",
+        "quote": "R303: an expired glimpse is not a graft, not an augment, not anything"
+      }
+    ]
+  },
+  {
+    "id": "F-U18-3",
+    "title": "A dying {Unstable} card is trashed before it is erased",
+    "summary": "The engine bins and trashes a printed- or granted-Unstable card that dies in play, then sweeps it to the erased pile (R137, a deliberate owner divergence). The printed reminder and a direct Caleb ruling put it in no bin, so no trash.",
+    "evidence": [
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "quote": "(If they would enter a bin, erase them instead.)"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "*\"Unstable units still die, they just get erased instead of ending up in the"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "quote": "R137 (owner, 2026-08-24) is UNCHANGED for a CARD: an {Unstable} card that"
+      }
+    ],
+    "rule": "keywords.actions.trash.unstable-death"
+  }
+]

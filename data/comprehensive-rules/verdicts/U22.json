@@ -1,0 +1,3974 @@
+[
+  {
+    "key": "formats.constructed.any-element",
+    "textHash": "df4bfd7494ba3322",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:legalActions",
+        "agrees": true,
+        "note": "recycleForResource offered for all seven elements regardless of deckElements"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/34-constructed.test.ts",
+        "pattern": "deckElements: it is a PRESENTATION default",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R99",
+        "supports": "yes",
+        "note": "all seven elements stay legal"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "`legalActions` still offers **all seven** elements for `recycleForResource` and"
+      },
+      {
+        "file": "client/engine/test/34-constructed.test.ts",
+        "text": "assert.deepEqual([...offered].sort(), [...ALL_ELEMENTS, 'prismite', 'shard'].sort(),"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.constructed.card-text",
+    "textHash": "d0a242e494f1621b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards (Worldbender replaceCardStep)",
+        "agrees": true,
+        "note": "constructed branch: hand +3 and 3 life; draft branch: hand +3, no life"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/28-metal-c.test.ts",
+        "pattern": "Worldbender in constructed",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/28-metal-c.test.ts",
+        "pattern": "Worldbender in a live draft",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Worldbender",
+        "supports": "yes",
+        "note": "oracle text: \"You also lose 3 life if playing a constructed format.\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/28-metal-c.test.ts",
+        "text": "assert.equal(h.state.players[A]!.life, before[A]!.life - 3, 'and 3 life is paid for it (report #87)');"
+      },
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "You also lose 3 life if playing a constructed format."
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Confirmed. Aside: the oracle row for Worldbender also carries a rulings note \"All draft skipping cards are not legal in formats without a draft.\" which sits uneasily with its own constructed clause; the engine allows it in constructed. Not this rule's concern, but unexamined."
+  },
+  {
+    "key": "formats.constructed.card-text.cube",
+    "textHash": "fefd6527445f5d1b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.39",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "card: Worldbender",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Players then use these 30 card decks they have"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.constructed.card-text.shared-mode",
+    "textHash": "320d37c373df2fe3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:startTurn",
+        "agrees": true,
+        "note": "'shared' takes a flat 2 and consults replaceCardStep; Worldbender's shared branch is the constructed one"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/137-multiplier-and-mode.test.ts",
+        "pattern": "Worldbender in 'shared': the default mode takes the CONSTRUCTED branch",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R157 §2",
+        "supports": "yes",
+        "note": "owner: shared is not real, treat as constructed (stands per history pack)"
+      },
+      {
+        "ref": "R162",
+        "supports": "yes",
+        "note": "shared takes the constructed branch: three cards and 3 life"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "takes the constructed branch: all three cards out of the card, and 3 life with"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if ((this.s.mode === 'shared' || this.s.singleCard) && !this.replaceCardStep(p.seat)) this.draw(p.seat, 2);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.constructed.copies",
+    "textHash": "a36afa14eff82bef",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U22-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:checkDeck",
+        "agrees": true,
+        "note": "counts copies and refuses any card with c > 2; also refuses unknown cards and under 30"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/34-constructed.test.ts",
+        "pattern": "checkDeck: min 30, max 2 copies",
+        "passed": true,
+        "asserts_claim": "yes, though it refuses 30 copies rather than exactly 3; it also asserts 2 copies are fine"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U22/u22-r2-probes.test.ts",
+        "title": "formats.constructed.copies: exactly a third copy is refused, two are accepted",
+        "passed": true,
+        "demonstrates": "yes: 28 singles + 2 copies passes; 27 singles + 3 copies is refused with \"max 2 copies\""
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": "\"The standard format allows up to 2 copies of each card\""
+      },
+      {
+        "ref": "Manual p.16",
+        "supports": "yes",
+        "note": "constructed pre-built decks \"with up to 2 copies of each card\""
+      },
+      {
+        "ref": "34-constructed.test.ts",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "const over = [...counts.entries()].filter(([, c]) => c > 2).map(([n]) => n);"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "the game. The standard format allows up to 2 copies"
+      },
+      {
+        "file": "client/engine/test/34-constructed.test.ts",
+        "text": "assert.equal(checkDeck(Array(30).fill(DECK_LIST[0])).ok, false, 'over 2 copies');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.constructed.deck-size",
+    "textHash": "f06c6469e6fb5620",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:checkDeck",
+        "agrees": true,
+        "note": "refuses < 30; no upper bound on length"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/34-constructed.test.ts",
+        "pattern": "checkDeck: min 30, max 2 copies",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U22/u22-verify-probes.test.ts",
+        "title": "formats.constructed.deck-size: a 200-card deck passes, so there is no maximum; 29 is refused",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.16",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Rulebook 2023 p.1",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "of each card, with a minimum deck size of 30."
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "card and a minimum of 30 cards in their decks."
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "• Constructed: You build a deck with a minimum size of 30 cards and a maximum of 2 copies of each card ahead of time and"
+      },
+      {
+        "file": "client/engine/test/34-constructed.test.ts",
+        "text": "assert.equal(checkDeck(deckA().slice(0, 29)).ok, false, 'under 30');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.constructed.draw-phase",
+    "textHash": "d6accc223e0d97c8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:startConstructedDraw",
+        "agrees": true,
+        "note": "each seat draws 4, then bottomDone opens for the put-back of 2"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/34-constructed.test.ts",
+        "pattern": "createGame constructed: per-seat decks, opening 4 + draw 4, bottoming open",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/34-constructed.test.ts",
+        "pattern": "turn 2 reopens the draw phase",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.6",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.16",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.16",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "RAQ 1451507918171013252#1",
+        "supports": "yes",
+        "note": "designer statement, verbatim in the RAQ pack"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "In constructed, there is no deck to draft from, so the draft step and the draw step are combined into one draw phase. During"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "after the draw step, so players often combine these"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "two steps by drawing 4 cards, then recycling 2."
+      },
+      {
+        "file": "client/engine/test/34-constructed.test.ts",
+        "text": "assert.equal(h.state.players[0]!.hand.length, 6 + 4, 'turn-1 net 6 + turn-2 draw 4');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.constructed.draw-phase.one-step",
+    "textHash": "48895a3ec259ded9",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:isLethal",
+        "agrees": true,
+        "note": "returns false while bottomPending(controller)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/380-no-action-ends-dead.test.ts",
+        "pattern": "R313 constructed: drawing 4 does not kill before the 2 go back",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/380-no-action-ends-dead.test.ts",
+        "pattern": "R313 constructed: 3 cards in hand nets to 5",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R313",
+        "supports": "yes",
+        "note": "constructed draw phase is one step; isLethal skips while bottomPending"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (this.bottomPending(u.controller)) return false;"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **Constructed's draw phase is one step.** Draw 4 and put 2 back are two"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.constructed.draw-phase.order",
+    "textHash": "cb1fdfb5e6c9e1c9",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:bottomCards",
+        "agrees": true,
+        "note": "handIndices honoured as given; cards go past the mark (recycled pile), shuffled before reuse"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/34-constructed.test.ts",
+        "pattern": "nothing moves until the 2 cards go back",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.6",
+        "supports": "yes",
+        "note": "\"put them on the bottom of the deck in any order\""
+      },
+      {
+        "ref": "R296",
+        "supports": "yes",
+        "note": "pile shuffled on its way back, order has no rules consequence"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "deck in any order. This mimics the flexibility of the draft step while keeping the essence of a constructed format."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "The pile is shuffled on its way back in, so the order cards were recycled in is"
+      },
+      {
+        "file": "client/engine/test/34-constructed.test.ts",
+        "text": "assert.deepEqual(h.state.recycled![0], [first, second],"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.constructed.no-packs",
+    "textHash": "c44eefec2ff4b7e4",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": true,
+        "note": "constructed: sharedDeck [] and packs [[],[]]; per-seat decks"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/34-constructed.test.ts",
+        "pattern": "createGame constructed: per-seat decks",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U22/u22-verify-probes.test.ts",
+        "title": "formats.constructed.no-packs: a constructed game has no shared deck and no packs",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.16",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.10",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "In this mode, there are no packs or shared deck. During"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "In constructed formats, there will be no shared deck and players’ individual decks will go in the location of their “pack”."
+      },
+      {
+        "file": "client/engine/test/34-constructed.test.ts",
+        "text": "assert.deepEqual(h.state.sharedDeck, [], 'no communal deck');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.constructed.single-card",
+    "textHash": "b199c0bee042b362",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:checkSingleCard",
+        "agrees": true,
+        "note": "30 copies of one DECK_LIST card"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": true,
+        "note": "constructed mode accepts a checkSingleDeck deck"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U22/u22-verify-probes.test.ts",
+        "title": "formats.constructed.single-card / single-card.copies: a duel deck is 30 copies of one card; checkDeck refuses it and createGame accepts it",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R298",
+        "supports": "yes",
+        "note": "\"pick a single card, before the game ... 30 copies of the exact same card\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "single card, before the game, and that is your deck. 30 copies of the exact same card."
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "export const SINGLE_CARD_COPIES = 30;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.constructed.single-card.copies",
+    "textHash": "d347e4eb3f439401",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": true,
+        "note": "a deck failing checkDeck is accepted only if checkSingleDeck passes"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U22/u22-verify-probes.test.ts",
+        "title": "formats.constructed.single-card / single-card.copies: a duel deck is 30 copies of one card; checkDeck refuses it and createGame accepts it",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R298",
+        "supports": "yes",
+        "note": "\"the ONE exception to the Manual's two-copy cap\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "It is the ONE exception to the Manual's two-copy cap, and it is not a new mode: the room"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (!check.ok && !checkSingleDeck(d).ok) throw new Error(check.error);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.constructed.single-card.no-draw-phase",
+    "textHash": "825e176d58391688",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:startTurn",
+        "agrees": true,
+        "note": "singleCard takes the flat 2 every turn including turn 1 and skips startConstructedDraw"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": true,
+        "note": "constructed (incl. duel) opening draw is 4"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U22/u22-verify-probes.test.ts",
+        "title": "formats.constructed.single-card.no-draw-phase: opening 4, a flat 2 each turn, nothing put back",
+        "passed": true,
+        "demonstrates": "yes: turn 1 hand 6 with no put-back pending; turn 2 +2, no put-back"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R298",
+        "supports": "yes",
+        "note": "owner: no draw phase, flat 2, opening hand still 4"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (this.s.mode === 'constructed' && !this.s.lesson && !this.s.singleCard) this.startConstructedDraw();"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "still 4, so turn 1 starts on the same six cards. `createGame` sets `GameState.singleCard`"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Confirmed by code and probe; no engine test binds it (R298 guards live in server/e2e)."
+  },
+  {
+    "key": "formats.constructed.single-card.no-units",
+    "textHash": "9ed0714c64e379eb",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:makesUnits",
+        "agrees": true,
+        "note": "unit or spellUnit kind, or declared creates includes a unit"
+      },
+      {
+        "loc": "client/server/rooms.ts:setRoomDeck",
+        "agrees": true,
+        "note": "two non-unit-makers: singleDraw kept, decks cleared, room waits; payload names both cards"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U22/u22-verify-probes.test.ts",
+        "title": "formats.constructed.single-card.no-units: makesUnits is true for a unit and a unit-token maker, false for a spell that makes none",
+        "passed": true,
+        "demonstrates": "yes (makesUnits half; the room draw is server code, read not run)"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R298",
+        "supports": "yes",
+        "note": "both no-unit cards: a draw, tell each the other's pick, rechoose"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/server/rooms.ts",
+        "text": "if (pair && !makesUnits(pair[0]) && !makesUnits(pair[1])) {"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "return isUnit(name) || createsOf(name).some(isUnit);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Confirmed by code and probe; the draw-and-rechoose flow is server-only (guarded in server/e2e, not run here)."
+  },
+  {
+    "key": "formats.constructed.what",
+    "textHash": "e61bdfcd9933ca03",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": true,
+        "note": "constructed needs a deck per player and shuffles each seat's own"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/34-constructed.test.ts",
+        "pattern": "createGame constructed: per-seat decks",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.16",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "RAQ 1451507918171013252#1",
+        "supports": "yes",
+        "note": "designer statement, verbatim in the RAQ pack"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Constructed: Players bring pre-constructed decks to"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "In the constructed game mode, players bring their own"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (!decks || decks.length !== 2) throw new Error('constructed mode needs a deck per player');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.draft.cube",
+    "textHash": "5157510ccdc6dfcc",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.39",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.39",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.39",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Cube draft is a format suited for large groups (6-10+)"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "where players create decks through a drafting process"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "before the game and use those decks to play"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.draft.cube-traditional",
+    "textHash": "47806dd4027ebbc8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.39",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.39",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.39",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "TRADITIONAL CUBE DRAFT"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Deal each player three packs of 13 to 15 cards (15 cards"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "for 6 players, 13 for 8 players). Players will each look"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.draft.cube-traditional.deck",
+    "textHash": "ed3d25e037931be0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.39",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.39",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "From their drafted piles, players each build a 30 card"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "deck to use for the following constructed matches."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.draft.cube-traditional.picks",
+    "textHash": "84596c2c246835ab",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U22-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-metal-c.ts:comment",
+        "agrees": true,
+        "note": "\"Cube\" has no mode in this engine; the rule is printed-only and makes no engine claim"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.39",
+        "supports": "yes",
+        "note": "take one card, pass to neighbour, repeat until the pack is empty, three times alternating left, right, left"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "at their packs and take one card from it before passing"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "it to their neighbor and repeat until the first pack is"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "alternating passing directions (left, right, left) until"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-metal-c.ts",
+        "text": "// \"Cube\" has no mode in this engine (GameMode is 'shared' | 'draft' |"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None; printed-only, not implemented digitally."
+  },
+  {
+    "key": "formats.draft.cube.decks",
+    "textHash": "0d50b6ced130c159",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.39",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Players then use these 30 card decks they have"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.draft.cube.procedure",
+    "textHash": "ab113cc2e2988595",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.39",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.39",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.39",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.39",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.39",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.39",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.39",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Deal each player a pack of 10 cards. Players will then"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "complete the following process a total of 15 times, until"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "each player has finished with a 30 card deck:"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.draft.cube.the-cube",
+    "textHash": "1d92d43780451f31",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.39",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.39",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.39",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.39",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Shuffle all of the game cards including hybrids"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "in total when using a single box of Algomancy. When"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "playing in groups larger than 8, two complete sets of"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.draft.custom",
+    "textHash": "fbc4dbf1c409bb19",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": true,
+        "note": "draftDeal = mode === 'draft' ? sanitizeDraftDeal(deal) : undefined; deal feeds only the deal sites"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/296-custom-draft-deal.test.ts",
+        "pattern": "BL-43 §1a control",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/296-custom-draft-deal.test.ts",
+        "pattern": "BL-43 §1c a custom deal is ignored outside a live draft",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R292",
+        "supports": "yes",
+        "note": "\"They change the DEAL, never how a card works\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "const draftDeal = mode === 'draft' ? sanitizeDraftDeal(deal) : undefined;"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**Ruling.** A live draft may be created with custom rules. They change the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.draft.custom.bans",
+    "textHash": "bce136b0a99d24f8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "client/ui/customrules.ts:resolveCustomRules",
+        "agrees": true,
+        "note": "bans and every card failing the filter are added to excluded"
+      },
+      {
+        "loc": "client/engine/src/draftdeal.ts:draftPool",
+        "agrees": true,
+        "note": "excluded names are filtered out of the deck"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/296-custom-draft-deal.test.ts",
+        "pattern": "BL-43 §3 an excluded card is nowhere in the game",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/297-custom-rules-resolve.test.ts",
+        "pattern": "BL-43 resolve §5 bans and the card filter add up",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R292",
+        "supports": "yes",
+        "note": "\"Banned cards by name, and an advanced card filter ... only cards matching it are in the pool.\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ui/customrules.ts",
+        "text": "for (const n of rules.bans) excluded.add(n);"
+      },
+      {
+        "file": "client/engine/src/draftdeal.ts",
+        "text": "return pool.filter(n => !out.has(n));"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "browser's search syntax: only cards matching it are in the pool."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.draft.custom.elements",
+    "textHash": "3d871025254747d3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:defaultElements/sanitizeTrio",
+        "agrees": true,
+        "note": "count 2 defaults to ['fire','wood']"
+      },
+      {
+        "loc": "client/engine/src/draftdeal.ts:draftPool",
+        "agrees": true,
+        "note": "draftDeckList(elements): cards whose factions all lie in the set"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/296-custom-draft-deal.test.ts",
+        "pattern": "BL-43 §2c two elements",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U22/u22-verify-probes.test.ts",
+        "title": "formats.draft.custom.elements: the elements knob runs 2 to 7 and a seven-element pool is every deck card",
+        "passed": true,
+        "demonstrates": "yes: 7 elements accepted"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R292",
+        "supports": "yes",
+        "note": "2-7, standard 3, fire + wood default"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (count === 2) return ['fire', 'wood'];"
+      },
+      {
+        "file": "client/engine/test/296-custom-draft-deal.test.ts",
+        "text": "assert.deepEqual(byDefault.state.elements, ['fire', 'wood']);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.draft.custom.floor",
+    "textHash": "1250573ce6737b5e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/draftdeal.ts:minPool",
+        "agrees": true,
+        "note": "2*openingHand + 4*packSize + 6*draftDraw"
+      },
+      {
+        "loc": "client/ui/customrules.ts:poolCheck",
+        "agrees": true,
+        "note": "without fixed elements every set of that size is checked and the worst must pass"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/296-custom-draft-deal.test.ts",
+        "pattern": "BL-43 §5 minPool",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/297-custom-rules-resolve.test.ts",
+        "pattern": "BL-43 resolve §8 too small a pool is refused",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R292",
+        "supports": "yes",
+        "note": "floor formula, 64/44, every set must pass, refused before the room exists"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/draftdeal.ts",
+        "text": "return 2 * d.openingHand + 4 * d.packSize + 6 * d.draftDraw;"
+      },
+      {
+        "file": "client/engine/test/296-custom-draft-deal.test.ts",
+        "text": "assert.equal(minPool(), 64);"
+      },
+      {
+        "file": "client/ui/test/297-custom-rules-resolve.test.ts",
+        "text": "assert.equal(open.check?.floor, 64);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Confirmed. \"Refused before the game is created\" is enforced server-side (room creation via checkCustomRules); not run here (server tests bind ports), the ui-side refusal is tested."
+  },
+  {
+    "key": "formats.draft.custom.not-printed",
+    "textHash": "830a9adccfdf7bfb",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "client/ui/customrules.ts:BEGINNER",
+        "agrees": true,
+        "note": "preset: elements 2, packSize 5, simpleOnly true"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/298-custom-rules-ui.test.ts",
+        "pattern": "BL-43 ui §2 the Beginner preset",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R292",
+        "supports": "yes",
+        "note": "\"Not rulebook text.\" 5-card packs not printed; Beginner preset is the client's softening"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**Not rulebook text.** 5-card packs are not in the printed rules this repository"
+      },
+      {
+        "file": "client/ui/test/298-custom-rules-ui.test.ts",
+        "text": "assert.equal(payload.rules.packSize, 5);"
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "have 10 cards in them when they are dealt or passed to other players. Packs may only be interacted with and looked at during"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.draft.custom.numbers",
+    "textHash": "51cd1bb7e7b7f274",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/draftdeal.ts:DEAL_BOUNDS",
+        "agrees": true,
+        "note": "openingHand [1,15], draftDraw [0,5], startingLife [1,99]; defaults 6/2/30"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:startTurn",
+        "agrees": true,
+        "note": "draft draws draftDeal.draftDraw after turn 1"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/296-custom-draft-deal.test.ts",
+        "pattern": "BL-43 §2b opening hand, draws per turn and starting life",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R292",
+        "supports": "yes",
+        "note": "ranges and standards match"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/draftdeal.ts",
+        "text": "elements: [2, 7], packSize: [3, 15], openingHand: [1, 15], draftDraw: [0, 5], startingLife: [1, 99],"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const n = this.s.draftDeal?.draftDraw ?? 2;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.draft.custom.pack-size",
+    "textHash": "028d79d87474dd27",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U22-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/draftdeal.ts:DEAL_BOUNDS/sanitizeDraftDeal",
+        "agrees": true,
+        "note": "packSize clamped to [3, 15], default 10"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:packSize/dealPacks",
+        "agrees": true,
+        "note": "deal and refresh use packSize()"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:doDraftCommit",
+        "agrees": true,
+        "note": "requires exactly pack.length indices back into the pack"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/296-custom-draft-deal.test.ts",
+        "pattern": "BL-43 §2a pack size",
+        "passed": true,
+        "asserts_claim": "yes: 5 at the deal, legal commits are swaps of a 5-card pack, the turn-4 refresh deals 5"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U22/u22-verify-probes.test.ts",
+        "title": "formats.draft.custom.pack-size: the pack-size knob runs 3 to 15, and a 13- or 15-card pack is really dealt",
+        "passed": true,
+        "demonstrates": "yes (round-1 probe file; bounds 3..15, 2 clamps to 3, 13/15 are dealt)"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R292",
+        "supports": "yes",
+        "note": "\"Pack size (3–15, standard 10). Every pack is dealt and refreshed at that size, and the draft step leaves exactly that many cards in the pack.\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/draftdeal.ts",
+        "text": "elements: [2, 7], packSize: [3, 15], openingHand: [1, 15], draftDraw: [0, 5], startingLife: [1, 99],"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "this.s.packs[seat] = this.s.sharedDeck.splice(0, this.packSize());"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "`you must leave exactly ${pack.length} cards in the pack`);"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "size, and the draft step leaves exactly that many cards in the pack."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.draft.custom.refresh",
+    "textHash": "45e41debba9f62be",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:startDraftStep",
+        "agrees": true,
+        "note": "refresh still keyed on packCycle (N+1), deals packSize"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/296-custom-draft-deal.test.ts",
+        "pattern": "BL-43 §2a pack size",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R292",
+        "supports": "yes",
+        "note": "\"The pack refresh stays every N+1 turns.\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/296-custom-draft-deal.test.ts",
+        "text": "for (const seat of [0, 1]) assert.equal(h.state.packs[seat]!.length, 5, `seat ${seat} refreshed pack`);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.draft.custom.simple",
+    "textHash": "5044cd199a6f12d3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "client/ui/customrules.ts:resolveCustomRules",
+        "agrees": true,
+        "note": "excludes every deck card whose catalogue complexity is not 'simple'"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/ui/test/297-custom-rules-resolve.test.ts",
+        "pattern": "BL-43 resolve §3 Simple cards only leaves out exactly",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R292",
+        "supports": "yes",
+        "note": "\"Simple cards only: only cards with the silver complexity symbol\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/ui/customrules.ts",
+        "text": "for (const n of DECK_LIST) if (rowFor(n)?.complexityLc !== 'simple') excluded.add(n);"
+      },
+      {
+        "file": "client/ui/test/297-custom-rules-resolve.test.ts",
+        "text": "assert.deepEqual(out, nonSimple());"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.draft.draft-step",
+    "textHash": "d2c14ff7970e5968",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:startDraftStep",
+        "agrees": true,
+        "note": "turn > 1 and packCycle index 0 recycles and re-deals packs (1v1: turn 4)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/20-draft.test.ts",
+        "pattern": "turns 2-3 draw 2 and re-open the draft step",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.16",
+        "supports": "partly",
+        "note": "headings/lead lines only; the rule is a cross-reference to 503/409"
+      },
+      {
+        "ref": "Manual p.16",
+        "supports": "partly",
+        "note": "headings/lead lines only; the rule is a cross-reference to 503/409"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Drafting is the process where players curate their"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "CREATING & REFRESHING THE PACK"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (this.s.turn > 1 && packCycle(this.s.turn, n).index === 0) {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.draft.elements",
+    "textHash": "279e6f0c50ca6c65",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": true,
+        "note": "elementCount defaults to 3 (1v1 is 2 players); 4-6 player and cube parts are printed-only"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/412-cr-general.test.ts",
+        "pattern": "cr:concepts.starting.live-draft.elements",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.11",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.11",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.11",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "the elements to build the deck. For 2-3 players,"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "use 3 elements. For 4-6 players use 4 elements. For 6"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "or more players we recommend doing a cube draft with"
+      },
+      {
+        "file": "client/engine/test/412-cr-general.test.ts",
+        "text": "assert.equal(h.state.elements.length, 3);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.draft.elements.choosing",
+    "textHash": "9fc92692969f71cc",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.11",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.11",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "For the most up to date competitive rules for this"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "process, please see Algomancy.io."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.draft.live-draft",
+    "textHash": "2f0591172fcde1f5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": true,
+        "note": "mode 'draft' builds one shared deck from draftPool(trio) and deals each seat a hand and a pack from it"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/20-draft.test.ts",
+        "pattern": "createGame draft: 6-card hands",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Rulebook 2023 p.1",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Draft: A dynamic format where players create a"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "shared deck from selected elements and draft cards"
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "• Live Draft (Standard Algomancy): Players share one deck and draft cards from it during the game."
+      },
+      {
+        "file": "client/engine/test/20-draft.test.ts",
+        "text": "assert.equal(h.state.packs[seat]!.length, 10, `seat ${seat} pack`);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.draft.live-draft.standard",
+    "textHash": "48ca25ebde70d504",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.1",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.10",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "• Live Draft (Standard Algomancy): Players share one deck and draft cards from it during the game."
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Below is the starting game layout for the 1v1 live draft game format, which is the suggested format for learning"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.draft.sixteen",
+    "textHash": "b57e0b28f088ce39",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": true,
+        "note": "draft deals openingHand (6 = 4 + 2) then dealPacks (10)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/20-draft.test.ts",
+        "pattern": "createGame draft: 6-card hands (opening 4 + turn-1 draws), 10-card packs",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.11",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.11",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "RAQ 1451507918171013252#0",
+        "supports": "yes",
+        "note": "designer statement, verbatim in the RAQ pack"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Deal each player 16 cards: 4 for their starting hand,"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "10 for their pack and 2 for their first draw step of the"
+      },
+      {
+        "file": "client/engine/test/20-draft.test.ts",
+        "text": "assert.equal(h.state.players[seat]!.hand.length, 6, `seat ${seat} hand`);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.draft.team-draft",
+    "textHash": "b14b34a47b3dcef3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Rulebook 2023 p.1",
+        "supports": "no",
+        "note": "gives \"a large deck of 100 cards\" for the team, not 30 per player - an unflagged printed divergence"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Team Draft: Each team brings a constructed deck"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "including 30 cards per player on the team with up to"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "2 copies of each card. Their team will live draft from"
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "• Team draft: Your team builds a large deck of 100 cards and a maximum of 2 copies of each card ahead of time and your team"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Text matches Manual p.6. Note the 2023 Rulebook p.1 gives team draft a different size (\"a large deck of 100 cards\"), which this rule does not mention; another rule may need to flag the divergence as formats.teams.archenemy.rulebook does for 2v1."
+  },
+  {
+    "key": "formats.draft.team-draft.no-refresh",
+    "textHash": "c592079172f22ade",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.6",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "never refreshed in team drafts. All the other draft rules apply."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.draft.team-draft.other-rules",
+    "textHash": "40d4cadf9137902f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.6",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "never refreshed in team drafts. All the other draft rules apply."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.draft.team-draft.pass",
+    "textHash": "c1040f9196f628f8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.6",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Rulebook 2023 p.6",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "For team draft, a team of players will bring a pre-constructed deck of cards that the entire team will draft from. Rather than"
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "passing their packs clockwise to the nearest player when finished, they pass it to the nearest teammate. Additionally, packs are"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.draft.team-draft.rulebook",
+    "textHash": "31c22885bea316a6",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U22-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": true,
+        "note": "no team-draft mode exists (GameMode is shared | draft | constructed); the rule states only what the 2023 Rulebook says, so there is no engine behaviour to contradict"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.1",
+        "supports": "yes",
+        "note": "verbatim: \"Your team builds a large deck of 100 cards and a maximum of 2 copies of each card\"; it does differ from Manual p.6 (30 cards per player on the team)"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "• Team draft: Your team builds a large deck of 100 cards and a maximum of 2 copies of each card ahead of time and your team"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None. A printed-only statement; the client does not implement team draft."
+  },
+  {
+    "key": "formats.ffa.attacks",
+    "textHash": "3b8b09443827a7c2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.7",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Rulebook 2023 p.9",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "whereas FFA games feature simultaneous attack"
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "In a free for all game, all players declare their attacks simultaneously using the “Intent” cards. Simply place an intent card face"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.ffa.battle-steps",
+    "textHash": "8c63696554fcc4a5",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.36",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.36",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.36",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.36",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.36",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.36",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.27",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "a simultaneous attack declaration, each region follows"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "The attacker sets their units into Formation."
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "There is a priority window for interaction."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.ffa.no-counterattack",
+    "textHash": "c3731288478f1127",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.36",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.36",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.36",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "The FFA battle structure is simpler than the teams/1v1"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "structure since there is no attack/counter-attack. After"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "There are no counterattacks in FFA, which gives this format a different feel"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.ffa.phases",
+    "textHash": "948e8a673951a211",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.36",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.36",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.36",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Rulebook 2023 p.5",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Aside from battle which is semi-simultaneous, every"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "phase of a FFA game can be completed by all players"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "in the planning phase and deploy units during"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.ffa.phases.in-order",
+    "textHash": "8fcf2bb1d6f55c79",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.36",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.36",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.36",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.36",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "deployment all at once if they are comfortable enough"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "with the game. As players are learning or if they are"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "playing competitively, they can perform their phases in"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.ffa.priority",
+    "textHash": "99db7afa1b9594c3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.36",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.36",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.36",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.30",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.30",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "player in a clockwise direction gains priority first and"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "priority is passed from that player clockwise during"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "it does in 1v1, but priority is passed in a circle instead"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Supported, with a seam: Manual p.36 literally says \"the player closest to the initiative player in a clockwise direction gains priority first\"; the rule reads that through p.30 (initiative player first when present). Consistent reading, but it merges two pages."
+  },
+  {
+    "key": "formats.ffa.priority.stack",
+    "textHash": "e9de0a3ec6af7924",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.36",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "The stack functions identically in 3 player situations as"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.ffa.three-in-region",
+    "textHash": "418ccd06086f805b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.36",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.36",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.36",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "In multiplayer games when two players attack the"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "same player, all three of the players take part in that"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "now is able to defend against the two incoming"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.ffa.three-in-region.defender",
+    "textHash": "d0b26ff2bec93252",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.36",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.36",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "now is able to defend against the two incoming"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "attacking formations, and all three players are able to"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.ffa.three-in-region.interaction",
+    "textHash": "d5ad87994ef4554a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.36",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.36",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "attacking formations, and all three players are able to"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "interact with each other and their units in that region."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.ffa.what",
+    "textHash": "295043350607b916",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "FFA: All players fight to be the last one standing."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.ffa.what.players",
+    "textHash": "bd405dd321dc306b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.1",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "• Free For All: A fun and casual experience for 2 to 9 players (and expandible to infinite players if more copies of the game are"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.general.digital-scope",
+    "textHash": "30777bfea099e8d6",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": true,
+        "note": "names: [string, string]; regions [0,1]; modes draft/constructed (+ the testing mode shared)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/412-cr-general.test.ts",
+        "pattern": "cr:concepts.general.digital-scope",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/ui/test/168-three-card-divergences.test.ts",
+        "pattern": "R197 §3a Cinder Scuttler",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R27",
+        "supports": "yes",
+        "note": "\"v1 formats: 1v1 live draft + 1v1 constructed.\""
+      },
+      {
+        "ref": "R197",
+        "supports": "yes",
+        "note": "two-seat measurement stands"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**v1 formats**: 1v1 live draft + 1v1 constructed."
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "names: [string, string] = ['Player 1', 'Player 2'],"
+      },
+      {
+        "file": "client/engine/test/412-cr-general.test.ts",
+        "text": "assert.equal(h.state.packs.length, 2);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.general.modes",
+    "textHash": "1aa1a13619224586",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Draft: A dynamic format where players create a"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Constructed: Players bring pre-constructed decks to"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Cube Draft: A combination of draft and constructed"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.general.modes.pre-draft",
+    "textHash": "c3b55a168cf5806c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.1",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "• Pre-Draft: You draft a complete deck of a minimum 30 cards before the game begins, and play games of constructed with it."
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "where players draft decks before gameplay begins,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.general.one-v-one-is-team",
+    "textHash": "973148ecb30e7f5f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Rulebook 2023 p.5",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "later. In 1v1, players are considered their own teams."
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "will look slightly different depending on wheither you are playing a free for all or team based game (1v1 counts as a team game)."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.general.seating",
+    "textHash": "9ffbcf3697ec39f9",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.11",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.19",
+        "supports": "partly",
+        "note": "says the regions form a circle around the seating; that seats set adjacency is a fair reading, not literal"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "The regions are arranged in a large circle. Each player"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.general.seating.circle",
+    "textHash": "12a1488530047067",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.11",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.11",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.19",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "games, players will sit in a circle so each player has"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "someone to their left and right. In team games, players"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "has two neighboring regions to their left and right"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.general.seating.one-v-one",
+    "textHash": "8c96975547881366",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.11",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.19",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "In 1v1 players sit across from each other. In multiplayer"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "(except in 1v1 games, where players only have one"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.general.setups",
+    "textHash": "f5d7bd135973f716",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "1v1: The recommended starting setup."
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "FFA: All players fight to be the last one standing."
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Teams: 2v2 or 3v3, can be played either as split"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.general.setups.multiplayer",
+    "textHash": "cdfb29c43d7c9385",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.6",
+        "supports": "partly",
+        "note": "cross-reference rule; the quote only says formats combine with setups - on-topic, not a statement of where 903/904 are"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "The above formats can be played in a wide variety of"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.general.setups.one-v-one",
+    "textHash": "551c1340f64dcc0e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:createGame",
+        "agrees": true,
+        "note": "names: [string, string]; two regions"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/412-cr-general.test.ts",
+        "pattern": "cr:concepts.general.digital-scope",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Rulebook 2023 p.1",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "1v1: The recommended starting setup."
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "• 1v1: A heads up game between two players that uses the initative system for more of a competitive aspect."
+      },
+      {
+        "file": "client/engine/test/412-cr-general.test.ts",
+        "text": "assert.equal(h.state.regions.length, 2);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.general.simultaneous-regions",
+    "textHash": "d3664a384e787519",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.21",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.21",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.21",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "with the game, regions that have"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "zero overlapping players can be"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "resolved simultaneously.)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.intent.copies",
+    "textHash": "c58384ccd93bfca0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.37",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Rulebook 2023 p.9",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "a little tricky by placing multiple different copies of the same intent"
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "or even place multiple intent cards of the same type on different units in an attempt to hide your intentions!"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.intent.grouping",
+    "textHash": "271a7ac0df4e3d10",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.37",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Rulebook 2023 p.9",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "multiple units behind one intent card for simplicity, or can even get"
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "There is a lot of freedom in how you can do this, so feel free to get creative. You can group units together behind one intent card"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.intent.procedure",
+    "textHash": "4741025ddce07f22",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.37",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.37",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.37",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "In FFA, players declare their attacks simultaneously by placing intent cards face down in front of each"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "of their units and other cards such as spell tokens with their intended action. Once all players have"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "finished this, all of the cards are flipped up and the chosen attacks take place instantly!"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.intent.what",
+    "textHash": "95857c2e5c177535",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.37",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Rulebook 2023 p.9",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "In FFA, players declare their attacks simultaneously by placing intent cards face down in front of each"
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "In a free for all game, all players declare their attacks simultaneously using the “Intent” cards. Simply place an intent card face"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.teams.act-together",
+    "textHash": "14229f631f251f9a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.38",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Teams always act together in all situations and phases of"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "on has the initiative. Teams act together in all"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.teams.archenemy",
+    "textHash": "d14887f0a63ca63a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Archenemy: Typically 2v1, the single player gets to"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "take 1-2 turns before the other 2 begin the game."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.teams.archenemy.rulebook",
+    "textHash": "e63087bcb65ecd36",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.1",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "• 2v1: An archenemy style game where one player with bonus cards and resources faces off against two weaker opponents."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.teams.battle",
+    "textHash": "a9bfbd16ad4d9023",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.38",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.38",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.38",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.38",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.38",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "The battle structure in team games is identical to that"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "of 1v1, meaning it has the same attack-counter attack"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "flow to it. The only difference is that now, attacks and"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.teams.battle-sequence",
+    "textHash": "f395e4bcdcf44e5a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.38",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.38",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.38",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.38",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.38",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.38",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "IT declare their attacks all at once into multiple"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Priority windows in each of the NIT regions, resolving"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "in order clockwise from the IT player."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.teams.battle-sequence.finish",
+    "textHash": "9bd8a5ec99ca1526",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.38",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.38",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "At this point, the battles in each region just need to"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "be resolved (there will be a priority window,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.teams.deployment",
+    "textHash": "53c2f3c8e1b3fbf2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.38",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.38",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.38",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "on has the initiative. Teams act together in all"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "will deploy units in any order they wish before passing"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "to the non-initiative team that will all do the same."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.teams.initiative",
+    "textHash": "0338de2176988499",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:dealOrder",
+        "agrees": true,
+        "note": "in 1v1 (each player its own team) the initiative seat acts first; deal order is clockwise from initiative"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.38",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.38",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Whichever team the player with the initiative token is"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "on has the initiative. Teams act together in all"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "the game . The Initiative-Team (IT) must make all of their"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.teams.initiative.alternates",
+    "textHash": "5f99e3d7e8da50d9",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.5",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Rulebook 2023 p.5",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "Team games utilize an initiative system, where"
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "teams trade off having the initative every turn"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.teams.priority",
+    "textHash": "f68bc5acf3db4aad",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.30",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.30",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.30",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "things, while players without priority do not. All players"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "on a team share priority and can take actions in"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "priority and receive priority collectively."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.teams.seating",
+    "textHash": "516c84ad6d6895ed",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.11",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Rulebook 2023 p.8",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "will sit between two opponents."
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "neighboring regions, except in the case of 1v1, where there is only one neighboring region. For team games, each player should"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.teams.split-or-joint",
+    "textHash": "776e9056a438eb01",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Teams: 2v2 or 3v3, can be played either as split"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "teams (multiple regions) or joint players sharing"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "a single region (effectively a 1v1 game with more"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.teams.team-text",
+    "textHash": "ffea7ea85e9f9799",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U22-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts:The Silent costMods.delta",
+        "agrees": true,
+        "note": "taxes 2 x the per-SEAT counter spellsPlayedAny:<seat>; in 1v1 the team is the seat"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "client/engine/test/49-playtest-round6.test.ts",
+        "pattern": "The Silent taxes",
+        "passed": true,
+        "asserts_claim": "yes: controller with 2 spells pays 1 + 4 for Fight; the opponent with none pays 1"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: The Silent",
+        "supports": "yes",
+        "note": "\"for each spell their team has previously played in this battle\""
+      },
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": "\"In 1v1, players are considered their own teams.\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "later. In 1v1, players are considered their own teams."
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-hybrids-wm-a.ts",
+        "text": "return 2 * g.battleCounter(self.region, `spellsPlayedAny:${ctx.seat}`);"
+      },
+      {
+        "file": "client/engine/test/49-playtest-round6.test.ts",
+        "text": "assert.equal(e2.manaToPlay(D, 'Fight'), 1 + 4, 'two of my own spells → [4] more');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Example wording \"once its controller has played 2 spells\" is what the test sets (the counter is bumped directly, not by real casts), acceptable."
+  },
+  {
+    "key": "formats.teams.what",
+    "textHash": "40dc813e385f77a3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.6",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      },
+      {
+        "ref": "Rulebook 2023 p.1",
+        "supports": "yes",
+        "note": "quote is on the cited page and states the clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Teams: 2v2 or 3v3, can be played either as split"
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "• 3v3: The standard team structure for algomancy. Teams of 3 battle it out to see which can come out on top."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "formats.teams.win",
+    "textHash": "2c44ecf2ce21fc8c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U22-r1",
+    "engine": [
+      {
+        "loc": "n/a",
+        "agrees": true,
+        "note": "printed-game rule for a setup/format the client does not implement (1v1 only); nothing in the engine to compare"
+      }
+    ],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.1",
+        "supports": "yes",
+        "note": "the cited quote line stops at \"In team\"; the next printed line, \"games, you must elimiate the entire opposing team.\", is the operative clause"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "In order to win a game of Algomancy, you must eliminate all of your opponents by reducing their life total to zero. In team"
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "games, you must elimiate the entire opposing team."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  }
+]

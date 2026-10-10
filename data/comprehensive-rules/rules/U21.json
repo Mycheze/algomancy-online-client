@@ -1,0 +1,2556 @@
+[
+  {
+    "key": "keywords.abilities.non-combat",
+    "parent": "803",
+    "order": 1,
+    "text": "Some keywords are not combat attributes. Burst and Unstable are printed in purple text and are called non-combat attributes: they describe a card, and generally have nothing to do with combat. The other keywords in this section (Haste, Battle, [once], Ambush and Prophecy) are timing marks, limits and ways to play a card.",
+    "examples": [
+      {
+        "text": "A modded Chitin Shredder attacks in a column with a vanilla unit: the vanilla unit shares its Powerful, but it does not become Unstable.",
+        "test": "432-cr-keyword-abilities.test.ts::cr:keywords.abilities.non-combat — Burst and Unstable are not combat attributes: a column shares Powerful but not Unstable"
+      }
+    ],
+    "see": [
+      "802",
+      "720",
+      "204.5"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.25",
+          "quote": "Some attributes, like burst and unstable, are written in a"
+        },
+        {
+          "ref": "Manual p.25",
+          "quote": "purple text. These attributes are referred to as non-combat attributes, since they generally have nothing to do"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "432-cr-keyword-abilities.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "The Manual names burst and unstable as the purple non-combat attributes. The last sentence is a framing sentence listing this section; it is a description of the section, not a rule. Combat attributes are 802; Augment, Graft, Virus and Modular are 720-724 and 802.26.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "keywords.abilities.non-combat.not-shared",
+    "parent": "keywords.abilities.non-combat",
+    "order": 1,
+    "text": "Non-combat attributes are not shared in formation. A unit with Burst or Unstable does not give it to the other units in its column.",
+    "examples": [
+      {
+        "text": "A modded unit is Unstable; a unit in the same column is not, and when it dies it goes to the bin.",
+        "test": "125-active-zone.test.ts::R145: Unstable is NOT shared in formation"
+      },
+      {
+        "text": "A modded unit does not make its column-mate Unstable.",
+        "test": "298-column-attrs-outside-combat.test.ts::R294 §5b a modded (therefore Unstable) unit does not make its column-mate Unstable"
+      }
+    ],
+    "see": [
+      "effects.column-share.non-combat",
+      "802.1"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.25",
+          "quote": "These attributes are not shared in formation, and simply"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R145",
+          "quote": "4. {Unstable} is a **non-combat attribute** and is **not shared in formation**."
+        },
+        {
+          "ref": "R294",
+          "quote": "> other things in the column. So a unit with Unstable from a mod doesn't \"give\""
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "298-column-attrs-outside-combat.test.ts",
+        "125-active-zone.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Printed (Manual p.25) and restated by Caleb's glossary line quoted in R145 and by the owner in R294. Modular is treated the same way by R294, but Modular is 802.26 (U20).",
+    "sourceHashes": {
+      "R145": "dc76fc0a317d5bd6bd6de5ed5a24eb9d84407f6b45dcbb85d2e8978fe56f98e3",
+      "R294": "8cae16d380577db83dfb428eb40c37313643ed54a5a3131e6ef3efdc40475495"
+    }
+  },
+  {
+    "key": "keywords.abilities.haste",
+    "parent": "803",
+    "order": 2,
+    "text": "Haste is a timing keyword. A card with Haste can be played during the haste step as well as during deployment.",
+    "examples": [
+      {
+        "text": "Tidal Menace, a {Haste} 7/2, can be played in the haste step.",
+        "test": "15-water-b.test.ts::Tidal Menace: {Haste} 7/2"
+      },
+      {
+        "text": "Tidal Menace, a {Haste} unit, is also offered and played during deployment.",
+        "test": "432-cr-keyword-abilities.test.ts::cr:keywords.abilities.haste — a Haste card is also offered and playable during deployment, not only in the haste step"
+      }
+    ],
+    "see": [
+      "207.3",
+      "504"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "Haste cards can also"
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "be played during the"
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "haste step."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R206 (its Haste row)",
+          "quote": "And a {Haste} card is playable in **deployment** too (apply.ts:566)"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "15-water-b.test.ts",
+        "432-cr-keyword-abilities.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Manual p.13: haste cards can \"also\" be played in the haste step; R206's Haste row records that a Haste card is playable in deployment too. Restates 207.3 from the keyword's side.",
+    "sourceHashes": {
+      "R206": "e541d1d77f492dad0529d4075a87a0ef576c5834f85a1817d3388dedc61d9ea3"
+    }
+  },
+  {
+    "key": "keywords.abilities.haste.mana-step",
+    "parent": "keywords.abilities.haste",
+    "order": 1,
+    "text": "Printed text that names the \"mana step\" means the haste step.",
+    "examples": [
+      {
+        "text": "Dispatch Courier lets its controller play a unit in the haste step as if it had Haste.",
+        "test": "26-metal-a.test.ts::Dispatch Courier: \"play a unit during the mana step as if it had [Haste]\""
+      }
+    ],
+    "see": [
+      "504.1"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "▪ Cards with the haste icon (10) can be played during the mana step"
+        },
+        {
+          "ref": "card: Dispatch Courier",
+          "quote": "Each turn, you may play a unit during the mana step as if it had [Haste]."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R97",
+          "quote": "> **calebgannon:** \"that symbol is haste, meaning you can play it during the mana step\""
+        },
+        {
+          "ref": "R97",
+          "quote": "So **the printed \"mana step\" IS this engine's R18 haste step**, and Dispatch Courier"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "26-metal-a.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The Rulebook 2023 and Dispatch Courier use \"mana step\"; R97 quotes Caleb that the symbol is haste, played during the mana step, and identifies the mana step with the haste step. The Rulebook's \"main phase\" is deployment (see D-U21-11).",
+    "sourceHashes": {
+      "R97": "85b25c9bc3cbe10d572a877ca22452c29e74fb0333d60ff88d3a690d1c3d98d6"
+    }
+  },
+  {
+    "key": "keywords.abilities.haste.grants",
+    "parent": "keywords.abilities.haste",
+    "order": 2,
+    "text": "An effect can let a card without Haste be played in the haste step \"as if it had [Haste]\", as Dispatch Courier does. This changes only when the card may be played.",
+    "examples": [
+      {
+        "text": "With a Dispatch Courier in play, a deploy-timing unit is offered and accepted in the haste step, and the Courier's once-each-turn budget is charged.",
+        "test": "26-metal-a.test.ts::Dispatch Courier: \"play a unit during the mana step as if it had [Haste]\""
+      },
+      {
+        "text": "Without a Dispatch Courier, a deploy-timing unit is not offered in the haste step.",
+        "test": "26-metal-a.test.ts::Dispatch Courier: no Courier, no OFFER"
+      }
+    ],
+    "see": [
+      "504.7",
+      "keywords.abilities.battle.haste"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Dispatch Courier",
+          "quote": "Each turn, you may play a unit during the mana step as if it had [Haste]."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R97",
+          "quote": "A card may be granted permission to be PLAYED at a timing its printed line refuses"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "26-metal-a.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R97 is outside the pack (read from digital-rules.md). Whether gaining haste affects a play mode such as Ambush or Prophecy is an unanswered RAQ assumption: D-U21-3. The limit on Battle cards is 803.3a.",
+    "sourceHashes": {
+      "R97": "85b25c9bc3cbe10d572a877ca22452c29e74fb0333d60ff88d3a690d1c3d98d6"
+    }
+  },
+  {
+    "key": "keywords.abilities.battle",
+    "parent": "803",
+    "order": 3,
+    "text": "Battle is a timing keyword. A card with Battle can be played only while its player is in battle with another player. It cannot be played during deployment.",
+    "examples": [
+      {
+        "text": "A fulfilled prophecy on a {Battle} card does not let it be played at deployment: its Battle timing still applies.",
+        "test": "36-cache-prophecy.test.ts::R42: normal TIMING still applies"
+      }
+    ],
+    "see": [
+      "207.4",
+      "505"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.13",
+          "quote": "Battle cards can"
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "only be played"
+        },
+        {
+          "ref": "Manual p.13",
+          "quote": "while in battle with"
+        },
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "▪ Cards with the battle icon (11) can only be played when in combat"
+        },
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "with another player (and not during the main phase!)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "36-cache-prophecy.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.13 and Rulebook 2023 p.3. The Rulebook says \"combat\" for battle and \"main phase\" for deployment. Restates 207.4.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "keywords.abilities.battle.haste",
+    "parent": "keywords.abilities.battle",
+    "order": 1,
+    "text": "Gaining Haste does not let a Battle card be played outside battle. A Battle unit or Battle spell unit that an effect lets be played \"as if it had [Haste]\" still cannot be played in the haste step.",
+    "examples": [
+      {
+        "text": "Dispatch Courier's grant does not let a {Battle} unit be played in the haste step.",
+        "test": "26-metal-a.test.ts::Dispatch Courier: a {Battle} unit stays a battle card even with the grant"
+      },
+      {
+        "text": "Nor does it let a {Battle} spell unit be played there.",
+        "test": "396-raq-timing.test.ts::RAQ Dispatch Courier: a Battle spell unit is not playable in the haste step either"
+      }
+    ],
+    "see": [
+      "207.4a",
+      "504.2a"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1464899726796390433#0",
+          "quote": "battle cards are designed to be played in battle only. Not all of them will cause problems but I think some will"
+        },
+        {
+          "ref": "RAQ 1465292396664193171#0",
+          "quote": "No, despite gaining :haste: they can still only be played during :battle:."
+        },
+        {
+          "ref": "RAQ 1465292396664193171#1",
+          "quote": "Does units / spell-units with :battle: timing … No"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "26-metal-a.test.ts",
+        "396-raq-timing.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "Caleb reversed his own 2025 answer on 2026-01-25 (D-U21-2); the later word and the _passer write-up stand. Restates 207.4a and 504.2a.",
+    "sourceHashes": {
+      "RAQ 1464899726796390433#0": "29919fd7167ef4b5d8270f68bc27b34a37b2a2600b7c520143430f818c931ee3",
+      "RAQ 1465292396664193171#0": "b9818845b89b995e2deb3a2c33684e65ecbf762c87aec010da8a4401369be1b9",
+      "RAQ 1465292396664193171#1": "5dc7d77443715228d9d2f69544025a49d12a72cb332616ef18c1b528d96c8d0c"
+    }
+  },
+  {
+    "key": "keywords.abilities.battle.per-line",
+    "parent": "keywords.abilities.battle",
+    "order": 2,
+    "text": "A [Battle] icon printed in front of one ability or play mode, rather than as the card's timing, governs that line only. An activated ability marked [Battle] can be activated only during battle; an Ambush marked [Battle] can be played during battle even if the card itself has no Battle timing (803.6b).",
+    "examples": [
+      {
+        "text": "Grox's [Battle] ability cannot be activated outside battle.",
+        "test": "43-dark-c.test.ts::Grox: R49 — the printed [Battle] marker is enforced at ACTIVATION"
+      }
+    ],
+    "see": [
+      "207.8",
+      "203.5"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.40",
+          "quote": "The battle symbol in front of the ability denotes that"
+        },
+        {
+          "ref": "card: Grox",
+          "quote": "[Battle] Erase two cards in your bin: [Switch]"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R49 (its ability-timing marker paragraph)",
+          "quote": "`{Battle}` / `{Deployment}` marker on the ability itself (Grox, Cadaverous"
+        },
+        {
+          "ref": "R49 (its ability-timing marker paragraph)",
+          "quote": "Cultivator), enforced at activation rather than fudged at resolution. And two"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "43-dark-c.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "Manual p.40 for the Ambush case; R49 (outside the pack, read from digital-rules.md) records the activated-ability marker on Grox and Cadaverous Cultivator. Restates 207.8.",
+    "sourceHashes": {
+      "R49": "5d3c2bff8c7d58ca657dffa7259041cc8de3a1b62ca85d59e81fcdb127319364"
+    }
+  },
+  {
+    "key": "keywords.abilities.once",
+    "parent": "803",
+    "order": 4,
+    "text": "[once] is a keyword that limits an ability: an ability marked [once] can be activated or triggered only once per turn, tracked for each card. Its rules are in 109.9.",
+    "examples": [
+      {
+        "text": "Unstable Apparition's [once] trigger fires once in a turn and again the next turn.",
+        "test": "33-trigger-fixes.test.ts::Unstable Apparition: [once] resets each turn"
+      }
+    ],
+    "see": [
+      "109.9"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R113",
+          "quote": "> A bounded ability **\"can only be activated or triggered once per turn. Regardless of if"
+        },
+        {
+          "ref": "R9",
+          "quote": "Once-per-turn ([once], bounded grafts) is **tracked per card**; changing controller does"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "33-trigger-fixes.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R113 quotes Caleb (2026-08-23) for the bound; R9 is the owner's per-card tracking. The glossary row (ours) agrees. Full treatment is 109.9 (U03); this is a pointer from the keyword index.",
+    "sourceHashes": {
+      "R113": "5e60b78d62e0fcbcbf037cb9014632e2b5df2a9d0759f4a3ce713d7af2443f69",
+      "R9": "9ee28249dcd6e1da3156a6da78550ad6567248a0cab63ea50abf4afd6afb9cb7"
+    }
+  },
+  {
+    "key": "keywords.abilities.burst",
+    "parent": "803",
+    "order": 5,
+    "text": "Burst is a non-combat attribute printed on spell tokens. When a player casts a spell token with Burst, they cast every spell token of the same name that they control in that region at the same time. It is all or nothing.",
+    "examples": [
+      {
+        "text": "Casting one Fireball in the battle region casts every Fireball its controller has there.",
+        "test": "03-stack.test.ts::Fireball goes to the stack in battle, Burst casts them all at once"
+      }
+    ],
+    "see": [
+      "304.11g",
+      "702.7b"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.15",
+          "quote": "Requires the player to"
+        },
+        {
+          "ref": "Manual p.15",
+          "quote": "play all tokens with the"
+        },
+        {
+          "ref": "Manual p.15",
+          "quote": "same name at once."
+        },
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "▪ Spell tokens have an attribute, Burst (6), which requires you"
+        },
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "to cast all of your tokens with the same name at the same"
+        },
+        {
+          "ref": "card: Fireball",
+          "quote": "{Battle} {Burst} Spell Token"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R16 (its name-grouping half, as amended by R81)",
+          "quote": "Casting one Burst token casts all your Burst tokens **of that name** in that"
+        },
+        {
+          "ref": "R309",
+          "quote": "all tokens (of the same name) onto the stack at once … It's all or nothing"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R16",
+          "relation": "its fixed entity-id stacking order replaced by R309"
+        },
+        {
+          "ruling": "R81",
+          "relation": "its entity-id order sentence replaced by R309"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "03-stack.test.ts",
+        "69-damage-batch.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Printed in the Manual and the Rulebook. \"In that region\" is R16 (its name-grouping half, as amended by R81); a spell token can be cast only in its own region anyway (304.11a). \"All or nothing\" is the owner in R309. Whether a group may be cast when one of its tokens has no legal target is silent: D-U21-4.",
+    "sourceHashes": {
+      "R16": "eb9610bbd8496fccda204f051251e7033d3768ae3168ead7a9fb02346390e70a",
+      "R309": "e49e87895134f608900e0c840a7d68bcdb1cd0ba07dfc2b9e8b67e7123c8c06f"
+    }
+  },
+  {
+    "key": "keywords.abilities.burst.by-name",
+    "parent": "keywords.abilities.burst",
+    "order": 1,
+    "text": "Spell tokens with different names are separate Burst groups. A player with a Poison and a Fireball may cast one, let it resolve, and then cast the other.",
+    "examples": [
+      {
+        "text": "Casting a Fireball casts the other Fireballs and leaves a Poison alone.",
+        "test": "69-damage-batch.test.ts::R81: Burst casts all your tokens OF THAT NAME, and leaves the others alone"
+      }
+    ],
+    "see": [
+      "304.11g"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R81 (its name-grouping half)",
+          "quote": "> be allowed to play Poison, let it resolve, then play Fireball since they have"
+        },
+        {
+          "ref": "R81 (its name-grouping half)",
+          "quote": "The group is `t.card === tok.card` now."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "69-damage-batch.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R81 accepts the report's reading and quotes \"The Rules of Algomancy\" as \"of the same type\"; the Manual and Rulebook say \"same name\". See D-U21-10 on the word \"type\".",
+    "sourceHashes": {
+      "R81": "11be923f9b9cb025471dd6b9ccf67720706f58d6e1d114080eb916572bb3293f"
+    }
+  },
+  {
+    "key": "keywords.abilities.burst.individual",
+    "parent": "keywords.abilities.burst",
+    "order": 2,
+    "text": "Spell tokens cast together by Burst are still individual spells. They are played at the same time.",
+    "examples": [
+      {
+        "text": "Two Fireballs cast together go on the stack as two items, each with its own target.",
+        "test": "358-burst-order.test.ts::R309: the caster picks each Fireball in RESOLVE order and aims it"
+      }
+    ],
+    "see": [
+      "304.11g"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.15",
+          "quote": "Multiple spell tokens played with burst are still individual spells, but they"
+        },
+        {
+          "ref": "Manual p.15",
+          "quote": "are played at the same time."
+        },
+        {
+          "ref": "Rulebook 2023 p.4",
+          "quote": "time. They are still unique spells, but they are cast together."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "358-burst-order.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.15 NOTE and Rulebook 2023 p.4.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "keywords.abilities.burst.targets",
+    "parent": "keywords.abilities.burst",
+    "order": 3,
+    "text": "Each spell token in a Burst group chooses its own targets. The tokens do not have to share a target.",
+    "examples": [
+      {
+        "text": "Each Fireball is aimed as it is picked.",
+        "test": "358-burst-order.test.ts::R309: the caster picks each Fireball in RESOLVE order and aims it"
+      }
+    ],
+    "see": [
+      "110"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R81 (its name-grouping half)",
+          "quote": "tokens created via Burst can each target different things — they don't have to"
+        },
+        {
+          "ref": "R16 (its name-grouping half, as amended by R81)",
+          "quote": "Targets are chosen per token."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "358-burst-order.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R81 quotes Caleb 2025-03-22 through the ruling; R16 says targets are chosen per token.",
+    "sourceHashes": {
+      "R16": "eb9610bbd8496fccda204f051251e7033d3768ae3168ead7a9fb02346390e70a",
+      "R81": "11be923f9b9cb025471dd6b9ccf67720706f58d6e1d114080eb916572bb3293f"
+    }
+  },
+  {
+    "key": "keywords.abilities.burst.order",
+    "parent": "keywords.abilities.burst",
+    "order": 4,
+    "text": "A Burst group goes on the stack all at once. Its caster chooses the order one token at a time, in the order the tokens will resolve, and aims each as it is chosen; the token chosen first resolves first. The other players receive priority only when the whole group is on the stack. A lone token is not ordered.",
+    "examples": [
+      {
+        "text": "The Fireball picked first ends on top of the stack.",
+        "test": "358-burst-order.test.ts::R309: the caster picks each Fireball in RESOLVE order and aims it"
+      },
+      {
+        "text": "A single Fireball is cast without an ordering question.",
+        "test": "358-burst-order.test.ts::R309: a lone token is not asked to be ordered"
+      }
+    ],
+    "see": [
+      "703.4b"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R309",
+          "quote": "A {Burst} group still goes on the stack all at once (R16, R81): casting one"
+        },
+        {
+          "ref": "R309",
+          "quote": "What is new is the ORDER. The caster picks the token that resolves first and"
+        },
+        {
+          "ref": "R309",
+          "quote": "aims it, then the one that resolves second and aims it, and so on. The last"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R16",
+          "relation": "its fixed entity-id stacking order replaced by R309"
+        },
+        {
+          "ruling": "R81",
+          "relation": "its entity-id order sentence replaced by R309"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "358-burst-order.test.ts",
+        "358-burst-order-ui.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R309, owner 2026-10-01. Restates 703.4b. The client accepts an unordered group from logs written before R309 (replay compatibility, Annex D).",
+    "sourceHashes": {
+      "R309": "e49e87895134f608900e0c840a7d68bcdb1cd0ba07dfc2b9e8b67e7123c8c06f"
+    }
+  },
+  {
+    "key": "keywords.abilities.ambush",
+    "parent": "803",
+    "order": 6,
+    "text": "Ambush is a keyword that lets a unit card be played during battle with the effect \"Recall target ally, put me into their position in play.\"",
+    "examples": [
+      {
+        "text": "Mirage Walker's Ambush recalls an ally and takes its formation slot.",
+        "test": "14-water-a.test.ts::Mirage Walker: ambush [4bb] recalls an ally and takes its formation slot (R22)"
+      }
+    ],
+    "see": [
+      "203.1"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Good Whale",
+          "quote": "Ambush [4bb] {i}(Play me with the effect \"Recall target ally, put me into their position in play.\")"
+        },
+        {
+          "ref": "Manual p.40",
+          "quote": "The ambush ability allows units to be played as an effect during battle that will recall an allied unit, placing"
+        },
+        {
+          "ref": "Manual p.40",
+          "quote": "the ambushing unit directly into their position in play."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "14-water-a.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Every card that prints Ambush with a reminder prints the same one; Shib prints Ambush with no reminder. The Manual describes it as playing a unit as an effect during battle.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "keywords.abilities.ambush.cost",
+    "parent": "keywords.abilities.ambush",
+    "order": 1,
+    "text": "An Ambush is paid for with the cost printed beside the keyword, not the card's own cost: that mana is spent and its affinity pips are required.",
+    "examples": [
+      {
+        "text": "Lurking Slimebeast's Ambush [3b] costs 3 mana and needs one water pip.",
+        "test": "14-water-a.test.ts::Lurking Slimebeast: [Battle] Ambush [3b] = 3 mana at one water pip (R22)"
+      },
+      {
+        "text": "With four fire mana and no water pip, Lurking Slimebeast cannot be played as an Ambush [3b]; with one water and three fire it can, and exactly 3 mana is spent.",
+        "test": "432-cr-keyword-abilities.test.ts::cr:keywords.abilities.ambush.cost — 4 mana with no water pip cannot Ambush [3b]; 1 water and 3 fire can, and spend exactly 3"
+      }
+    ],
+    "see": [
+      "203.2",
+      "203.3"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Lurking Slimebeast",
+          "quote": "Ambush [3b]"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R22",
+          "quote": "stack**: pay the bracketed cost (e.g. [4bb] = 4 mana, bb affinity — not the card's"
+        },
+        {
+          "ref": "R301 (its Ambush comparison)",
+          "quote": "so the offer and the refusal cannot drift. Ambush — the direct analogue, printed in the"
+        },
+        {
+          "ref": "R301 (its Ambush comparison)",
+          "quote": "same banner on the same cards — has always worked this way."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "14-water-a.test.ts",
+        "432-cr-keyword-abilities.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R22 for the bracketed cost in place of the printed cost. R301's rule is about prophecy banners: its mana is spent and its affinity required; it says Ambush, printed in the same banner, has always worked this way. Restates 203.2-203.3.",
+    "sourceHashes": {
+      "R22": "13284d9d91e09595db8e775757a4abb9cccc53c0887aef1277d93699301a0e90",
+      "R301": "f0096724daf9e43ba46ad14d47b9a962c1d6031bccf6e0ec7f7ac42b780154ba"
+    }
+  },
+  {
+    "key": "keywords.abilities.ambush.timing",
+    "parent": "keywords.abilities.ambush",
+    "order": 2,
+    "text": "An Ambush can be played only during battle. The [Battle] icon in front of the keyword lets the card be played as an Ambush during battle even if the card itself has no Battle timing.",
+    "examples": [
+      {
+        "text": "Good Whale, a deploy-timing unit, is played as an Ambush in battle into the attacking column.",
+        "test": "08-cards2.test.ts::Good Whale: the parked Ambush mode works"
+      },
+      {
+        "text": "During deployment, Lurking Slimebeast can be played normally, but its Ambush is neither offered nor accepted.",
+        "test": "432-cr-keyword-abilities.test.ts::cr:keywords.abilities.ambush.timing — an Ambush is neither offered nor accepted during deployment"
+      }
+    ],
+    "see": [
+      "203.5a",
+      "keywords.abilities.battle.per-line"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.40",
+          "quote": "The battle symbol in front of the ability denotes that"
+        },
+        {
+          "ref": "Manual p.40",
+          "quote": "you can play cards as an ambush during battle, even if"
+        },
+        {
+          "ref": "Manual p.40",
+          "quote": "the card itself doesn’t have battle timing."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R22 (its during-battle half)",
+          "quote": "Ambush (Manual p.40) plays a unit from hand during battle as a **targeted effect on the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "08-cards2.test.ts",
+        "432-cr-keyword-abilities.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Manual p.40. Good Whale, Mirage Walker and the other ambushers are deploy-timing cards. R22 says the ambush is played \"during battle\". The [Battle]-icon sentence rests on the Manual alone.",
+    "sourceHashes": {
+      "R22": "13284d9d91e09595db8e775757a4abb9cccc53c0887aef1277d93699301a0e90"
+    }
+  },
+  {
+    "key": "keywords.abilities.ambush.target",
+    "parent": "keywords.abilities.ambush",
+    "order": 3,
+    "text": "The target of an Ambush must be an ally of the Ambush's controller in the battle region. An opponent's unit is never a legal target, even through an effect that redirects targets.",
+    "examples": [
+      {
+        "text": "The client offers an Ambush only against the same ally the Ambush effect would accept.",
+        "test": "243-ally-and-enemy-scope.test.ts::R265 §4a the ambush legality gate asks for the same ally the ambush effect will"
+      },
+      {
+        "text": "An Ambush offers the attacking ally, but not an enemy unit in the battle region nor an ally that stayed home.",
+        "test": "432-cr-keyword-abilities.test.ts::cr:keywords.abilities.ambush.target — the Ambush menu holds only allies of the caster in the battle region"
+      },
+      {
+        "text": "An opposing Enigmatic Warder tries to redirect an Ambush onto itself: the Ambush still recalls its own ally, and the Warder stays in play.",
+        "test": "432-cr-keyword-abilities.test.ts::cr:keywords.abilities.ambush.target — a redirect (Enigmatic Warder) cannot move an Ambush onto a unit of the opponent"
+      }
+    ],
+    "see": [
+      "110"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355466429788328066#4",
+          "quote": "You can't redirect Ambush to your Enigmatic Warder, becuase he is not 'allied unit' for your opponents Ambush."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R22",
+          "quote": "printed cost), target an **ally** in the battle region; on resolution the ally is"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "243-ally-and-enemy-scope.test.ts",
+        "49-playtest-round6.test.ts",
+        "432-cr-keyword-abilities.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R22 and the RAQ (Enigmatic Warder cannot take an opposing Ambush, because it is not that Ambush's ally).",
+    "sourceHashes": {
+      "R22": "13284d9d91e09595db8e775757a4abb9cccc53c0887aef1277d93699301a0e90",
+      "RAQ 1355466429788328066#4": "9a3ebeaf9c1b3350081df3b9b956c26557d6e0be063dd0e741c16fed66ea609c"
+    }
+  },
+  {
+    "key": "keywords.abilities.ambush.stack",
+    "parent": "keywords.abilities.ambush",
+    "order": 4,
+    "text": "An Ambush is a targeted effect on the stack. Players can respond to it before it resolves.",
+    "examples": [
+      {
+        "text": "The ally can be removed in response, and then the Ambush fizzles.",
+        "test": "08-cards2.test.ts::Ambush fizzles when the target is removed"
+      }
+    ],
+    "see": [
+      "703"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.40",
+          "quote": "is a targeted effect, meaning if the target is removed"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R22",
+          "quote": "Ambush (Manual p.40) plays a unit from hand during battle as a **targeted effect on the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "08-cards2.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Manual p.40 (\"Ambush is a targeted effect\"); R22 (\"targeted effect on the stack\").",
+    "sourceHashes": {
+      "R22": "13284d9d91e09595db8e775757a4abb9cccc53c0887aef1277d93699301a0e90"
+    }
+  },
+  {
+    "key": "keywords.abilities.ambush.resolution",
+    "parent": "keywords.abilities.ambush",
+    "order": 5,
+    "text": "When an Ambush resolves, the target ally is recalled and the ambushing unit is put directly into the ally's position in play: into its formation slot if it was in formation, attacking or blocking, and otherwise into the battle region outside formation.",
+    "examples": [
+      {
+        "text": "Orblish Horroth ambushing a blocker takes the blocker's formation slot.",
+        "test": "08-cards2.test.ts::Orblish Horroth: Ambush swaps into the blocker"
+      },
+      {
+        "text": "Mirrorback Ambusher recalls an ally and takes its position.",
+        "test": "19-hybrids.test.ts::Mirrorback Ambusher: Ambush [2be] recalls an ally and takes its position (R22)"
+      }
+    ],
+    "see": [
+      "keywords.actions.recall",
+      "keywords.actions.recall.destination"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.40",
+          "quote": "the ambushing unit directly into their position in play."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R22",
+          "quote": "**recalled** and the ambusher spawns **directly into its formation slot** (or simply"
+        },
+        {
+          "ref": "R22",
+          "quote": "into the region if the ally wasn't in formation). Target gone at resolution → fizzle,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "08-cards2.test.ts",
+        "14-water-a.test.ts",
+        "19-hybrids.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Manual p.40 and R22. Where the recalled ally and its mods go is the recall rule (keywords.actions.recall); R22's own wording (\"owner's hand\", \"owners' bins\") predates R250 and is D-U21-1. That the ambusher takes a blocking slot exactly is one of R22's engine calls (D-U21-7).",
+    "sourceHashes": {
+      "R22": "13284d9d91e09595db8e775757a4abb9cccc53c0887aef1277d93699301a0e90"
+    }
+  },
+  {
+    "key": "keywords.abilities.ambush.fizzle",
+    "parent": "keywords.abilities.ambush",
+    "order": 6,
+    "text": "If, as the Ambush resolves, its target is gone or is no longer an ally of the Ambush's controller, the Ambush fizzles: nothing is recalled, and the ambushing card is put into the bin. Its controller loses both units.",
+    "examples": [
+      {
+        "text": "An Ambush whose target was removed fizzles and its ambusher goes to the bin.",
+        "test": "08-cards2.test.ts::Ambush fizzles when the target is removed"
+      },
+      {
+        "text": "An Ambush whose ally changed sides before it resolved recalls nothing.",
+        "test": "390-raq-stack.test.ts::RAQ valid targets: an Ambush whose ally changed sides before it resolves recalls nothing"
+      }
+    ],
+    "see": [
+      "704.6e",
+      "405.2b"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.40",
+          "quote": "is a targeted effect, meaning if the target is removed"
+        },
+        {
+          "ref": "Manual p.40",
+          "quote": "the ability will fizzle and the ambushing unit will be put"
+        },
+        {
+          "ref": "Manual p.40",
+          "quote": "into the bin. So be careful when you ambush or you"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1355466429788328066#2",
+          "quote": "Ambush won't resolve as it's effect 'Recall target ALLY' and that unit is no longer ally of your opponent"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R22",
+          "quote": "ambusher to the bin (\"you lose both\", card ruling). Recall = base card to its **owner's"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "08-cards2.test.ts",
+        "390-raq-stack.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Manual p.40 for a removed target; the RAQ for an ally stolen in response; R22 (\"you lose both\").",
+    "sourceHashes": {
+      "R22": "13284d9d91e09595db8e775757a4abb9cccc53c0887aef1277d93699301a0e90",
+      "RAQ 1355466429788328066#2": "b9dc6c179ca7f7dde9e8d6da8311051efd7aefbceb51e702076e7dd0f181715f"
+    }
+  },
+  {
+    "key": "keywords.abilities.ambush.saves",
+    "parent": "keywords.abilities.ambush",
+    "order": 7,
+    "text": "Ambushing a unit that is the target of another effect saves it. The other effect does not change targets to the ambushing unit; it fails to resolve (fizzles).",
+    "examples": [
+      {
+        "text": "(illustrative) A Fireball aimed at a 2/2 is answered by an Ambush on that 2/2. The 2/2 returns to its hand; the Fireball fizzles and the ambusher is not hit.",
+        "test": null
+      },
+      {
+        "text": "A Fireball is aimed at a unit, and its controller answers with an Ambush on that unit. The unit returns to its hand; the Fireball fizzles, and the ambusher takes no damage.",
+        "test": "432-cr-keyword-abilities.test.ts::cr:keywords.abilities.ambush.saves — ambushing the target of a Fireball saves it; the Fireball fizzles and does not hit the ambusher"
+      }
+    ],
+    "see": [
+      "704"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.40",
+          "quote": "If a unit is the target of an effect, like a removal spell, a"
+        },
+        {
+          "ref": "Manual p.40",
+          "quote": "player can use ambush to recall the targeted unit and"
+        },
+        {
+          "ref": "Manual p.40",
+          "quote": "save it. The spell will not change targets to the new"
+        },
+        {
+          "ref": "Manual p.40",
+          "quote": "unit, and will fail to resolve (fizzle). This makes ambush"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "432-cr-keyword-abilities.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.40. Follows from the recall: the recalled unit has left play.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "keywords.abilities.ambush.spell-effect",
+    "parent": "keywords.abilities.ambush",
+    "order": 8,
+    "text": "An Ambush on the stack counts as a spell effect, so an effect that negates spell effects can negate it. A negated Ambush puts its ambushing card into the bin.",
+    "examples": [
+      {
+        "text": "Nothyr, which negates only nonspell effects, cannot target an Ambush on the stack: an Ambush is on the spell side.",
+        "test": "114-literal-dark.test.ts::Nothyr: an AMBUSH stays out of reach"
+      },
+      {
+        "text": "Void Mandible negates an Ambush on the stack: the ambusher never takes the slot and its target is not recalled.",
+        "test": "119-play-and-token-events.test.ts::Void Mandible: an AMBUSH is a card played too"
+      },
+      {
+        "text": "Dreadwave Devourer, which negates a target spell effect, can target an Ambush on the stack; negated, the ambusher goes to its bin and its target is not recalled.",
+        "test": "432-cr-keyword-abilities.test.ts::cr:keywords.abilities.ambush.spell-effect — Dreadwave Devourer, which negates a target spell effect, negates an Ambush; the ambusher goes to the bin"
+      }
+    ],
+    "see": [
+      "700.1a",
+      "704.4a"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R22",
+          "quote": "an ambush on the stack counts as a \"spell effect\" for negation targeting (Dreadwave"
+        },
+        {
+          "ref": "R22",
+          "quote": "Devourer can negate it → ambusher to the bin), and a mid-battle formation swap inherits"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "114-literal-dark.test.ts",
+        "119-play-and-token-events.test.ts",
+        "432-cr-keyword-abilities.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "One of R22's two engine calls, with no designer source (D-U21-7). Restates 700.1a. Neither bound test asserts the bin half; the round-1 verifier's probe (a negated Ambush puts the ambushing card into the bin) does. Void Mandible negates any nontoken card played in battle, so its test shows a negated Ambush, not the spell-effect classification; Nothyr's shows the classification.",
+    "sourceHashes": {
+      "R22": "13284d9d91e09595db8e775757a4abb9cccc53c0887aef1277d93699301a0e90"
+    }
+  },
+  {
+    "key": "keywords.abilities.ambush.cache",
+    "parent": "keywords.abilities.ambush",
+    "order": 9,
+    "text": "A card in the cache under a live permission can be played as an Ambush, as it could from the hand. Under a fulfilled prophecy it is free; under a glimpse its controller pays the Ambush mana but ignores the affinity.",
+    "examples": [
+      {
+        "text": "A glimpsed Ambush card ambushes out of the cache, paying the Ambush mana and ignoring affinity.",
+        "test": "370-cached-virus-in-battle.test.ts::R311: a glimpsed Ambush card ambushes out of the cache"
+      }
+    ],
+    "see": [
+      "702.2d",
+      "403.3c"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R311",
+          "quote": "A cached card under a **live** permission (a fulfilled prophecy, or a glimpse"
+        },
+        {
+          "ref": "R311",
+          "quote": "- a **glimpse** pays the mana and ignores the affinity (for an Ambush, the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "370-cached-virus-in-battle.test.ts",
+        "369-cache-is-the-hand.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R311 (owner 2026-10-04). Restates 702.2d and 403.3c for Ambush.",
+    "sourceHashes": {
+      "R311": "dff09246da3a81a8b90c1f386c3bdd5a463e44e7086278b0d4116e6bfd877122"
+    }
+  },
+  {
+    "key": "keywords.abilities.ambush.tides",
+    "parent": "keywords.abilities.ambush",
+    "order": 10,
+    "text": "An effect that plays a card for free, such as Tides of the Cosmos, may play an Ambush card as an Ambush. The Ambush cost is not paid, and a limit on the card's cost reads its main cost, not its Ambush cost.",
+    "examples": [
+      {
+        "text": "Tides of the Cosmos plays Mirrorback Ambusher as an Ambush: the ally leaves play and the ambusher stands in its place.",
+        "test": "404-raq-fix-tides.test.ts::R337: an Ambush card played by Tides as an Ambush takes an ally place"
+      },
+      {
+        "text": "With 3 of the Tides budget left, Lurking Slimebeast (main cost 4, Ambush 3) is not offered but Mirage Walker (main cost 3, Ambush 4) is, and playing it as an Ambush spends no mana.",
+        "test": "432-cr-keyword-abilities.test.ts::cr:keywords.abilities.ambush.tides — the Tides budget reads the MAIN cost, and an Ambush via Tides pays nothing"
+      }
+    ],
+    "see": [
+      "701.2c"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1396955380000755795#2",
+          "quote": "3. Tides allows you to play Viruses/Ambushes/Prophecy (you still look at 'main' cost of the card, even if you used it as Ambush/Prophecy)."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R337",
+          "quote": "mode it prints: a Virus card as a Virus augment on a unit, an Ambush card as"
+        },
+        {
+          "ref": "R337",
+          "quote": "or less\" still reads the card's main printed cost whichever mode it is played"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "404-raq-fix-tides.test.ts",
+        "432-cr-keyword-abilities.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "RAQ write-up point 3 and R337. Restates 701.2c. No test asserts the unpaid Ambush cost or the main-cost limit; the round-1 verifier read the engine's budget filter as the main cost.",
+    "sourceHashes": {
+      "R337": "9da68a070fcb1c43960dfb88272b30cdb15057ba2e0c9cf826221d506335c6cf",
+      "RAQ 1396955380000755795#2": "77de5a844f35441967e41307ee3973785fb17ed41d274524ef807b1a94bb45de"
+    }
+  },
+  {
+    "key": "keywords.abilities.prophecy",
+    "parent": "803",
+    "order": 7,
+    "text": "Prophecy is a keyword printed on a card's banner as a cost and a condition. A card with a Prophecy banner may be prophesied: its controller pays the banner's cost, and the card moves to the cache with its prophecy attached.",
+    "examples": [
+      {
+        "text": "A card with no banner cannot be prophesied.",
+        "test": "36-cache-prophecy.test.ts::R42: a card with no banner cannot be prophesied at all"
+      }
+    ],
+    "see": [
+      "203.4",
+      "keywords.actions.prophesy",
+      "403"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R42 (its cache-and-release half)",
+          "quote": "with its prophecy attached. Only a card that says so may be prophesied from"
+        },
+        {
+          "ref": "R301",
+          "quote": "A prophecy banner is a cost like any other: its mana is **spent** and its affinity is"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R42",
+          "relation": "window amended by R277; source zone amended by R308; no-affinity cost corrected by R301"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "36-cache-prophecy.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R42 is the base ruling; its window, source zone and affinity parts were amended (R277, R308, R301), cited separately below. The printed banners are not in the extract's card text, so no card quote is possible here. Prophesy as an action is keywords.actions.prophesy.",
+    "sourceHashes": {
+      "R301": "f0096724daf9e43ba46ad14d47b9a962c1d6031bccf6e0ec7f7ac42b780154ba",
+      "R42": "0cabff7c580b27609be02ba24c31e41a18554c7829734d450a6abfeecdc1c81c"
+    }
+  },
+  {
+    "key": "keywords.abilities.prophecy.granted",
+    "parent": "keywords.abilities.prophecy",
+    "order": 1,
+    "text": "An effect can give a card a prophecy as it caches the card. The prophecy works as a printed one does once the card is in the cache.",
+    "examples": [
+      {
+        "text": "Grob caches a unit with 'One Battle Passes' attached, and the prophecy is fulfilled once a battle has passed.",
+        "test": "39-light-b.test.ts::Grob: on attack, up to one unit's controller caches it with 'One Battle Passes'"
+      },
+      {
+        "text": "A unit cached with a granted prophecy carries it in the cache and it counts forward.",
+        "test": "36-cache-prophecy.test.ts::R46: a cached unit can carry a granted prophecy (Grob / Waxen Witness)"
+      }
+    ],
+    "see": [
+      "403"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Waxen Witness",
+          "quote": "Cache target unit. It gains 'Prophecy — One Battle Passes'."
+        },
+        {
+          "ref": "card: Grob",
+          "quote": "Up to one target unit's controller caches it. It gains 'Prophecy — One Battle Passes'."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "36-cache-prophecy.test.ts",
+        "39-light-b.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "Several cards print \"It gains 'Prophecy — …'\" after caching a card. The second sentence is the drafter's reading of \"gains\"; the test shows a granted prophecy carried on a cached unit.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "keywords.abilities.prophecy.window",
+    "parent": "keywords.abilities.prophecy",
+    "order": 2,
+    "text": "A card may be prophesied only during deployment. A card whose prophecy condition ends in a [Haste] icon may also be prophesied during the haste step.",
+    "examples": [
+      {
+        "text": "Prophesying is refused in planning, in the haste step and in battle.",
+        "test": "36-cache-prophecy.test.ts::R42: prophesying is a DEPLOYMENT action"
+      },
+      {
+        "text": "A banner marked [Haste] may be prophesied in the haste step.",
+        "test": "257-prophecy-release-timing.test.ts::R277: a banner marked [Haste] may be prophesied during the haste step"
+      }
+    ],
+    "see": [
+      "504.9"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R42 (its deployment-only window, as widened by R277)",
+          "quote": "Prophesying is legal ONLY during the deployment phase (Caleb 2025-05-09) and"
+        },
+        {
+          "ref": "R277 (its prophesy-window half)",
+          "quote": "2. **A trailing `[Haste]` in the printed CONDITION widens the PROPHESY"
+        },
+        {
+          "ref": "R277 (its prophesy-window half)",
+          "quote": "window** to include the haste step. R42 allows prophesying only during"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R42",
+          "relation": "its deployment-only window amended by R277"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "36-cache-prophecy.test.ts",
+        "257-prophecy-release-timing.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R42 cites Caleb 2025-05-09 for deployment only; R277 is the owner's reading of the trailing [Haste] (one card, Divine Intervention). Restates 504.9.",
+    "sourceHashes": {
+      "R277": "a15231bf2271c9aab105f7a42c442a15aa13dd28828796307c02c4a2817084af",
+      "R42": "0cabff7c580b27609be02ba24c31e41a18554c7829734d450a6abfeecdc1c81c"
+    }
+  },
+  {
+    "key": "keywords.abilities.prophecy.from",
+    "parent": "keywords.abilities.prophecy",
+    "order": 3,
+    "text": "A card is prophesied from its controller's hand. It may be prophesied from the bin only if the card says so, and from the cache only while a glimpse permission on it is live; a card prophesied in the cache stays where it is.",
+    "examples": [
+      {
+        "text": "Only a card that says so may be prophesied from the bin.",
+        "test": "36-cache-prophecy.test.ts::R42: only a card that SAYS SO may be prophesied from the bin"
+      },
+      {
+        "text": "A glimpsed card with a banner may be prophesied where it stands in the cache.",
+        "test": "36-cache-prophecy.test.ts::R308: a GLIMPSED card with a banner may be prophesied where it stands in the cache"
+      }
+    ],
+    "see": [
+      "403.8",
+      "keywords.actions.glimpse.permission.prophesy"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Angel of Anguish",
+          "quote": "I can be prophesied from your bin."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R42 (its source-zone half, as amended by R308)",
+          "quote": "with its prophecy attached. Only a card that says so may be prophesied from"
+        },
+        {
+          "ref": "R308",
+          "quote": "during deployment (R42). So a card under a **live** glimpse permission may be"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R42",
+          "relation": "its source zone amended by R308"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "36-cache-prophecy.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R42 (Angel of Anguish) and R308. Restates 403.8.",
+    "sourceHashes": {
+      "R308": "47693b2fe9ccc286cfd3da7af7fa8f3094811a44ef742035394f73c86395eb8f",
+      "R42": "0cabff7c580b27609be02ba24c31e41a18554c7829734d450a6abfeecdc1c81c"
+    }
+  },
+  {
+    "key": "keywords.abilities.prophecy.cost",
+    "parent": "keywords.abilities.prophecy",
+    "order": 4,
+    "text": "Prophesying costs the banner's cost: its mana is spent and its affinity pips are required.",
+    "examples": [
+      {
+        "text": "Mana without the banner's affinity does not buy a prophecy.",
+        "test": "313-prophecy-affinity.test.ts::R301 §2: mana without the affinity does not buy a prophecy"
+      }
+    ],
+    "see": [
+      "203.2",
+      "111.12"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R301",
+          "quote": "A prophecy banner is a cost like any other: its mana is **spent** and its affinity is"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R42",
+          "relation": "its \"plain mana number, no affinity\" clause corrected by R301"
+        },
+        {
+          "ruling": "R277",
+          "relation": "its no-affinity aside superseded by R301"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "313-prophecy-affinity.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R301 corrects R42's \"no affinity\" clause, which had been read off a transcription that lost the pips. Restates 203.2.",
+    "sourceHashes": {
+      "R301": "f0096724daf9e43ba46ad14d47b9a962c1d6031bccf6e0ec7f7ac42b780154ba"
+    }
+  },
+  {
+    "key": "keywords.abilities.prophecy.forward",
+    "parent": "keywords.abilities.prophecy",
+    "order": 5,
+    "text": "A prophecy's condition counts forward from the moment the card is prophesied. \"Two Turns Pass\" means two turns after the card was prophesied, not two turns of the game.",
+    "examples": [
+      {
+        "text": "\"One Turn Passes\" counts from the prophesying, not from turn 1.",
+        "test": "36-cache-prophecy.test.ts::R43: \"One Turn Passes\" counts from the PROPHESYING"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R43",
+          "quote": "\"Two Turns Pass\" means two turns after this card was prophesied, not two"
+        },
+        {
+          "ref": "R43",
+          "quote": "turns of the game. Caleb 2024-09-22: \"It needs to be prophecied beforehand …"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "36-cache-prophecy.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R43 quotes Caleb 2024-09-22.",
+    "sourceHashes": {
+      "R43": "515b1f88406f8b3c6d386b47fe23f4bbe9f0da57ea679499c68212e46b04d92e"
+    }
+  },
+  {
+    "key": "keywords.abilities.prophecy.battles",
+    "parent": "keywords.abilities.prophecy",
+    "order": 6,
+    "text": "In a 1v1 game, both battles of a turn count toward \"One Battle Passes\".",
+    "examples": [
+      {
+        "text": "A prophecy made after both battle rounds of a turn ignores those rounds, and the next turn's first completed battle round fulfils \"One Battle Passes\".",
+        "test": "36-cache-prophecy.test.ts::R43: \"One Battle Passes\""
+      }
+    ],
+    "see": [
+      "505"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R43",
+          "quote": "battles in a turn tick \"One Battle Passes\" (Caleb 2024-09-24)."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "36-cache-prophecy.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R43 cites Caleb 2024-09-24. The ruling is stated for 1v1 only. The test shows one battle round is enough and the count runs forward from the prophesy; that each of a turn's two rounds counts is implied by it, not counted twice.",
+    "sourceHashes": {
+      "R43": "515b1f88406f8b3c6d386b47fe23f4bbe9f0da57ea679499c68212e46b04d92e"
+    }
+  },
+  {
+    "key": "keywords.abilities.prophecy.latch",
+    "parent": "keywords.abilities.prophecy",
+    "order": 7,
+    "text": "Once a prophecy's condition has been met, the prophecy stays fulfilled, even if the state that met it goes away.",
+    "examples": [
+      {
+        "text": "A card prophesied on \"your life is 5 or less\" stays playable after its controller gains life back.",
+        "test": "36-cache-prophecy.test.ts::R44: a fulfilled prophecy LATCHES"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R44",
+          "quote": "Once a prophecy's condition has been met it stays fulfilled, even if the"
+        },
+        {
+          "ref": "R44",
+          "quote": "state that fulfilled it goes away — a card prophesied on \"your life is 5 or"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "36-cache-prophecy.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R44 is the owner's call (2026-08-19), reasoned from the reminder text \"if the prophecy has been fulfilled\" and Caleb's announcement \"anytime after the condition has been met\"; neither quote is in the pack verbatim as a printed or designer source (D-U21-5).",
+    "sourceHashes": {
+      "R44": "1fe6e9ce4fd98d30f6fb2bb7985c717b313f935b7cdf1a8a08e4cafe97230ec5"
+    }
+  },
+  {
+    "key": "keywords.abilities.prophecy.release",
+    "parent": "keywords.abilities.prophecy",
+    "order": 8,
+    "text": "Once the prophecy is fulfilled, the card may be played from the cache for free, ignoring affinity, as if it were in its controller's hand.",
+    "examples": [
+      {
+        "text": "A released prophecy costs nothing and needs no affinity.",
+        "test": "36-cache-prophecy.test.ts::R42: a released prophecy is FREE and ignores affinity"
+      }
+    ],
+    "see": [
+      "403.3c",
+      "111.13"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R42 (its cache-and-release half)",
+          "quote": "played from cache for free — and \"for free\" also ignores affinity (Caleb"
+        },
+        {
+          "ref": "R301",
+          "quote": "still releases the card for free and still ignores affinity on the way out (Caleb"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "36-cache-prophecy.test.ts",
+        "313-prophecy-affinity.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R42 cites Caleb 2024-10-28 for \"free also ignores affinity\"; R301 keeps the release affinity-free. Restates 403.3c.",
+    "sourceHashes": {
+      "R301": "f0096724daf9e43ba46ad14d47b9a962c1d6031bccf6e0ec7f7ac42b780154ba",
+      "R42": "0cabff7c580b27609be02ba24c31e41a18554c7829734d450a6abfeecdc1c81c"
+    }
+  },
+  {
+    "key": "keywords.abilities.prophecy.release-timing",
+    "parent": "keywords.abilities.prophecy",
+    "order": 9,
+    "text": "A fulfilled prophecy changes what the card costs, not when it may be played. The card is played at its own printed timing, and a [Haste] icon in the banner does not move the release.",
+    "examples": [
+      {
+        "text": "A fulfilled {Battle} card is refused at deployment.",
+        "test": "36-cache-prophecy.test.ts::R42: normal TIMING still applies"
+      },
+      {
+        "text": "A fulfilled prophecy on a battle card is offered at a battle window.",
+        "test": "257-prophecy-release-timing.test.ts::R277: a fulfilled prophecy on a battle card is offered at a BATTLE window"
+      }
+    ],
+    "see": [
+      "504.9a"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R42 (its cache-and-release half)",
+          "quote": "2024-10-28) — but normal TIMING still applies, since it is played \"as if it"
+        },
+        {
+          "ref": "R277 (its release half)",
+          "quote": "1. **The RELEASE is always at the card's printed timing.** R42 governs, without"
+        },
+        {
+          "ref": "R277 (its release half)",
+          "quote": "prophecy makes a card FREE, not EARLY. (R45 already says the same of a"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R206",
+          "relation": "its Prophecy row (release at the banner's [Haste]) corrected by R279"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "36-cache-prophecy.test.ts",
+        "257-prophecy-release-timing.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R42 (Caleb 2025-12-28 is cited for the parallel glimpse case in R277) and R277 §1. R206's Prophecy row said the opposite and was corrected by R279.",
+    "sourceHashes": {
+      "R277": "a15231bf2271c9aab105f7a42c442a15aa13dd28828796307c02c4a2817084af",
+      "R42": "0cabff7c580b27609be02ba24c31e41a18554c7829734d450a6abfeecdc1c81c"
+    }
+  },
+  {
+    "key": "keywords.abilities.prophecy.x",
+    "parent": "keywords.abilities.prophecy",
+    "order": 10,
+    "text": "An X spell released by a fulfilled prophecy is cast with X = 0. A variable bracketed cost on it is a cost, not its X, and is still paid.",
+    "examples": [
+      {
+        "text": "A fulfilled prophecy releases an X spell for X = 0: no X is asked and no mana paid.",
+        "test": "36-cache-prophecy.test.ts::R111: a fulfilled prophecy releases an X spell for X = 0"
+      }
+    ],
+    "see": [
+      "702.6c"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R111",
+          "quote": "an X spell works like magic, forced to cast it for 0 (unless its X is an"
+        },
+        {
+          "ref": "R111",
+          "quote": "different X — a COST, not the mana — and is still collected as before. Test:"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "36-cache-prophecy.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R111, owner 2026-08-23. Restates 702.6c.",
+    "sourceHashes": {
+      "R111": "a7665555ec1f0c5f66748e40b653f50067e928f541bb660389587bb9a487747b"
+    }
+  },
+  {
+    "key": "keywords.abilities.prophecy.mods",
+    "parent": "keywords.abilities.prophecy",
+    "order": 11,
+    "text": "A card whose prophecy is fulfilled may also be grafted or augmented from the cache, for free and ignoring affinity. Until the prophecy is fulfilled, the card cannot be played, grafted or augmented from the cache at all.",
+    "examples": [
+      {
+        "text": "An unfulfilled prophecy cannot be grafted.",
+        "test": "315-cache-mod-permission.test.ts::R303: an UNFULFILLED prophecy cannot be grafted"
+      },
+      {
+        "text": "A fulfilled prophecy grafts for free.",
+        "test": "315-cache-mod-permission.test.ts::R303: a FULFILLED prophecy still grafts for free"
+      }
+    ],
+    "see": [
+      "403.3a",
+      "403.3c",
+      "720"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R303",
+          "quote": "> graft/augment for free instead of playing the card?\"* · calebgannon: ***\"Oh, no you can't"
+        },
+        {
+          "ref": "R303",
+          "quote": "> yes you can graft or augment for free if the prophecy is completed\"***"
+        },
+        {
+          "ref": "R303",
+          "quote": "| expired glimpse, unfulfilled banner, or neither | refused | refused |"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "315-cache-mod-permission.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R303 quotes Caleb 2024-12-03; R42 cites the same date. Restates 403.3a and 403.3c.",
+    "sourceHashes": {
+      "R303": "362c6d1e5a9c15d8912809d210e41b88548997fd1e9c63acbfa5b730f81e130c"
+    }
+  },
+  {
+    "key": "keywords.abilities.prophecy.units-die",
+    "parent": "keywords.abilities.prophecy",
+    "order": 12,
+    "text": "A condition that counts units dying, such as Vengeance's \"13 Units Die\", counts only the deaths its controller witnessed: deaths in a region where that player was present. A player is present in their own region, and in an enemy region once they have attacked into it, until regroup.",
+    "examples": [
+      {
+        "text": "A death is counted only by the players who were in its region.",
+        "test": "314-prophecy-units-die.test.ts::R302 §2: a death is counted only by the seats that were in the region"
+      },
+      {
+        "text": "An attack puts the attacker in the region, so both players see every death in that battle.",
+        "test": "314-prophecy-units-die.test.ts::R302 §3: combat puts the attacker in the region"
+      }
+    ],
+    "see": [
+      "601",
+      "604.3a"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R302",
+          "quote": "> YOU (the player) need to be in a region for it to \"see\" the death. So if your opponent"
+        },
+        {
+          "ref": "R302",
+          "quote": "> sacrifices a unit during their deployment or something, it will NOT be seen by"
+        },
+        {
+          "ref": "R302",
+          "quote": "> Vengeance. But during combat, it will see all deaths."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "314-prophecy-units-die.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R302, owner 2026-09-20. The presence model is 601 / 604.3a. The on-board meter that shows the count is a digital convention (Annex D).",
+    "sourceHashes": {
+      "R302": "e62ab6c3b0d06431986946cbf0f1840e6b40b755f7ce22587b965f6d60b875b6"
+    }
+  },
+  {
+    "key": "keywords.abilities.prophecy.tides",
+    "parent": "keywords.abilities.prophecy",
+    "order": 13,
+    "text": "An effect that plays a card for free, such as Tides of the Cosmos, may play a card with a Prophecy banner as a Prophecy: the card is cached with its prophecy attached, and the banner cost is not paid.",
+    "examples": [
+      {
+        "text": "A card played by Tides as a Prophecy is cached with its banner, for free, and not binned.",
+        "test": "404-raq-fix-tides.test.ts::R337: a card played by Tides as a Prophecy is cached with its banner"
+      }
+    ],
+    "see": [
+      "701.2c"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1396955380000755795#2",
+          "quote": "3. Tides allows you to play Viruses/Ambushes/Prophecy (you still look at 'main' cost of the card, even if you used it as Ambush/Prophecy)."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R337",
+          "quote": "an Ambush, a card with a Prophecy banner as a Prophecy. The \"total cost of 8"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "404-raq-fix-tides.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "RAQ write-up point 3 and R337. Restates 701.2c.",
+    "sourceHashes": {
+      "R337": "9da68a070fcb1c43960dfb88272b30cdb15057ba2e0c9cf826221d506335c6cf",
+      "RAQ 1396955380000755795#2": "77de5a844f35441967e41307ee3973785fb17ed41d274524ef807b1a94bb45de"
+    }
+  },
+  {
+    "key": "keywords.abilities.unstable",
+    "parent": "803",
+    "order": 8,
+    "text": "Unstable is a non-combat attribute. If an Unstable card would enter a bin from an active zone (play or the stack), it is erased instead.",
+    "examples": [
+      {
+        "text": "Aberrant Statweaver, printed {Unstable}, dies into the erased pile, not the bin.",
+        "test": "17-earth-b.test.ts::Aberrant Statweaver: printed {Unstable}"
+      }
+    ],
+    "see": [
+      "405.5",
+      "407",
+      "keywords.abilities.unstable.active-zone"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Abyssal Evocation",
+          "quote": "{i}(If they would enter a bin, erase them instead.)"
+        },
+        {
+          "ref": "Manual p.25",
+          "quote": "Some attributes, like burst and unstable, are written in a"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R145",
+          "quote": "> `\"Unstable\": \"If an unstable card would enter a bin from an active zone,"
+        },
+        {
+          "ref": "R145",
+          "quote": "1. **The ACTIVE ZONES are PLAY (the field / a formation) and the STACK.**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "17-earth-b.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The printed reminder (Abyssal Evocation) states the erase with no zone limit; Caleb's glossary line, quoted in R145, limits it to a card leaving an active zone, and R145 lists play and the stack (D-U21-6, D-U21-9). Round 1 added the qualifier after the verifier showed a card binned from hand, deck, bin or cache is binned normally. The detail is 803.8a (keywords.abilities.unstable.active-zone).",
+    "sourceHashes": {
+      "R145": "dc76fc0a317d5bd6bd6de5ed5a24eb9d84407f6b45dcbb85d2e8978fe56f98e3"
+    }
+  },
+  {
+    "key": "keywords.abilities.unstable.active-zone",
+    "parent": "keywords.abilities.unstable",
+    "order": 1,
+    "text": "Unstable applies only to a card leaving an active zone. The active zones are play and the stack. An Unstable card that goes to a bin from a hand, the deck, a bin or the cache is put into the bin normally, and is trashed.",
+    "examples": [
+      {
+        "text": "A printed-Unstable card discarded from the hand is binned and trashed.",
+        "test": "125-active-zone.test.ts::R145: a printed-Unstable card DISCARDED FROM HAND"
+      },
+      {
+        "text": "A printed-Unstable card binned from the cache is binned and trashed.",
+        "test": "125-active-zone.test.ts::R145: a printed-Unstable card binned from the CACHE"
+      }
+    ],
+    "see": [
+      "400.2a",
+      "405.5"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R145",
+          "quote": "> `\"Unstable\": \"If an unstable card would enter a bin from an active zone,"
+        },
+        {
+          "ref": "R145",
+          "quote": "1. **The ACTIVE ZONES are PLAY (the field / a formation) and the STACK.**"
+        },
+        {
+          "ref": "R145",
+          "quote": "3. A card leaving an **inactive** zone for a bin is **binned and trashed"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "125-active-zone.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R145: the phrase \"from an active zone\" is Caleb's glossary line, quoted inside the ruling; the list of active zones is the owner's (D-U21-6). The printed reminder has no zone limit (D-U21-9). Restates 400.2a.",
+    "sourceHashes": {
+      "R145": "dc76fc0a317d5bd6bd6de5ed5a24eb9d84407f6b45dcbb85d2e8978fe56f98e3"
+    }
+  },
+  {
+    "key": "keywords.abilities.unstable.printed",
+    "parent": "keywords.abilities.unstable",
+    "order": 2,
+    "text": "A card may print Unstable on its type line. Oorblak and Aberrant Statweaver do.",
+    "examples": [
+      {
+        "text": "Oorblak, unmodded, is erased when it dies.",
+        "test": "17-earth-b.test.ts::Oorblak: printed {Unstable}"
+      }
+    ],
+    "see": [
+      "204"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Aberrant Statweaver",
+          "quote": "{Virus} {Unstable} Luminary Unit"
+        },
+        {
+          "ref": "card: Oorblak",
+          "quote": "{Unstable} Luminary Strider {Virus} Unit"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "17-earth-b.test.ts",
+        "125-active-zone.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "R145 counts exactly two such cards; both are also {Virus}.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "keywords.abilities.unstable.granted",
+    "parent": "keywords.abilities.unstable",
+    "order": 3,
+    "text": "An effect may give a card Unstable. It is often given to cards played from the bin, so that they cannot be used more than once: Abyssal Evocation and Spell Excavation give the spells they let you play from the bin Unstable until regroup.",
+    "examples": [
+      {
+        "text": "A spell played from the bin under Abyssal Evocation is erased after it resolves, never re-binned.",
+        "test": "12-fire-a.test.ts::Abyssal Evocation: a bin-played spell is {Unstable}"
+      },
+      {
+        "text": "A spell played under Spell Excavation is erased rather than re-binned.",
+        "test": "15-water-b.test.ts::Spell Excavation: GRANTS the bin play until regroup"
+      }
+    ],
+    "see": [
+      "405.9a"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Abyssal Evocation",
+          "quote": "If you do, they gain {p}unstable until regroup."
+        },
+        {
+          "ref": "Manual p.25",
+          "quote": "is often given to cards that have been played from the bin"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "12-fire-a.test.ts",
+        "15-water-b.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.25 and the two granting cards.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "keywords.abilities.unstable.until-regroup",
+    "parent": "keywords.abilities.unstable",
+    "order": 4,
+    "text": "Unstable given \"until regroup\" lasts until regroup, even after the permission that came with it has ended. A spell unit played under such a grant passes it to the unit it puts into play.",
+    "examples": [
+      {
+        "text": "A bin-played spell unit's body carries the Unstable stamp and is erased, not binned, when it dies.",
+        "test": "12-fire-a.test.ts::Abyssal Evocation: a bin-played SPELL UNIT stamps its BODY"
+      },
+      {
+        "text": "A bin-played spell unit body is still Unstable in the second battle round, after the permission to play spells from the bin has ended, and stops being Unstable at regroup.",
+        "test": "432-cr-keyword-abilities.test.ts::cr:keywords.abilities.unstable.until-regroup — the stamp outlives the in-this-battle permission into round 2, and ends at regroup"
+      }
+    ],
+    "see": [
+      "506"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R96",
+          "quote": "\"Gain … **until regroup**\" means the card stays Unstable after the permission lapses, so"
+        },
+        {
+          "ref": "R96",
+          "quote": "And propagating the stamp onto the body a bin-played spell UNIT spawns (`afterParts`)"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "12-fire-a.test.ts",
+        "432-cr-keyword-abilities.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R96. The bound test asserts the stamp on the body and the erase; that the stamp ends at regroup is shown only by the round-1 verifier's probe (F-U21-2).",
+    "sourceHashes": {
+      "R96": "27ccfc58d69e2c67a5b067a922938f11a666274460cf1630ddcc1ad44c171f5a"
+    }
+  },
+  {
+    "key": "keywords.abilities.unstable.modded",
+    "parent": "keywords.abilities.unstable",
+    "order": 5,
+    "text": "A card is Unstable for as long as it is modded. When a modded card dies or is erased, it and all of its mods are erased.",
+    "examples": [
+      {
+        "text": "A modded host exchanged out of play by Hooba-Mon is erased with its mods, which reach the erased pile.",
+        "test": "42-dark-b.test.ts::R152: the mods reach the public ERASED pile with the Unstable body (R65)"
+      }
+    ],
+    "see": [
+      "410.4b",
+      "720"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.35",
+          "quote": "As long as a card is modded, it has the unstable attribute, meaning when it dies or is erased, it and all of its"
+        },
+        {
+          "ref": "Manual p.35",
+          "quote": "mods are erased with it. This means that even though"
+        },
+        {
+          "ref": "Rulebook 2023 p.15",
+          "quote": "erased (permanantly removed from the game). So"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "42-dark-b.test.ts",
+        "37-attrs-wight.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.35 (PERMADEATH) and Rulebook 2023 p.15. Restates 410.4b. Whether a nontoken mod erased with its host is trashed: keywords.actions.trash.mods-erased-with-host.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "keywords.abilities.unstable.modded-spell",
+    "parent": "keywords.abilities.unstable",
+    "order": 6,
+    "text": "A spell is modded, and so Unstable, when a Virus is applied to it on the stack or a mod is applied to it through {Modular}. When it leaves the stack it is erased with its mods.",
+    "examples": [
+      {
+        "text": "Either way, the virus window or the {Modular} window, the carrier and the mod are erased.",
+        "test": "91-modular.test.ts::R105 = R79: the {Modular} window and the virus window agree"
+      },
+      {
+        "text": "An unmodded {Modular} spell is binned like any other spell.",
+        "test": "91-modular.test.ts::R105: an UNMODDED {Modular} spell is not Unstable"
+      }
+    ],
+    "see": [
+      "704.2c",
+      "723",
+      "802.26"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R79 (its virus-on-a-spell half)",
+          "quote": "> and the spell gets erased on resolution**. You can augment spells during"
+        },
+        {
+          "ref": "R105",
+          "quote": "> \"A modded Spellbind should also have unstable. It basically works as a"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R79",
+          "relation": "its spell-token exclusion bullet superseded by R89"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "91-modular.test.ts",
+        "125-active-zone.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R79 quotes Caleb 2025-03-06 (\"the spell gets erased on resolution\"); R105 is the owner's ruling for {Modular}. An unmodded {Modular} spell is not Unstable. Restates 704.2c.",
+    "sourceHashes": {
+      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5",
+      "R79": "277d0cf45026e900543e1fb8289130794a9da06a12d6c29e967b7ba613b96f5d"
+    }
+  },
+  {
+    "key": "keywords.abilities.unstable.copy",
+    "parent": "keywords.abilities.unstable",
+    "order": 7,
+    "text": "A copy of a modded unit is not Unstable when it is made, because it has no mods of its own. A mod attached to it afterwards makes it Unstable in the usual way.",
+    "examples": [
+      {
+        "text": "A Borrower of Forms that copied a modded unit is not Unstable and dies to the bin.",
+        "test": "26-metal-a.test.ts::R336: copying a MODDED unit inherits the mods TEXT, and the copy is NOT {Unstable}"
+      },
+      {
+        "text": "A fresh Borrower of Forms that copied a modded unit is not Unstable; a mod attached to it afterwards makes it Unstable.",
+        "test": "403-raq-fix-mods.test.ts::R336: a Borrower that copied a modded unit dies to the bin"
+      },
+      {
+        "text": "A mod attached to Borrower of Forms after it resolved makes it Unstable.",
+        "test": "393-raq-mods.test.ts::RAQ Borrower of Forms: a mod attached to it after it resolved makes it Unstable"
+      }
+    ],
+    "see": [
+      "effects.copies.exact.mods"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1372468222158180424#1",
+          "quote": "No, freshly resolved BoFy has no mods so he isn't Unstable."
+        },
+        {
+          "ref": "RAQ 1372468222158180424#3",
+          "quote": "Q: What if I attach some mods to him AFTER he resolved? A: Then he becomes Unstable"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [
+        {
+          "ruling": "R118",
+          "relation": "its ruling 2 Unstable half reversed by R336"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "403-raq-fix-mods.test.ts",
+        "393-raq-mods.test.ts",
+        "26-metal-a.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "RAQ (Borrower of Forms thread); R336 reversed the older R118 ruling. Restates effects.copies.exact.mods.",
+    "sourceHashes": {
+      "RAQ 1372468222158180424#1": "1ee9185cb6e4de844e78c588dea319496887cca41f5243d4a45f2fbc03591288",
+      "RAQ 1372468222158180424#3": "23747815b7bd89b093607c9a5079da5836888a900a5c555c74ac83f09562b82d"
+    }
+  },
+  {
+    "key": "keywords.abilities.unstable.moved-mod",
+    "parent": "keywords.abilities.unstable",
+    "order": 8,
+    "text": "Moving a mod moves its Unstable with it. The unit the mod leaves stops being Unstable when its last mod is gone, unless something else makes it Unstable; the unit it moves to becomes Unstable.",
+    "examples": [
+      {
+        "text": "A moved augment takes Unstable and its static with it.",
+        "test": "151-copy-and-moved-mods.test.ts::R178 Rotbeast: a moved augment takes {Unstable}"
+      }
+    ],
+    "see": [
+      "720"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R178 (its §4 owner ruling on moving mods)",
+          "quote": "> *\"Unstable is just an attribute granted to all entities that are modded. Of"
+        },
+        {
+          "ref": "R178 (its §4 owner ruling on moving mods)",
+          "quote": "- **{Unstable}** — `E.isUnstable` reads `e.mods.length > 0` **live**. The old"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R178",
+          "relation": "its §4 bounded-budget claim corrected by R331"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "151-copy-and-moved-mods.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R178 §4, owner 2026-08-25. The \"unless something else\" clause covers the printed and granted routes (803.8b-d), which a move does not touch; R178 says the until-regroup stamp is untouched.",
+    "sourceHashes": {
+      "R178": "92613172ef363565035f3346c813b8e4fdf7cbf5ff2a45ae1543bf273254e204"
+    }
+  },
+  {
+    "key": "keywords.abilities.unstable.still-dies",
+    "parent": "keywords.abilities.unstable",
+    "order": 9,
+    "text": "Unstable replaces where the card goes, not its death. An Unstable unit that is destroyed still dies: its death triggers and other abilities that watch for a unit dying see it.",
+    "examples": [
+      {
+        "text": "(illustrative) A modded unit dies in combat. A \"whenever a unit dies\" ability triggers, then the unit and its mods are erased.",
+        "test": null
+      },
+      {
+        "text": "A modded unit is destroyed. A whenever-another-unit-dies ability triggers, then the unit is erased, not binned.",
+        "test": "432-cr-keyword-abilities.test.ts::cr:keywords.abilities.unstable.still-dies — a modded (Unstable) unit that is destroyed still dies: a death watcher triggers, then it is erased"
+      }
+    ],
+    "see": [
+      "effects.state.dying",
+      "keywords.actions.trash.unstable-death"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R69 (its §2: Unstable replaces the bin, not the death)",
+          "quote": "### 2. Unstable replaces the BIN, not the DEATH"
+        },
+        {
+          "ref": "R69 (its §2: Unstable replaces the bin, not the death)",
+          "quote": "So the `died` event fires on every branch, death triggers go off, and other"
+        },
+        {
+          "ref": "R145",
+          "quote": "*bin*, not the *death* (Caleb 2025-03-13)."
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R69",
+          "relation": "its Unstable death order amended by R137; its token-trash subsection reversed by R306"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "42-dark-b.test.ts",
+        "43-dark-c.test.ts",
+        "432-cr-keyword-abilities.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R69 §2 quotes Caleb 2025-03-13 (\"They die\") and 2025-04-08. Whether the dying card is trashed on the way is disputed: keywords.actions.trash.unstable-death and D-U18-1 (R137 says it is; the print and Caleb read as no).",
+    "sourceHashes": {
+      "R145": "dc76fc0a317d5bd6bd6de5ed5a24eb9d84407f6b45dcbb85d2e8978fe56f98e3",
+      "R69": "4765548d7e5280fe64527ba6b02f2f307ddb47cce7eb72a9ff53142ae02ff9b4"
+    }
+  },
+  {
+    "key": "keywords.abilities.unstable.recall",
+    "parent": "keywords.abilities.unstable",
+    "order": 10,
+    "text": "Unstable does not stop a unit from being recalled. A recalled Unstable unit goes to the hand as a card; if it was modded, its mods are put into the bin.",
+    "examples": [
+      {
+        "text": "Recalling an Unstable unit puts the card in its hand, and nothing is erased.",
+        "test": "125-active-zone.test.ts::R145: RECALLING an Unstable unit puts the CARD IN HAND"
+      }
+    ],
+    "see": [
+      "keywords.actions.recall.unstable"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.35",
+          "quote": "If a modded card would leave play but did not die or"
+        },
+        {
+          "ref": "Manual p.35",
+          "quote": "hand from play, all of its mods are put back into the"
+        },
+        {
+          "ref": "Manual p.35",
+          "quote": "bin, while the base card goes to the hand."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R145",
+          "quote": "> \"unstable doesn't stop recalling. So you could recall aberrant statweaver for"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "125-active-zone.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Manual p.35 and Caleb 2025-04-16 quoted in R145. Restates keywords.actions.recall.unstable. Which bin the mods go to is the recall rule (zones follow control, R250).",
+    "sourceHashes": {
+      "R145": "dc76fc0a317d5bd6bd6de5ed5a24eb9d84407f6b45dcbb85d2e8978fe56f98e3"
+    }
+  },
+  {
+    "key": "keywords.abilities.unstable.stack",
+    "parent": "keywords.abilities.unstable",
+    "order": 11,
+    "text": "An Unstable card that leaves the stack for a bin, because it resolved, fizzled or was negated, is erased instead.",
+    "examples": [
+      {
+        "text": "Aberrant Statweaver negated off the stack is erased.",
+        "test": "125-active-zone.test.ts::R145: Aberrant Statweaver negated off the stack is ERASED"
+      },
+      {
+        "text": "A printed-Unstable virus whose host dies fizzles to the erased pile.",
+        "test": "125-active-zone.test.ts::R145: a printed-Unstable virus whose HOST DIES"
+      }
+    ],
+    "see": [
+      "704.2c",
+      "406.4"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R145",
+          "quote": "> — *[posts Spell Excavation]* — **\"So they would be erased if you used"
+        },
+        {
+          "ref": "R145",
+          "quote": "> unstable). When Statweaver, which has Unstable naturally, gets negated from"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "125-active-zone.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R145 quotes Caleb 2025-09-13 for the negated case, and the owner for Statweaver. Restates 704.2c and 406.4.",
+    "sourceHashes": {
+      "R145": "dc76fc0a317d5bd6bd6de5ed5a24eb9d84407f6b45dcbb85d2e8978fe56f98e3"
+    }
+  },
+  {
+    "key": "keywords.abilities.unstable.card-says-bin",
+    "parent": "keywords.abilities.unstable",
+    "order": 12,
+    "text": "An effect that itself says to put a card into a bin overrides Unstable. Pull Under (\"Delete target unit. If you do, put it and all of its mods into your bin.\") leaves a modded unit and its mods in that bin.",
+    "examples": [
+      {
+        "text": "Pull Under deletes the target, and it and its mods land in the caster's bin, not erased.",
+        "test": "15-water-b.test.ts::Pull Under: deletes the target; it and its mods land in YOUR bin"
+      }
+    ],
+    "see": [
+      "101"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R137 (its Pull Under section)",
+          "quote": "into your bin\"*, and the engine's long-standing reading is that the card's own"
+        },
+        {
+          "ref": "R137 (its Pull Under section)",
+          "quote": "destination wins over the Unstable erase. That override used to be card code"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "15-water-b.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R137's Pull Under section records the engine's long-standing reading that the card's own destination wins; no designer source (D-U21-8). The card is printed text; basis stays owner because the override is the ruling's reading, not the card's words.",
+    "sourceHashes": {
+      "R137": "00ed618822f8717f8af7f8dab9ab26806d04118a8c2b0ec6ea6c0508ec449fe7"
+    }
+  }
+]

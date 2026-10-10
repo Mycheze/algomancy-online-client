@@ -2,7 +2,7 @@
 
 Every place where the sources disagree, the register contradicts itself, or a rule rests only on the engine or on an owner call. Each quote is checked to be verbatim. Only the first tier needs a decision; every other item already says which side the document follows.
 
-## 1. Questions for the owner (21)
+## 1. Questions for the owner (43)
 
 ### D-U01-1 · Sources disagree · rule 101.6a
 
@@ -197,6 +197,28 @@ Pure in combat is defined per attacking-half/blocking-half pair; an unblocked co
 
 **Resolution:** Question for the owner. The printed words support two readings: (1) a Pure card always ignores its own other attributes, so an unblocked Pure column strikes in the normal sub-step with none of its attributes; (2) Pure acts only within an interaction with another card, so an unblocked Pure column keeps its attributes against the player.
 
+### D-U13-1 · RAQ open · rule 610.4
+
+Whether Temporal Rift ('End this battle') cast in the first battle round also cancels the counterattack round is unresolved: the RAQ thread is still open and the designer has said he is still working on it. No rule is written for it.
+
+- card: Temporal Rift: "End this battle. Erase this spell."
+- RAQ 1353986897902567424#0: "Yeah I'm still working on the ruling"
+- RAQ 1353986897902567424#1: "Should allow for 2nd Battle to happen if it was cast AFTER blocker/counter-attack"
+- R12: "effect (Temporal Rift) affects only that region's battle and stack — other regions resolve"
+
+**Resolution:** Question for the owner. The card's words 'End this battle' support two readings: (1) it ends the battle in this region only, so a counterattack round in the other region still happens (R12's 'other regions resolve later, unaffected', and _passer's consideration for a cast after blocks); (2) it ends the whole battle phase, so there is no second round. Cast before blocks, no counterattackers have been sent, and under R15 an empty send means no round 2, so the two readings differ mainly for a cast after counterattackers were sent. The RAQ register's note says the engine today ends the battle and goes to deployment when Rift is cast before blocks; what it does after blocks is not recorded.
+
+### D-U13-4 · Sources disagree · rule 610.4e
+
+The printed round-2 procedure reads as if the sent counterattackers are always put into formation; R194 and the engine's test let the non-initiative player decline the round-2 attack after sending units.
+
+- Manual p.20: "1. The NIT puts their attacking units into formation."
+- Rulebook 2023 p.5: "▪ Second, the counterattacking units are put"
+- R194: "* So a round-2 decline is the whole difference between a live Fireball and"
+- file: client/engine/test/32-cast-costs.test.ts: "// time and attacking with it in round 2 are two actions with a whole damage"
+
+**Resolution:** Question for the owner. 'The NIT puts their attacking units into formation' supports two readings: (1) the sent units must attack (sending is the commitment, and round 2's attack step only arranges them); (2) it names round 2's attack step, in which attacking stays optional as in any attack step (Manual p.20 'select a set of units'). The rule follows reading (2), which is the permissive one and what the engine does. A related open point: whether the non-initiative player may attack with only some of the sent units; no source addresses it.
+
 ### D-U14-11 · Other · rule 701.1e
 
 R26 says Bloomcaster's trigger fires on its own play and dates itself to the 2026-07-16 engine. The current engine hears plays only from cards in play, and a played card is on the stack, not in play, when its play fires; the designer write-up describes that state for Mycelial Mentor. The engine now makes no 1/1 for Bloomcaster's own play (F-U14-5).
@@ -217,7 +239,219 @@ The Rulebook 2023 calls tokens "temporary cards" and spell tokens "cards" that a
 
 **Resolution:** Question for the owner. The printed words support two readings: (1) "cards" in the Rulebook is loose description, so a token is not a "card" for card text (R133/R305, which the rule follows); (2) a token is a card, so "Cards played during battle" (Arbiter of Armistice) and Vengeance would tax a spell token. Printed text outranks an R-ruling, so the rule as written stands only if reading (1) is right.
 
-## 2. Register and test fixes (33)
+### D-U15-8 · Owner call only · rule 706.12a
+
+The owner ruled that several Wraith deployment triggers may "target the same unit" and the surplus fizzles. R144 reads "target" as an aim chosen when the trigger goes on the stack, which can fizzle, but not as a real target: it fires no "when I become targeted" ability and cannot be redirected.
+
+- R144: "> stack simultaneously and be allowed to target the same unit, even exceeding"
+- R144: "R144 grants **1 and 2** — which is exactly and only what the owner asked for —"
+
+**Resolution:** Question for the owner. The words "allowed to target the same unit" support two readings: (a) the Wraith's "an ally" is a real target, so a Wraith choosing Mohruung makes a Crystal and the choice can be redirected; (b) "target" is loose wording for "choose", which is what R144 built. The rule states (b), as R144 does.
+
+### D-U16-1 · Sources disagree · rule 709.4b
+
+The Manual Q&A on Tough and Balanced gives opposite orders for a Tough mod on a Balanced unit. Its first sentence says Tough "augmented onto" a Balanced unit is doubled, then balanced; its last sentence says Tough "applied to" a Balanced unit is balanced, then doubled. R19 says the order between printed, mod-given and column-shared attributes is the engine's own call, and the engine balances first.
+
+- Manual p.42: "“Tough” is augmented onto a “Balanced” unit, or if a"
+- Manual p.42: "will have its defense doubled, then its stats balanced."
+- Manual p.42: "If “Tough” is applied to a “Balanced” unit, it will have"
+- Manual p.42: "its stats balanced, then its defense doubled."
+- R19: "Engine call: the Manual doesn't specify an order for printed-vs-granted-vs-shared;"
+
+**Resolution:** Question for the owner. The Manual's words support two readings: (A) "augmented onto" is the mod case and means doubled, then balanced, while "applied to" is some other grant, so the engine's order (R19) is wrong for an augment (F-U16-4); (B) the two sentences describe the same case and contradict each other, so the top-to-bottom principle decides, and where a mod sits relative to the card it is on is unstated. The rule states both and the engine's order.
+
+### D-U16-14 · Sources disagree · rule 712.1a
+
+Whether a unit stripped by a continuous effect (Transmogrifant, Monke) stops applying its own static abilities. Printed text strips all abilities and R62 says a static is an ability; R62 and R328 encode static-vs-static in one pass that reads only the one-time stamp, so such a unit keeps applying its statics. R62 justifies the one pass only by the mutual case.
+
+- card: Transmogrifant: "Your other units gain +2/+2 and lose all attributes and abilities."
+- R62: "radiates — a static *is* an ability — and both R38 replacement hooks."
+- R62: "*entity flag* is set, not one silenced by another static. So a unit silenced by"
+- R62: "a spell stops radiating immediately, while two Monkes — each the other's"
+- R328: "**Unchanged:** static-vs-static still resolves in one pass (`staticsFor` reads only"
+
+**Resolution:** Printed text outranks our rulings, so the rule states that the unit stops applying its statics, keeps the mutual case as R62 answers it (effects.stripping.mutual), and files the engine's behaviour as F-U16-3. Question for the owner only if R62's one-pass sentence was meant to rule the one-sided case as well.
+
+### D-U16-2 · Sources disagree · rule 709.4d
+
+The Manual lists Inverted as its own layer after the attribute layer, and R226 makes the result independent of grant order. Caleb, quoted in R93, said "Tough inverted balanced would be different" from Tough balanced inverted, which reads as Inverted taking a place inside layer 4.
+
+- Manual p.42: "counters, 4. Attributes like Tough, 5. Inverted, 6.Unaware"
+- R93: "Tough inverted balanced would be different"
+- R226: "Order-independence is the substantive claim"
+
+**Resolution:** Question for the owner. Caleb's words have two real readings: (A) Inverted applies at its place in layer 4's order and inverts only what came before it, so grant order changes the result; (B) a passing remark about a case he called "basically impossible" in the same thread, with Inverted a clean layer after all of layer 4, as the Manual lists. The rule states (B), the Manual's order, which the engine implements.
+
+### D-U16-6 · Sources disagree · rule 712.7
+
+R341 says text a copy inherits is as old as the copy's printed text, so any strip takes it. The RAQ says an attribute or ability a unit gains after a strip is not taken. The two part only for a copy that begins on a unit already stripped.
+
+- R341: "so it is exactly as old as the copy's printed text (R328)"
+- RAQ 1355845893219287132#1: "if any unit in play later gains Attribute or Ability, then timestamps takes precedence"
+
+**Resolution:** For Borrower of Forms the two agree: it enters play already a copy, so no strip on it is older than its copied text. They differ for an until-regroup copy (Apex Prime) made on a unit already under Suppression Field or Formless. Question for the owner only if that case arises: (A) a copy redefines what the unit prints, so the earlier strip takes the copied text (R341's words); (B) becoming a copy is gaining abilities later, so the earlier strip does not take them (the RAQ's "later gains"). The rule states R341, which is what the sources say about copies.
+
+### D-U16-7 · Owner call only · rule 713.7a
+
+Whether a unit that has gone to counterattack still counts as an ally in the region it left. R270 states the current answer (it does not) and itself names this as the question the owner should rule on.
+
+- R270: "does a unit that is out counterattacking still count as an ally in"
+- R270: "That is the current answer and `test/250-ally-count-and-absence.test.ts` pins"
+
+**Resolution:** Question for the owner. The rule states R270's current answer, which follows the Manual's statement that a counterattacker does not exist until round 1 ends; R270 records that a player who sends two units out together may report it again.
+
+### D-U17-1 · Other · rule 720.9a
+
+Two owner rulings answer "is an erased token mod recorded on the erased pile?" differently by route. R156 files a token mod on the pile on every route its host leaves play. R219 does not file a token mod erased off a host that stays in play, because a token is not a card. R219 notes the disagreement and leaves it.
+
+- R219: "- **A token mod is not filed.** R133: a token is not a card, and R65's pile is a"
+- R219: "list of cards. (`disposeToBin` does file token mods; that disagreement"
+- R156: "event `disposeToBin` emits, anchored on the host's owner. No zone changes, no"
+- R208: "disagree about it — `disposeToBin` **does** announce token mods on the erased"
+
+**Resolution:** Question for the owner. R219's reason ("a token is not a card, and R65's pile is a list of cards") reads two ways. (1) It holds everywhere: a token mod is never filed, and R156's filing on host departure should stop. (2) It holds only for a mod erased off a living host: the two routes differ on purpose. The rules state each route as its ruling says (720.9a, 720.7c / 407.3a).
+
+### D-U17-4 · Other · rule 721.4a
+
+Sources silent on whether a Virus may be augmented during battle onto a spell token standing in play (not on the stack). A player's chat remark implies it can; R89 leaves it unbuilt and "Bena to rule". No rule is written for it.
+
+- R89: "- **Augmenting a token ENTITY during BATTLE.** `_passer`'s "not without help of"
+- R89: "it is worth the second path."
+- Manual p.34: "Viruses have the extra ability to mod units directly from your hand during combat in addition to being playable and augmentable normally during the deployment phase."
+
+**Resolution:** Question for the owner. _passer's "not without help of Rook" (rules-questions chat, not a [Solved] write-up) reads two ways: (1) a Virus, or a Rook-enabled augment, may go onto a spell token in play during battle; (2) the battle window reaches only units in the region and spells on the stack. The Manual's "mod units" favours (2); the permissive steer favours (1).
+
+### D-U18-1 · Sources disagree · rule 801.2h
+
+Is an {Unstable} card that dies in play trashed? The printed reminder and Caleb make {Unstable} replace the bin entry, so the card never enters a bin and is not trashed. R137 (owner) rules that it enters the bin, is trashed there and is then erased, and the engine does that. The same question as D-U07-3, seen from the trash rule.
+
+- card: Abyssal Evocation: "(If they would enter a bin, erase them instead.)"
+- R137 (its body-trash ruling): "*"Unstable units still die, they just get erased instead of ending up in the"
+- R137 (its body-trash ruling): "therefore no trash". That reading is what the engine implemented until today,"
+- R137 (its body-trash ruling): "**An Unstable card that dies enters a bin, is trashed there, and is only then"
+- R244 (its attribution and mod-erase halves): "Trashing means it goes to the BIN. But the unit that died was unstable, so"
+
+**Resolution:** Question for the owner (answer it once, with D-U07-3). Caleb's "erased instead of ending up in the bin" has two readings: (A) the card never enters the bin, so it is not trashed; (B) it does not stay in the bin, so it may pass through it and be trashed. The printed reminder ("If they would enter a bin, erase them instead") reads only as (A), and R137 itself calls (A) the plain sense. The owner's own words in R244 ("Trashing means it goes to the BIN. But the unit that died was unstable, so it didn't go to the bin") argue (A) as well, though R244 kept the body's trash. Under the authority order print and designer outrank an owner call, so keywords.actions.trash.unstable-death states (A) at low confidence and F-U18-1 records the engine divergence. If the owner keeps R137 as a deliberate divergence, restate that rule as (B) and close F-U18-1 with F-U07-6.
+
+### D-U18-4 · RAQ open · rule 801.12c
+
+Do abilities triggered by one rockfall resolve before the next rockfall of the same effect? The designer's write-up said they do, when Meteor Shower made three copies of itself. The card now prints one spell ("Rockfall 3 three times"), the RAQ register marks the claim outdated, and the engine lets the triggers wait until the whole spell has resolved.
+
+- RAQ 1353899470156206152#2: "any check for triggers will happen in-between resolving each Rockfall 3"
+- card: Meteor Shower: "Rockfall 3 three times."
+- RAQ 1353899470156206152#4: "They resolve one by one and you always must choose alive unit (or none if you don't have any in that Region)."
+- R80: "three batches for the same reason."
+
+**Resolution:** Question for the owner. The designer's words "any check for triggers will happen in-between resolving each Rockfall 3" have two readings: (1) a general statement about rockfalls, so triggers resolve between the rockfalls of one Meteor Shower too (a Mirage Scuttler chosen three times grows between hits); (2) a statement about three separate spell copies, which the card no longer makes, so triggers wait for the one spell to finish. "They resolve one by one" (claim #4) fits either. The register's own note already asks the owner this. keywords.actions.rockfall.repeated says neither.
+
+### D-U18-9 · Other · rule 801.5
+
+Is a deleted unit a unit that dies? The Manual names the two side by side. No source says a deletion is a death; the engine treats it as one (it fires the death event, so "When I die" and "whenever a unit dies" see it).
+
+- Manual p.13: "a unit dies or is deleted, it is placed in the bin (discard"
+- R70: "| `verb` | `dies` / `is deleted` / `is sacrificed` |"
+- card: Unstable Singularity: "When I die, [Switch1] Delete target unit."
+
+**Resolution:** Question for the owner. The Manual's "When a unit dies or is deleted, it is placed in the bin" has two readings: (1) deletion is one way of dying, named separately because a card says "delete"; (2) deletion and death are different events that end in the same bin, so a deleted unit does not trigger "When I die". The Manual says a sacrifice causes a unit "to die" and says no such thing of a deletion. keywords.actions.delete states only where the unit goes. The permissive reading (and the engine's) is (1).
+
+### D-U19-1 · Sources disagree · rule 802.1m
+
+The Manual's Q&A on Tough and Balanced can be read against R19's order for a unit that prints Balanced and is augmented with Tough: R19 applies the unit's own printed attributes before augment-granted ones (Balanced, then Tough), while the Manual says Tough augmented onto a Balanced unit is doubled, then balanced.
+
+- Manual p.42: "A: Attributes apply in order from top to bottom. So if"
+- Manual p.42: "“Tough” is augmented onto a “Balanced” unit, or if a"
+- Manual p.42: "If “Tough” is applied to a “Balanced” unit, it will have"
+- R19: "attrs in type-line order, then augment-granted attrs in mod-stack order, then"
+- Manual p.42: "its stats balanced, then its defense doubled."
+- R19: "⚠ Engine call: the Manual doesn't specify an order for printed-vs-granted-vs-shared;"
+
+**Resolution:** Printed wins (authority order); revised in round 1. The Manual's first example names this exact case, Tough augmented onto a Balanced unit, and orders it doubled, then balanced; its second sentence covers a different event (Tough "applied to" the unit) and orders it balanced, then doubled. Read together they do not support R19's printed-first order, and R19's own premise that the Manual is silent on printed-vs-granted is wrong for this pair. The rule states the Manual and keeps R19 only for the mod-stack order, the column order and duplicates. The round-1 verifier measured the engine balancing first (Child of Aether + Rampart Guardian = 2/4, the Manual gives 2/2): F-U19-5. Question for the owner only if "augmented onto" is meant to describe where the attribute came from rather than the physical stack order "top to bottom" refers to.
+
+### D-U19-2 · Sources disagree · rule 802.1n
+
+Pure's printed reminder ignores "all other attributes"; the rulings keep the stat attributes on in a Pure interaction (R289: Tough, Balanced and Inverted "still read"; R106: the combat Unaware collapse "survives {Pure}") while R289 itself switches Unaware off in a noncombat Pure pairing.
+
+- card: Just a Unit: "Pure cards and cards they are interacting with ignore all other attributes."
+- Manual p.42: "counters, 4. Attributes like Tough, 5. Inverted, 6.Unaware"
+- R289: "{Tough}, {Balanced} and {Inverted} still read (they are stat layers, R61)."
+- R289: "are off against it, and so are its own {Vulnerable} and {Unaware}."
+- R106: "The collapse survives {Pure}: R61 switches the ATTRIBUTE layer off for an exchange, and"
+
+**Resolution:** Printed text read literally outranks R-rulings, so rule 802.1 (attr.general.pure) states that Tough, Balanced, Inverted and Unaware do not apply in a Pure interaction, and files the engine behaviour R289 and R106 describe as F-U19-1 and F-U19-2. Neither R289's "still read" sentence nor R106's "survives {Pure}" sentence quotes the owner; R61, which both lean on, says only that stats are not attributes. Question for the owner: the rule overrides our own R289/R61 on the printed literal alone, and no designer statement settles it. Pure's words "ignore all other attributes" read two ways: (1) every attribute, Tough, Balanced, Inverted and Unaware included (the rule); (2) only the attributes that are not stat layers (R289). The Manual's layer list ("4. Attributes like Tough") favours (1). The pilot (D608-48) kept engine law here; U20's Pure rule (802.25) must be drafted the same way as this one. Round 1: the verifier measured the engine keeping Tough on against a Pure source (a Pure 5 leaves Rampart Guardian a Tough 0/8) and switching Unaware off in a noncombat Pure pairing, which matches R289 and confirms F-U19-1; the rule is kept with a rebuttal. Round 2: the verifier measured Balanced also staying on (a Balanced 4/1 survives a Pure 3 as a 4/4).
+
+### D-U19-3 · Sources disagree · rule 802.8c
+
+What Inverted inverts from when a base rewrite is in play: R93 (owner, 2026-08-22) inverts from the rewritten base; the owner's later general answer that any difference from printed stats is a stat change, and a _passer post in #rules-questions, invert from the printed stats instead.
+
+- card: Its Dark Bubb: "Invert the stat changes of inverted units. For example, -1/+2 would become +1/-2."
+- R93: "(R66) — redefines what base *is*, so it is the thing inverted FROM and is never"
+- R93: "> "Inverted looks at Printed base stats, looks what unit is 'currently' and"
+- R157: "Literally any change to a unit's stats counts. If they're different from the"
+
+**Resolution:** Question for the owner. The printed words "stat changes" support two readings. (1) A base rewrite is not a change but a new base (R93; spikeydog in #rules-questions): a 10/15 made base 4/4 with a +1/+1 counter inverts to 3/3. (2) Any difference from the printed stats is a stat change (R157 §14, the owner on another card; _passer): the same unit inverts to 15/25. The _passer post was checked in the Discord export: it is in #rules-questions, not a [Solved] RAQ write-up, so it does not outrank the owner. The rule follows R93 (the specific ruling). Note that Unaware (rule 802.9) already treats a base rewrite as a stat change, by R157 §14.
+
+### D-U19-4 · Sources disagree · rule 802.1j
+
+Whether Inverted is a clean layer after all of Tough and Balanced, or applies in application order among them: the Manual lists it as its own layer and the engine ships that, but Caleb said "Tough inverted balanced would be different" from "tough balanced inverted".
+
+- Manual p.42: "counters, 4. Attributes like Tough, 5. Inverted, 6.Unaware"
+- R93: "> **calebgannon:** "Tough inverted balanced would be different" … "It would survive as a 1/1""
+- R93: "The engine ships the clean layer — it is the reading his own worked example uses, it is"
+
+**Resolution:** Question for the owner. Caleb's own words (authority 1) and the Manual's layer list (authority 2) give two readings. (1) Inverted is layer 5, applied after Tough and Balanced whatever order they were gained in: a 1/4 that gains Tough, then Inverted, then Balanced is -6/0. (2) Inverted takes its place in application order among Tough and Balanced and inverts only the change made before it: the same unit survives as a 1/1. Caleb added that the case is "basically impossible to make happen" because the unit dies to Tough and Inverted before Balanced can be added. The rules follow the Manual and R93 (reading 1).
+
+### D-U19-5 · Sources disagree · rule 802.2a
+
+Whether a unit without Flying may block a Flying column together with a Flying unit in the same blocking column. The printed reminder names units; the Manual says "the blocking unit"; the Rulebook says "unless the defending player also has flying units"; R248 records that the client "blocks by COLUMN".
+
+- card: Air Plant: "Only flying units can block flying units."
+- Manual p.24: "blocked unless the blocking unit has flying."
+- Rulebook 2023 p.12: "Flying attribute and the entire column cannot be blocked unless the defending player"
+- R248: "blocks by COLUMN and the authored row said so."
+- glossary: Flying: "Its column can only be blocked by a column with Flying."
+
+**Resolution:** Question for the owner. Two readings. (1) Every unit that blocks a Flying column must itself have Flying. (2) Flying is shared in the blocking column as in any column (Manual p.24), so a non-Flying unit blocking together with a Flying unit has Flying and may block. The permissive steer favours (2), which our glossary row and R248's "blocks by COLUMN" also describe, but no test plays it and no designer source addresses it. The rule states only the per-unit restriction both readings share.
+
+### D-U20-13 · Sources disagree · rule 802.25e
+
+Does Pure switch off the stat-layer attributes (Tough, Balanced, Inverted, Unaware)? The printed reminder says Pure cards and what they interact with ignore all other attributes, and the Manual calls Tough an attribute. R61 and R289 keep Tough, Balanced and Inverted. For Unaware, R106 keeps it in combat, while R289 switches a Pure card's Unaware off outside combat.
+
+- card: Just a Unit: "(Pure cards and cards they are interacting with ignore all other attributes.)"
+- Manual p.42: "counters, 4. Attributes like Tough, 5. Inverted, 6.Unaware"
+- R289: "{Tough}, {Balanced} and {Inverted} still read (they are stat layers, R61)."
+- R106: "The collapse survives {Pure}: R61 switches the ATTRIBUTE layer off for an exchange, and"
+- R289: "{Unaware} are all off, against units and against players alike — "its own"
+
+**Resolution:** Question for the owner. "ignore all other attributes" supports two readings: (1) every attribute, the stat-layer ones included, so a Tough unit facing a Pure card is not doubled and Unaware does not collapse; (2) only the attributes that change how cards interact, while a stat layer stays part of the card's stats (R61: "Stats are not attributes"). The rulings take (2) for Tough, Balanced and Inverted, but they split on Unaware: R106 keeps it in combat and R289 drops it outside combat. The document states the rulings and marks those rules confidence low.
+
+### D-U20-2 · Other · rule 802.14a
+
+Sources are silent on WHEN "attacking alone" is judged. If a Sneaky unit attacks with one other unit and that unit is removed in the attack window, it is not said whether the Sneaky unit is then alone when blocks are declared.
+
+- file: client/ui/scan-reminders.json: ""text": "Sneaky units can't be blocked if attacking alone.", "card": "Whispering Mantid""
+- R20: "A Sneaky column cannot be blocked iff its unit is **the only attacking unit in the"
+
+**Resolution:** Question for the owner. The printed words "can't be blocked if attacking alone" support two readings: (1) the Sneaky unit was declared as the only attacker; (2) it is the only attacking unit left when blocks are declared. R20 does not say which. The document states R20 only.
+
+### D-U24-2 · Owner call only · rule D6.6e
+
+R99 ships a constructed deck's element identity to both players, and says in its own words that whether it is public at game start is an open question for the owner.
+
+- R99: "### ⚠ OPEN QUESTION FOR THE OWNER — is deck element identity PUBLIC at game start?"
+- R99: "It decides whether `deckElements` belongs in both players' views or only the owner's."
+
+**Resolution:** Question for the owner. Reading 1: the deck's elements are public at game start (what ships today). Reading 2: they are private to the deck's owner (one line in the view redaction, per R99). The rule states only the shipped default, at low confidence.
+
+### D-U24-3 · Owner call only · rule D6.3
+
+R78 left one presentation call open: the log line "X resolves." is written when resolution STARTS, so it is in the log while the controller is still choosing. R78 asks the owner to rule.
+
+- R78: "### ⚠ "X resolves." still logs at the START of resolution — Bena to rule"
+- R78: "follow — and the event is log-only (nothing dispatches on it), so moving it is"
+
+**Resolution:** Question for the owner. Reading 1: keep the line where it is, as the heading for the effect lines under it (today's behaviour). Reading 2: write it only once the item has actually resolved. No rule states either; annexd.reveal.resolving covers only what the board shows.
+
+## 2. Register and test fixes (51)
 
 ### D-U01-10 · Other · rule 102.4
 
@@ -490,6 +724,36 @@ R23 still carries an engine-call warning for its Vulnerable/Piercing ordering, w
 
 **Resolution:** Re-ground R23's Vulnerable half on RAQ 1372451771632320512 and drop that part of the warning. Its Powerful-before-division half stays an engine call (D-U12-7).
 
+### D-U13-2 · Other · rule 610.4d
+
+R15's heading says it was resolved by the RAQ thread 'Temporal Rift vs NIT sending counter-attack', but that thread is still open ([Considered]), so the claim it relies on is not a ruling. The rule stands anyway, on the Manual's NOTE.
+
+- R15: "Round-2 attackers when round 1 had no battle (⚠ resolved by RAQ "Temporal Rift vs NIT sending counter-attack")"
+- RAQ 1353986897902567424#2: "Counter-attacks ARE allowed even if IT players decides to Pass his attack opportunity."
+- Manual p.20: "The NIT can still declare attacks even if the IT decides not to attack."
+
+**Resolution:** The rule cites the printed NOTE as its authority and R15 for 'any of its units'. Register fix: R15's heading mark should cite the Manual p.20 NOTE rather than an open thread (or say the thread is open).
+
+### D-U13-3 · Register chain wrong · rule 610.4e
+
+R36 ('A lone sent counterattacker auto-forms in round 2') is still presented as current, but the guard test was flipped on 2026-08-24 to assert the opposite: a single sent counterattacker is NOT auto-formed and declining is legal. No ruling records the reversal.
+
+- R36: "that could ride along, the only-unit formation is auto-declared (a forced"
+- file: client/engine/test/32-cast-costs.test.ts: "// FLIPPED 2026-08-24 (decisions-for-the-player audit). This test used to"
+- file: client/engine/test/32-cast-costs.test.ts: "'one sent counterattacker is still a real choice: attack, or decline');"
+
+**Resolution:** R36 is a digital convention (Annex D, U23); the game rule here states what the current test asserts. Register fix: mark R36 as reversed and record the audit that reversed it (filed as F-U13-1).
+
+### D-U13-6 · Other · rule 610.2c
+
+R270 leaves open, as a question for the owner, whether a unit away counterattacking still counts as an ally in the region it left. The Manual's own words give one reading: it does not.
+
+- R270: "rule on: **does a unit that is out counterattacking still count as an ally in"
+- R270: "the region it left?** Under the Manual's "doesn't exist" it does not — but a"
+- Manual p.20: "the region and are treated as if they don’t exist until"
+
+**Resolution:** Printed text outranks an owner call and reads one way only, so this is not a question for the owner. The rule states the current answer (not counted), which the Manual supports. Register fix: R270's open question can be closed by citing Manual p.20.
+
 ### D-U14-12 · Other · rule 702.2d
 
 R311 says the hand's timing-widening rules (R97/R123 haste grants, the battle {Virus} window, Ambush) apply to cached cards. The sources are silent on whether they also apply to a card played from a bin under a permission.
@@ -538,7 +802,154 @@ R198 explains its in-place gate by saying that between combat sub-steps triggers
 
 **Resolution:** Mark that sentence of R198 as overtaken by R261 and R295. The rule text does not rely on it.
 
-## 3. Engine-only and owner-only rules (48)
+### D-U15-6 · Register chain wrong · rule 706.3b
+
+R73 is presented as current, but its "still open" paragraph says a combat-damage trigger resolves immediately as R3/R31 have it (so a Dreamtender in a Swift column is gone before normal damage). R261 reversed that: such triggers wait until after combat (or a sub-step window, R295). R73 carries no partial-supersession mark.
+
+- R73: "trigger fires off the aggregated combat `lifeLost` event and R3/R31 resolve it"
+- R261: "They no longer land before normal damage. They land after combat, with everything else. A"
+
+**Resolution:** The rule follows R261/R295. Mark R73's "WHEN inside combat damage" paragraph as superseded by R261 in the register.
+
+### D-U15-7 · Register chain wrong · rule 706.11
+
+R94 is presented as current, but its "OPEN" section says the engine computes the {Resonant} rider from the undoubled amount and that this was deliberately not changed. R315 later made the rider damage from the source, so {Powerful} doubles it (the RAQ's 2/4 Powerful Resonant deals 8 to the face). R94 carries no partial-supersession mark.
+
+- R94: "### ⚠ OPEN — the RESONANT rider is doubled twice in the RAQ, once in the engine"
+- R315: "So everything that prices damage from that source prices the rider: {Powerful}"
+
+**Resolution:** The rule follows R315. Mark R94's "OPEN — the RESONANT rider" section as superseded by R315 in the register.
+
+### D-U18-10 · Register chain wrong · rule 801.9i
+
+R206 tightened the Glimpse glossary row on the ground that an expired glimpse card is still moddable, and the register records that as amending R190's "stays cached, inert". R303 (later) made an expired glimpse refuse every verb, mods included, and R45 now says R303 "makes inert mean it". The R206 Glimpse tightening still reads as current: no edge or heading mark records that R303 reversed it.
+
+- R206 (its Glimpse row tightening): "over-broad — an expired glimpse card is still public, targetable and moddable),"
+- R303: "was a mod zone with no door on it. A glimpsed card you failed to play stayed a live graft"
+- R45: "makes "inert" mean it: the same permission, and the same "ignoring affinity","
+- file: client/ui/glossary.ts: "and still moddable out of the zone at full price."
+
+**Resolution:** Add a supersession edge R303 → R206 (relation: reversed; scope: the Glimpse row's "moddable" half) and mark R206's heading. R190's "stays cached, inert" is right again on the mod question; the R206 → R190 edge should say it was amended only on "public, targetable". Fix the glossary row (F-U18-2).
+
+### D-U18-8 · Other · rule 801.8a
+
+403.3a and R303 name only two permissions that make a cached card usable: a fulfilled prophecy and a live glimpse. Murkdrop Distiller and Big Glimpse Card grant a play of the cards they cache in their own text.
+
+- R303: "may be played only while a prophecy on it is fulfilled or a glimpse stamp is live — and"
+- card: Murkdrop Distiller: "you may cache it. If you do, you may play it until end of turn."
+- card: Big Glimpse Card: "You may play those cards until end of turn, ignoring affinity."
+
+**Resolution:** keywords.actions.cache.no-permission adds "the text of the effect that cached it" as a third permission, because printed text wins. Widen 403.3a (U07) the same way. Whether such a card-text permission also covers mods (R303's table) is not stated; question for the owner only if a judge's CR rules on it.
+
+### D-U19-6 · Register chain wrong · rule 802.9h
+
+R106 is unmarked although its "one open edge" paragraph (targeting is deliberately not implemented) was answered by R281; only R206's Unaware row carries the R281 mark.
+
+- R106: "so targeting is **deliberately not implemented**. "Delete target unit with base power 2 or"
+- R281: "*"You can target things with unaware, of course, but if that thing does a stat"
+
+**Resolution:** Follow R281: an Unaware card can be targeted, and stat changes put on it do nothing while it is Unaware. Mark R106's targeting paragraph "(answered by R281)". Still open, and conditional: whether a stat-gated target restriction ("base power 2 or less") reads the printed stats of a non-Unaware target when the effect's source is Unaware. Question for the owner only if a card can put such a restriction on an Unaware source (no printed card does today: Bubb, Trashling and Haboob have no targeted text).
+
+### D-U20-1 · Other · rule 802.13
+
+Six attributes in this unit (Evasive, Sneaky, Alluring, Resonant, Thieving, Reaping) print their reminder only under the type line. The oracle text and the extract do not carry it, so the quote checker cannot verify the reminder sentence each 802.N rule states; those rules cite the rulings and RAQ claims that restate it instead.
+
+- file: client/ui/scan-reminders.json: ""text": "Evasive units require two blockers.", "card": "Curio Drifter""
+- file: client/ui/scan-reminders.json: ""text": "Sneaky units can't be blocked if attacking alone.", "card": "Whispering Mantid""
+- file: client/ui/scan-reminders.json: ""text": "When an alluring column attacks, target enemy can't attack and must block it this combat if able.", "card": "Tempest Wrangler""
+- file: client/ui/scan-reminders.json: ""text": "Whenever a resonant source deals damage to a unit, it deals that much damage to that unit's controller.", "card": "Resonant Form""
+- file: client/ui/scan-reminders.json: ""text": "Whenever a thieving source deals combat damage to an opponent, draw a card.", "card": "Slink""
+- file: client/ui/scan-reminders.json: ""text": "When a reaping source kills one or more units, draw a card. It loses reaping until regroup.", "card": "Flame of History""
+
+**Resolution:** Tooling: let the extract fold client/ui/scan-reminders.json into each card's checkable text (or accept a scan reference as a printed source), then re-cite the six definitions as printed. The sentences themselves were read off the scans (R283 for Reaping).
+
+### D-U20-6 · Other · rule 802.19h
+
+The RAQ register's note on the Containment Protocol claim says Resonant never waits on the stack. Since R315 the Resonant trigger does go on the stack, so the note is stale.
+
+- file: client/ledgers/raq.ts: "Resonant never waits on the stack, so there is nothing to negate."
+- R315: "the resonant source**, put on the stack as that source's trigger — not life loss"
+
+**Resolution:** Register fix: update the note on RAQ 1366446116274442291#2 to say the Resonant trigger waits on the stack (R315) and would be negated by the engine.
+
+### D-U20-8 · Other · rule 802.17e
+
+Our glossary's Electric row still says the excess is lost when the chain runs out. R317 (from the RAQ) deals it to the last unit.
+
+- glossary: Electric: "When the chain runs out the excess is lost"
+- R317: "no {Piercing} is read: it stays on the last unit — dealt, never lost (R114's "ALL"
+- RAQ 1372451771632320512#2: "All 12 damage sink into Crumbling - this has its use if you had Ember of Life in play"
+
+**Resolution:** Glossary fix (our text, not authority): the row should say the remainder stays on the last unit, and that with Piercing it is elective. Already known to the orchestrator as a register-level finding.
+
+### D-U20-9 · Register chain wrong · rule 802.18b
+
+R166, still current with no supersession mark, says Poisonous "replaces the damage with counters and never reaches the branch". R237 later ruled, on Caleb's words, that Poisonous is a form of dealing damage and not a replacement.
+
+- R166: "{Resonant} drains life, {Poisonous} replaces the damage with counters and never"
+- R237: "**{Poisonous} is a MARK, not a substitution.** Everything above the mark —"
+- RAQ 1354148437355925554#0: "Poisonous damage is damage dealt: it fires "when I am dealt damage" (Awoken Tomb makes its X/X)."
+
+**Resolution:** Register fix: mark R166's Poisonous sentence as corrected by R237 (a scoped supersession edge). The document follows R237 and the RAQ.
+
+### D-U21-1 · Register chain wrong · rule 803.6e
+
+R22 is classified current, but its sentence on where a recalled ally goes ("base card to its owner's hand, its mods to their owners' bins") was overtaken by R250 §4, "Zones ALWAYS follow control": a card leaving play goes to its controller's zone. The two differ when the ambushed ally is a stolen unit or carries an opponent's mod. R22 carries no mark for this.
+
+- R22: "ambusher to the bin ("you lose both", card ruling). Recall = base card to its **owner's"
+- R22: "hand**, its mods to their owners' **bins**, a token target is erased. ⚠ Engine calls:"
+- R250 (its §4: zones follow control): "> "**Zones ALWAYS follow control. One rule, no split.** Whoever CONTROLLED the"
+
+**Resolution:** Mark R22's recall sentence as narrowed by R250 in digital-rules.md. The ambush rules cite R22 only for the target, the slot and the fizzle, and leave the destination to the recall rule (keywords.actions.recall.destination, controller's hand). Question for the owner only if the engine's ambush path still recalls to the owner's hand; the verifier should check.
+
+### D-U23-13 · Register chain wrong · rule D2.4
+
+R236 §5 describes the haste auto-ready's latch (its own hasteAutoAt). R245(b) reports that this client re-sent doneHaste once per arriving state, and replaced the latch with one keyed on the answer being outstanding. supersession.json has no R245 → R236 edge.
+
+- R236: "The one guard that is *not* borrowed: the send is latched on its own"
+- R245: "client re-sent `doneHaste` once per arriving state, and the extras came back"
+
+**Resolution:** The rule states R245(b). Proposed register edge: R245 amends R236 (scope: §5's latch).
+
+### D-U23-16 · Engine only · rule D2.9
+
+No ruling says a player cannot keep priority after acting. Test 272 records that casting hands priority to the opponent, and calls it a finding. U14's F-U14-2 suspects this contradicts the Manual's rule that a player who acts may keep priority.
+
+- file: client/ui/test/272-full-control.test.ts: "// the window here: `engine.ts` hands priority to the other seat as soon as"
+
+**Resolution:** The rule states the engine's convention as basis engine and points at 703. If F-U14-2 is upheld (the Manual wins), this Annex D rule is withdrawn rather than kept as a convention.
+
+### D-U23-17 · Register chain wrong · rule D1.2c
+
+R36 (a lone round-2 counterattacker auto-forms) is unmarked in the register, but the engine's forcedAction records that branch as removed on 2026-08-24 by the decisions-for-the-player audit, because declining to send it is a real choice. If the audit was the owner's decision, R36 is reversed and the register lacks the mark.
+
+- R36: "that could ride along, the only-unit formation is auto-declared (a forced"
+- file: client/engine/src/apply.ts: "// There used to be a second branch here: a round-2 counterattack with"
+
+**Resolution:** The rule states R36, with 'engine differs, see F-U23-4'. Question for the owner only if the 2026-08-24 audit's removal was not his call; if it was, mark R36 reversed in digital-rules.md and retire the sub-rule.
+
+### D-U23-6 · Sources disagree · rule D2.4
+
+R245(b) rules that an automatic answer, naming both the haste-step ready and the automatic pass, is latched by being unanswered and never by a state counter. R258, describing the code later, says the automatic pass is latched once per actionCount, and test 70 [59] asserts that a new state number releases the latch.
+
+- R245: "### (b) An automatic answer is latched by the FACT of being unanswered, never"
+- R245: "The client sends intents the player did not: the haste-step ready (R236) and"
+- R258: "[59]/R245 latch it to one send per `actionCount` (`takeAutoPass` in"
+- file: client/ui/test/70-playtest-round15.test.ts: "assert.equal(takeAutoPass(plan, 41, latch), true, 'a new state is a new window');"
+
+**Resolution:** The rule states R245(b), the ruling, with 'engine differs, see F-U23-2'. Question for the owner only if R245(b) was meant for the haste-step ready alone: its words name both automatics, so the rule reads it as covering both.
+
+### D-U24-5 · Register chain wrong · rule D7.4
+
+R266 still says that nineteen costly announcements remain log-only and that choosing a surface for them is a later product call. R276 made that call (a shared toast tier) and gave them a surface. R266 carries no mark saying so.
+
+- R266: "Nineteen tier-1 announcements remain log-only."
+- R276: "CT-142 asked which log-only announcements deserve a surface and refused to guess,"
+- R276: "**shared toast tier** — one notice channel they all use, a brief toast near the"
+
+**Resolution:** Mark R266's closing count as answered by R276 in the register ("its log-only count answered by R276"). The rules follow R276: annexd.confirm.not-only-log.toast.
+
+## 3. Engine-only and owner-only rules (102)
 
 ### D-U01-13 · Engine only · rule 103.3a
 
@@ -948,6 +1359,15 @@ When a split step's windows open (after a sub-step that struck, only if a later 
 
 **Resolution:** Follow R295 (owner). Basis of 608.3d is owner. The designer's wording is looser but does not contradict it.
 
+### D-U13-5 · Owner call only · rule 610.2e
+
+That a sent counterattacker is not checked for death while away, and is checked on its return, is an owner call. No printed or designer source speaks to state checks on an absent unit.
+
+- R270: "A sent counterattacker is not death-checked"
+- Manual p.20: "the region and are treated as if they don’t exist until"
+
+**Resolution:** The rule states R270, basis owner. It is consistent with the Manual's 'treated as if they don't exist'. It awaits owner sign-off like every owner-only rule.
+
 ### D-U14-10 · Engine only · rule 704.1
 
 No printed, designer or owner source states that an effect's instructions are carried out in printed order with each later one seeing the earlier results. The engine does so; R68 records it only as the implemented reading for Finality and asks for a ruling.
@@ -975,7 +1395,487 @@ R68 implements the straightforward reading for Finality (its second sentence era
 
 **Resolution:** The rule states the straightforward reading, which R68 implements. Question for the owner only if Finality is not meant to erase the cards it has just negated.
 
-## 4. Everything else (74)
+### D-U15-11 · Other · rule 708.4a
+
+The designer says replacement effects apply only once in an effect, and R104 says a thing can only be replaced once, the first claimant taking it. The engine offers a redirected Piercing leftover to every further holder: two Oorblaks both redirect one hit.
+
+- RAQ 1397188292239163454#0: "replacement effects only apply once in an effect Unless a new trigger occurs"
+- R104: "Substitutes or redirects the thing itself. A thing can only be replaced once, so"
+
+**Resolution:** The designer wins under the authority order: one replacement per event, so a second Oorblak does not take the leftover. The rule states that; the engine is filed (F-U15-3, F-U12-1).
+
+### D-U15-3 · Owner call only · rule 708.4a
+
+When two effects could each replace or redirect the same event, only one applies. No printed or designer source says which one; R104 takes the first in entity order ("ties break by entity id"), an engine choice.
+
+- R104: "the first claimant takes it and ties break by entity id, exactly as `replaceRotDamage`"
+
+**Resolution:** The rule states only that one applies. Which one is the engine's order. Question for the owner only if two such effects controlled by different players can claim the same event in a real game (two Counter Thieves on opposite sides of a battle), where the choice decides who gets the counters.
+
+### D-U15-4 · Owner call only · rule 708.6a
+
+The order "add, then double" is the designer's for damage and {Powerful} (R316, from the RAQ). For a life-total multiplier (Arbiter of Vitality) beside an additive modifier, R264 says the composition is still unruled and the engine's order is an interim decision.
+
+- R316: "> "Bellowing Boulder with Powerful and Conduit of Pain: (1+1)x2 damage to each unit ="
+- R264: "**⚠ THE ADDITIVE COMPOSITION IS STILL UNRULED, and Q4 asked about it.** R157 §23"
+
+**Resolution:** The rule states one order for both, add first and then double, which is the designer's order for damage and the engine's interim order for life. Question for the owner only if the RAQ order for {Powerful} is not meant to carry over to Arbiter of Vitality.
+
+### D-U16-10 · Engine only · rule 710.8d
+
+R164 says a Virus applied to the original spell while it was on the stack is not copied, so its attributes do not reach the copy. This is named as an engine approximation; no printed or designer source covers it. Caleb is quoted only for {Modular} mods, which are copied.
+
+- R164: "onto the ORIGINAL while it sat on the stack are **not** copied, so their"
+
+**Resolution:** The rule states only the {Modular} half, which has a designer source. The Virus half is left unstated as engine behaviour with no ruling. Question for the owner only if the judge's CR says what a copy does with a Virus on the original.
+
+### D-U16-11 · Owner call only · rule 711.3
+
+That a unit stolen during a battle stays out of formation until regroup, attacking and blocking for nobody, is the owner's call on Download. No printed or designer source covers it, and R8 had said the stolen unit joins its new controller's formations.
+
+- R8: "including joining the new controller's formations"
+- R172: "it sits out until regroup."
+
+**Resolution:** Owner call. The rule states R172; R8's formation clause is cited as history.
+
+### D-U16-15 · Owner call only · rule 713.3
+
+That Constructed's draw of 4 and putting 2 back are judged as one step, so a unit is not checked until its controller has put the 2 back, is the owner's call in R313. No printed or designer source states it.
+
+- R313: "**Constructed's draw phase is one step.** Draw 4 and put 2 back are two"
+- R313: "actions, but a seat's units are not checked while that seat still owes its"
+
+**Resolution:** Owner call. The rule states R313's exception. Question for the owner only if the judge's CR checks units between the draw and the put-back.
+
+### D-U16-16 · Engine only · rule 713.3a
+
+The sources are silent on whether deaths are checked part-way through an effect's resolution. R313 makes the end of every action a safe point and says a suspended action is not at one; it does not say whether the effect's own changes are checked as they happen. The engine checks after each counter placement and after each part of a composite effect, so units an 'each unit' effect kills (Pestilent Titan) die one at a time, not together.
+
+- R313: "safe point — the engine's state-based check. The end of every action is a safe"
+- R237: "because `addCounters` runs `checkDeaths` and a lethal poison hit would otherwise"
+- file: client/engine/src/engine.ts: "this.checkDeaths();   // sequential within the composite; triggers wait for settle()"
+- card: Pestilent Titan: "When I attack or block, [Switch1] Put a -1/-1 counter on each unit. Each player gains a rot."
+
+**Resolution:** The rule states the engine's behaviour with basis engine. Question for the owner only if the judge's CR has an 'each unit' effect finish before any death is checked, so that units it kills die together (effects.state.together).
+
+### D-U16-4 · Engine only · rule 709.8
+
+The sources are silent on where an effect that switches power and defense applies in the stat layers. The Manual's six layers include no switch, and R66 calls the engine's handling an approximation and the question an open ruling.
+
+- R66: "Where a real switch belongs is an OPEN RULING, and this line previously guessed"
+- Manual p.42: "A: Stats have 6 layers to them, which are applied in"
+
+**Resolution:** The rule states the engine's handling (a layer-3 change worked out at resolution, so a later change is not switched) with basis engine, and says the ruling is open. Question for the owner only if the judge's CR places the switch elsewhere.
+
+### D-U17-10 · Owner call only · rule 723.5c
+
+That Rook's permission works only in Rook's region rests on a player's chat remark, quoted in R95. Players are not authority; Rook's printed text names no region.
+
+- R95: "the rules'. Region scoping is not a convenience either; on this exact card, rodanaw in"
+- card: Rook: "You may augment cards from hand and bin during battle as if they were [Virus]."
+
+**Resolution:** The rule states the engine's region scope, basis owner. It is the general region scope the client applies to every permission; owner sign-off needed.
+
+### D-U17-11 · Owner call only · rule 723.1b
+
+That {Virus} buys timing and not the host, so any augment (not only a Virus) may go onto a spell token in deployment, is R89's reading of a player's chat, which R89 itself says is sourced to the community rather than to Caleb.
+
+- R89: "The reading taken, and it is a reading — sourced to the community rather than to"
+- R89: "> deployment but currently that would only be possible with spell tokens. Also"
+
+**Resolution:** The rules (721.4a, 723.1b) state R89's reading, basis owner/mixed. Caleb's own sentence fits either reading of which mods may do it. Owner sign-off needed.
+
+### D-U17-13 · Engine only · rule 722.3c
+
+When a graft is applied onto a unit that triggers on becoming targeted (Mohruung: "When I become targeted, [Switch1] Create a Crystal 2."), does the graft being applied join that triggered composite? The designer says only "he will trigger first". The engine composes the trigger at the targeting event, so the new graft does not ride it (verifier probe: a Crystal, 0 Fireballs).
+
+- RAQ 1355115946032889914#4: "Applying Graft is 'targeting' effect, so if you try to Graft something underneath the Mohruung, he will trigger first"
+- file: client/engine/src/apply.ts: "e.fireEvent('targeted', ev);   // grafting is targeting (Graft 101 §5)"
+
+**Resolution:** Sources silent beyond "trigger first"; the engine's answer (the composite is fixed before the graft attaches) is consistent with that wording. Not stated as a rule; owner sign-off, together with D-U03-13 on when the trigger resolves.
+
+### D-U17-14 · Sources disagree · rule 723.2b
+
+The Manual says flatly that a Virus in a bin cannot be used as a mod during battle; Rook lets cards from the bin be augmented during battle as if they were Viruses, and names no exception for a card that already is a Virus. The engine lets a bin Virus be augmented in battle under Rook (r2 verifier probe).
+
+- Manual p.34: "cannot be used as a mod during battle."
+- card: Rook: "You may augment cards from hand and bin during battle as if they were [Virus]."
+
+**Resolution:** The card's specific permission is read as an exception to the Manual's general note, and the rule says so; the engine agrees. Question for the owner only if Rook's "as if they were [Virus]" is meant to reach only non-Virus cards.
+
+### D-U17-2 · Engine only · rule 723.4e
+
+Which stack items a Virus may be augmented onto rests on R79's own judgement calls. Caleb names spells (and spell tokens); R79 excludes triggered and activated abilities, Viruses, units being cast and Ambushes, and marks each exclusion "not sourced" and "Bena to rule".
+
+- R79: "The four ⚠ are judgement calls, not sourced answers. **Bena to rule** if any of"
+- R79: "`STACK_VIRUS_HOSTS = { spell, spellUnit, spellToken }`. The ruling names spells"
+
+**Resolution:** The rule states the engine's exclusions (apply.ts STACK_VIRUS_HOSTS), basis engine, confidence low; the positive host set stays in effects.virus.spell-host.which. Owner sign-off needed; nothing in print or the RAQ decides the four exclusions.
+
+### D-U17-3 · Owner call only · rule 723.4c
+
+Caleb says a spell carrying a Virus "gets erased on resolution". R79 makes an exception for spell units, which enter play with the Virus as an augment instead, and says no ruling asks for it.
+
+- R79: "> and the spell gets erased on resolution**. You can augment spells during"
+- R79: "*arrives*. Erasing its card would delete a unit on its way into play, which no"
+
+**Resolution:** The rule states R79's exception, basis owner. Its reasoning: {Unstable} replaces a bin entry (R69), and a resolving spell unit does not go to a bin. Owner sign-off needed; question for the owner only if he reads Caleb's "the spell gets erased" as covering spell units.
+
+### D-U17-9 · Owner call only · rule 724.4c
+
+On a Modular spell an unpayable grafted cost skips only its own part. That is an owner carve-out written into R334 with no designer source; for a unit's composite the designer withholds the whole effect.
+
+- R334: "- A played **spell** that carries a `{Modular}` graft part keeps the per-part skip. Withholding a card already paid for would strand it."
+- RAQ 1355115946032889914#10: "if you can't pay it (no units to sacrifice) then the whole Graft Effect won't go on the stack."
+
+**Resolution:** The rule states R334's carve-out, basis owner. The designer's line is about a unit's graft composite, so the two do not directly collide. Owner sign-off needed.
+
+### D-U18-11 · Owner call only · rule 801.2e
+
+Every rule about who trashes and what is trashed rests on owner calls with no designer source: the trasher is the player whose bin the card enters (R40, R250), a mod's trash belongs to the host's controller (R244), a token is never trashed (R306), and an exchange trashes the unit that leaves (R157 §3).
+
+- R250 (its §4, zones follow control): "| who trashed it? | its CONTROLLER (R244, unchanged) |"
+- R244 (its attribution and mod-erase halves): "**1. Where a mod IS trashed, the HOST'S CONTROLLER trashes it.** Not the mod's"
+- R306: "trashed.* A token is not a card (R133's first half, which stands), so a token"
+- R157 (§3): "> *"It's not a death, but it is a despawn and trashing. Weird corner case."*"
+
+**Resolution:** The rules ship with basis owner, as the engine's law. Fourteen cards print trash triggers, so these calls decide real games; they are the first to compare against a judge's CR. Question for the owner only if the judge's CR attributes a trash differently.
+
+### D-U18-12 · Sources disagree · rule 801.9d
+
+Whose deck does a glimpse read when an effect makes another player glimpse? Caleb's words quoted in R157 §18 say "the deck" is the effect controller's; the reminder on Celestial Purge and Dematerialize says the glimpser reveals from "their deck". The engine reads the glimpser's deck. It only matters in constructed, where each seat has its own deck.
+
+- R157 (§18): "> 'The deck' always refers to the deck of the effect's controller. The targeted"
+- card: Dematerialize: "(They reveal the top three cards of their deck and cache one. Until end of turn, they may play it as if it was in their hand, ignoring affinity. Recycle the rest.)"
+
+**Resolution:** Followed the printed reminder: the glimpser reveals from their own deck. Caleb's sentence answered a question about Big Glimpse Card, where the effect's controller is the glimpser, so on that card the two readings agree; the reminder is the specific text for a glimpse the effect hands to another player. Question for the owner only if a judge's CR reads Caleb's sentence as covering "Its controller Glimpses": then a constructed Celestial Purge would reveal from the caster's deck.
+
+### D-U18-13 · Owner call only · rule 801.10
+
+The recycle mark has no printed or designer source. Print says only that recycling puts a card "on the bottom of the deck"; R296 records the mark and the reshuffle as an unwritten rule the owner learned from a judge-level player. The same item as D-U07-12, seen from the keyword action.
+
+- Manual p.16: "recycled (put on the bottom of the deck) and each"
+- R296: "**past the mark**, into the recycle pile, not onto the bottom of the live deck."
+
+**Resolution:** The rule states both: print for "bottom of the deck", R296 for the mark. Answer once with D-U07-12.
+
+### D-U19-10 · Owner call only · rule 802.9c
+
+What counts as "interacting with" an Unaware card (dealing or being dealt damage, and combat) rests on the owner's operational statement; the RAQ covers only the Squish/Fight/Battle cases, and R10's wider reading (targeting too) was replaced.
+
+- R106: "> 'involved' (self or others when dealing damage or in combat when dealing/receiving). So"
+- RAQ 1402292180499955884#4: "Squish to make Robot 10 deal its defense as damage to Bubb will cause no harm to Bubb"
+
+**Resolution:** Follow R106 (owner) for the scope, with R281 for targeting. Question for the owner only if a comparison CR treats other interactions (an ability that reads another card's stats, a stat-gated target restriction) as "interacting".
+
+### D-U19-12 · Engine only · rule 802.1m
+
+Which way mod-stack order runs for augment-granted attributes rests only on R19's engine reading ("order gained": the first attached applies first). The Manual says attributes apply "top to bottom" but does not say whether a later augment sits above or below an earlier one.
+
+- Manual p.42: "A: Attributes apply in order from top to bottom. So if"
+- R19: ""order gained" is the engine's reading. (Engine 2026-07-16.)"
+- R19: "⚠ Engine call: the Manual doesn't specify an order for printed-vs-granted-vs-shared;"
+
+**Resolution:** The rule states the engine reading (first attached first), pinned by 08-cards2.test.ts (Rampart Guardian then Child of Aether makes a 3/1 a 3/3; the other order a 3/6). Question for the owner only if a later augment is meant to sit on top of earlier ones, so that "top to bottom" applies the newest augment first.
+
+### D-U19-9 · Owner call only · rule 802.8d
+
+The Tough + Inverted law rests on the owner's retracted bug report and R226's derivation; the owner's own words ("always kills") are stronger than the law R226 pins (a shrunk unit survives).
+
+- R226: "> works. So tough + inverted always kills the unit since +0/+X is just -0/-X"
+- R226: "> ### **final defense = −2Δ.** The base cancels out completely."
+
+**Resolution:** Follow R226: the rule states the law (defense = -2 x the net change), which is the owner's statement for every board where the defense has not been reduced. No designer source; Caleb's nearby remark ("tough inverted would die before you could add more", R93) agrees with the common case.
+
+### D-U20-11 · Other · rule 802.21c
+
+Reaping's second printed sentence ("It loses reaping until regroup.") is deliberately not built: R283 says no source in the pool can kill twice with Reaping, because all four Reaping cards are spells and nothing can give a unit Reaping. A guard test goes red if that changes.
+
+- R283: "### 2. "It loses reaping until regroup" is deliberately NOT built"
+- R283: "clause would bite only if a UNIT could carry {Reaping}, and nothing in the pool"
+
+**Resolution:** The document states the printed rule (basis owner, confidence low, citing R283's quote of the reminder). No engine bug while it stays unreachable; 263 §4 is the tripwire.
+
+### D-U20-12 · Owner call only · rule 802.23b
+
+One rot per controller per kill event, however many of that player's units died, is the owner's reading of the Afflicting reminder; R48 says no designer statement was found.
+
+- R48: "kills anything. ⚠ One rot per affected controller per kill event, however"
+- card: Umbral Decay: "(When an afflicting source kills one or more units, those units' controllers gain a rot.)"
+
+**Resolution:** Stands as owner law. The printed "those units' controllers gain a rot" (singular rot, plural units) supports it.
+
+### D-U20-14 · Owner call only · rule 802.26g
+
+The Manual makes a modded card Unstable "when it dies or is erased". A resolving or negated spell does neither. R105 extends the erase to a modded Modular spell leaving the stack, on the owner's design reason (Spellbind is a flashback).
+
+- Manual p.35: "As long as a card is modded, it has the unstable attribute, meaning when it dies or is erased, it and all of its"
+- R105: "> "A modded Spellbind should also have unstable. It basically works as a"
+
+**Resolution:** Stands as owner law. The Manual's next sentence ("even though mods can be applied from the bin, they are generally only able to be applied once") has only Modular as a referent, which supports the owner.
+
+### D-U20-18 · Owner call only · rule 802.20d
+
+Caleb was shown only Lethal when he said a replaced combat hit still counts as dealt (2024-10-24). The extension to Thieving, and to Blessed, is the client's inference, made general by the owner in R238.
+
+- R238: "- **Caleb was shown {Lethal} only.** The client's extension of the ruling to"
+- R238: "> **"Yes, blightsea pollup says it deals damage as, so its still damage. Just"
+
+**Resolution:** Stands as owner law (R238).
+
+### D-U20-20 · Owner call only · rule 802.19c
+
+That Resonant's "that much damage" is the damage the unit received, after Vulnerable doubled it and after prevention, is R315's own reading. The RAQ examples never involve Vulnerable.
+
+- R315: "The amount is what the unit **received** ("that much damage"): after {Vulnerable},"
+
+**Resolution:** Stands as owner law.
+
+### D-U20-21 · Engine only · rule 802.17f
+
+Sources are silent on what "adjacent" means for Electric outside a battle. The printed reminder says only "an adjacent unit"; the engine reads adjacency off the two battle grids, so outside a formation no unit is adjacent and Electric excess stays on the unit it hit (measured by the round-1 verifier's probe).
+
+- card: Envoy of Lightning: "Excess damage from electric sources can {/n}be directed to an adjacent unit, recursively."
+- file: client/engine/src/engine.ts: "push(grid[ci]![1 - ri]);"
+
+**Resolution:** The rule states the engine (formation adjacency only), basis mixed, awaiting owner sign-off (Annex P). Question for the owner only if a judge's CR treats units in the same region, or deployed side by side, as adjacent outside combat.
+
+### D-U20-22 · Other · rule 802.24d
+
+Sources are silent on Lethal when combat damage to a player is prevented. R98's prevention ruling covers damage to units only, and no card in the pool prevents damage to a player, so the engine has no path for it. The rule was removed rather than derived by analogy.
+
+- R98: "So a fully prevented hit produces **no `damage` event** ("whenever I am dealt damage" stays"
+- R98: "{Lethal} still kills through it"*. **Replacement is a substitution; prevention is a"
+
+**Resolution:** No rule. Question for the owner only if a card that prevents damage to a player is ever printed.
+
+### D-U20-23 · Other · rule 802.16p
+
+Since R319 the attacker may keep Piercing excess on a unit it strikes. No source says whether the same elective keep applies when the hit is redirected into Oorblak; the engine's redirect absorbs exactly lethal (1 if Deadly) and passes the rest on, with no choice (round-1 verifier).
+
+- RAQ 1397188292239163454#0: "he takes 4 damage which is enough to kill him and leftover 6 damage is still Piercing so it goes to players face"
+- RAQ 1353888077625561108#5: "You may still overkill front or back units, however with Piercing any excess damage you won't assign to front or back unit will be assigned to Opponent Health."
+
+**Resolution:** The rule follows the Oorblak RAQ (exactly lethal into Oorblak, the rest to the player). Question for the owner only if a player asks to overkill a redirect target: the overkill RAQ speaks of units the attacker assigns to, and Oorblak is dealt the hit by its own replacement, not assigned it.
+
+### D-U20-24 · Owner call only · rule 802.24c
+
+The round-1 verifier measured that a Lethal column whose whole hit is redirected into Oorblak still kills the player, though the player is dealt no damage. Caleb's "Yes" (R238) was given on a replacement that turns the hit into rot for the same player; applying it to Oorblak, which deals the hit to a unit instead, is the owner's extension.
+
+- R238: "> **Caleb Gannon, 2024-10-24T00:23:09** *(reply)*: **"Yes"**"
+- file: client/engine/src/engine.ts: "if (hit.attrs.has('Lethal')) this.killPlayer(hit.seat, `${hit.label} is Lethal`);"
+
+**Resolution:** attr.lethal.replaced states the general reading (replaced damage still counts as dealt) and the engine agrees. Question for the owner: "the damage still counts as having been DEALT" reads either as dealt to the player whatever the replacement does with it, or as dealt only where the replacement leaves the player as its recipient (rot, not Oorblak).
+
+### D-U20-3 · Owner call only · rule 802.14a
+
+What "attacking alone" means (the only attacking unit in the formation; spell tokens do not count; two Sneaky attackers are both blockable) is R20's engine reading, marked ⚠, with no designer source.
+
+- R20: "attacking are NOT alone — both blockable. ⚠ Engine reading of "unblockable if attacking"
+
+**Resolution:** Stands as owner law (basis owner). Seek a designer answer if a judge disputes it.
+
+### D-U20-4 · Owner call only · rule 802.15k
+
+When two Alluring triggers target the same unit, R84 lets blocking either column excuse both duties. R84 calls this a judgement call by the owner; no designer source.
+
+- R84: "### ⚠ Two duties on one unit — a judgement call"
+- R84: "**Discharging either duty excuses the rest**, and the "must be among its"
+
+**Resolution:** Stands as owner law (basis owner).
+
+### D-U20-7 · Owner call only · rule 802.17b
+
+That Electric excess never jumps back to a unit already in the chain is stated only by R206's description of the engine (a visited chain) and our glossary; no printed or designer source says so. "Recursively" does not settle it.
+
+- R206: "A `visited` chain (engine.ts:4123-4160), and Envoy of Lightning's printed reminder names it"
+- card: Envoy of Lightning: "Excess damage from electric sources can {/n}be directed to an adjacent unit, recursively."
+
+**Resolution:** Stands as owner law (basis owner, confidence medium). No reachable card makes it matter often; ask Caleb if a judge disputes it.
+
+### D-U21-5 · Owner call only · rule 803.7g
+
+That a fulfilled prophecy stays fulfilled is the owner's call (R44), reasoned from the reminder text and an announcement by Caleb that the pack does not hold verbatim. No designer ruling decides it.
+
+- R44: "text says the card may be played "if the prophecy has been fulfilled" and"
+- R44: "of which read as a one-way latch. (Bena's call 2026-08-19.)"
+
+**Resolution:** Stated as the owner's call. If Caleb's announcement ("anytime after the condition has been met") can be found in the Discord export, add it as a designer source and raise the basis.
+
+### D-U21-6 · Owner call only · rule 803.8a
+
+Caleb's glossary line limits Unstable to a card entering a bin "from an active zone", but he never lists the active zones. The list (play and the stack) is the owner's fill, and R145 says not to attribute it to Caleb.
+
+- R145: "is worth being honest that it is a fill and not a citation: **do not attribute"
+- R145: "> "in play and the stack are active zones (which is relevant for cards that have"
+
+**Resolution:** Stated as the owner's ruling with the zone list marked owner. Question for the owner only if a judge's CR lists the active zones differently (for example, including the cache).
+
+### D-U21-7 · Owner call only · rule 803.6h
+
+R22 labels two Ambush behaviours as engine calls with no designer source: an Ambush on the stack counts as a spell effect for negation, and an ambusher takes the ally's slot exactly, including a blocking slot.
+
+- R22: "an ambush on the stack counts as a "spell effect" for negation targeting (Dreadwave"
+- R22: "the slot exactly (including a blocking slot). (Engine 2026-07-16.)"
+
+**Resolution:** Stated with basis owner (803.6h; the slot half sits in 803.6e beside the printed "their position in play"). Question for the owner only if a judge's CR treats an Ambush as a non-spell effect.
+
+### D-U21-8 · Owner call only · rule 803.8m
+
+Pull Under tells its caster to put the deleted unit and its mods into a bin; Unstable says a modded card that would enter a bin is erased instead. R137 records the engine's reading that the card's own destination wins. No designer source decides between the two printed texts.
+
+- card: Pull Under: "Delete target unit. If you do, put it and"
+- card: Abyssal Evocation: "{i}(If they would enter a bin, erase them instead.)"
+- R137 (its Pull Under section): "destination wins over the Unstable erase. That override used to be card code"
+
+**Resolution:** Stated as the engine's reading (basis owner). It agrees with "the card beats the rules" where Pull Under is the more specific text. Question for the owner only if a judge's CR erases Pull Under's victim.
+
+### D-U22-8 · Owner call only · rule 901.8
+
+Single Card Duel is an owner format with no printed or designer source. It breaks the printed 2-copy limit (30 copies of one card) and replaces constructed's draw phase with a flat draw of 2.
+
+- R298: "It is the ONE exception to the Manual's two-copy cap, and it is not a new mode: the room"
+- Manual p.16: "pre-built decks to the game with up to 2 copies of each"
+
+**Resolution:** Stated as the client's variant, basis owner, and labelled as not the printed game. The owner calls it "a goofy thought experiment format"; no sign-off beyond R298 is needed, but it belongs in Annex P's owner-only list.
+
+### D-U22-9 · Owner call only · rule 902.5
+
+Custom live-draft rules (pack size, element count, hand, draws, life, simple-only, bans, filter) are an owner feature with no printed or designer source. Pack sizes other than 10 contradict print, which always uses 10-card packs.
+
+- R292: "**Not rulebook text.** 5-card packs are not in the printed rules this repository"
+- Rulebook 2023 p.6: "At the start of a game or when the draft is refreshed (see below), each player is dealt a Pack of cards. Packs in Algomancy always"
+
+**Resolution:** Stated as the client's variant, basis owner. A custom game is not the printed game, and R292 itself says so; the standard game is unchanged.
+
+### D-U23-1 · Owner call only · rule D3.1
+
+The clock banks (no clock, 45 minutes, 60 minutes) and the per-mode defaults are an owner answer on a question sheet, not an R-ruling. The rules are therefore engine-only, backed by test 271.
+
+- file: client/docs/questions-round36.md: "ANSWER: Let's do: 45m (default for constructed), 60m (default for live draft) and allow the clock to be turned off when doing room settings, for friendly games."
+
+**Resolution:** The rules state the engine's banks and defaults as basis engine. Register the owner's Q4 answer as a ruling if it is to count as owner basis.
+
+### D-U23-11 · Engine only · rule D4.1c
+
+No ruling says that battle actions cannot be undone. Test 373's title is the only statement.
+
+- file: client/ui/test/373-no-confirm-where-undo-works.test.ts: "nothing there is undone"
+
+**Resolution:** The rule ships as engine-derived (Annex P).
+
+### D-U23-18 · Register chain wrong · rule D5.5
+
+R150 and R258 still describe a 'catching up (n) — skip' chip as the visible way out of the pacing. The owner removed the chip on 2026-09-28; only the S key skips now, and test 237 asserts the chip is absent. Neither ruling is marked.
+
+- R150: "- **Skip**: a `catching up (n) — ⏭ skip` chip beside the standing-pass chip"
+- R258: "- **the ⏭ `catching up (n) — skip` chip.** It is the only *visible* way out of"
+- file: client/ui/main.ts: "GONE (the owner, 2026-09-28: "that catching up banner doesn't need to be"
+- file: client/engine/test/237-live-while-held.test.ts: "assert.equal(ui.has({ btn: 'paceskip' }), false, 'the owner cut the chip: no skip button');"
+
+**Resolution:** The rules follow the owner's later call: no chip, S skips. Mark the chip halves of R150 and R258 as superseded (2026-09-28) in the register.
+
+### D-U23-19 · Engine only · rule D3.1d
+
+Sources silent on when a clock is shown as critical. Only the client and test 271 decide it: a tenth of the bank, capped at one minute.
+
+- file: client/ui/main.ts: "return Math.min(60_000, start / 10);"
+- file: client/ui/test/271-clock-picker-and-warning.test.ts: "// …and the cap is real: a tenth of a very long bank would be a warning"
+
+**Resolution:** The rule states the engine's threshold, basis engine, for owner sign-off in Annex P.
+
+### D-U23-2 · Engine only · rule D3.2
+
+Sources silent on when a clock runs, what happens when it runs out, the recap's clock hold and the closing of idle games. No ruling, designer source or printed page covers clocks; everything in D3 comes from tests (e2e/test-clock.ts, 360, 367, 372).
+
+- file: client/server/e2e/test-clock.ts: " *   - chess clock: CLOCK_START_MS per seat, runs only for seats the game is"
+- file: client/server/e2e/test-clock.ts: "console.log('\n[BL-27: a seat that stops acting runs out of time and LOSES]');"
+
+**Resolution:** The D3 rules ship as engine-derived (Annex P) and await owner sign-off. e2e/test-clock.ts is not in the test-title index, so its rules carry only a file-level citation of suite.test.ts.
+
+### D-U23-21 · Engine only · rule D1.2b
+
+Sources silent on which actions the game takes for a player. The only ruling naming a forced action is R36 (the lone round-2 counterattacker), whose branch the engine removed. The two cases the engine forces, the empty attack and the empty block, rest on forcedAction and tests 21 and 273 alone.
+
+- R36: "that could ride along, the only-unit formation is auto-declared (a forced"
+- file: client/engine/src/apply.ts: "if (!eligible.length) return { type: 'declareAttack', seat: b.attacker, columns: [] };"
+- file: client/engine/src/apply.ts: "return { type: 'declareBlocks', seat: b.defender, blocks: {} };"
+
+**Resolution:** The rule states the engine's two forced cases, basis engine, for owner sign-off in Annex P; R36's case stays a sub-rule stating the ruling (F-U23-4, D-U23-17).
+
+### D-U23-22 · Engine only · rule D5.5c
+
+R150 describes S as spending the whole held queue to the live state in one step. In a recap playback the engine's Skip goes only to the next stop (and continues from a stop), and a Skip button is drawn on the play bar. No ruling covers skipping inside a playback; only owner report #198 and test 383 do.
+
+- R150: "the `S` key. `paceFlush` spends the whole queue in one step. Deliberately not"
+- file: client/ui/main.ts: "if (NET?.playbackStopped()) { NET.continuePlayback(); return; }"
+- file: client/ui/test/383-recap-stops.test.ts: "test('report #198: Skip jumps to the next stop, never past it', () => {"
+
+**Resolution:** annexd.recap.skip is scoped to outside a playback; the playback behaviour ships as an engine-derived sub-rule (Annex P). Register note: R150's S-key flush is now the out-of-playback case only.
+
+### D-U23-3 · Owner call only · rule D3.2b
+
+That a standing pass stops the clock, with a server backstop pass, rests on an owner sentence quoted only in a test comment. No R-ruling records it.
+
+- file: client/server/e2e/test-passall-clock.ts: " * The owner, 2026-09-28: *"When a player is 'Pass all'ed, their timer should"
+- file: client/server/e2e/test-passall-clock.ts: " * never go down."* He chose PAUSE + BACKSTOP: the client tells the server when"
+
+**Resolution:** The rule states the engine's behaviour as basis engine. Register the owner's call as a ruling if it is to count as owner basis.
+
+### D-U23-4 · Owner call only · rule D2.7a
+
+R287 gives the owner's full-control sentence, including deployment, and records that the deployment clause is not built. It was filed as CT-185 and left as the owner's call.
+
+- R287: "> the haste step or anything. Even during deployment, nothing will"
+- R287: "⚠ **THE DEPLOYMENT CLAUSE IS NOT BUILT.** *"Even during deployment, nothing"
+
+**Resolution:** Under owner decision 2 the rule states the ruling, with the marker 'engine differs, see F-U23-1'. Whether to build it (a replay-safe holdStack action) is CT-185's open owner call.
+
+### D-U23-5 · Owner call only · rule D2.5e
+
+R18 defines a hidden segment as one where nobody sees the other side's plays until everyone is done. R236 measures a residual channel, the live action counter, that tells a modified client when its opponent acts in every hidden segment. R236 leaves closing it to the owner.
+
+- R18 (its hidden-segment half): "false: the haste step is a **hidden simultaneous segment** — nobody sees the"
+- R236: "`GameState.actionCount` is served live to both seats and increments on **every**"
+- R236: "`server/rooms.ts`** — both off limits this round, and a call for the owner. The"
+
+**Resolution:** The rule states the residual as R236 measured it. It stays open as R236's own owner call (a per-seat action counter, or accept the residual). F-U23-3.
+
+### D-U23-7 · Owner call only · rule D4.1
+
+The basic undo convention (undo your own actions back toward the start of a hidden step, whatever the opponent does, but not past what the step itself did as it began) has no ruling of its own. R312 states it only in the past tense, as what it narrows. The owner's words survive only in an e2e test's header.
+
+- R312: "Undo inside a hidden step (planning, haste, deployment) used to walk back any"
+- file: client/server/e2e/test-undo-segment.ts: " *    to undo everything, up to the beginning of that phase (unless there is"
+
+**Resolution:** D4.1 cites R312 for the baseline. Its opponent and floor sub-rules are engine-only. Register the owner's 2026-08-23 answer (ledger #37/#76) as a ruling if they are to count as owner basis.
+
+### D-U23-8 · Engine only · rule D5.3
+
+Sources silent on the recap's structure: no ruling defines the recap, its frames, where it pauses, or its end pause. R310 describes it only in passing. Tests 360, 372 and 383 carry it.
+
+- R310: "(playback), at the moment it happened, with its card popup. The glimpser still"
+
+**Resolution:** The frame and pause rules ship as engine-derived (Annex P).
+
+### D-U23-9 · Engine only · rule D2.3
+
+Sources silent on when the auto-pass preference passes. R150 says only what turning it on means to the player; the condition (pass only when passing is the only legal action, never through a decision) is in test 70 alone.
+
+- R150 (its CT-28 pacing half): "armed. Auto-pass is the player having said out loud that these windows are"
+
+**Resolution:** The rule ships as engine-derived (Annex P).
+
+### D-U24-9 · Owner call only · rule D7.4
+
+R266 makes it a rule that an announcement the player acts on, or has lost something by, reaches a surface other than the log, but the same ruling leaves the remaining log-only announcements of a loss as a ticket list and calls which of them get a second surface a product call. The client's own inventory test counts 21 such announcements; R266's text says nineteen.
+
+- R266: "An announcement the player is expected to act on, or to have lost something by, must reach a surface other than the log."
+- R266: "Nineteen tier-1 announcements remain log-only. That is a ticket list, not a bug list: which of them deserve a second surface is a product call"
+
+**Resolution:** The rule states R266's standard and carries engineDiffers F-U24-4. Question for the owner only if some of the log-only announcements are meant to stay log-only; the rule would then need an exception naming them.
+
+## 4. Everything else (132)
 
 ### D-U01-11 · Sources disagree · rule 101.1
 
@@ -1644,6 +2544,15 @@ Sources are silent on additive modifiers to combat damage: the additive-before-P
 
 **Resolution:** The document says nothing about additive modifiers to combat damage. Question for the owner only if a card that adds to combat damage is printed.
 
+### D-U13-7 · Other · rule 610.6
+
+The sources are silent on which initiative-team region a counterattacker enters in a team game, and on whether a counterattacker may enter a region other than the attacker's. The Manual says only that the NIT attacks 'IT regions' in phase 2.
+
+- Manual p.27: "1. NIT attack IT regions with units sent in Phase 1"
+- Rulebook 2023 p.9: "• Then, combat in the counter-attacking regions is resolved."
+
+**Resolution:** No rule is written beyond the order of resolution. Question for the owner only if the client is to support team games.
+
 ### D-U14-1 · Sources disagree · rule 703.3b
 
 The Rulebook 2023 gives the combat damage step a priority window. The Manual lists only the attack, block and after combat steps, and the designer says the damage step has windows only between its sub-steps, when Swift or Sluggish units are present.
@@ -1672,3 +2581,521 @@ Sources silent on whether each region has its own stack. The Manual places prior
 - R250: "The STACK is not regional and is deliberately left global; narrowing"
 
 **Resolution:** No rule states either way. In two-player play only one battle region is open at a time, so it rarely matters. Recorded, not resolved.
+
+### D-U15-1 · RAQ open · rule 706.11
+
+Whether Containment Protocol ("negate all activated and triggered effects") can negate the trigger-like attributes ({Alluring}, {Resonant}) was asked in a RAQ thread and never answered. Caleb answered only the Crevice Lurker half (the tax). R315 states that Containment Protocol can negate a {Resonant} rider, and the engine negates a waiting {Alluring} trigger.
+
+- RAQ 1366446116274442291#2: "Whether Containment Protocol ("triggered effects") negates trigger-like attributes."
+- RAQ 1366446116274442291#0: "my intent is for it to stop those from triggering"
+- R315: "Crevice Lurker taxes it, and Containment Protocol can negate it."
+
+**Resolution:** An open thread is not a ruling. The rule follows R315 and the engine (they are put on the stack as triggered abilities, so they can be negated), which is consistent with Caleb's answer on the tax. Revisit if the thread is answered.
+
+### D-U15-10 · Other · rule 708.3
+
+Sources silent on whether a REDIRECTED combat hit (Oorblak: "If combat damage would be dealt to you, that damage is dealt to me instead") counts as combat damage dealt to the player, for abilities that trigger when a column deals combat damage to an opponent. The owner ruled only on Blightsea Polyp's "as 1 rot"; R238 groups Oorblak with the Polyp as a hit-consuming replacement.
+
+- R238: "> **"Yes, blightsea pollup says it deals damage as, so its still damage. Just"
+- R238: "Two cards, and **both consume a hit WHOLE**: Blightsea Polyp returns `true`"
+
+**Resolution:** The rule speaks only of a substitute that is still damage. Question for the owner only if a redirected hit and a "when my column deals combat damage to an opponent" ability meet in a real game.
+
+### D-U15-12 · Other · rule 707.3
+
+R104's owner sentence names only 'When'/'Whenever' and colons as what reaches the stack, but the Manual's timed triggers ('After combat'), the trigger-like attributes (R315) and a targeted replacement's substitute (R102) also reach the stack. The sentence is a heuristic, not an exhaustive list.
+
+- R104: "> effects that go onto the stack are cards that say 'When' or 'Whenever' or have"
+- Manual p.41: "Triggered abilities may also take place at specified times,"
+- R315: "Crevice Lurker taxes it, and Containment Protocol can negate it."
+
+**Resolution:** Printed text and the later rulings extend the owner's heuristic; the rule lists all of them. No owner question.
+
+### D-U15-2 · RAQ open · rule 707.4
+
+A RAQ follow-up asks whether a static that removes attributes (Monke) also removes attributes a unit gains after it began to apply, and was never answered in its thread. The answered thread says only that such statics affect units entering play later. The engine lets an attribute gained later (a Powerful virus) stand.
+
+- RAQ 1355685844467581081#2: "_passer's follow-up: does Monke's static (unlike a resolved Suppression Field) strip attributes a unit gains later?"
+- RAQ 1355845893219287132#0: "Monke and Transmogrifant have Static Abilities meaning they work continuously and affect new units entering play"
+- file: client/engine/test/393-raq-mods.test.ts: "RAQ Transmogrifant: an attribute a unit gains AFTER it is in play is not affected"
+
+**Resolution:** The rule states only what the answered thread says (it applies to units entering later, and ends when the static leaves). How a later grant interacts with the static is a timestamp question for rule 709; the open follow-up is recorded, not answered.
+
+### D-U15-5 · Other · rule 708.11
+
+Sources silent on two prevention effects on one unit (two Phytochemical Protections). R98 says nothing in the corpus addresses it; the engine treats the second as re-applying the first, so the unit gets one counter per damage prevented, not two.
+
+- R98: "2. **Two Phytochemical Protections on ONE unit.** The shield is a single named flag, so the"
+
+**Resolution:** No rule is written for the case. Recorded so a judge does not read the engine's behaviour as a rule.
+
+### D-U15-9 · Other · rule 708.8a
+
+The RAQ claim that a -1/-1 counter cancels a +1/+1 counter and Pestilent Mycelion still triggers is answered in its thread by a player, not by _passer or Caleb, so it is not designer authority. No U15 rule uses it.
+
+- RAQ 1364890301147250798#1: "If a unit has both a +1/+1 and -1/-1 counter on it they both get removed"
+
+**Resolution:** Not used as a source. Counters cancelling belongs to rules 112 and 206; the engine guard (393) stands, and its basis there should be owner or engine, not designer.
+
+### D-U16-12 · Other · rule 713.6a
+
+R278 settles only that units dying in one batch hear each other's departures. It explicitly leaves open whether a batch-mate is visible to targeting or to a count made during the batch, while stating that today it is not.
+
+- R278: "Whether a batch-mate should also be visible to **targeting** or to a"
+
+**Resolution:** The rule states the current answer at medium confidence. Question for the owner only if a card needs a dying batch-mate counted or targeted.
+
+### D-U16-13 · Other · rule 713.5
+
+The owner's words in R152 ("a token ... ceases to exist in all zones other than in play/stack whenever SBAs are checked"), read literally, would send a token mod through a bin before it ceases to exist. R69 says a token mod has no card of its own and never enters a bin. R152 records this as "reported, not resolved".
+
+- R152: "The one place this ruling and R69 do not meet — reported, not resolved"
+- R152: "R69 says the opposite for mods"
+
+**Resolution:** The rule states the token sweep for token bodies; a token mod ceasing to exist is 410.4c (R69). Question for the owner only if the judge's CR sends a token mod through a bin.
+
+### D-U16-3 · RAQ open · rule 709.6
+
+What happens to two base stats exchanged by Body Swap when the Aberrant Statweaver that set one of them later leaves play is unruled in the RAQ thread.
+
+- RAQ 1357965714807586897#2: "Ruling for this is still under consideration"
+
+**Resolution:** Not stated. The rule says only what the thread answers: the exchange takes the base stats as they are when it resolves, and wins over the earlier rewrite. Question for the owner only if the designer does not rule. (Same open thread as D-U05-5.)
+
+### D-U16-5 · Other · rule 712.5
+
+The sources are silent on a general dependency rule: how one continuous effect that changes whether another applies is ordered against it. They give only the layer order, timestamps within a layer, and one case (two static strippers whose sources strip each other).
+
+- R328: "static-vs-static still resolves in one pass"
+- Manual p.42: "A: Stats have 6 layers to them, which are applied in"
+
+**Resolution:** No dependency rule is written. 709 states the layer order and timestamps; 712 states the two-strippers case. Recorded so the judge's CR, if it has a dependency rule, is compared against nothing rather than against an invented one.
+
+### D-U16-8 · Other · rule 714.5
+
+In the same RAQ thread, a source that has left play remembers its formation (Hooba-Bot, Hooba-Pon, Hooba-Lin, Embermaw Fledgling, Lumengrove Lurker), but Flamebreath Initiate counts 0 adjacent allies. The thread does not say why neighbours are not remembered when the formation is.
+
+- RAQ 1353895783266516992#2: "But there are some which will remember they were in formation and will work fine"
+- RAQ 1353895783266516992#3: "If Flamebreath Initiate is removed with his trigger on the stack, the X=0 so he will still make Fireball 1."
+
+**Resolution:** Both designer answers are stated as given (714.4 and 714.5). Recorded so a judge's CR that remembers adjacency, or forgets the formation, is compared against both.
+
+### D-U16-9 · Other · rule 714.1
+
+The sources are silent on what an ability that triggers on its own source leaving play ("when I die") reads when it reads the source itself (its power, its attributes). R325 says such a trigger gets no last-known snapshot in the engine, and that no card in the pool needs one.
+
+- R325: "A trigger queued *after* its source left play ("when I die") gets no"
+
+**Resolution:** No rule written for it beyond the departure facts (714.9). Question for the owner only if a card is printed whose "when I die" ability reads its own stats or attributes.
+
+### D-U17-12 · Sources disagree · rule 722.3a
+
+Graft 101 says grafting is done only in deployment, whatever the card's speed. Spellbind's printed {Modular} reminder and R105 let any card, a graft card included, be applied to a Modular card as it is played, and Spellbind is a {Battle} card; the engine applies a graft card to Spellbind in battle.
+
+- RAQ 1355115946032889914#0: "Grafting can only be done during Deployment Phase"
+- card: Spellbind: "You can apply mods to a modular card from your hand and/or bin as it is played."
+- R105: "> "I think it's legal to apply ANYTHING to a Modular card. But many cards wont"
+
+**Resolution:** The specific printed permission wins over the general statement: Graft 101 is read as being about grafting onto a unit, and the rule lists Modular as an exception (722.3a). Question for the owner only if he reads Graft 101 as forbidding a graft card on Spellbind in battle.
+
+### D-U17-5 · Other · rule 722.3b
+
+R95 left open whether Rook's battle permission covers grafting. Rook's printed text says "augment".
+
+- R95: "3. **Does it cover GRAFT?** Printed text says "augment", `doGraft` is deployment-only,"
+- card: Rook: "You may augment cards from hand and bin during battle as if they were [Virus]."
+
+**Resolution:** Printed text answers it (R219: "If the printed text answers it, it is not a question"). The rule states that Rook does not permit grafting in battle. Graft 101 point 1 (grafting only in deployment) agrees.
+
+### D-U17-6 · RAQ open · rule 722.4f
+
+The RAQ fizzle thread records that Caleb is considering a change under which a graft effect resolves even when it has lost all its targets.
+
+- RAQ 1354013430805434389#3: "Caleb is considering change of ruling for graft-targeting-fizzle, so even if it loses all targets it will still happen."
+- R86: "> **A:** "**If effect loses ALL of its targets and wants to resolve.**""
+
+**Resolution:** A possible future change, not a ruling. The rule states the current answer (R86). Revisit if Caleb rules.
+
+### D-U17-7 · Sources disagree · rule 722.7d
+
+The Amphivore thread says an unpayable multiplied cost means "you don't get the effect". R110 read that as only that graft; Graft 101 point 11 says the whole graft effect stays off the stack, and R334 applies that to the multiplied case.
+
+- RAQ 1353859961855148103#5: "No Sacrifice at all and you don't get the effect."
+- RAQ 1355115946032889914#10: "if you can't pay it (no units to sacrifice) then the whole Graft Effect won't go on the stack."
+- R334: "This narrows R110. R110 skipped "that effect", meaning only the graft whose cost failed, and the engine treated grafted costs as opt-in riders. That opt-in was never backed by a ruling. Now:"
+
+**Resolution:** Both are designer sources; Graft 101 point 11 is explicit and the Amphivore line fits it. The rule states the whole composite stays off the stack (R334). No owner question.
+
+### D-U17-8 · Other · rule 722.7
+
+Sources silent on a graft multiplier grafted under another multiplier (for example a Lost Guardian grafted under an Amphivore). R110 calls it unruled.
+
+- R110: "Two multipliers in one composite (a doubler grafted under a doubler) multiply;"
+- R110: "unruled, and unreachable in the pool without someone trying. Tests: 17-earth-b"
+
+**Resolution:** No rule is written for it. Question for the owner only if a game reaches it.
+
+### D-U18-2 · Other · rule 801.2
+
+No printed text in the current pool defines trashing, and no designer words are quoted for it. R40 credits its definition to Void Scavenger's reminder text (a card cut from the set) and to a Caleb ruling of 2025-02-01 that it does not quote.
+
+- R40 (its bin-entry definition, for cards): "per-battle trash count is required (Dropslime, Muck Rummager). (Printed: Void"
+- R40 (its bin-entry definition, for cards): "Scavenger reminder text; Caleb 2025-02-01; broadened by Bena 2026-08-19.)"
+- card: Dropslime: "When I am trashed, [Switch1] I deal damage equal to the number of cards trashed in this battle to any target."
+
+**Resolution:** The trash rules carry basis owner. Fourteen cards print trash text without defining it. If Caleb's 2025-02-01 words can be found in the Discord export, add them as a designer source. Question for the owner only if a judge's CR defines trashing differently (for example, only for cards entering the bin from play).
+
+### D-U18-3 · Other · rule 801.2a
+
+R40 lists "milling" as a way of trashing, but no card prints "mill" and no printed or designer source defines it. In this client a card goes from the deck to a bin through rot and debt.
+
+- R40 (its bin-entry definition, for cards): "Discarding, sacrificing, milling and dying in combat all trash. A spell or"
+- R306: "An Unstable CARD still is (R137). Rot and debt trash cards from a deck or hand,"
+
+**Resolution:** The rule keeps the word because a card moved from the deck to a bin does enter a bin from outside the stack, which is the definition. Define "mill" in the glossary as "put from the deck into the bin" if a judge's CR uses the word.
+
+### D-U18-5 · Other · rule 801.7a
+
+R262 says it knowingly overrules a Manual sentence sending a recalled unit to its owner's hand. No such sentence is in the printed pages the extract carries; the printed recall reminders say "your hand", "their hand" and "their controller's hands", which agree with R262 or are neutral.
+
+- R262: "recall goes to its *owner's* hand, and a stolen unit recalled now bounces into"
+- card: Cosmic Reversal: "(Negate them and put them into their controller's hands.)"
+- card: Tidal Reversion: "(Return it to their hand.)"
+
+**Resolution:** The rule states R262 (controller's hand) with basis owner. If the Manual sentence R262 names exists in a printed source the extract lacks, print outranks an owner call and this becomes a question for the owner with both texts quoted; otherwise R262's "overruled, knowingly" overstates the conflict, and its note should name the source it means.
+
+### D-U18-6 · Other · rule 801.11
+
+Sources silent on whether the two hits of a fight are simultaneous, so that a unit killed by its opponent's damage still deals its own. Print says only "They deal damage to each other". R80 makes a fight two damage batches, one per fighter, and checks deaths once per batch.
+
+- card: Fight: "(They deal damage to each other equal to their power.)"
+- R80: "**different sources** (each unit deals its own damage), and a batch is per"
+- R80: "- **deaths are checked once**, after all of it is marked, which is what"
+
+**Resolution:** keywords.actions.fight states only the printed text. The engine's test (16-earth-a, "mutual power damage") has both units deal their damage. Question for the owner only if a judge's CR rules that the first fighter's damage can kill the second before it strikes.
+
+### D-U18-7 · Other · rule 801.9
+
+Sources silent on a glimpse of more cards than the deck can supply. The engine's test glimpses nothing from an empty deck; 408.2b says the recycle pile becomes the new deck when more cards are needed.
+
+- R45: "Glimpse N reveals the top N cards of the deck, caches exactly **one** of the"
+- file: client/engine/test/36-cache-prophecy.test.ts: "// an empty deck glimpses nothing rather than throwing"
+
+**Resolution:** No rule written. The test empties the deck from inside the engine, with no recycle pile to fall back on, so it does not show what happens at a table. Question for the owner only if a judge's CR rules on it: does a glimpse that runs past the end of the deck shuffle the recycle pile in (408.2b) and keep revealing, or reveal fewer?
+
+### D-U19-11 · Other · rule 802.12
+
+Sources silent on whether a Feeble unit may attack or be sent to counterattack. The printed reminder restricts only blocking.
+
+- glossary: Feeble: "Feeble units can't block."
+- card: Spectrogenesis: "They are 0/1 units that can't block"
+
+**Resolution:** No rule is written beyond "can't block". The literal reading (Feeble restricts nothing else) is the permissive one; question for the owner only if a comparison CR restricts attacking.
+
+### D-U19-7 · Other · rule 802.1a
+
+Four U19 attributes print their reminder under the type line, which the oracle transcription does not carry, so the extract's card text lacks them and no rule can cite them as printed. They are quoted here from the scan file and, in the rules, only through our glossary.
+
+- file: client/ui/scan-reminders.json: "Tough units have their defense doubled."
+- file: client/ui/scan-reminders.json: "Vulnerable cards receive double damage."
+- file: client/ui/scan-reminders.json: "Feeble units can't block."
+- file: client/ui/scan-reminders.json: "Unaware cards and units they are interacting with ignore all stat changes."
+
+**Resolution:** Pipeline gap, not a rules conflict. Either the extract should carry client/ui/scan-reminders.json as printed card text (R281: these are printed reminders, read off the scans), or check.mjs should accept the scan file as a printed source. Until then rules 802.6, 802.9, 802.11 and 802.12 rest on other printed text, the designer and the rulings, with the scan sentence as `ours`.
+
+### D-U19-8 · Other · rule 802.2
+
+The 2023 Rulebook's attribute example names a "Ranged" attribute ("deal combat damage first and block fliers"). No card in the current pool prints it and the engine has no such attribute.
+
+- Rulebook 2023 p.12: "Similarly, Spike has the “Ranged” attribute,"
+- Rulebook 2023 p.12: "which allows it to deal combat damage first"
+
+**Resolution:** Obsolete printed text; no rule. A comparison CR built from the 2023 Rulebook may still list Ranged, and its "block fliers" half has no current equivalent other than Pure (rule 802.2).
+
+### D-U20-10 · Sources disagree · rule 802.19h
+
+Crevice Lurker prints "Abilities cost [one] more to activate or trigger"; Alluring and Resonant are attributes, not abilities, so read literally it does not tax them. Caleb says his intent is that it does.
+
+- card: Crevice Lurker: "[Augment] Abilities cost [one] more to activate or trigger during battle."
+- RAQ 1366446116274442291#1: "I think crevice lurker should say 'Effects cost 1 more to activate or trigger'. So as written it wouldn't work but my intent is for it to stop those from triggering"
+
+**Resolution:** Follow Caleb (the authority order: where Caleb states an intent that differs from print, follow Caleb). The document says Crevice Lurker taxes both triggers.
+
+### D-U20-15 · Other · rule 802.17
+
+Sources are silent on Electric combat damage. The printed reminder speaks of "electric sources", which on its face includes a column, but no ruling or RAQ claim covers it, and no unit in the pool can have Electric: Envoy of Lightning grants it to spell effects only, and Arc Lightning is a spell. The pilot verifier recorded that the engine ignores Electric in combat.
+
+- card: Envoy of Lightning: "[Augment] Your spell effects with a single target are {g}Electric."
+- card: Arc Lightning: "{Battle} {Electric} Elemental Spell"
+
+**Resolution:** No rule written. Question for the owner only if a card ever lets a unit have Electric.
+
+### D-U20-16 · Other · rule 802.20a
+
+Sources are silent on whether Thieving's draw is a triggered ability that uses the stack (and so can be negated or taxed) or happens as part of combat damage. The reminder reads "Whenever …, draw a card".
+
+- file: client/ui/scan-reminders.json: ""text": "Whenever a thieving source deals combat damage to an opponent, draw a card.", "card": "Slink""
+- R24: "damage to a player** in a damage sub-step (unblocked or Piercing overflow), not one per"
+
+**Resolution:** No rule written on timing. Question for the owner only if Crevice Lurker or a negate is used against a Thieving draw in play.
+
+### D-U20-17 · Other · rule 802.24a
+
+No source says what it means for Lethal to "kill a player": whether the player is eliminated outright, or loses life equal to their life total (which a life-loss multiplier or a "life can't change" effect could then alter).
+
+- card: Gublin: "(Any combat damage from a lethal unit will kill a player.)"
+- R166: "{Piercing} carries excess to the PLAYER, {Lethal} kills a player outright,"
+
+**Resolution:** The document states the printed words only. Question for the owner only if a life-total lock (rule 112.4) or a multiplier meets a Lethal hit.
+
+### D-U20-19 · Other · rule 802.25k
+
+No source applies R294's column sharing to Pure outside combat. The rule is derived: R294 makes both sides of a noncombat damage pairing read column-shared attributes, and Pure is an attribute.
+
+- R294: "adjacent) share all of their attributes."* So both sides of a non-combat damage"
+- R289: "- **A Pure recipient takes plain damage from anyone.** The source's attributes"
+
+**Resolution:** Rule written as derived (basis owner, confidence medium). Question for the owner only if a judge disputes it.
+
+### D-U20-5 · RAQ open · rule 802.15q
+
+The RAQ thread on trigger-like attributes asks whether Containment Protocol ("Negate all activated and triggered effects.") negates Alluring and Resonant triggers, and nobody answered. The engine negates a waiting Alluring trigger, and R315 says Containment Protocol can negate Resonant.
+
+- RAQ 1366446116274442291#2: "Whether Containment Protocol ("triggered effects") negates trigger-like attributes."
+- card: Containment Protocol: "Negate all activated and triggered effects."
+- R315: "Crevice Lurker taxes it, and Containment Protocol can negate it."
+
+**Resolution:** Open. Caleb treats both as triggers for Crevice Lurker (RAQ 1366446116274442291#1) and R84 quotes him that the Alluring effect "can be negated", so the document treats both as negatable triggered abilities. Question for the owner only if the RAQ is answered otherwise.
+
+### D-U21-10 · Other · rule 803.5a
+
+R81 quotes "The Rules of Algomancy" as saying burst spells "of the same type"; the Manual and the Rulebook 2023 both say "same name". R81 reads "type" as name.
+
+- R81 (its name-grouping half): "the same type** at the same time"* (The Rules of Algomancy, spell tokens)."
+- Manual p.15: "same name at once."
+
+**Resolution:** The rules follow "same name". A judge's CR that groups by "type" (for example, all spell tokens) would disagree with 803.5a.
+
+### D-U21-11 · Other · rule 803.2a
+
+The Rulebook 2023 uses older names: "mana step" for the haste step and "main phase" for deployment. Dispatch Courier still prints "mana step".
+
+- Rulebook 2023 p.3: "▪ Cards with the haste icon (10) can be played during the mana step"
+- Rulebook 2023 p.3: "with another player (and not during the main phase!)"
+
+**Resolution:** Terminology only. The rules use haste step and deployment; R97 quotes Caleb that the mana step is the haste step.
+
+### D-U21-2 · Sources disagree · rule 803.3a
+
+Caleb answered twice. In 2025 he said Haste adds the haste step to a card's timings, so a Battle card with haste works in the haste step; on 2026-01-25 he reversed that ("it's gotta be no"). The RAQ marks the 2025 answer outdated.
+
+- RAQ 1464899726796390433#1: "haste basically says 'This card can be played during the haste step in addition to its other timings' … so it should work"
+- RAQ 1464899726796390433#0: "it's gotta be no"
+
+**Resolution:** The later designer word stands, and the _passer write-up in thread 1465292396664193171 agrees. A judge's CR built on the 2025 screenshot would disagree with 803.3a.
+
+### D-U21-3 · RAQ open · rule 803.2b
+
+Does gaining Haste change a play mode such as Ambush or Prophecy? The thread only records _passer's assumption that it does not; nobody answers it.
+
+- RAQ 1464899726796390433#2: "I assume that gaining :haste: doesn't affect 'playmode' like Ambush or Prophecy"
+
+**Resolution:** No rule is written. Ambush is battle-only (803.6b) and prophesying has its own window (803.7b), so no haste grant in the pool reaches either today. Question for the owner only if a card is added that grants haste to a card with an Ambush or Prophecy banner.
+
+### D-U21-4 · Other · rule 803.5
+
+Sources silent on a Burst group in which one token has no legal target. Burst requires every token of the name to be cast at once ("all or nothing"), but nothing says whether the group may then be cast with that token left out, must wait, or cannot be cast at all.
+
+- Manual p.15: "Requires the player to"
+- R309: "all tokens (of the same name) onto the stack at once … It's all or nothing"
+
+**Resolution:** No rule is written for this case. Question for the owner only if a judge's CR or a playtest raises it; the verifier may record what the engine does.
+
+### D-U21-9 · Sources disagree · rule 803.8a
+
+The printed reminder has no zone limit: any card that would enter a bin is erased. Caleb's glossary line adds "from an active zone", so an Unstable card discarded from the hand or milled from the deck is binned normally.
+
+- card: Abyssal Evocation: "{i}(If they would enter a bin, erase them instead.)"
+- R145: "> `"Unstable": "If an unstable card would enter a bin from an active zone,"
+
+**Resolution:** The designer's narrower wording governs (authority order: Caleb's stated intent over print). In practice the two printed granters only grant Unstable to cards being played, so the difference shows only on Oorblak and Aberrant Statweaver in a hand, deck or cache.
+
+### D-U22-1 · Sources disagree · rule 902.8
+
+The two printed editions size the team-draft deck differently. The Manual has each team bring 30 cards per player on the team (90 for 3v3); the 2023 Rulebook has each team build a 100-card deck. Both cap copies at 2.
+
+- Manual p.6: "including 30 cards per player on the team with up to"
+- Rulebook 2023 p.1: "• Team draft: Your team builds a large deck of 100 cards and a maximum of 2 copies of each card ahead of time and your team"
+
+**Resolution:** The rule states the Manual: it is the later edition and supersedes the 2023 Rulebook where they differ (data/rules/README.md). The Rulebook's 100-card deck is kept as the labelled sub-rule formats.draft.team-draft.rulebook. No owner question; the client has no team draft.
+
+### D-U22-10 · Other · rule 901.7b
+
+The owner said the client's "shared" testing mode "I guess it'd be constructed?". R162 applied that to card text only (Worldbender's branch); a shared game still has no constructed draw phase (draw 4, put back 2), only a flat draw of 2, and its turn-1 hand differs (7 cards in the test title, against constructed's 4 + 4 − 2).
+
+- R157: "> *"Shared mode isn't a real thing. You invented it for testing. So I guess"
+- R162: "Shared has no draft step and no draw phase, so its card step is the flat"
+
+**Resolution:** The rule states the narrow reading R162 implemented: shared counts as constructed where card text asks. Shared is a testing mode, not a format a player chooses, so no owner question unless shared games are ever offered to players.
+
+### D-U22-11 · Other · rule 903.5a
+
+Sources silent on how one player defends against two attacking formations in one region: whether they set one blocking formation or one per attacker, how columns face two formations, and how combat damage is assigned between them.
+
+- Manual p.36: "battle together in one region. The defending player now is able to defend against the two incoming"
+- Manual p.36: "attacking formations, and all three players are able to"
+
+**Resolution:** The rule says only that the defender defends against both. A judge's CR may fill this in; nothing in this project's sources does, and the client cannot reach it.
+
+### D-U22-2 · Sources disagree · rule 904.12
+
+The two printed editions give the single player of a 2v1 archenemy game different advantages. The Manual gives them 1–2 turns before the other two begin; the 2023 Rulebook gives them bonus cards and resources against two weaker opponents. Neither says how many turns, cards or resources.
+
+- Manual p.6: "take 1-2 turns before the other 2 begin the game."
+- Rulebook 2023 p.1: "• 2v1: An archenemy style game where one player with bonus cards and resources faces off against two weaker opponents."
+
+**Resolution:** The rule states the Manual (later edition) and keeps the Rulebook's version as a labelled sub-rule. The details are unwritten in both: a casual setup, not a format the client offers.
+
+### D-U22-3 · Sources disagree · rule 903.6
+
+Two Manual pages say who gets priority first in a multiplayer region. Manual p.30: the initiative player first, and only if they are absent the player nearest them clockwise. Manual p.36: "the player closest to the initiative player in a clockwise direction gains priority first", which, read alone, starts with the next player even when the initiative player is present.
+
+- Manual p.30: "Within a priority window, first the initiative player will receive"
+- Manual p.30: "region. If the initiative player is not present in the region,"
+- Manual p.36: "player in a clockwise direction gains priority first and"
+
+**Resolution:** The rule reads the pages together: p.30 is the general rule and covers absence; p.36's sentence agrees with it whenever the initiative player is absent and can be read as including the initiative player as the "closest" when present. Question for the owner only if a judge's CR reads p.36 as starting with the player after the initiative player even when the initiative player is in the region. No client consequence: a region in the client never holds more than two players.
+
+### D-U22-4 · Other · rule 905.1
+
+Sources silent on the intent cards themselves: which intent cards there are, what actions they can show (attack left, attack right, stay home?), and what happens to a unit with no intent card in front of it.
+
+- Manual p.37: "of their units and other cards such as spell tokens with their intended action. Once all players have"
+- Rulebook 2023 p.9: "There is a lot of freedom in how you can do this, so feel free to get creative. You can group units together behind one intent card"
+
+**Resolution:** The rules state only the procedure the books print (905). The intent cards are physical components; their faces are not in the printed text this project holds. The client has no FFA, so nothing depends on it.
+
+### D-U22-5 · Other · rule 904.2
+
+Sources silent on how joint players work: a team sharing one region is "effectively a 1v1 game with more players", but no source says whether the team shares a life total, a deck, a hand or resources, or how its players divide control.
+
+- Manual p.6: "a single region (effectively a 1v1 game with more"
+
+**Resolution:** The rule states only that the option exists. Everything else in 904 is written for split teams.
+
+### D-U22-6 · Other · rule 902.2a
+
+Sources silent on how elements are chosen competitively: the Manual gives a casual method and defers the competitive one to Algomancy.io, which is not among this project's sources.
+
+- Manual p.11: "In casual games, players can alternate choosing elements to include in the game or assign them randomly. For the most up to date competitive rules for this"
+- Manual p.11: "process, please see Algomancy.io."
+
+**Resolution:** The rule says what print says. How the client picks a trio is Annex D.
+
+### D-U22-7 · Other · rule 901.2
+
+Sources silent on two deck-size limits: no source sets a maximum constructed deck size, and none says whether a deck drafted in a cube draft (or pre-draft) must obey the constructed limit of 2 copies; a cube built from two complete sets can yield more.
+
+- Manual p.6: "of each card, with a minimum deck size of 30."
+- Manual p.39: "Players then use these 30 card decks they have drafted for constructed matches."
+- Rulebook 2023 p.1: "• Pre-Draft: You draft a complete deck of a minimum 30 cards before the game begins, and play games of constructed with it."
+
+**Resolution:** The rules state the minimum only, and leave the cube copy question open. The client has no cube draft; its constructed deck check sets no maximum size.
+
+### D-U23-10 · Sources disagree · rule D2.8a
+
+The owner's first message names Organic Exchange among the cards that should warn; his later derivation ('target ally AND target unit on the same card') excludes it, since it prints two target units with no ally slot.
+
+- R288: "> of your own units (Fight, Organic Exchange). We shouldn't stop that from"
+- R288: "⚠ **THE OWNER'S TWO MESSAGES DISAGREE ABOUT ORGANIC EXCHANGE, and the later one"
+
+**Resolution:** R288 follows the later message, and so does the rule. Organic Exchange's case is a known no-op warning (R74), not this confirmation.
+
+### D-U23-12 · Other · rule D2.5
+
+R228 parks R224's requirement that passing through the always-open haste step be cheap, as not yet met. R236 met it the same day. R228 still reads as owing it; the register already flags the warning as stale.
+
+- R228: "⚠ **R224's own requirement is NOT yet met**: *"an always-open window is a tax on"
+- R236: "This makes it cheap. Nothing in `engine/src/**` was touched: the step's"
+
+**Resolution:** No rule change. Register note only: R228's 'Parked, and owed' section was discharged by R236.
+
+### D-U23-14 · Other · rule D2.2
+
+R245 leaves 'what should stop Pass All' to the owner. R251 is the owner's answer (three buttons). R245's open section still reads as open; the register already flags it as stale.
+
+- R245: "**#123 "Pass All still isn't working right" is a DESIGN question, and the"
+- R251: "by the owner on the round-31 sheet (Q6) after R245 established that the code was"
+
+**Resolution:** No rule change. The rules state R251. Register note only.
+
+### D-U23-15 · Other · rule D2.5
+
+R236 §6 limits the auto-ready to the online client and justifies that by hotseat. Hotseat has since been removed (R170's amendment), and Learn to Play and the replay viewer now run a server inside the page over the ordinary network path. Sources silent on whether the haste auto-ready applies in Learn to Play.
+
+- R236: "`planAutoPass` is `NET`-gated, so this changes nothing in hotseat. Deliberate:"
+- R170: "### ⚠ AMENDED 2026-09-23 — HOTSEAT IS GONE; THE RULING IS NOT"
+
+**Resolution:** The rule states no scope limit. Leave it to the verifier to measure whether Learn to Play auto-readies.
+
+### D-U23-20 · Other · rule D1.1
+
+Sources silent on whether the annex's presentation and confirmation conventions are rules. R150 says only of its own pacing/concurrency reports that they are not a rules change; nothing extends that to the rest of the annex.
+
+- R150: "**CT-32** (#98). Both are pacing/concurrency, neither is a rules change, and"
+
+**Resolution:** The rule is narrowed to pacing and concurrency. Whether presentation and confirmation conventions are likewise not rules is a question for the owner only if the export needs D1 to say so.
+
+### D-U24-1 · Other · rule D6.8
+
+The outline gives Annex D part 2 three sections (D6 reveal timing, D7 confirmations and misclicks, D8 tutorial and single-card modes), but the unit's rulings also cover how the client draws cards and the board, its menus, its resource menu, custom rules, scenario rooms and how concessions count. Sources are not silent on these; the outline has no section for them. They are drafted under D6 (display, after the reveal rules), D7 (warnings and announcements) and D8 (custom rules, scenario rooms, concession weight).
+
+- file: data/comprehensive-rules/outline.json: ""title": "Reveal Timing of Simultaneous Steps""
+- file: data/comprehensive-rules/outline.json: ""title": "Tutorial and Single-Card Modes""
+
+**Resolution:** Question for the orchestrator only if the outline should grow sections (for example D9 Display and D10 Records and ratings). If it does, the keys annexd.display.* and annexd.modes.custom-rules / scenarios / concession can be re-parented without changing their text.
+
+### D-U24-10 · Other · rule D7.3
+
+Sources silent on whether a clause that does nothing, outside R209's class (a per-seat promise over an empty collection), must be announced when another clause of the same effect speaks. R209 also records that the whole-pool sweep can only convict a wholly silent run, so half-silent effects are guarded only member by member.
+
+- R209: "> **A printed clause that promises a per-seat outcome and then resolves over an"
+- R209: "not a gap to widen; it is a limit to write down, and to cover somewhere else."
+
+**Resolution:** The rule states R187 for a whole effect and R209 for its stated class only, and does not generalise to every clause.
+
+### D-U24-4 · Owner call only · rule D6.9a
+
+R151 substitutes a token's live X into its text box but leaves the card's "modified" badge off, and says the badge question is the owner's to decide.
+
+- R151: "`CardTextBox.modified` stays **false** for a specialised token. It is the flag"
+- R151: "call and not something R151 should have made on the side."
+
+**Resolution:** Question for the owner only if a specialised token (a Poison 5) should wear the "modified" badge. The rule does not mention the badge.
+
+### D-U24-6 · Other · rule D7.1b
+
+Three rulings this unit's sections need are classified to U23, not U24, so they were not in this unit's pack: R288 (the misclicked-ally question, D7), R236 (haste readiness hidden while the step is open, D6) and R194 (the confirm before a pass reaches Regroup, D7, quoted here through R266). They were read from digital-rules.md. U23 may state the same facts under D2-D5.
+
+- R288: "**IT IS A QUESTION, NEVER A FILTER.** The owner says it twice — *"we shouldn't"
+- R236: "who is ready stops being public while it is open"
+
+**Resolution:** At assembly, keep one statement of each fact: the D7 confirmation rules here, and whichever unit's haste-readiness rule reads better. Classification could add U24 to R288 and R236.
+
+### D-U24-7 · Other · rule D6.15
+
+Some of this unit's digital rulings are about how the client is built or tested, not about a convention a player or judge meets. They are not drafted as rules: R192 (which click opens the cache panel), R205 (the test driver's DOM model), R230 and R272 parts a-b (hover tooltips and image sizing), R255 (arrowhead placement), R274 (a join error on the connecting screen), R206 and R281 (how the glossary is audited), and R209 sections 2 to 6 (how guards derive their lists). Their game halves, where they have one, belong to other units.
+
+- R205: "> **A fake that answers a question about the DOM must model the part of the DOM"
+- R230: "the hover tooltip cancelled itself: a scroll hides it only if it could have MOVED the card"
+
+**Resolution:** No action unless the owner wants Annex D to describe client mechanics too. Annex P will list them as uncited.
+
+### D-U24-8 · Other · rule D6.9e
+
+R246 was asked for "all cards with an X in them" and makes a board-read X public on the stack as a forecast, but records that eighteen cards whose X is read from the board at resolution have no forecast and show nothing. The rule therefore states the forecast only for cards that declare one, and states the gap separately.
+
+- R246: "The owner's quantifier — "all cards with an X in them" — is 45 cards. Four"
+- R246: "cards are left: their X is read from the board at resolution and only a card"
+
+**Resolution:** Recorded as shipped: the forecast covers cards that declare one. Question for the owner only if the eighteen listed cards are meant to gain a forecast; the rule text would then lose annexd.display.live-values.x-not-forecast.

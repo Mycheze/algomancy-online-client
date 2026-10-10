@@ -1,0 +1,3283 @@
+[
+  {
+    "key": "formats.general.modes",
+    "parent": "900",
+    "order": 1,
+    "text": "There are four game modes: live draft, constructed, cube draft and team draft.",
+    "examples": [],
+    "see": [
+      "100",
+      "901",
+      "902"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.6",
+          "quote": "GAME FORMATS"
+        },
+        {
+          "ref": "Manual p.6",
+          "quote": "Live Draft: A dynamic format where players create a"
+        },
+        {
+          "ref": "Manual p.6",
+          "quote": "Constructed: Players bring pre-constructed decks to"
+        },
+        {
+          "ref": "Manual p.6",
+          "quote": "Cube Draft: A combination of draft and constructed"
+        },
+        {
+          "ref": "Manual p.6",
+          "quote": "Team Draft: Each team brings a constructed deck"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The Manual calls the game modes \"formats\"; Rulebook 2023 p.1 calls them \"Game Modes\" and lists the same four, with cube draft under the name \"Pre-Draft\" (formats.general.modes.pre-draft). Each mode is defined in 901 (constructed) and 902 (live draft, cube draft, team draft). That any mode pairs with any setup is 100 (concepts.general.formats, U01).",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "a list of the printed game modes; the client runs only two of them (see the digital scope rule), so the list has no consequence to execute"
+  },
+  {
+    "key": "formats.general.modes.pre-draft",
+    "parent": "formats.general.modes",
+    "order": 1,
+    "text": "The 2023 Rulebook calls cube draft \"pre-draft\": players draft a complete deck of at least 30 cards before the game begins, then play constructed games with it.",
+    "examples": [],
+    "see": [
+      "902"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.1",
+          "quote": "• Pre-Draft: You draft a complete deck of a minimum 30 cards before the game begins, and play games of constructed with it."
+        },
+        {
+          "ref": "Manual p.6",
+          "quote": "where players draft decks before gameplay begins,"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "Identification by description: both books describe drafting a deck before the game and then playing constructed with it; neither says the names are the same thing. The Manual (later edition) uses \"Cube Draft\".",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "cube draft is not a format the client runs (it offers 1v1 live draft and constructed only), so there is nothing to execute"
+  },
+  {
+    "key": "formats.general.setups",
+    "parent": "900",
+    "order": 2,
+    "text": "A game is played in one of these player setups: 1v1, free-for-all (FFA), teams, or archenemy.",
+    "examples": [],
+    "see": [
+      "100"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.6",
+          "quote": "PLAYER SETUPS"
+        },
+        {
+          "ref": "Manual p.6",
+          "quote": "1v1: The recommended starting setup."
+        },
+        {
+          "ref": "Manual p.6",
+          "quote": "FFA: All players fight to be the last one standing."
+        },
+        {
+          "ref": "Manual p.6",
+          "quote": "Teams: 2v2 or 3v3, can be played either as split"
+        },
+        {
+          "ref": "Manual p.6",
+          "quote": "Archenemy: Typically 2v1, the single player gets to"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.6 lists these four \"including\", so the list is not stated to be closed. Rulebook 2023 p.1 lists 1v1, 3v3, Free For All and 2v1 as \"Player Configurations\".",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "a list of the printed player setups; the client runs only 1v1, so no other setup exists to execute"
+  },
+  {
+    "key": "formats.general.setups.one-v-one",
+    "parent": "formats.general.setups",
+    "order": 1,
+    "text": "A 1v1 game is played between two players. It is the recommended setup for a first game.",
+    "examples": [
+      {
+        "text": "Every game the client creates is a 1v1 game: two seats, two regions.",
+        "test": "412-cr-general.test.ts::cr:concepts.general.digital-scope"
+      }
+    ],
+    "see": [
+      "903",
+      "904"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.6",
+          "quote": "1v1: The recommended starting setup."
+        },
+        {
+          "ref": "Rulebook 2023 p.1",
+          "quote": "• 1v1: A heads up game between two players that uses the initative system for more of a competitive aspect."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "412-cr-general.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Rulebook 2023 p.1 recommends \"1v1 or free for all\" for the first game; the Manual recommends 1v1.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "formats.general.setups.multiplayer",
+    "parent": "formats.general.setups",
+    "order": 2,
+    "text": "Free-for-all is described in 903. Team games and archenemy are described in 904.",
+    "examples": [],
+    "see": [
+      "903",
+      "904"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.6",
+          "quote": "The above formats can be played in a wide variety of"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "A pointer rule.",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "a pointer to 903 and 904; nothing to execute"
+  },
+  {
+    "key": "formats.general.one-v-one-is-team",
+    "parent": "900",
+    "order": 3,
+    "text": "A 1v1 game counts as a team game: each player is their own team. Free-for-all is not a team game.",
+    "examples": [
+      {
+        "text": "With The Silent in play, two spells you have played this battle make your next spell cost [4] more, while your opponent still pays the printed cost: in 1v1 your team is you alone.",
+        "test": "433-cr-formats.test.ts::cr:formats.general.one-v-one-is-team — with The Silent out, each player is billed only for the spells that player has played, as a one-player team"
+      }
+    ],
+    "see": [
+      "904"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "later. In 1v1, players are considered their own teams."
+        },
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "will look slightly different depending on wheither you are playing a free for all or team based game (1v1 counts as a team game)."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "433-cr-formats.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "So every team-game rule in 904 applies to 1v1, where each team is one player. The initiative system, the attack-and-counterattack battle and the shared team priority are stated for \"teams/1v1\" together on Manual p.27 and p.36.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "formats.general.seating",
+    "parent": "900",
+    "order": 4,
+    "text": "Where the players sit sets which regions neighbour each other.",
+    "examples": [],
+    "see": [
+      "601",
+      "formats.teams.seating"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.11",
+          "quote": "STARTING SEATING"
+        },
+        {
+          "ref": "Manual p.19",
+          "quote": "The regions are arranged in a large circle. Each player"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "The seating rule and the region rule are printed on different pages; the link between them (regions arranged in a circle, as the players sit) is how Manual p.19 and Rulebook 2023 p.8 both present regions. The team-game seating rule is 904 (formats.teams.seating).",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "where players physically sit at a table; the client seats two players with one neighbouring region each, shown under the 1v1 seating rule"
+  },
+  {
+    "key": "formats.general.seating.one-v-one",
+    "parent": "formats.general.seating",
+    "order": 1,
+    "text": "In 1v1 the players sit across from each other. Each has one neighbouring region.",
+    "examples": [
+      {
+        "text": "A 1v1 game has two regions. An attack names no region: it is always fought in the opponent region, the only neighbouring one.",
+        "test": "433-cr-formats.test.ts::cr:formats.general.seating.one-v-one — a two-player game has two regions, one per player, and an attack is fought in the one other region with no region to choose"
+      }
+    ],
+    "see": [
+      "601"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.11",
+          "quote": "In 1v1 players sit across from each other. In multiplayer"
+        },
+        {
+          "ref": "Manual p.19",
+          "quote": "(except in 1v1 games, where players only have one"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "433-cr-formats.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "formats.general.seating.circle",
+    "parent": "formats.general.seating",
+    "order": 2,
+    "text": "In a game of more than two players the players sit in a circle, so each player has a player to their left and a player to their right. Each player has two neighbouring regions.",
+    "examples": [],
+    "see": [
+      "601"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.11",
+          "quote": "games, players will sit in a circle so each player has"
+        },
+        {
+          "ref": "Manual p.11",
+          "quote": "someone to their left and right. In team games, players"
+        },
+        {
+          "ref": "Manual p.19",
+          "quote": "has two neighboring regions to their left and right"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "games of more than two players are not implemented in the client (1v1 only), so there is nothing to execute"
+  },
+  {
+    "key": "formats.general.simultaneous-regions",
+    "parent": "900",
+    "order": 5,
+    "text": "Battle normally resolves one region at a time, in the order of 601. Once players are comfortable with the game, they may resolve at the same time any regions that have no player in common.",
+    "examples": [
+      {
+        "text": "With an attack and a counterattack, the battle in the defending region runs to its end before the counterattack battle begins in the other region.",
+        "test": "433-cr-formats.test.ts::cr:formats.general.simultaneous-regions — battle is in one region at a time: the first round ends in the defending region before the counterattack starts in the other"
+      }
+    ],
+    "see": [
+      "601",
+      "505"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.21",
+          "quote": "with the game, regions that have"
+        },
+        {
+          "ref": "Manual p.21",
+          "quote": "zero overlapping players can be"
+        },
+        {
+          "ref": "Manual p.21",
+          "quote": "resolved simultaneously.)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "433-cr-formats.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "A table shortcut printed in parentheses; it only arises with more than two players. The clockwise order itself is turn.battle.region-order.clockwise (U09) and combat.regions.one-at-a-time.order (U10). Untestable in the client, which has one battle region per battle round.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "formats.general.digital-scope",
+    "parent": "900",
+    "order": 6,
+    "text": "The client plays 1v1 live draft and 1v1 constructed only. It has no free-for-all, team, archenemy, cube-draft or team-draft games, and no intent cards. Rules 903, 904 and 905, and the parts of 902 about cube draft and team draft, describe the printed game, which the client does not enforce.",
+    "examples": [
+      {
+        "text": "Every game the engine creates has exactly two seats, two regions and two packs.",
+        "test": "412-cr-general.test.ts::cr:concepts.general.digital-scope"
+      },
+      {
+        "text": "A card text that would misbehave only with a third player cannot be reached: the engine is 1v1 by construction.",
+        "test": "168-three-card-divergences.test.ts::R197 §3a Cinder Scuttler"
+      }
+    ],
+    "see": [
+      "100"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R27 (the \"Project decisions\" block recorded under it)",
+          "quote": "**v1 formats**: 1v1 live draft + 1v1 constructed."
+        },
+        {
+          "ref": "R197 (its §3 two-seat measurement, which stands)",
+          "quote": "* `createGame` takes `names: [string, string]` and builds exactly **two**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "412-cr-general.test.ts",
+        "168-three-card-divergences.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Same scope as concepts.general.digital-scope (100, U01), stated here for the format chapter. R27's Project decisions block is classified process, but it is the only source naming the client's formats. R197 is partly superseded (its §3 Cinder Scuttler 1v1 gap corrected by R238); the two-seat measurement in its §3 is unaffected, and R238 repeats it (\"`createGame` builds two seats\"). The client variants Single Card Duel (901) and custom live-draft rules (902) are two-seat too. Owner basis: no printed or designer source limits the game to two players.",
+    "sourceHashes": {
+      "R197": "d627780adff03b34e1b7b04e4acc2a54accb309bad61cfffc5d828d5aca9d32b",
+      "R27": "f9de0bd386630de9d13ba5eaecf8f59a21043f5695f988e9a7fcff619ce2a071"
+    }
+  },
+  {
+    "key": "formats.constructed.what",
+    "parent": "901",
+    "order": 1,
+    "text": "In constructed, each player brings their own deck, built before the game, and plays from it.",
+    "examples": [
+      {
+        "text": "A constructed game takes one deck per seat.",
+        "test": "34-constructed.test.ts::createGame constructed: per-seat decks"
+      }
+    ],
+    "see": [
+      "103",
+      "401"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.6",
+          "quote": "Constructed: Players bring pre-constructed decks to"
+        },
+        {
+          "ref": "Manual p.16",
+          "quote": "In the constructed game mode, players bring their own"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1451507918171013252#1",
+          "quote": "the constructed game mode though where you have pre-build decks and you're only drawing 4 and recycling 2"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "34-constructed.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1451507918171013252#1": "70dc284b16f2e12988e1aeb8f37cec154072a9946d794f28d922dca7e0149e92"
+    }
+  },
+  {
+    "key": "formats.constructed.deck-size",
+    "parent": "901",
+    "order": 2,
+    "text": "A constructed deck has at least 30 cards. No source sets a maximum.",
+    "examples": [
+      {
+        "text": "A 29-card deck is refused.",
+        "test": "34-constructed.test.ts::checkDeck: min 30, max 2 copies"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.6",
+          "quote": "of each card, with a minimum deck size of 30."
+        },
+        {
+          "ref": "Manual p.16",
+          "quote": "card and a minimum of 30 cards in their decks."
+        },
+        {
+          "ref": "Rulebook 2023 p.1",
+          "quote": "• Constructed: You build a deck with a minimum size of 30 cards and a maximum of 2 copies of each card ahead of time and"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "34-constructed.test.ts",
+        "433-cr-formats.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "The second sentence records silence (D-U22-7); confidence medium for that half only. The test title also says \"scripted pool only\": the client accepts only cards it implements in a deck. That is a client restriction with no ruling behind it in this pack, so it is not stated as a rule here (Annex D).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "formats.constructed.copies",
+    "parent": "901",
+    "order": 3,
+    "text": "A constructed deck may hold at most 2 copies of any one card.",
+    "examples": [
+      {
+        "text": "A third copy of a card makes the deck illegal.",
+        "test": "34-constructed.test.ts::checkDeck: min 30, max 2 copies"
+      }
+    ],
+    "see": [
+      "formats.constructed.single-card"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.6",
+          "quote": "the game. The standard format allows up to 2 copies"
+        },
+        {
+          "ref": "Manual p.16",
+          "quote": "pre-built decks to the game with up to 2 copies of each"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "34-constructed.test.ts",
+        "433-cr-formats.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.6 says \"the standard format allows\", leaving room for variants; Single Card Duel (formats.constructed.single-card) is the client's one exception.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "formats.constructed.no-packs",
+    "parent": "901",
+    "order": 4,
+    "text": "Constructed has no shared deck and no packs.",
+    "examples": [
+      {
+        "text": "A constructed game starts with an empty shared deck and two empty packs.",
+        "test": "433-cr-formats.test.ts::cr:formats.constructed.no-packs — a constructed game has no shared deck and no packs"
+      }
+    ],
+    "see": [
+      "103",
+      "401",
+      "409"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.16",
+          "quote": "In this mode, there are no packs or shared deck. During"
+        },
+        {
+          "ref": "Manual p.10",
+          "quote": "In constructed formats, there will be no shared deck and players’ individual decks will go in the location of their “pack”."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "433-cr-formats.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Also stated at 103 (concepts.starting.constructed) and 401/409 (zones.deck.shared.constructed, zones.pack.what.constructed).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "formats.constructed.draw-phase",
+    "parent": "901",
+    "order": 5,
+    "text": "In constructed, the draw step and the draft step are taken together as one draw phase: each player draws 4 cards from their own deck, then puts 2 cards from their hand on the bottom of their deck.",
+    "examples": [
+      {
+        "text": "Turn 1 of a constructed game: each player has 4 cards, draws 4, and the put-back of 2 is pending.",
+        "test": "34-constructed.test.ts::createGame constructed: per-seat decks, opening 4 + draw 4, bottoming open"
+      },
+      {
+        "text": "On turn 2 the draw phase opens again: 4 more cards, and 2 to put back.",
+        "test": "34-constructed.test.ts::turn 2 reopens the draw phase"
+      }
+    ],
+    "see": [
+      "503",
+      "408"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.6",
+          "quote": "In constructed, there is no deck to draft from, so the draft step and the draw step are combined into one draw phase. During"
+        },
+        {
+          "ref": "Manual p.16",
+          "quote": "after the draw step, so players often combine these"
+        },
+        {
+          "ref": "Manual p.16",
+          "quote": "two steps by drawing 4 cards, then recycling 2."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1451507918171013252#1",
+          "quote": "the constructed game mode though where you have pre-build decks and you're only drawing 4 and recycling 2"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "34-constructed.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "The Manual phrases it as the draw step's 2 plus a draft step of \"draw 2 and recycle 2\", usually combined; the Rulebook and Caleb phrase it as draw 4, put back 2. Same result. The step itself is 503 (turn.draw.constructed, U08); the first turn is 103 (U01). \"Recycle\" and \"put on the bottom of the deck\" are the same act (408).",
+    "sourceHashes": {
+      "RAQ 1451507918171013252#1": "70dc284b16f2e12988e1aeb8f37cec154072a9946d794f28d922dca7e0149e92"
+    }
+  },
+  {
+    "key": "formats.constructed.draw-phase.order",
+    "parent": "formats.constructed.draw-phase",
+    "order": 1,
+    "text": "The player chooses the 2 cards and puts them on the bottom in any order. Because every card put on the bottom of a deck goes into the recycle pile, which is shuffled before it is drawn from again, the order has no effect on play.",
+    "examples": [
+      {
+        "text": "Nothing moves until the 2 cards go back, and they go back in the order given.",
+        "test": "34-constructed.test.ts::nothing moves until the 2 cards go back"
+      }
+    ],
+    "see": [
+      "408"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.6",
+          "quote": "deck in any order. This mimics the flexibility of the draft step while keeping the essence of a constructed format."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R296",
+          "quote": "The pile is shuffled on its way back in, so the order cards were recycled in is"
+        },
+        {
+          "ref": "R296",
+          "quote": "constructed draw phase's put-2-back, the cards a Glimpse did not cache, a recycled"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "34-constructed.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Print gives the free order; R296 (owner, the recycle mark) makes it unobservable. R296 itself is 408 (U07). The R296 pack quote is not in this unit's pack: R296 was read from digital-rules.md (the extract), added source.",
+    "sourceHashes": {
+      "R296": "d53f03d41df34d3f07ac7687b7104a2376c6e1fc4108537d53fe87f48c0f1a56"
+    }
+  },
+  {
+    "key": "formats.constructed.draw-phase.one-step",
+    "parent": "formats.constructed.draw-phase",
+    "order": 2,
+    "text": "For state checks the draw of 4 and the put-back of 2 are one step: a player's units are not checked for death while that player still has 2 cards to put back, so they are judged on the hand that remains.",
+    "examples": [
+      {
+        "text": "Dreadspawn Horror with 1 card in hand: drawing 4 does not kill it, and after the put-back it is a 4/2.",
+        "test": "380-no-action-ends-dead.test.ts::R313 constructed: drawing 4 does not kill before the 2 go back"
+      },
+      {
+        "text": "With 3 cards in hand it reaches 5 and dies once its controller has put 2 back.",
+        "test": "380-no-action-ends-dead.test.ts::R313 constructed: 3 cards in hand nets to 5"
+      }
+    ],
+    "see": [
+      "503",
+      "713"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R313",
+          "quote": "- **Constructed's draw phase is one step.** Draw 4 and put 2 back are two"
+        },
+        {
+          "ref": "R313",
+          "quote": "2 (`E.isLethal` skips them while `bottomPending`). The owner, 2026-10-06, on"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "380-no-action-ends-dead.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Also turn.draw.state-checks.constructed (503, U08). R313 names the engine predicate in its own text; the rule states the ruling only.",
+    "sourceHashes": {
+      "R313": "6c536935adcecdfb3146b70a3361020198a639dee554a71382a12123f8832a85"
+    }
+  },
+  {
+    "key": "formats.constructed.any-element",
+    "parent": "901",
+    "order": 6,
+    "text": "A player in a constructed game may make a resource of any element, whether or not their deck holds a card of that element.",
+    "examples": [
+      {
+        "text": "All seven elements stay legal for a resource, whatever the deck holds.",
+        "test": "34-constructed.test.ts::deckElements: it is a PRESENTATION default"
+      }
+    ],
+    "see": [
+      "106",
+      "502"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R99",
+          "quote": "make a Fire resource, even if you don't have any Fire cards in the deck […] we should be"
+        },
+        {
+          "ref": "R99",
+          "quote": "`legalActions` still offers **all seven** elements for `recycleForResource` and"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "34-constructed.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R99: the deck's element identity is only the client's default resource menu (Annex D, U24). R99 also leaves open whether a deck's element identity is public at game start; that is a digital display question for Annex D, not a rule here.",
+    "sourceHashes": {
+      "R99": "cfd4037ea46d2c5aea09ebf73bc20639fb3b512bd369be713ff28799d231b516"
+    }
+  },
+  {
+    "key": "formats.constructed.card-text",
+    "parent": "901",
+    "order": 7,
+    "text": "Card text that refers to a constructed format applies in a constructed game.",
+    "examples": [
+      {
+        "text": "Worldbender in constructed: the player skips the draw-4-put-2-back, the hand gains 3 cards, and the player loses 3 life.",
+        "test": "28-metal-c.test.ts::Worldbender in constructed"
+      },
+      {
+        "text": "Worldbender in a live draft: the hand gains 3 cards and life is untouched.",
+        "test": "28-metal-c.test.ts::Worldbender in a live draft"
+      }
+    ],
+    "see": [
+      "503"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Worldbender",
+          "quote": "You also lose 3 life if playing a constructed format."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "28-metal-c.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Worldbender is the only card in the pool whose text names a format (extract cards search for constructed/draft/pack).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "formats.constructed.card-text.cube",
+    "parent": "formats.constructed.card-text",
+    "order": 1,
+    "text": "The matches of a cube draft are constructed games, so such text applies in them too.",
+    "examples": [],
+    "see": [
+      "902"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.39",
+          "quote": "Players then use these 30 card decks they have drafted for constructed matches."
+        },
+        {
+          "ref": "card: Worldbender",
+          "quote": "You also lose 3 life if playing a constructed format."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "Read off the two printed texts together; no source answers it directly. Unreachable in the client (no cube draft).",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "cube draft is not a format the client runs (it offers 1v1 live draft and constructed only), so there is nothing to execute"
+  },
+  {
+    "key": "formats.constructed.card-text.shared-mode",
+    "parent": "formats.constructed.card-text",
+    "order": 2,
+    "text": "The client has a testing mode called \"shared\", which is not a format. Card text that asks whether the game is constructed treats a shared game as constructed.",
+    "examples": [
+      {
+        "text": "Worldbender in shared takes the constructed branch: three cards and 3 life.",
+        "test": "137-multiplier-and-mode.test.ts::Worldbender in 'shared': the default mode takes the CONSTRUCTED branch"
+      }
+    ],
+    "see": [
+      "900"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 (its §2, which stands)",
+          "quote": "> *\"Shared mode isn't a real thing. You invented it for testing. So I guess"
+        },
+        {
+          "ref": "R162 (its 'shared' is constructed half, which stands)",
+          "quote": "takes the constructed branch: all three cards out of the card, and 3 life with"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "137-multiplier-and-mode.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "A shared game has no packs, no draft step and no draw phase: each turn draws a flat 2 (R162; 20-draft.test.ts::shared mode is untouched). So \"shared is constructed\" governs card text only, not the draw phase: D-U22-10. Digital-only; Annex D may carry the mode itself.",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
+      "R162": "cce03aedbad6ba5b735880d7acb96b463e250174b38e8f23e2f7f449b087412b"
+    }
+  },
+  {
+    "key": "formats.constructed.single-card",
+    "parent": "901",
+    "order": 8,
+    "text": "Single Card Duel is a variant of constructed that the client offers. Each player picks a single card before the game, and their deck is 30 copies of that card.",
+    "examples": [
+      {
+        "text": "A Single Card Duel deck is 30 copies of the one card chosen, and a constructed game starts with it.",
+        "test": "433-cr-formats.test.ts::cr:formats.constructed.single-card — a duel deck is 30 copies of one card, and a constructed game accepts it"
+      }
+    ],
+    "see": [
+      "formats.constructed.copies"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R298",
+          "quote": "single card, before the game, and that is your deck. 30 copies of the exact same card."
+        },
+        {
+          "ref": "R298",
+          "quote": "It is the ONE exception to the Manual's two-copy cap, and it is not a new mode: the room"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "433-cr-formats.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Digital-only, an owner format (D-U22-8). Its guard is server/e2e/test-single-card.ts, an e2e script that is not in the tests index, so no example binds to it. Picking, the card ladder and stats are Annex D (U24).",
+    "sourceHashes": {
+      "R298": "728d92d81ee3ba92b174a4c2f945bae9be811db2de2eb53fda020602c47c0e23"
+    }
+  },
+  {
+    "key": "formats.constructed.single-card.copies",
+    "parent": "formats.constructed.single-card",
+    "order": 1,
+    "text": "A Single Card Duel deck is the one exception to the limit of 2 copies of a card.",
+    "examples": [
+      {
+        "text": "Thirty copies of one card fail the ordinary deck check but are accepted as a Single Card Duel deck.",
+        "test": "433-cr-formats.test.ts::cr:formats.constructed.single-card.copies — the duel deck breaks the two-copy cap: checkDeck refuses it, checkSingleDeck and createGame accept it"
+      }
+    ],
+    "see": [
+      "formats.constructed.copies"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R298",
+          "quote": "It is the ONE exception to the Manual's two-copy cap, and it is not a new mode: the room"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "433-cr-formats.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R298": "728d92d81ee3ba92b174a4c2f945bae9be811db2de2eb53fda020602c47c0e23"
+    }
+  },
+  {
+    "key": "formats.constructed.single-card.no-draw-phase",
+    "parent": "formats.constructed.single-card",
+    "order": 2,
+    "text": "A Single Card Duel has no draw phase. Each turn, each player simply draws 2 cards; nothing is put back. The opening hand is still 4 cards.",
+    "examples": [
+      {
+        "text": "Each player starts turn 1 with 6 cards (4 + 2) and nothing to put back, and draws exactly 2 more on turn 2.",
+        "test": "433-cr-formats.test.ts::cr:formats.constructed.single-card.no-draw-phase — opening 4, a flat 2 each turn, nothing put back"
+      }
+    ],
+    "see": [
+      "503"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R298",
+          "quote": "turn's card step is `'shared'`'s flat draw of 2 (and Worldbender replaces it exactly as it"
+        },
+        {
+          "ref": "R298",
+          "quote": "still 4, so turn 1 starts on the same six cards. `createGame` sets `GameState.singleCard`"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "433-cr-formats.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R298": "728d92d81ee3ba92b174a4c2f945bae9be811db2de2eb53fda020602c47c0e23"
+    }
+  },
+  {
+    "key": "formats.constructed.single-card.no-units",
+    "parent": "formats.constructed.single-card",
+    "order": 3,
+    "text": "If neither player's card can make a unit, the game is not played. It is a draw: each player is told the other's card, and both choose again. A card can make a unit if it is a unit or spell-unit card, or if it creates a unit token.",
+    "examples": [
+      {
+        "text": "A unit card and Self-Assembly (which creates a Robot unit token) can make a unit; a spell that creates no unit cannot.",
+        "test": "433-cr-formats.test.ts::cr:formats.constructed.single-card.no-units — makesUnits is true for a unit and a unit-token maker, false for a spell that makes none"
+      }
+    ],
+    "see": [
+      "104"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R298",
+          "quote": "both players choose Spells (which don't produce units), then end the game in a draw, tell"
+        },
+        {
+          "ref": "R298",
+          "quote": "`makesUnits(name)` (apply.ts) is true for a unit or spell-unit card and for any card whose"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "433-cr-formats.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R298: the room does not deal, records nothing, and deals as soon as a new pair includes a unit-maker. \"Creates a unit token\" is the card's declared creates list (R69), never read off the printed text.",
+    "sourceHashes": {
+      "R298": "728d92d81ee3ba92b174a4c2f945bae9be811db2de2eb53fda020602c47c0e23"
+    }
+  },
+  {
+    "key": "formats.draft.live-draft",
+    "parent": "902",
+    "order": 1,
+    "text": "In live draft, the players share one deck, built from the chosen elements, and draft cards from it during the game.",
+    "examples": [
+      {
+        "text": "A live draft deals each seat a hand and a pack from one shared deck.",
+        "test": "20-draft.test.ts::createGame draft: 6-card hands"
+      }
+    ],
+    "see": [
+      "103",
+      "401",
+      "409"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.6",
+          "quote": "Live Draft: A dynamic format where players create a"
+        },
+        {
+          "ref": "Manual p.6",
+          "quote": "shared deck from selected elements and draft cards"
+        },
+        {
+          "ref": "Rulebook 2023 p.1",
+          "quote": "• Live Draft (Standard Algomancy): Players share one deck and draft cards from it during the game."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "20-draft.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Building the deck is 103 (concepts.starting.live-draft.deck, U01).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "formats.draft.live-draft.standard",
+    "parent": "formats.draft.live-draft",
+    "order": 1,
+    "text": "Live draft is the standard Algomancy format, and 1v1 live draft is the format suggested for learning the game.",
+    "examples": [],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.1",
+          "quote": "• Live Draft (Standard Algomancy): Players share one deck and draft cards from it during the game."
+        },
+        {
+          "ref": "Manual p.10",
+          "quote": "Below is the starting game layout for the 1v1 live draft game format, which is the suggested format for learning"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "a recommendation of which format to play; nothing to execute"
+  },
+  {
+    "key": "formats.draft.elements",
+    "parent": "902",
+    "order": 2,
+    "text": "A live draft uses 3 elements for 2–3 players and 4 elements for 4–6 players. For 6 or more players, a cube draft with all 5 elements is recommended instead of a live draft.",
+    "examples": [
+      {
+        "text": "A standard 1v1 live draft is built from exactly 3 elements.",
+        "test": "412-cr-general.test.ts::cr:concepts.starting.live-draft.elements"
+      }
+    ],
+    "see": [
+      "105",
+      "103"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.11",
+          "quote": "prised of multiple elements. Games begin by selecting the elements to build the deck. For 2-3 players,"
+        },
+        {
+          "ref": "Manual p.11",
+          "quote": "use 3 elements. For 4-6 players use 4 elements. For 6"
+        },
+        {
+          "ref": "Manual p.11",
+          "quote": "or more players we recommend doing a cube draft with"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "412-cr-general.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Six players fall under both sentences: 4 elements, though a cube draft is recommended. The Manual's \"all 5 elements\" predates the client's seven-element pool (105). Custom rules may change the count in the client (formats.draft.custom.elements).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "formats.draft.elements.choosing",
+    "parent": "formats.draft.elements",
+    "order": 1,
+    "text": "In casual games, players take turns choosing the elements, or assign them randomly. The printed rules defer the competitive procedure to Algomancy.io.",
+    "examples": [],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.11",
+          "quote": "In casual games, players can alternate choosing elements to include in the game or assign them randomly. For the most up to date competitive rules for this"
+        },
+        {
+          "ref": "Manual p.11",
+          "quote": "process, please see Algomancy.io."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "Sources silent on the competitive procedure: D-U22-6. How the client chooses (the lobby's methods) is Annex D.",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "a casual-table procedure for agreeing the elements; the client chooses them in its lobby by its own methods, so the printed procedure is not executed"
+  },
+  {
+    "key": "formats.draft.sixteen",
+    "parent": "902",
+    "order": 3,
+    "text": "In live draft each player begins with 16 cards to draft from: a 6-card hand (the 4-card starting hand plus the first turn's 2 draws) and a 10-card pack.",
+    "examples": [
+      {
+        "text": "A new live draft deals 6-card hands and 10-card packs, with the draft step open.",
+        "test": "20-draft.test.ts::createGame draft: 6-card hands (opening 4 + turn-1 draws), 10-card packs"
+      }
+    ],
+    "see": [
+      "103",
+      "503"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.11",
+          "quote": "Deal each player 16 cards: 4 for their starting hand,"
+        },
+        {
+          "ref": "Manual p.11",
+          "quote": "10 for their pack and 2 for their first draw step of the"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1451507918171013252#0",
+          "quote": "But I promise the 16 card draft becomes fairly easy to navigate"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "20-draft.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Caleb's \"16 card draft\" (RAQ #0) confirms the count; print states the split. The deal itself is 103 (concepts.starting.live-draft.deal, U01).",
+    "sourceHashes": {
+      "RAQ 1451507918171013252#0": "9e135f6cc10d4fc5dbc4286c083de7dde20fe625cc166cd3d32c51d066b1c16f"
+    }
+  },
+  {
+    "key": "formats.draft.draft-step",
+    "parent": "902",
+    "order": 4,
+    "text": "The draft step is described in 503, and the pack, its refresh every N+1 turns and an eliminated player's pack in 409.",
+    "examples": [
+      {
+        "text": "Turns 2 and 3 draw 2 and reopen the draft step; the packs refresh on turn 4.",
+        "test": "20-draft.test.ts::turns 2-3 draw 2 and re-open the draft step"
+      }
+    ],
+    "see": [
+      "503",
+      "409"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.16",
+          "quote": "Drafting is the process where players curate their"
+        },
+        {
+          "ref": "Manual p.16",
+          "quote": "CREATING & REFRESHING THE PACK"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "20-draft.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "A pointer rule, so the format chapter is complete without restating 503 and 409.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "formats.draft.custom",
+    "parent": "902",
+    "order": 5,
+    "text": "The client lets a live draft be created with custom rules. Custom rules change the deal and nothing else: they never change how a card works.",
+    "examples": [
+      {
+        "text": "A custom deal changes the draft for the same seed.",
+        "test": "296-custom-draft-deal.test.ts::BL-43 §1a control"
+      },
+      {
+        "text": "A custom deal is ignored outside a live draft.",
+        "test": "296-custom-draft-deal.test.ts::BL-43 §1c a custom deal is ignored outside a live draft"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R292",
+          "quote": "**Ruling.** A live draft may be created with custom rules. They change the"
+        },
+        {
+          "ref": "R292",
+          "quote": "DEAL, never how a card works:"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "296-custom-draft-deal.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Digital-only, an owner format (D-U22-9). The lobby, the not-counted rule (no stats, ratings or achievements) and the match-history tag are Annex D (U24).",
+    "sourceHashes": {
+      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
+    }
+  },
+  {
+    "key": "formats.draft.custom.pack-size",
+    "parent": "formats.draft.custom",
+    "order": 1,
+    "text": "Pack size may be set from 3 to 15 cards (standard 10). Every pack is dealt and refreshed at that size, and the draft step leaves exactly that many cards in the pack.",
+    "examples": [
+      {
+        "text": "Packs of 5: 5 at the deal, the draft commit leaves 5, and the turn-4 refresh deals 5.",
+        "test": "296-custom-draft-deal.test.ts::BL-43 §2a pack size"
+      }
+    ],
+    "see": [
+      "409",
+      "503"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R292",
+          "quote": "- **Pack size** (3–15, standard 10). Every pack is dealt and refreshed at that"
+        },
+        {
+          "ref": "R292",
+          "quote": "size, and the draft step leaves exactly that many cards in the pack."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "296-custom-draft-deal.test.ts",
+        "433-cr-formats.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
+    }
+  },
+  {
+    "key": "formats.draft.custom.elements",
+    "parent": "formats.draft.custom",
+    "order": 2,
+    "text": "The number of elements may be set from 2 to 7 (standard 3). The pool is every deck card whose elements all lie within the chosen set. Two elements default to fire and wood.",
+    "examples": [
+      {
+        "text": "Two elements: fire and wood by default, or a chosen pair; 113 cards.",
+        "test": "296-custom-draft-deal.test.ts::BL-43 §2c two elements"
+      }
+    ],
+    "see": [
+      "105"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R292",
+          "quote": "- **Elements** (2–7, standard 3). The pool is every deck card whose factions"
+        },
+        {
+          "ref": "R292",
+          "quote": "choose that many. Two elements default to fire + wood, the rulebook Quick"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "296-custom-draft-deal.test.ts",
+        "433-cr-formats.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
+    }
+  },
+  {
+    "key": "formats.draft.custom.numbers",
+    "parent": "formats.draft.custom",
+    "order": 3,
+    "text": "The opening hand may be set from 1 to 15 cards (standard 6), the draws per turn after turn 1 from 0 to 5 (standard 2), and the starting life from 1 to 99 (standard 30).",
+    "examples": [
+      {
+        "text": "Opening hand, draws per turn and starting life each follow the custom rules.",
+        "test": "296-custom-draft-deal.test.ts::BL-43 §2b opening hand, draws per turn and starting life"
+      }
+    ],
+    "see": [
+      "103",
+      "503"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R292",
+          "quote": "- **Opening hand** (1–15, standard 6: Manual p.16's 4 plus turn 1's 2), **draws"
+        },
+        {
+          "ref": "R292",
+          "quote": "per turn** after turn 1 (0–5, standard 2) and **starting life** (1–99,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "296-custom-draft-deal.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
+    }
+  },
+  {
+    "key": "formats.draft.custom.simple",
+    "parent": "formats.draft.custom",
+    "order": 4,
+    "text": "With \"simple cards only\", the pool holds only cards with the silver (Simple) complexity symbol.",
+    "examples": [
+      {
+        "text": "Simple cards only leaves out exactly the cards that are not simple.",
+        "test": "297-custom-rules-resolve.test.ts::BL-43 resolve §3 Simple cards only leaves out exactly the cards that are not simple"
+      }
+    ],
+    "see": [
+      "209"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R292",
+          "quote": "- **Simple cards only**: only cards with the silver complexity symbol (the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "297-custom-rules-resolve.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
+    }
+  },
+  {
+    "key": "formats.draft.custom.bans",
+    "parent": "formats.draft.custom",
+    "order": 5,
+    "text": "Cards may be banned by name, and an advanced card filter may be set: only cards that match it are in the pool. A banned or filtered-out card is nowhere in the game.",
+    "examples": [
+      {
+        "text": "An excluded card is nowhere in the game, at the deal or after a fuzzed game.",
+        "test": "296-custom-draft-deal.test.ts::BL-43 §3 an excluded card is nowhere in the game"
+      },
+      {
+        "text": "Bans and the card filter add up.",
+        "test": "297-custom-rules-resolve.test.ts::BL-43 resolve §5 bans and the card filter add up"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R292",
+          "quote": "- **Banned cards** by name, and an **advanced card filter** in the card"
+        },
+        {
+          "ref": "R292",
+          "quote": "browser's search syntax: only cards matching it are in the pool."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "296-custom-draft-deal.test.ts",
+        "297-custom-rules-resolve.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
+    }
+  },
+  {
+    "key": "formats.draft.custom.refresh",
+    "parent": "formats.draft.custom",
+    "order": 6,
+    "text": "Custom rules do not change the pack refresh: it still comes every N+1 turns.",
+    "examples": [
+      {
+        "text": "With packs of 5 the turn-4 refresh still comes, and deals 5.",
+        "test": "296-custom-draft-deal.test.ts::BL-43 §2a pack size"
+      }
+    ],
+    "see": [
+      "409"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R292",
+          "quote": "The pack refresh stays every N+1 turns. **A pool must hold at least"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "296-custom-draft-deal.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
+    }
+  },
+  {
+    "key": "formats.draft.custom.floor",
+    "parent": "formats.draft.custom",
+    "order": 7,
+    "text": "A custom pool must hold at least 2 × hand + 4 × pack + 6 × draws cards (64 for the standard game). Custom rules below that floor are refused before the game is created. When the elements are to be chosen later, every set of that size must pass.",
+    "examples": [
+      {
+        "text": "The standard game needs 64 cards, the beginner deal 44.",
+        "test": "296-custom-draft-deal.test.ts::BL-43 §5 minPool"
+      },
+      {
+        "text": "Too small a pool is refused with a message that names the fix.",
+        "test": "297-custom-rules-resolve.test.ts::BL-43 resolve §8 too small a pool is refused"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R292",
+          "quote": "2·hand + 4·pack + 6·draw cards** — the opening deal, the draws of turns 2–4,"
+        },
+        {
+          "ref": "R292",
+          "quote": "that size must pass. Rules below the floor are refused before the room exists."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "296-custom-draft-deal.test.ts",
+        "297-custom-rules-resolve.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
+    }
+  },
+  {
+    "key": "formats.draft.custom.not-printed",
+    "parent": "formats.draft.custom",
+    "order": 8,
+    "text": "Custom rules are not printed rules. Packs of other than 10 cards are not in the printed rules, and the client's Beginner preset (two elements, simple cards only, packs of 5) is the client's own softening of the Quick Start.",
+    "examples": [
+      {
+        "text": "The Beginner preset sends two elements, simple cards and packs of 5.",
+        "test": "298-custom-rules-ui.test.ts::BL-43 ui §2 the Beginner preset"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R292",
+          "quote": "**Not rulebook text.** 5-card packs are not in the printed rules this repository"
+        },
+        {
+          "ref": "R292",
+          "quote": "holds; they are the reporter's suggestion. The Beginner preset (two elements,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "298-custom-rules-ui.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
+    }
+  },
+  {
+    "key": "formats.draft.cube",
+    "parent": "902",
+    "order": 6,
+    "text": "Cube draft is a format for large groups (6 to 10 or more players). The players draft decks before the game, then use them to play constructed matches, often in a 1v1 tournament bracket.",
+    "examples": [],
+    "see": [
+      "901"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.39",
+          "quote": "Cube draft is a format suited for large groups (6-10+)"
+        },
+        {
+          "ref": "Manual p.39",
+          "quote": "where players create decks through a drafting process"
+        },
+        {
+          "ref": "Manual p.39",
+          "quote": "before the game and use those decks to play constructed matches. This is often done in a 1v1 tournament bracket."
+        },
+        {
+          "ref": "Manual p.6",
+          "quote": "Cube Draft: A combination of draft and constructed"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Not in the client (formats.general.digital-scope). The 2023 Rulebook's \"Pre-Draft\" is the same mode (formats.general.modes.pre-draft).",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "cube draft is not a format the client runs (it offers 1v1 live draft and constructed only), so there is nothing to execute"
+  },
+  {
+    "key": "formats.draft.cube.the-cube",
+    "parent": "formats.draft.cube",
+    "order": 1,
+    "text": "The cube is all of the game cards, hybrids included, shuffled together: 320 cards from one box. For more than 8 players, two complete sets are used (640 cards).",
+    "examples": [],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.39",
+          "quote": "Shuffle all of the game cards including hybrids together. This is called a “cube” and should be 320 cards"
+        },
+        {
+          "ref": "Manual p.39",
+          "quote": "in total when using a single box of Algomancy. When"
+        },
+        {
+          "ref": "Manual p.39",
+          "quote": "playing in groups larger than 8, two complete sets of"
+        },
+        {
+          "ref": "Manual p.39",
+          "quote": "each player (for 640 total cards)."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The 320 counts the five base elements (54 each) and 50 hybrids printed beside it; the client's pool is larger (Light & Dark).",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "cube draft is not a format the client runs (it offers 1v1 live draft and constructed only), so there is nothing to execute"
+  },
+  {
+    "key": "formats.draft.cube.procedure",
+    "parent": "formats.draft.cube",
+    "order": 2,
+    "text": "To draft, deal each player a pack of 10 cards. Then repeat these steps 15 times, until each player has a 30-card deck: (1) each player draws 2 cards from the cube; (2) players may combine their hands with their packs; (3) each player chooses 10 cards from their combined hand and pack and passes them, as a new pack, clockwise to their neighbour.",
+    "examples": [],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.39",
+          "quote": "Deal each player a pack of 10 cards. Players will then"
+        },
+        {
+          "ref": "Manual p.39",
+          "quote": "complete the following process a total of 15 times, until"
+        },
+        {
+          "ref": "Manual p.39",
+          "quote": "each player has finished with a 30 card deck:"
+        },
+        {
+          "ref": "Manual p.39",
+          "quote": "Each player draws 2 cards from the cube"
+        },
+        {
+          "ref": "Manual p.39",
+          "quote": "Players may combine their hands with the packs"
+        },
+        {
+          "ref": "Manual p.39",
+          "quote": "Players choose 10 cards from their combined hand/"
+        },
+        {
+          "ref": "Manual p.39",
+          "quote": "pack and pass that as a new pack clockwise to their"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "cube draft is not a format the client runs (it offers 1v1 live draft and constructed only), so there is nothing to execute"
+  },
+  {
+    "key": "formats.draft.cube.decks",
+    "parent": "formats.draft.cube",
+    "order": 3,
+    "text": "Players then play constructed matches with the 30-card decks they drafted.",
+    "examples": [],
+    "see": [
+      "901",
+      "formats.constructed.card-text"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.39",
+          "quote": "Players then use these 30 card decks they have drafted for constructed matches."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Whether the 2-copy limit (formats.constructed.copies) binds a drafted deck (a two-set cube can hold more copies) is not said: D-U22-7.",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "cube draft is not a format the client runs (it offers 1v1 live draft and constructed only), so there is nothing to execute"
+  },
+  {
+    "key": "formats.draft.cube-traditional",
+    "parent": "902",
+    "order": 7,
+    "text": "A traditional cube draft may be used instead. Each player is dealt three packs of 13 to 15 cards: 15 cards for 6 players, 13 for 8 players.",
+    "examples": [],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.39",
+          "quote": "TRADITIONAL CUBE DRAFT"
+        },
+        {
+          "ref": "Manual p.39",
+          "quote": "Deal each player three packs of 13 to 15 cards (15 cards"
+        },
+        {
+          "ref": "Manual p.39",
+          "quote": "for 6 players, 13 for 8 players). Players will each look"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "\"May be used instead\" is a reading: the Manual prints it as a second procedure under CUBE DRAFT without saying how to pick between them.",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "cube draft is not a format the client runs (it offers 1v1 live draft and constructed only), so there is nothing to execute"
+  },
+  {
+    "key": "formats.draft.cube-traditional.picks",
+    "parent": "formats.draft.cube-traditional",
+    "order": 1,
+    "text": "Each player looks at their pack, takes one card from it and passes the rest to their neighbour, until the pack is empty. This is done three times, once per pack, passing left, then right, then left.",
+    "examples": [],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.39",
+          "quote": "at their packs and take one card from it before passing"
+        },
+        {
+          "ref": "Manual p.39",
+          "quote": "it to their neighbor and repeat until the first pack is"
+        },
+        {
+          "ref": "Manual p.39",
+          "quote": "empty. This process is repeated a total of three times,"
+        },
+        {
+          "ref": "Manual p.39",
+          "quote": "alternating passing directions (left, right, left) until"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "cube draft is not a format the client runs (it offers 1v1 live draft and constructed only), so there is nothing to execute"
+  },
+  {
+    "key": "formats.draft.cube-traditional.deck",
+    "parent": "formats.draft.cube-traditional",
+    "order": 2,
+    "text": "From the cards they drafted, each player builds a 30-card deck for the constructed matches that follow.",
+    "examples": [],
+    "see": [
+      "901"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.39",
+          "quote": "From their drafted piles, players each build a 30 card"
+        },
+        {
+          "ref": "Manual p.39",
+          "quote": "deck to use for the following constructed matches."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "cube draft is not a format the client runs (it offers 1v1 live draft and constructed only), so there is nothing to execute"
+  },
+  {
+    "key": "formats.draft.team-draft",
+    "parent": "902",
+    "order": 8,
+    "text": "In team draft, each team brings a constructed deck of 30 cards for each player on the team, with at most 2 copies of each card. The team live drafts from that deck during the game.",
+    "examples": [],
+    "see": [
+      "904",
+      "formats.constructed.copies"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.6",
+          "quote": "Team Draft: Each team brings a constructed deck"
+        },
+        {
+          "ref": "Manual p.6",
+          "quote": "including 30 cards per player on the team with up to"
+        },
+        {
+          "ref": "Manual p.6",
+          "quote": "2 copies of each card. Their team will live draft from"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "The 2023 Rulebook sets the team deck at 100 cards; the Manual (later edition) is stated: D-U22-1. Not in the client.",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "team draft is not a format the client runs (two seats, no teams), so there is nothing to execute"
+  },
+  {
+    "key": "formats.draft.team-draft.pass",
+    "parent": "formats.draft.team-draft",
+    "order": 1,
+    "text": "In team draft, a player who has finished drafting passes their pack to the nearest teammate, not clockwise to the nearest player.",
+    "examples": [],
+    "see": [
+      "503"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.6",
+          "quote": "For team draft, a team of players will bring a pre-constructed deck of cards that the entire team will draft from. Rather than"
+        },
+        {
+          "ref": "Rulebook 2023 p.6",
+          "quote": "passing their packs clockwise to the nearest player when finished, they pass it to the nearest teammate. Additionally, packs are"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "Stated only by the 2023 Rulebook; the Manual does not contradict it.",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "team draft is not a format the client runs (two seats, no teams), so there is nothing to execute"
+  },
+  {
+    "key": "formats.draft.team-draft.no-refresh",
+    "parent": "formats.draft.team-draft",
+    "order": 2,
+    "text": "In team draft, packs are never refreshed.",
+    "examples": [],
+    "see": [
+      "409"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.6",
+          "quote": "never refreshed in team drafts. All the other draft rules apply."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "Also zones.pack.refresh.team-draft (409, U07). Stated only by the 2023 Rulebook.",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "team draft is not a format the client runs (two seats, no teams), so there is nothing to execute"
+  },
+  {
+    "key": "formats.draft.team-draft.other-rules",
+    "parent": "formats.draft.team-draft",
+    "order": 3,
+    "text": "All the other rules of live draft apply in team draft.",
+    "examples": [],
+    "see": [
+      "503",
+      "409"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.6",
+          "quote": "never refreshed in team drafts. All the other draft rules apply."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "team draft is not a format the client runs (two seats, no teams), so there is nothing to execute"
+  },
+  {
+    "key": "formats.draft.team-draft.rulebook",
+    "parent": "formats.draft.team-draft",
+    "order": 4,
+    "text": "The 2023 Rulebook sizes the team-draft deck differently: the team builds a deck of 100 cards, with at most 2 copies of each card.",
+    "examples": [],
+    "see": [
+      "formats.constructed.copies"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.1",
+          "quote": "• Team draft: Your team builds a large deck of 100 cards and a maximum of 2 copies of each card ahead of time and your team"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "Kept as a rule so a judge's CR built from the 2023 Rulebook lines up; the Manual (later edition) is 902 formats.draft.team-draft. D-U22-1.",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "team draft is not a format the client runs (two seats, no teams), so there is nothing to execute"
+  },
+  {
+    "key": "formats.ffa.what",
+    "parent": "903",
+    "order": 1,
+    "text": "In a free-for-all (FFA) game, every player plays for themselves. All players fight to be the last one standing.",
+    "examples": [],
+    "see": [
+      "104"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.6",
+          "quote": "FFA: All players fight to be the last one standing."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Not in the client (formats.general.digital-scope). Elimination and the game continuing are 104 (U01).",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "The client plays two-player games only and has no free-for-all mode or intent cards, so nothing executes it."
+  },
+  {
+    "key": "formats.ffa.what.players",
+    "parent": "formats.ffa.what",
+    "order": 1,
+    "text": "A free-for-all game is for 2 to 9 players, or more if more copies of the game are available.",
+    "examples": [],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.1",
+          "quote": "• Free For All: A fun and casual experience for 2 to 9 players (and expandible to infinite players if more copies of the game are"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "Only the 2023 Rulebook gives a player count. A two-player free-for-all is allowed by it; nothing says how it would differ from 1v1 beyond the FFA battle structure.",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "The client plays two-player games only and has no free-for-all mode or intent cards, so nothing executes it."
+  },
+  {
+    "key": "formats.ffa.no-counterattack",
+    "parent": "903",
+    "order": 2,
+    "text": "Free-for-all has no attack and counterattack: there is one battle round, and no counterattacks.",
+    "examples": [],
+    "see": [
+      "505",
+      "610"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.36",
+          "quote": "The FFA battle structure is simpler than the teams/1v1"
+        },
+        {
+          "ref": "Manual p.36",
+          "quote": "structure since there is no attack/counter-attack. After"
+        },
+        {
+          "ref": "Manual p.36",
+          "quote": "There are no counterattacks in FFA, which gives this format a different feel"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "\"One battle round\" is turn.battle.ffa (505, U09), which words it as \"no battle rounds\". Here: the attack-counterattack pair of rounds does not exist.",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "The client plays two-player games only and has no free-for-all mode or intent cards, so nothing executes it."
+  },
+  {
+    "key": "formats.ffa.attacks",
+    "parent": "903",
+    "order": 3,
+    "text": "In free-for-all, all players declare their attacks at the same time, using intent cards (see 905).",
+    "examples": [],
+    "see": [
+      "905",
+      "604"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.7",
+          "quote": "whereas FFA games feature simultaneous attack declarations using the intent cards."
+        },
+        {
+          "ref": "Rulebook 2023 p.9",
+          "quote": "In a free for all game, all players declare their attacks simultaneously using the “Intent” cards. Simply place an intent card face"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "The client plays two-player games only and has no free-for-all mode or intent cards, so nothing executes it."
+  },
+  {
+    "key": "formats.ffa.battle-steps",
+    "parent": "903",
+    "order": 4,
+    "text": "After the attacks are declared, battle in each attacked region follows these steps in order: (1) the attacker sets their units into formation; (2) a priority window; (3) the defender sets their blocking formation; (4) a priority window; (5) the combat damage step, in which all units in formation deal combat damage at the same time; (6) the after combat step, the last priority window in that region before regroup.",
+    "examples": [],
+    "see": [
+      "602",
+      "605",
+      "607",
+      "608",
+      "609"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.36",
+          "quote": "a simultaneous attack declaration, each region follows"
+        },
+        {
+          "ref": "Manual p.36",
+          "quote": "The attacker sets their units into Formation."
+        },
+        {
+          "ref": "Manual p.36",
+          "quote": "There is a priority window for interaction."
+        },
+        {
+          "ref": "Manual p.36",
+          "quote": "Defender sets their blocking formation."
+        },
+        {
+          "ref": "Manual p.36",
+          "quote": "Combat Step happens - All units in formation deal"
+        },
+        {
+          "ref": "Manual p.36",
+          "quote": "After Combat Step - This is the last priority window"
+        },
+        {
+          "ref": "Manual p.27",
+          "quote": "ONLY IN ATTACKED REGIONS"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.27's FFA column lists the same six steps. Regions resolve in the clockwise order of 601 (Manual p.21).",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "The client plays two-player games only and has no free-for-all mode or intent cards, so nothing executes it."
+  },
+  {
+    "key": "formats.ffa.three-in-region",
+    "parent": "903",
+    "order": 5,
+    "text": "When two players attack the same player, all three players take part in that battle together, in one region.",
+    "examples": [],
+    "see": [
+      "601"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.36",
+          "quote": "In multiplayer games when two players attack the"
+        },
+        {
+          "ref": "Manual p.36",
+          "quote": "same player, all three of the players take part in that"
+        },
+        {
+          "ref": "Manual p.36",
+          "quote": "battle together in one region. The defending player now is able to defend against the two incoming"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Manual p.36 places this under FFA; nothing confines it to FFA, but only FFA lets two players attack one player in the same battle round.",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "The client plays two-player games only and has no free-for-all mode or intent cards, so nothing executes it."
+  },
+  {
+    "key": "formats.ffa.three-in-region.defender",
+    "parent": "formats.ffa.three-in-region",
+    "order": 1,
+    "text": "The defending player defends against both attacking formations.",
+    "examples": [],
+    "see": [
+      "606"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.36",
+          "quote": "battle together in one region. The defending player now is able to defend against the two incoming"
+        },
+        {
+          "ref": "Manual p.36",
+          "quote": "attacking formations, and all three players are able to"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "Sources silent on how one defending formation is set against two attacking formations (one formation per attacker, or one shared), and on how combat damage pairs across them. Recorded in D-U22-11.",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "The client plays two-player games only and has no free-for-all mode or intent cards, so nothing executes it."
+  },
+  {
+    "key": "formats.ffa.three-in-region.interaction",
+    "parent": "formats.ffa.three-in-region",
+    "order": 2,
+    "text": "All three players can interact with each other and with each other's units in that region.",
+    "examples": [],
+    "see": [
+      "601"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.36",
+          "quote": "attacking formations, and all three players are able to"
+        },
+        {
+          "ref": "Manual p.36",
+          "quote": "interact with each other and their units in that region."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "The client plays two-player games only and has no free-for-all mode or intent cards, so nothing executes it."
+  },
+  {
+    "key": "formats.ffa.priority",
+    "parent": "903",
+    "order": 6,
+    "text": "In a region with more than two players, priority passes around the players in a circle, clockwise, instead of back and forth. The initiative player receives priority first if they are present in the region; otherwise the player nearest to the initiative player, clockwise, does.",
+    "examples": [],
+    "see": [
+      "703"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.36",
+          "quote": "player in a clockwise direction gains priority first and"
+        },
+        {
+          "ref": "Manual p.36",
+          "quote": "priority is passed from that player clockwise during"
+        },
+        {
+          "ref": "Manual p.36",
+          "quote": "as it does in 1v1, but priority is passed in a circle instead"
+        },
+        {
+          "ref": "Manual p.30",
+          "quote": "region. If the initiative player is not present in the region,"
+        },
+        {
+          "ref": "Manual p.30",
+          "quote": "priority begins with the player nearest to the initiative player,"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "Manual p.36 says \"the player closest to the initiative player in a clockwise direction gains priority first\"; Manual p.30 says the initiative player goes first when present. The rule reads them together (p.30 is the general rule; p.36 agrees whenever the initiative player is absent). D-U22-3. The general priority window is effects.priority.window.order (703, U14).",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "The client plays two-player games only and has no free-for-all mode or intent cards, so nothing executes it."
+  },
+  {
+    "key": "formats.ffa.priority.stack",
+    "parent": "formats.ffa.priority",
+    "order": 1,
+    "text": "The stack works the same way with three players in a region as it does in 1v1.",
+    "examples": [],
+    "see": [
+      "703",
+      "704"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.36",
+          "quote": "The stack functions identically in 3 player situations as"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "The client plays two-player games only and has no free-for-all mode or intent cards, so nothing executes it."
+  },
+  {
+    "key": "formats.ffa.phases",
+    "parent": "903",
+    "order": 7,
+    "text": "Apart from the battle phase, which is only partly simultaneous, every phase of a free-for-all game may be taken by all players at the same time: players may make resources in the planning phase, and deploy units in the deployment phase, all at once.",
+    "examples": [],
+    "see": [
+      "501",
+      "507"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.36",
+          "quote": "Aside from battle which is semi-simultaneous, every"
+        },
+        {
+          "ref": "Manual p.36",
+          "quote": "phase of a FFA game can be completed by all players"
+        },
+        {
+          "ref": "Manual p.36",
+          "quote": "at the same time, meaning players can create resources in the planning phase and deploy units during"
+        },
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "The simplest structure to understand is free for all, where each phase is truly shared by all players at once and intent tokens are"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "This is the FFA difference from team games, where the initiative team acts first (formats.teams.initiative).",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "The client plays two-player games only and has no free-for-all mode or intent cards, so nothing executes it."
+  },
+  {
+    "key": "formats.ffa.phases.in-order",
+    "parent": "formats.ffa.phases",
+    "order": 1,
+    "text": "Players who are learning, or playing competitively, may instead take their phases one player at a time, in clockwise order from the initiative player.",
+    "examples": [],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.36",
+          "quote": "deployment all at once if they are comfortable enough"
+        },
+        {
+          "ref": "Manual p.36",
+          "quote": "with the game. As players are learning or if they are"
+        },
+        {
+          "ref": "Manual p.36",
+          "quote": "playing competitively, they can perform their phases in"
+        },
+        {
+          "ref": "Manual p.36",
+          "quote": "order clockwise from the initiative player if they wish."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "The client plays two-player games only and has no free-for-all mode or intent cards, so nothing executes it."
+  },
+  {
+    "key": "formats.teams.what",
+    "parent": "904",
+    "order": 1,
+    "text": "In a team game, two teams play against each other, 2v2 or 3v3. 3v3 is the standard team structure.",
+    "examples": [],
+    "see": [
+      "formats.general.one-v-one-is-team"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.6",
+          "quote": "Teams: 2v2 or 3v3, can be played either as split"
+        },
+        {
+          "ref": "Rulebook 2023 p.1",
+          "quote": "• 3v3: The standard team structure for algomancy. Teams of 3 battle it out to see which can come out on top."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "A 1v1 game is a team game with one player per team (formats.general.one-v-one-is-team). Not in the client beyond 1v1.",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "team games are not implemented in the client (1v1 only), so there is nothing to execute"
+  },
+  {
+    "key": "formats.teams.split-or-joint",
+    "parent": "904",
+    "order": 2,
+    "text": "A team game may be played with split teams, where each player has their own region, or with joint players, where a team shares a single region. A joint-player game is in effect a 1v1 game with more players.",
+    "examples": [],
+    "see": [
+      "601"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.6",
+          "quote": "Teams: 2v2 or 3v3, can be played either as split"
+        },
+        {
+          "ref": "Manual p.6",
+          "quote": "teams (multiple regions) or joint players sharing"
+        },
+        {
+          "ref": "Manual p.6",
+          "quote": "a single region (effectively a 1v1 game with more"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "Sources silent on the details of joint players (whose life total, deck, hand and resources; who controls what): D-U22-5. The rules of 904 below are written for split teams, as the Manual writes them.",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "team games are not implemented in the client (1v1 only), so there is nothing to execute"
+  },
+  {
+    "key": "formats.teams.seating",
+    "parent": "904",
+    "order": 3,
+    "text": "In a team game, each player sits between two opponents.",
+    "examples": [],
+    "see": [
+      "formats.general.seating",
+      "601"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.11",
+          "quote": "will sit between two opponents."
+        },
+        {
+          "ref": "Rulebook 2023 p.8",
+          "quote": "neighboring regions, except in the case of 1v1, where there is only one neighboring region. For team games, each player should"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "team games are not implemented in the client (1v1 only), so there is nothing to execute"
+  },
+  {
+    "key": "formats.teams.win",
+    "parent": "904",
+    "order": 4,
+    "text": "In a team game, a team wins when it has eliminated the entire opposing team.",
+    "examples": [],
+    "see": [
+      "104"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.1",
+          "quote": "In order to win a game of Algomancy, you must eliminate all of your opponents by reducing their life total to zero. In team"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The next line (\"games, you must elimiate the entire opposing team.\") completes the sentence; quotes are one line each, so it is noted here. Also concepts.ending.win.teams (104, U01). Attacking through allied regions after nearby opponents are eliminated is combat.regions.arrangement.teams (601, U10).",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "team games are not implemented in the client (1v1 only), so there is nothing to execute"
+  },
+  {
+    "key": "formats.teams.act-together",
+    "parent": "904",
+    "order": 5,
+    "text": "Teammates act together in every situation and every phase of the game.",
+    "examples": [],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.20",
+          "quote": "Teams always act together in all situations and phases of"
+        },
+        {
+          "ref": "Manual p.38",
+          "quote": "on has the initiative. Teams act together in all situations, meaning during the deployment phase, teams"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "team games are not implemented in the client (1v1 only), so there is nothing to execute"
+  },
+  {
+    "key": "formats.teams.initiative",
+    "parent": "904",
+    "order": 6,
+    "text": "The team of the player who holds the initiative token has the initiative: it is the initiative team (IT), and the other team is the non-initiative team (NIT). The initiative team makes all its plays first; the non-initiative team acts after it.",
+    "examples": [],
+    "see": [
+      "500",
+      "508"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.38",
+          "quote": "Whichever team the player with the initiative token is"
+        },
+        {
+          "ref": "Manual p.38",
+          "quote": "on has the initiative. Teams act together in all situations, meaning during the deployment phase, teams"
+        },
+        {
+          "ref": "Manual p.20",
+          "quote": "the game . The Initiative-Team (IT) must make all of their"
+        },
+        {
+          "ref": "Manual p.20",
+          "quote": "plays first, allowing the Non-initiative-Team (NIT) to act"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "turn.general.initiative (500, U08) states it for 1v1.",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "team games are not implemented in the client (1v1 only), so there is nothing to execute"
+  },
+  {
+    "key": "formats.teams.initiative.alternates",
+    "parent": "formats.teams.initiative",
+    "order": 1,
+    "text": "The teams trade the initiative every turn.",
+    "examples": [
+      {
+        "text": "In 1v1, where each player is a team, the initiative changes hands at the end of every turn.",
+        "test": "433-cr-formats.test.ts::cr:formats.teams.initiative.alternates — in a two-player game, where each player is a team, the initiative changes hands every turn"
+      }
+    ],
+    "see": [
+      "508"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "Team games utilize an initiative system, where"
+        },
+        {
+          "ref": "Rulebook 2023 p.5",
+          "quote": "teams trade off having the initative every turn"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "433-cr-formats.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The token passes clockwise (508, turn.initiative.pass, U09); with each player seated between two opponents, the next player clockwise is always on the other team.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "formats.teams.deployment",
+    "parent": "904",
+    "order": 7,
+    "text": "In the deployment phase, the initiative team deploys first, its players in any order they wish, and then passes to the non-initiative team, whose players do the same.",
+    "examples": [],
+    "see": [
+      "507"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.38",
+          "quote": "on has the initiative. Teams act together in all situations, meaning during the deployment phase, teams"
+        },
+        {
+          "ref": "Manual p.38",
+          "quote": "will deploy units in any order they wish before passing"
+        },
+        {
+          "ref": "Manual p.38",
+          "quote": "to the non-initiative team that will all do the same."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Same as turn.deploy.order (507, U09), where the client's simultaneous deployment is an open owner question (D-U09-1).",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "team games are not implemented in the client (1v1 only), so there is nothing to execute"
+  },
+  {
+    "key": "formats.teams.priority",
+    "parent": "904",
+    "order": 8,
+    "text": "Teammates share priority. They take actions in whatever order they choose among themselves, and a team receives and passes priority as one.",
+    "examples": [],
+    "see": [
+      "703"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.30",
+          "quote": "things, while players without priority do not. All players"
+        },
+        {
+          "ref": "Manual p.30",
+          "quote": "on a team share priority and can take actions in whichever order they choose amongst themselves. Teams pass"
+        },
+        {
+          "ref": "Manual p.30",
+          "quote": "priority and receive priority collectively."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Also effects.priority.priority.teams (703, U14).",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "team games are not implemented in the client (1v1 only), so there is nothing to execute"
+  },
+  {
+    "key": "formats.teams.battle",
+    "parent": "904",
+    "order": 9,
+    "text": "A team game's battle has the same attack-and-counterattack structure as 1v1. The difference is that attacks and blocks take place across several regions, with a separate priority window in each region.",
+    "examples": [],
+    "see": [
+      "505",
+      "610"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.38",
+          "quote": "The battle structure in team games is identical to that"
+        },
+        {
+          "ref": "Manual p.38",
+          "quote": "of 1v1, meaning it has the same attack-counter attack"
+        },
+        {
+          "ref": "Manual p.38",
+          "quote": "flow to it. The only difference is that now, attacks and"
+        },
+        {
+          "ref": "Manual p.38",
+          "quote": "blocks take place across multiple regions, so there are"
+        },
+        {
+          "ref": "Manual p.38",
+          "quote": "multiple separated priority windows to resolve between"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "team games are not implemented in the client (1v1 only), so there is nothing to execute"
+  },
+  {
+    "key": "formats.teams.battle-sequence",
+    "parent": "904",
+    "order": 10,
+    "text": "In a team game the battle runs in this order (the Manual gives it for 2v2): (1) the initiative team declares all its attacks at once, into several regions; (2) a priority window in each non-initiative region, in order clockwise from the initiative player; (3) the non-initiative team declares all its blocks and counterattacks at once, into several regions; (4) battle is finished in each non-initiative region in turn, in order clockwise from the initiative player; (5) battle is finished in each initiative region in turn, in order clockwise from the initiative player.",
+    "examples": [],
+    "see": [
+      "505",
+      "609",
+      "610"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.38",
+          "quote": "IT declare their attacks all at once into multiple"
+        },
+        {
+          "ref": "Manual p.38",
+          "quote": "Priority windows in each of the NIT regions, resolving"
+        },
+        {
+          "ref": "Manual p.38",
+          "quote": "in order clockwise from the IT player."
+        },
+        {
+          "ref": "Manual p.38",
+          "quote": "NIT declare their blocks and counter attacks all at"
+        },
+        {
+          "ref": "Manual p.38",
+          "quote": "Finish resolving battle in the NIT regions in order"
+        },
+        {
+          "ref": "Manual p.38",
+          "quote": "Finish resolving battle in the IT regions in order"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "Manual p.38 writes it for 2v2 (\"In a 2v2 game, there are two Non-Initiative (NIT) regions and two Initiative (IT) regions\"); applying it to 3v3 is the natural reading, not a printed statement. \"The IT player\" is read as the player holding the initiative token. Rulebook 2023 p.9 gives the same order in brief. 1v1 is the one-region case (turn.battle.rounds, U09).",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "team games are not implemented in the client (1v1 only), so there is nothing to execute"
+  },
+  {
+    "key": "formats.teams.battle-sequence.finish",
+    "parent": "formats.teams.battle-sequence",
+    "order": 1,
+    "text": "Finishing battle in a region means its remaining steps: a priority window, the combat damage step, and the after combat priority window.",
+    "examples": [],
+    "see": [
+      "607",
+      "608",
+      "609"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.38",
+          "quote": "At this point, the battles in each region just need to"
+        },
+        {
+          "ref": "Manual p.38",
+          "quote": "be resolved (there will be a priority window, combat damage, and an after combat damage priority"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "team games are not implemented in the client (1v1 only), so there is nothing to execute"
+  },
+  {
+    "key": "formats.teams.team-text",
+    "parent": "904",
+    "order": 11,
+    "text": "Card text that refers to a player's team refers, in 1v1, to that player alone, since in 1v1 each player is their own team.",
+    "examples": [
+      {
+        "text": "The Silent in 1v1: once its controller has played 2 spells this battle, their next spell costs [4] more, while the opponent, who has played none, pays the printed cost.",
+        "test": "49-playtest-round6.test.ts::R59: The Silent taxes [2] per spell you have already played this battle"
+      }
+    ],
+    "see": [
+      "formats.general.one-v-one-is-team"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: The Silent",
+          "quote": "for each spell their team has previously"
+        },
+        {
+          "ref": "Manual p.20",
+          "quote": "later. In 1v1, players are considered their own teams."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "49-playtest-round6.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "The Silent is the only card in the pool that says \"team\". Round 1: the example is rebound to the test that measures the tax against the paying player's own spell count (the 29-hybrids-wm-a test only checks the cost modifier is wired).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "formats.teams.archenemy",
+    "parent": "904",
+    "order": 12,
+    "text": "Archenemy is a player setup, typically 2v1, in which the single player gets to take 1 or 2 turns before the other two players begin the game.",
+    "examples": [],
+    "see": [
+      "formats.general.setups"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.6",
+          "quote": "Archenemy: Typically 2v1, the single player gets to"
+        },
+        {
+          "ref": "Manual p.6",
+          "quote": "take 1-2 turns before the other 2 begin the game."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "The 2023 Rulebook gives the single player \"bonus cards and resources\" instead: D-U22-2. Neither book says more. Placed under teams because it is a two-sides game; nothing says whether the two form a team under the team rules of 904.",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "archenemy is a game of more than two players, which the client does not implement (1v1 only), so there is nothing to execute"
+  },
+  {
+    "key": "formats.teams.archenemy.rulebook",
+    "parent": "formats.teams.archenemy",
+    "order": 1,
+    "text": "The 2023 Rulebook describes the 2v1 game differently: the single player has bonus cards and resources, and faces two weaker opponents.",
+    "examples": [],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Rulebook 2023 p.1",
+          "quote": "• 2v1: An archenemy style game where one player with bonus cards and resources faces off against two weaker opponents."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "Kept as a rule so a judge's CR built from the 2023 Rulebook lines up. D-U22-2.",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "archenemy is a game of more than two players, which the client does not implement (1v1 only), so there is nothing to execute"
+  },
+  {
+    "key": "formats.intent.what",
+    "parent": "905",
+    "order": 1,
+    "text": "Intent cards are how players declare attacks in free-for-all: all players declare at the same time, each placing intent cards that show what their cards intend to do.",
+    "examples": [],
+    "see": [
+      "formats.ffa.attacks",
+      "604"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.37",
+          "quote": "In FFA, players declare their attacks simultaneously by placing intent cards face down in front of each"
+        },
+        {
+          "ref": "Rulebook 2023 p.9",
+          "quote": "In a free for all game, all players declare their attacks simultaneously using the “Intent” cards. Simply place an intent card face"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Rulebook 2023 p.5 calls them \"intent tokens\". Sources silent on which intent cards exist and what each shows: D-U22-4. Not in the client.",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "The client plays two-player games only and has no free-for-all mode or intent cards, so nothing executes it."
+  },
+  {
+    "key": "formats.intent.procedure",
+    "parent": "905",
+    "order": 2,
+    "text": "Attacks are declared with intent cards in these steps: (1) each player places an intent card face down in front of each of their units and other cards, such as spell tokens, showing that card's intended action; (2) when all players have finished, all the intent cards are turned face up; (3) the chosen attacks take place at once.",
+    "examples": [],
+    "see": [
+      "604"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.37",
+          "quote": "In FFA, players declare their attacks simultaneously by placing intent cards face down in front of each"
+        },
+        {
+          "ref": "Manual p.37",
+          "quote": "of their units and other cards such as spell tokens with their intended action. Once all players have"
+        },
+        {
+          "ref": "Manual p.37",
+          "quote": "finished this, all of the cards are flipped up and the chosen attacks take place instantly!"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "The client plays two-player games only and has no free-for-all mode or intent cards, so nothing executes it."
+  },
+  {
+    "key": "formats.intent.grouping",
+    "parent": "905",
+    "order": 3,
+    "text": "A player may group several of their units behind one intent card.",
+    "examples": [],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.37",
+          "quote": "multiple units behind one intent card for simplicity, or can even get"
+        },
+        {
+          "ref": "Rulebook 2023 p.9",
+          "quote": "There is a lot of freedom in how you can do this, so feel free to get creative. You can group units together behind one intent card"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "The client plays two-player games only and has no free-for-all mode or intent cards, so nothing executes it."
+  },
+  {
+    "key": "formats.intent.copies",
+    "parent": "905",
+    "order": 4,
+    "text": "A player may place several copies of the same intent card in front of different units.",
+    "examples": [],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.37",
+          "quote": "a little tricky by placing multiple different copies of the same intent"
+        },
+        {
+          "ref": "Rulebook 2023 p.9",
+          "quote": "or even place multiple intent cards of the same type on different units in an attempt to hide your intentions!"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {},
+    "untested": true,
+    "untestableReason": "The client plays two-player games only and has no free-for-all mode or intent cards, so nothing executes it."
+  }
+]

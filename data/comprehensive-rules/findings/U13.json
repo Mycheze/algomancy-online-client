@@ -1,0 +1,38 @@
+[
+  {
+    "id": "F-U13-1",
+    "title": "R36 (a lone sent counterattacker auto-forms) is unmarked, but its guard was flipped to assert the opposite",
+    "summary": "R36 says that when a round-2 counterattack pool holds exactly one unit and no ridable spell token, the only-unit formation is auto-declared as a forced action. On 2026-08-24 (a decisions-for-the-player audit) test 32 was flipped: its comment says the auto-declare branch is deleted, and it asserts forcedAction is null and that both attacking and declining are legal. No ruling records the reversal, and R36's heading carries no reversal mark, so the register still presents R36 as current. Register fix: write the reversing ruling (or mark R36) and point R36's heading at it.",
+    "evidence": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "## R36 — A lone sent counterattacker auto-forms in round 2"
+      },
+      {
+        "file": "client/engine/test/32-cast-costs.test.ts",
+        "quote": "// FLIPPED 2026-08-24 (decisions-for-the-player audit). This test used to"
+      },
+      {
+        "file": "client/engine/test/32-cast-costs.test.ts",
+        "quote": "// assert the auto-declare; the branch is deleted. Sending a unit at block"
+      }
+    ],
+    "rule": "combat.counterattack.round-two.may-decline"
+  },
+  {
+    "id": "F-U13-2",
+    "title": "21-fixes test title claims round 2 is restricted to sent counterattackers but only tests the no-send case",
+    "summary": "The test 'round 2 after a real round-1 battle still restricts to the sent counterattackers' declares blocks with no send and asserts only that the battle is over (no round 2). It never reaches a round 2 in which a unit that stayed home is refused as an attacker, so the restriction its title names is not asserted by it. The restriction is shown elsewhere only indirectly (test 32 asserts the attacker pool equals the sent unit). A guard that tries to attack in round 2 with a unit that was not sent would make the title true.",
+    "evidence": [
+      {
+        "file": "client/engine/test/21-fixes.test.ts",
+        "quote": "test('round 2 after a real round-1 battle still restricts to the sent counterattackers', () => {"
+      },
+      {
+        "file": "client/engine/test/21-fixes.test.ts",
+        "quote": "// ... battle round 1 finishes; with no counterattackers sent, round 2 is skipped"
+      }
+    ],
+    "rule": "combat.counterattack.round-two.attackers"
+  }
+]

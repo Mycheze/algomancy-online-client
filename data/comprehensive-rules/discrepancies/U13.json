@@ -1,0 +1,93 @@
+[
+  {
+    "id": "D-U13-1",
+    "kind": "d-raq-open",
+    "rule": "combat.counterattack.round-two",
+    "summary": "Whether Temporal Rift ('End this battle') cast in the first battle round also cancels the counterattack round is unresolved: the RAQ thread is still open and the designer has said he is still working on it. No rule is written for it.",
+    "sides": [
+      { "source": "card: Temporal Rift", "quote": "End this battle. Erase this spell." },
+      { "source": "RAQ 1353986897902567424#0", "quote": "Yeah I'm still working on the ruling" },
+      { "source": "RAQ 1353986897902567424#1", "quote": "Should allow for 2nd Battle to happen if it was cast AFTER blocker/counter-attack" },
+      { "source": "R12", "quote": "effect (Temporal Rift) affects only that region's battle and stack — other regions resolve" }
+    ],
+    "resolution": "Question for the owner. The card's words 'End this battle' support two readings: (1) it ends the battle in this region only, so a counterattack round in the other region still happens (R12's 'other regions resolve later, unaffected', and _passer's consideration for a cast after blocks); (2) it ends the whole battle phase, so there is no second round. Cast before blocks, no counterattackers have been sent, and under R15 an empty send means no round 2, so the two readings differ mainly for a cast after counterattackers were sent. The RAQ register's note says the engine today ends the battle and goes to deployment when Rift is cast before blocks; what it does after blocks is not recorded.",
+    "tier": 1
+  },
+  {
+    "id": "D-U13-2",
+    "kind": "g-other",
+    "rule": "combat.counterattack.round-two.no-round-one",
+    "summary": "R15's heading says it was resolved by the RAQ thread 'Temporal Rift vs NIT sending counter-attack', but that thread is still open ([Considered]), so the claim it relies on is not a ruling. The rule stands anyway, on the Manual's NOTE.",
+    "sides": [
+      { "source": "R15", "quote": "Round-2 attackers when round 1 had no battle (⚠ resolved by RAQ \"Temporal Rift vs NIT sending counter-attack\")" },
+      { "source": "RAQ 1353986897902567424#2", "quote": "Counter-attacks ARE allowed even if IT players decides to Pass his attack opportunity." },
+      { "source": "Manual p.20", "quote": "The NIT can still declare attacks even if the IT decides not to attack." }
+    ],
+    "resolution": "The rule cites the printed NOTE as its authority and R15 for 'any of its units'. Register fix: R15's heading mark should cite the Manual p.20 NOTE rather than an open thread (or say the thread is open).",
+    "tier": 2
+  },
+  {
+    "id": "D-U13-3",
+    "kind": "f-register-chain-wrong",
+    "rule": "combat.counterattack.round-two.may-decline",
+    "summary": "R36 ('A lone sent counterattacker auto-forms in round 2') is still presented as current, but the guard test was flipped on 2026-08-24 to assert the opposite: a single sent counterattacker is NOT auto-formed and declining is legal. No ruling records the reversal.",
+    "sides": [
+      { "source": "R36", "quote": "that could ride along, the only-unit formation is auto-declared (a forced" },
+      { "source": "file: client/engine/test/32-cast-costs.test.ts", "quote": "// FLIPPED 2026-08-24 (decisions-for-the-player audit). This test used to" },
+      { "source": "file: client/engine/test/32-cast-costs.test.ts", "quote": "'one sent counterattacker is still a real choice: attack, or decline');" }
+    ],
+    "resolution": "R36 is a digital convention (Annex D, U23); the game rule here states what the current test asserts. Register fix: mark R36 as reversed and record the audit that reversed it (filed as F-U13-1).",
+    "tier": 2
+  },
+  {
+    "id": "D-U13-4",
+    "kind": "a-sources-disagree",
+    "rule": "combat.counterattack.round-two.may-decline",
+    "summary": "The printed round-2 procedure reads as if the sent counterattackers are always put into formation; R194 and the engine's test let the non-initiative player decline the round-2 attack after sending units.",
+    "sides": [
+      { "source": "Manual p.20", "quote": "1. The NIT puts their attacking units into formation." },
+      { "source": "Rulebook 2023 p.5", "quote": "▪ Second, the counterattacking units are put" },
+      { "source": "R194", "quote": "* So a round-2 decline is the whole difference between a live Fireball and" },
+      { "source": "file: client/engine/test/32-cast-costs.test.ts", "quote": "// time and attacking with it in round 2 are two actions with a whole damage" }
+    ],
+    "resolution": "Question for the owner. 'The NIT puts their attacking units into formation' supports two readings: (1) the sent units must attack (sending is the commitment, and round 2's attack step only arranges them); (2) it names round 2's attack step, in which attacking stays optional as in any attack step (Manual p.20 'select a set of units'). The rule follows reading (2), which is the permissive one and what the engine does. A related open point: whether the non-initiative player may attack with only some of the sent units; no source addresses it.",
+    "tier": 1
+  },
+  {
+    "id": "D-U13-5",
+    "kind": "c-owner-call-only",
+    "rule": "combat.counterattack.sent.no-death-check",
+    "summary": "That a sent counterattacker is not checked for death while away, and is checked on its return, is an owner call. No printed or designer source speaks to state checks on an absent unit.",
+    "sides": [
+      { "source": "R270", "quote": "A sent counterattacker is not death-checked" },
+      { "source": "Manual p.20", "quote": "the region and are treated as if they don’t exist until" }
+    ],
+    "resolution": "The rule states R270, basis owner. It is consistent with the Manual's 'treated as if they don't exist'. It awaits owner sign-off like every owner-only rule.",
+    "tier": 3
+  },
+  {
+    "id": "D-U13-6",
+    "kind": "g-other",
+    "rule": "combat.counterattack.sent.not-counted",
+    "summary": "R270 leaves open, as a question for the owner, whether a unit away counterattacking still counts as an ally in the region it left. The Manual's own words give one reading: it does not.",
+    "sides": [
+      { "source": "R270", "quote": "rule on: **does a unit that is out counterattacking still count as an ally in" },
+      { "source": "R270", "quote": "the region it left?** Under the Manual's \"doesn't exist\" it does not — but a" },
+      { "source": "Manual p.20", "quote": "the region and are treated as if they don’t exist until" }
+    ],
+    "resolution": "Printed text outranks an owner call and reads one way only, so this is not a question for the owner. The rule states the current answer (not counted), which the Manual supports. Register fix: R270's open question can be closed by citing Manual p.20.",
+    "tier": 2
+  },
+  {
+    "id": "D-U13-7",
+    "kind": "g-other",
+    "rule": "combat.counterattack.teams",
+    "summary": "The sources are silent on which initiative-team region a counterattacker enters in a team game, and on whether a counterattacker may enter a region other than the attacker's. The Manual says only that the NIT attacks 'IT regions' in phase 2.",
+    "sides": [
+      { "source": "Manual p.27", "quote": "1. NIT attack IT regions with units sent in Phase 1" },
+      { "source": "Rulebook 2023 p.9", "quote": "• Then, combat in the counter-attacking regions is resolved." }
+    ],
+    "resolution": "No rule is written beyond the order of resolution. Question for the owner only if the client is to support team games.",
+    "tier": 4
+  }
+]

@@ -1,0 +1,90 @@
+[
+  {
+    "id": "F-U19-1",
+    "title": "Tough, Balanced and Inverted stay on in an interaction with a Pure card, against Pure's printed \"ignore all other attributes\"",
+    "summary": "R289 (and R61, as R289 reads it) keep the stat attributes Tough, Balanced and Inverted applying in a Pure pairing because \"they are stat layers\". Pure's printed reminder ignores all other attributes, and the Manual lists Tough as an attribute. Under the authority order the printed text wins (rule attr.general.pure; D-U19-2). Suspected engine behaviour: a Pure blocker facing a Tough unit is priced against the doubled defense. Measured by the round-1 verifier: a Pure source dealing 5 to Rampart Guardian leaves it alive as a Tough 0/8. Measured by the round-2 verifier: a Balanced 4/1 dealt 3 by a Pure source survives as a 4/4.",
+    "evidence": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "{Tough}, {Balanced} and {Inverted} still read (they are stat layers, R61)."
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "quote": "Pure cards and cards they are interacting with ignore all other attributes."
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U19/u19-probes.test.ts",
+        "quote": "attr.general.pure — Tough still applies to a unit in an interaction with a Pure card (engine)"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U19/u19-r2-probes.test.ts",
+        "quote": "attr.general.pure — Balanced still applies to a unit in an interaction with a Pure source (engine)"
+      }
+    ],
+    "rule": "attr.general.pure"
+  },
+  {
+    "id": "F-U19-2",
+    "title": "The combat Unaware collapse is said to survive Pure, while noncombat Pure switches Unaware off",
+    "summary": "R106 says the Unaware collapse of a combat exchange \"survives {Pure}\", because Unaware is a stat layer. R289 switches a Pure pairing's Unaware off outside combat, and Pure's printed reminder ignores all other attributes. The engine therefore appears to treat Unaware + Pure differently in combat and outside it, and the combat half contradicts the printed text (rule attr.general.pure; D-U19-2).",
+    "evidence": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "The collapse survives {Pure}: R61 switches the ATTRIBUTE layer off for an exchange, and"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "are off against it, and so are its own {Vulnerable} and {Unaware}."
+      }
+    ],
+    "rule": "attr.general.pure"
+  },
+  {
+    "id": "F-U19-3",
+    "title": "Oorblak's combat-damage redirect doubles damage onto a Pure Vulnerable Oorblak",
+    "summary": "The pilot's round-2 probe (P5) gave Oorblak Pure and Vulnerable and redirected a non-Pure 3-power unblocked column into it: Oorblak was dealt 6 and died. R61 and R289 say a Pure recipient's own Vulnerable is off. The redirect is a damage commit in card code (R237 calls it \"the fourth site\") and appears not to read Pure. Exotic but reachable (Just a Unit is a Virus).",
+    "evidence": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "A Pure recipient takes plain damage from anyone."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "is a unit-damage commit living in CARD CODE,"
+      }
+    ],
+    "rule": "attr.vulnerable.pure"
+  },
+  {
+    "id": "F-U19-4",
+    "title": "290 test titled for a Pure recipient's own Vulnerable makes the source Pure instead",
+    "summary": "290-pure-outside-combat §2's title says \"a Pure recipient's own Vulnerable is off too\", but the test makes the SOURCE Pure and hits a non-Pure Vulnerable unit. No test guards a Pure recipient's own Vulnerable, which is the half F-U19-3 shows to fail on the Oorblak path.",
+    "evidence": [
+      {
+        "file": "client/engine/test/290-pure-outside-combat.test.ts",
+        "quote": "the cheapest way to make the VICTIM side of the pairing Pure is to make the"
+      }
+    ],
+    "rule": "attr.vulnerable.pure"
+  },
+  {
+    "id": "F-U19-5",
+    "title": "The engine balances a printed-Balanced unit before doubling an augment's Tough, against Manual p.42",
+    "summary": "Manual p.42: Tough augmented onto a Balanced unit has its defense doubled, then its stats balanced. The engine follows R19's engine call (own printed attributes first, then augment-granted ones), so it balances first. Measured by the round-1 verifier: Child of Aether (printed Balanced, 2/0) augmented with Rampart Guardian (Tough) is a 2/4; the Manual makes it a 2/2. R19's premise that the Manual does not specify printed-vs-granted order is wrong for this pair. No test guards the printed-host case (rule attr.general.application-order; D-U19-1).",
+    "evidence": [
+      {
+        "file": "data/comprehensive-rules/sources/printed-pages.json",
+        "quote": "will have its defense doubled, then its stats balanced."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "⚠ Engine call: the Manual doesn't specify an order for printed-vs-granted-vs-shared;"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U19/u19-probes.test.ts",
+        "quote": "attr.general.application-order — Tough augmented onto a printed-Balanced unit: the printed Balanced applies first"
+      }
+    ],
+    "rule": "attr.general.application-order"
+  }
+]

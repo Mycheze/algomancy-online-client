@@ -1,0 +1,1450 @@
+[
+  {
+    "key": "combat.after.triggers",
+    "textHash": "ef1269e806550eb4",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U13-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:pumpCombatDamage",
+        "agrees": true,
+        "note": "'after' branch: damageStep nulled, afterCombat fired, openPriority('afterWindow'), then settle() pushes queued triggers onto the stack in battleMode"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "07-cards.test.ts",
+        "pattern": "Smouldering Inferno played as a unit sacrifices itself after combat",
+        "passed": true,
+        "asserts_claim": "yes: the sacrifice resolves only after two passes in the after-combat window"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1540678747953569832#0",
+        "supports": "partly",
+        "note": "about ordering of a simultaneous batch; does not itself state when after-combat triggers fire"
+      },
+      {
+        "ref": "R261 (its unsplit hold)",
+        "supports": "yes",
+        "note": "triggers put on the stack during after combat and respondable there"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> Both the initiative player and non-initiative player have their triggers put onto the"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "this.openPriority('afterWindow');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Designer citation is on-topic rather than direct; R261 carries the claim."
+  },
+  {
+    "key": "combat.after.triggers.no-battle",
+    "textHash": "f9699437c82e15e1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U13-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:pumpCombatDamage",
+        "agrees": true,
+        "note": "afterCombat event fires only from the 'after' branch of the damage pump, which is reached only from a battle round that declared attackers; a declined round goes doDeclareAttack -> endBattleRound with no damage step."
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ after combat: the control, an after-combat unit in ANOTHER region makes nothing",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.43 Q/A",
+        "supports": "yes",
+        "note": "literal"
+      },
+      {
+        "ref": "RAQ 1356667460211966060#0",
+        "supports": "yes",
+        "note": "designer: present in a region where battle is happening"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "A: No, because a battle did not happen."
+      },
+      {
+        "file": "client/engine/test/390-raq-stack.test.ts",
+        "text": "assert.ok(!unitsOf(h, A).some(u => u.card === 'Robot'), 'no battle in its region, no Robot');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.after.triggers.split-last",
+    "textHash": "88bdee36eebffaac",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U13-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:pumpCombatDamage",
+        "agrees": true,
+        "note": "struckNow && moreLater opens damageWindow and drains at the boundary; the last striking sub-step hands its held batch to the after branch"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "408-raq-new-threads.test.ts",
+        "pattern": "RAQ Combat Damage & After Combat: with Swift in the battle",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "408-raq-new-threads.test.ts",
+        "pattern": "RAQ Combat Damage & After Combat: with Sluggish last",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "239-damage-triggers-after-combat.test.ts",
+        "pattern": "R295: in a SPLIT damage step a death trigger resolves at the boundary",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1540678747953569832#3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1540678747953569832#2",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R295",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "- **Split** (two or more sub-steps have a column striking in them): each is a real"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (struckNow && moreLater) {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.after.what-it-is",
+    "textHash": "dc538b72acd1802c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U13-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:pumpCombatDamage",
+        "agrees": true,
+        "note": "after the damage sub-steps, 'after' opens afterWindow in b.region; advanceBattleStep afterWindow -> endBattleRound"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "420-cr-battle-regroup-deploy.test.ts",
+        "pattern": "cr:turn.battle.steps — a battle round steps through",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.27",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "After Combat Step - This is the last priority window"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "for interaction in this region before Regroup."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.after.what-it-is.battled-regions-only",
+    "textHash": "c3e46f3b5e65af70",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U13-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doDeclareAttack",
+        "agrees": true,
+        "note": "empty declaration -> endBattleRound directly: no damage step, no afterWindow"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "165-token-loss-warning.test.ts",
+        "pattern": "[CT-55] a battle both players decline opens no priority window at all",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.43",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R194",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "did not get attacked, in which case combat and after"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "1. **It is a rules change.** A declined attack fights no combat, so there is no"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.after.what-it-is.each-round",
+    "textHash": "55a256920454aa6c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U13-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:startBattleRound",
+        "agrees": true,
+        "note": "region = homeRegion(defender): round 1 NIT region, round 2 IT region; each round runs its own afterWindow"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "420-cr-battle-regroup-deploy.test.ts",
+        "pattern": "cr:turn.battle.rounds.round-1 — round 1 walks",
+        "passed": true,
+        "asserts_claim": "partly: round 1 only; round 2 after-combat shown by 02-combat (pass pass after combat -> regroup)"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": "both phases list step 6"
+      },
+      {
+        "ref": "Manual p.27",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "After Combat Step - This is the last priority window"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "region: this.homeRegion(defender), step: 'declare',"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.after.window",
+    "textHash": "bae224486107bebf",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U13-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:openPriority",
+        "agrees": true,
+        "note": "priority = initiative"
+      },
+      {
+        "loc": "engine.ts:passPriority",
+        "agrees": true,
+        "note": "two consecutive passes: resolveTop if stack non-empty, else advanceBattleStep (afterWindow -> endBattleRound)"
+      },
+      {
+        "loc": "engine.ts:finishResolutionTail",
+        "agrees": true,
+        "note": "after resolution priority restarts at initiative"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U13/u13-r1-verify-probes.test.ts",
+        "title": "combat.after.window: initiative first; a spell cast in the window resolves after both pass, priority returns to the initiative player; two passes on an empty stack end the step",
+        "passed": true,
+        "demonstrates": "yes: walks the illustrative example exactly"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.30",
+        "supports": "yes",
+        "note": "After Combat step is a priority-window step; initiative first; repeated until all pass on an empty stack"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Within a priority window, first the initiative player will receive"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "an empty stack, which will move them to the next step"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "this.s.priority = this.initiative;   // initiative acts first in every window"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Illustrative example had no test; the probe demonstrates it."
+  },
+  {
+    "key": "combat.after.window.then-regroup",
+    "textHash": "64af06594748fd14",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U13-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:endBattleRound",
+        "agrees": true,
+        "note": "round 2 (or round 1 with nothing sent) -> startRegroup"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "420-cr-battle-regroup-deploy.test.ts",
+        "pattern": "cr:turn.regroup.what-it-is.no-actions",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.27 Erase all spell tokens",
+        "supports": "partly",
+        "note": "regroup content; merely on-topic for \"regroup begins\""
+      },
+      {
+        "ref": "R15",
+        "supports": "partly",
+        "note": "supports the no-counterattack case"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "for interaction in this region before Regroup."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.after.window.then-round-two",
+    "textHash": "f8ef99cb09e5910f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U13-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:advanceBattleStep/endBattleRound",
+        "agrees": true,
+        "note": "afterWindow close -> endBattleRound round-1 branch -> startBattleRound(nit)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "77-playtest-round17.test.ts",
+        "pattern": "[66] the after-combat window of round 1 does NOT end the battle when counterattackers were sent",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.21",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Once battle has been completed"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.counterattack.no-later-rounds",
+    "textHash": "71d5ad1a7035e69d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U13-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:endBattleRound",
+        "agrees": true,
+        "note": "round 2 branch -> battleRound = 0; startRegroup()"
+      },
+      {
+        "loc": "apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "'no counter-counterattacks' when round !== 1"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "420-cr-battle-regroup-deploy.test.ts",
+        "pattern": "cr:turn.battle.rounds.one-attack-each",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.5",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "so there are no additional counter attacks here."
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(b.round === 1 || send.length === 0, 'no counter-counterattacks');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.counterattack.round-two",
+    "textHash": "6c9fe0e664a60ef6",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U13-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:endBattleRound",
+        "agrees": true,
+        "note": "round 2 starts only from endBattleRound of round 1 (after afterWindow closes); startBattleRound(nit) puts region = homeRegion(initiative)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "421-cr-regions-formations.test.ts",
+        "pattern": "cr:combat.regions.one-at-a-time — the first battle round runs every one of its steps",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.5",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.21",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "will move to IT"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "this.startBattleRound(this.nit);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.counterattack.round-two.attackers",
+    "textHash": "8fb9dbec367bfe22",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U13-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:endBattleRound",
+        "agrees": true,
+        "note": "attackerPool = b.sentAttackers when round 1 happened"
+      },
+      {
+        "loc": "apply.ts:doDeclareAttack",
+        "agrees": true,
+        "note": "validFormation(..., b.attackerPool); NIT declares the formation in the round-2 declare step"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "32-cast-costs.test.ts",
+        "pattern": "forcedAction: a single sent counterattacker is NOT auto-formed",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.27",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.20 (1. The NIT puts their attacking units into formation.)",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R15",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "1. NIT attack IT regions with units sent in Phase 1"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "of their units. If a round-1 battle happened, round-2 attackers are **exactly the"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "this.s.battle!.attackerPool = b.sentAttackers;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.counterattack.round-two.initiative-priority",
+    "textHash": "6bed4ff2091f3158",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U13-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:openPriority",
+        "agrees": true,
+        "note": "priority = this.initiative regardless of round"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "422-cr-attacking-blocking.test.ts",
+        "pattern": "cr:combat.attack-window.general.initiative-first",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.30",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Within a priority window, first the initiative player will receive"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "this.s.priority = this.initiative;   // initiative acts first in every window"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.counterattack.round-two.may-decline",
+    "textHash": "4246844a0bae8af7",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U13-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doDeclareAttack",
+        "agrees": true,
+        "note": "empty columns -> endBattleRound -> startRegroup, no openPriority"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "32-cast-costs.test.ts",
+        "pattern": "forcedAction: a single sent counterattacker is NOT auto-formed",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "165-token-loss-warning.test.ts",
+        "pattern": "[CT-55] the premise: a round-2 defender really is holding castable tokens when the attacker declines",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U13/u13-r1-verify-probes.test.ts",
+        "title": "combat.counterattack.round-two.may-decline: declining with a sent unit opens no window and ends the battle phase",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R194",
+        "supports": "yes",
+        "note": "owner-call basis per the pack: a round-2 decline takes every window away"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "* So a round-2 decline is the whole difference between a live Fireball and"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.ev('info', `${e.pname(seat)} does not attack.`);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.counterattack.round-two.no-counter",
+    "textHash": "22be569d17990340",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U13-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "'no counter-counterattacks'"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "422-cr-attacking-blocking.test.ts",
+        "pattern": "cr:combat.attack.general.rounds",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.5",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "3. The IT declare their blocking formation."
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "so there are no additional counter attacks here."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.counterattack.round-two.no-round-one",
+    "textHash": "b42ef9f34ba78710",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U13-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doDeclareAttack",
+        "agrees": true,
+        "note": "attackerPool null (round 1 declined) -> fromRegion = home, any unit"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "RAQ Temporal Rift thread: the non-initiative player still attacks when the initiative player declines",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.20 NOTE",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R15",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "The NIT can still declare attacks even if the IT decides not to attack."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "never commits counterattackers — in that case NIT may attack round 2 with **any**"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Designer RAQ 1353986897902567424#2 also supports and is not cited."
+  },
+  {
+    "key": "combat.counterattack.round-two.none-sent",
+    "textHash": "e6d7e63fd1f9aa4e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U13-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:endBattleRound",
+        "agrees": true,
+        "note": "b.happened && !b.sentAttackers.length -> 'sent no counterattackers — no battle here' -> endBattleRound -> startRegroup"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "421-cr-regions-formations.test.ts",
+        "pattern": "cr:combat.regions.one-at-a-time.order — with no counterattack sent",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.21",
+        "supports": "yes",
+        "note": "\"if there was a counter-attack\" conditions round 2"
+      },
+      {
+        "ref": "R15",
+        "supports": "yes",
+        "note": "empty set = no round-2 battle"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "units sent at block time** (Manual p.20-21), even if that set is empty (= no"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "sent no counterattackers — no battle here."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.counterattack.round-two.other-region-absent",
+    "textHash": "40a3343dd946c13f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U13-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "blockers must stand in b.region ('that unit is in another region'); IT's round-1 attackers stay in the NIT region until regroup"
+      },
+      {
+        "loc": "engine.ts:targetability (region-limited)",
+        "agrees": true,
+        "note": "probe: IT's round-1 attacker is not offered as a round-2 target"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "98-spawn-region.test.ts",
+        "pattern": "R115 inverts R28: Tidelurker's mid-attack 2/2 stays in the enemy region and CANNOT block the counterattack",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "165-token-loss-warning.test.ts",
+        "pattern": "[CT-55] the premise",
+        "passed": true,
+        "asserts_claim": "partly: shows the converse (IT home tokens absent in round 1, castable in round 2), not round-1-region units absent in round 2"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U13/u13-r1-verify-probes.test.ts",
+        "title": "combat.counterattack.round-two.other-region-absent: the initiative attacker left in the round-1 region cannot block in round 2 and is not a target there",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.21",
+        "supports": "yes",
+        "note": "\"treating the units in the other region as if they don't exist\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "other region as if they don"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(u.region === b.region, 'that unit is in another region');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Second bound example (165) demonstrates the symmetric round-1 case rather than this rule's round-2 claim; the probe covers the attackers themselves."
+  },
+  {
+    "key": "combat.counterattack.round-two.return",
+    "textHash": "c9833538d11819e8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U13-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:endBattleRound",
+        "agrees": true,
+        "note": "for each sentAttackers id (units and tokens): absent = false, region = homeRegion(initiative)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "02-combat.test.ts",
+        "pattern": "1v1 counterattack: NIT sends units at block time, they attack in round 2",
+        "passed": true,
+        "asserts_claim": "partly: one unit"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U13/u13-r1-verify-probes.test.ts",
+        "title": "combat.counterattack.round-two.return: sent units and a sent spell token reappear in the region they attack when round 2 begins",
+        "passed": true,
+        "demonstrates": "yes: two units and a token, present in IT region, not yet in formation"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.27",
+        "supports": "partly",
+        "note": ""
+      },
+      {
+        "ref": "R32",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "and its spell tokens can't be cast. It reappears in the enemy region when"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (u) { u.absent = false; u.region = this.homeRegion(this.initiative); }"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Illustrative example had no test; the probe demonstrates it."
+  },
+  {
+    "key": "combat.counterattack.sent",
+    "textHash": "bceca11b72a8be18",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U13-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doDeclareBlocks",
+        "agrees": true,
+        "note": "absent = true at the moment of declaration"
+      },
+      {
+        "loc": "engine.ts:endBattleRound",
+        "agrees": true,
+        "note": "absent cleared at end of round 1"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "22-playtest3.test.ts",
+        "pattern": "a SENT Towering Colossus host radiates nothing in the region it left",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.5",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R32",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "the region and are treated as if they don"
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "attacking units leave the region at this time,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Engine models \"in no region\" with an absent flag; the region field still holds the home region while absent, but every read honours absent."
+  },
+  {
+    "key": "combat.counterattack.sent.no-death-check",
+    "textHash": "b317eb7a3511ca28",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U13-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:checkDeaths",
+        "agrees": true,
+        "note": "`if (u.absent) return false;` skips absent units"
+      },
+      {
+        "loc": "engine.ts:endBattleRound",
+        "agrees": true,
+        "note": "clears absent, moves to IT region, then calls checkDeaths() before startBattleRound(nit)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "250-ally-count-and-absence.test.ts",
+        "pattern": "Prickly Protector survives being declared as a counterattacker",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "250-ally-count-and-absence.test.ts",
+        "pattern": "a counterattacker sent out alone survives the send and dies on arrival",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R270",
+        "supports": "yes",
+        "note": "owner-call basis per the pack"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "**No.** `checkDeaths` skips absent units. The sweep is deferred to the moment"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (u.absent) return false;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.counterattack.sent.no-statics",
+    "textHash": "720b1e3944741242",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U13-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:anchored",
+        "agrees": true,
+        "note": "`if (!anchor || anchor.absent) continue;` — an absent anchor radiates nothing, its own text included."
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "22-playtest3.test.ts",
+        "pattern": "a SENT Towering Colossus host radiates nothing in the region it left",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U13/u13-r1-verify-probes.test.ts",
+        "title": "combat.counterattack.sent.no-statics: a sent Prickly Protector does not give itself its own bonus while away",
+        "passed": true,
+        "demonstrates": "yes: 1/2 at home with an ally, 0/1 while absent (its own +1/+1 per ally is off)"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": "\"treated as if they don't exist\""
+      },
+      {
+        "ref": "R32",
+        "supports": "yes",
+        "note": "radiates no statics"
+      },
+      {
+        "ref": "R270",
+        "supports": "yes",
+        "note": "its own text included"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (!anchor || anchor.absent) continue;"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "counterattacker is in NO region: it radiates no statics, is no legal target,"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "the region and are treated as if they don"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "The second (illustrative) example had no test; the probe demonstrates it."
+  },
+  {
+    "key": "combat.counterattack.sent.not-counted",
+    "textHash": "47cbb8d5a7109e27",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U13-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:unitsOf",
+        "agrees": true,
+        "note": "excludes absent units, so allies at home do not count a sent unit"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "250-ally-count-and-absence.test.ts",
+        "pattern": "scope: a unit left at home still loses the ally that counterattacked away",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": "\"treated as if they don't exist\""
+      },
+      {
+        "ref": "R270",
+        "supports": "yes",
+        "note": "R270 itself flags this as the open owner question; current answer"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "only ally counterattacks away is present, is swept, and loses that ally from"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "the region and are treated as if they don"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "R270 marks this half as not obviously intended and awaiting an owner call; the printed \"treated as if they don't exist\" supports it as stated."
+  },
+  {
+    "key": "combat.counterattack.sent.not-targetable",
+    "textHash": "3eed279d4312d09e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U13-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:targetStillLegal",
+        "agrees": true,
+        "note": "unit target requires !u.absent"
+      },
+      {
+        "loc": "engine.ts:unitsOf/unitsIn",
+        "agrees": true,
+        "note": "exclude absent (sacrifice pools)"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U13/u13-r1-verify-probes.test.ts",
+        "title": "combat.counterattack.sent.not-targetable: a sent counterattacker is not offered as a target; a unit that stayed is",
+        "passed": true,
+        "demonstrates": "yes"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U13/u13-r1-verify-probes.test.ts",
+        "title": "combat.counterattack.sent.not-targetable: a sent counterattacker is never offered for a sacrifice",
+        "passed": true,
+        "demonstrates": "yes (Maw of Damnation)"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R32",
+        "supports": "yes",
+        "note": "no legal target"
+      },
+      {
+        "ref": "R270",
+        "supports": "yes",
+        "note": "not targetable, not sacrificeable"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "engine honours that: it is not targetable, not sacrificeable, not returned by"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if ('unit' in t) { const u = this.entity(t.unit); return !!u && !u.absent; }"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "No bound test; both halves demonstrated by probes."
+  },
+  {
+    "key": "combat.counterattack.sent.tokens",
+    "textHash": "1ee94f9d2607b878",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U13-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doDeclareBlocks",
+        "agrees": true,
+        "note": "absent = true on every sent id, tokens included"
+      },
+      {
+        "loc": "engine.ts:tokensOf",
+        "agrees": true,
+        "note": "filters !e.absent"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "22-playtest3.test.ts",
+        "pattern": "a sent spell token is not enumerable (castSpellToken) while absent",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R32",
+        "supports": "yes",
+        "note": "its spell tokens can't be cast"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "and its spell tokens can't be cast. It reappears in the enemy region when"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "for (const id of send) e.entity(id)!.absent = true;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.counterattack.teams",
+    "textHash": "0938c4db21c164d7",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U13-r1",
+    "engine": [
+      {
+        "loc": "engine.ts:endBattleRound",
+        "agrees": true,
+        "note": "Engine is 1v1 only (Seat 0|1, other()); no team mode exists. The 1v1 analogue holds: round 1 (NIT region) is resolved completely before startBattleRound(this.nit) begins round 2 in the IT region."
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "421-cr-regions-formations.test.ts",
+        "pattern": "cr:combat.regions.one-at-a-time — the first battle round runs every one of its steps",
+        "passed": true,
+        "asserts_claim": "partly: 1v1 analogue only"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.9 (Combat is first resolved completely...)",
+        "supports": "yes",
+        "note": "literal"
+      },
+      {
+        "ref": "Rulebook 2023 p.9 (Then, combat in the counter-attacking regions...)",
+        "supports": "yes",
+        "note": "literal"
+      },
+      {
+        "ref": "Manual p.27 PHASE 2 (IT REGIONS)",
+        "supports": "partly",
+        "note": "a heading; on-topic only"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "Combat is first resolved completely in the regions that were initially attacked by the initiative team."
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "Then, combat in the counter-attacking regions is resolved."
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Once battle has been completed"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Printed rule; the engine has no team mode, so only the 1v1 analogue is checkable. The illustrative example (one region at a time) is supported by Manual p.21 TIMING, not by a test."
+  },
+  {
+    "key": "combat.counterattack.what-it-is",
+    "textHash": "c9174d9d08aefe73",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U13-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:doDeclareBlocks",
+        "agrees": true,
+        "note": "send is accepted at the block step (round 1 only)"
+      },
+      {
+        "loc": "engine.ts:endBattleRound",
+        "agrees": true,
+        "note": "sent units attack in round 2"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "02-combat.test.ts",
+        "pattern": "1v1 counterattack: NIT sends units at block time, they attack in round 2",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.5",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "3. NIT declare blocks/send units to attack"
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "attacking units leave the region at this time,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "combat.counterattack.what-it-is.when-sent",
+    "textHash": "15f4dce8ed2b6bed",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U13-r1",
+    "engine": [
+      {
+        "loc": "apply.ts:checkBlocks",
+        "agrees": true,
+        "note": "send allowed only in round 1; send may be empty"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "422-cr-attacking-blocking.test.ts",
+        "pattern": "cr:combat.blocks.counterattack.second-round",
+        "passed": true,
+        "asserts_claim": "yes for \"only in the first round\"; optionality is shown by every blocks-with-no-send test"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.27",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.20",
+        "supports": "yes",
+        "note": "\"having the opportunity to send\" = optional"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "3. NIT declare blocks/send units to attack"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "having the opportunity to send attacking units for"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  }
+]

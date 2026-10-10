@@ -1,0 +1,4138 @@
+[
+  {
+    "key": "annexd.reveal.hidden-steps",
+    "parent": "D6",
+    "order": 1,
+    "text": "The resource step, the haste step and deployment are hidden simultaneous steps. Inside one, both players act at the same time, and neither is shown what the other does until the step ends. The end of the step is the reveal: everything the other player did in the step is shown then. At the end of the haste step and of deployment it is played back in the recap.",
+    "examples": [
+      {
+        "text": "Example: During deployment, nothing a player does in their region reaches the other player until deployment ends.",
+        "test": "203-reveal-waits-for-the-barrier.test.ts::R310 §4: of everything a hidden step emits, nothing reaches the other seat before the barrier"
+      }
+    ],
+    "see": [
+      "annexd.reveal.glimpse"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R310",
+          "quote": "round: a glimpse waits for the reveal in every hidden step (the resource step,"
+        },
+        {
+          "ref": "R310",
+          "quote": "So a glimpse inside a hidden simultaneous step is held like every other event"
+        },
+        {
+          "ref": "R78",
+          "quote": "opponent cannot see you act until both of you are done. `viewFor` freezes the"
+        },
+        {
+          "ref": "R310",
+          "quote": "haste or deployment close plays that frame, and the client's playback branch"
+        },
+        {
+          "ref": "R310",
+          "quote": "pops the notice again. A resource-step close still arrives whole, without a"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R235",
+          "relation": "reversed by R310 (a reveal inside a hidden step had escaped the hold)"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "203-reveal-waits-for-the-barrier.test.ts",
+        "435-cr-digital-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R310 names the three hidden steps and the barrier/recap; R78 states the purpose of the segment (and its view freeze). The recap itself is D5 (U23).",
+    "sourceHashes": {
+      "R310": "b026f1a777d5fb5d118b9486d9ac26b12a425835f8105f7f3be2090fdaeea801",
+      "R78": "d2630a4f6400d2df4daef0df97a2ce3c2a55a56143bba36c96675646a3f70eae"
+    }
+  },
+  {
+    "key": "annexd.reveal.hidden-steps.frozen",
+    "parent": "annexd.reveal.hidden-steps",
+    "order": 1,
+    "text": "Inside a hidden step, the other player's side of the game is shown as it stood when the step opened. The events the other player's actions produce are held and delivered at the end of the step. Whether the other player has finished the step is not frozen: it is shown live, except in the haste step, where the other player's readiness is hidden while the step is open.",
+    "examples": [
+      {
+        "text": "Example: In Learn to Play, a unit the Tutorial Bot casts during deployment is not shown to the learner until deployment closes.",
+        "test": "306-solo-backend.test.ts::§2 inside deployment the bot's cast is frozen out, and revealed when the step closes"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R78 (its note that viewFor freezes the other seat's players and entities inside a segment)",
+          "quote": "opponent's players and entities inside a segment but `resolving` is a top-level"
+        },
+        {
+          "ref": "R310",
+          "quote": "that step produces. The other seat gets it at the barrier, in the recap"
+        },
+        {
+          "ref": "R310",
+          "quote": "the frozen state channel. The event channel now matches it."
+        },
+        {
+          "ref": "R228 (its general live done-flag clause; its haste half is overridden by R236)",
+          "quote": "stay live and public … 'they are finished' is exactly what you can see across a"
+        },
+        {
+          "ref": "R236",
+          "quote": "construction:** `viewFor` no longer serves the OTHER seat's per-seat haste"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "306-solo-backend.test.ts",
+        "203-reveal-waits-for-the-barrier.test.ts",
+        "435-cr-digital-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R228 and R236 are cited from client/docs/digital-rules.md; they are not in the U24 pack. Revision round 2: R78 and R228 scoped to the parts that state this rule. The verifier measured that the other player's stack items are dropped from the view inside a hidden step rather than frozen; the visible result is the same.",
+    "sourceHashes": {
+      "R228": "16bea3f046e8e094455935cda2136af98531afe99ccc1b19d5d897918137a179",
+      "R236": "fe2fe7688676d9518cc043d157c8a4c21c47a2c8a2dab36dca0d3a2ea557f99a",
+      "R310": "b026f1a777d5fb5d118b9486d9ac26b12a425835f8105f7f3be2090fdaeea801",
+      "R78": "d2630a4f6400d2df4daef0df97a2ce3c2a55a56143bba36c96675646a3f70eae"
+    }
+  },
+  {
+    "key": "annexd.reveal.hidden-steps.counts",
+    "parent": "annexd.reveal.hidden-steps",
+    "order": 2,
+    "text": "In the haste step and in deployment, the shared deck count and the shared recycle count are shown to both players as they were when the step opened. A player's own play that moves cards into or out of those piles shows on the counts only at the reveal.",
+    "examples": [
+      {
+        "text": "Example: A player glimpses during deployment. The shared deck count does not drop for either player until deployment ends.",
+        "test": "203-reveal-waits-for-the-barrier.test.ts::R310 §1: the shared deck and recycle counts do not move under a hidden Glimpse"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R310",
+          "quote": "served as they were when the step opened, to both seats alike. The cost is"
+        },
+        {
+          "ref": "R310",
+          "quote": "that your own deck-moving play also shows on the counts only at the reveal."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "203-reveal-waits-for-the-barrier.test.ts",
+        "435-cr-digital-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R310": "b026f1a777d5fb5d118b9486d9ac26b12a425835f8105f7f3be2090fdaeea801"
+    }
+  },
+  {
+    "key": "annexd.reveal.hidden-steps.battle",
+    "parent": "annexd.reveal.hidden-steps",
+    "order": 3,
+    "text": "Nothing is held during the battle phase. What happens in battle is shown to every player as it happens.",
+    "examples": [
+      {
+        "text": "Example: Premonition is cast in battle. Its Glimpse reveal reaches the opponent at once.",
+        "test": "159-glimpse-reveal-visibility.test.ts::Premonition: the Glimpse X reveal is public to the opponent (R41/R45)"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R310",
+          "quote": "Nothing is held in battle, so a battle glimpse (Premonition,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "159-glimpse-reveal-visibility.test.ts",
+        "435-cr-digital-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R310": "b026f1a777d5fb5d118b9486d9ac26b12a425835f8105f7f3be2090fdaeea801"
+    }
+  },
+  {
+    "key": "annexd.reveal.hidden-steps.haste-ready",
+    "parent": "annexd.reveal.hidden-steps",
+    "order": 4,
+    "text": "While the haste step is open, a player is not shown whether the other player has finished it. Each player sees their own readiness. The end of the step is shown to both players.",
+    "examples": [
+      {
+        "text": "Example: One player finishes the haste step while the other is still choosing. The other player is not told that the first has finished.",
+        "test": "205-haste-auto-ready.test.ts::R236 §3a: the opponent is not served my haste readiness while the step is open"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R236",
+          "quote": "who is ready stops being public while it is open"
+        },
+        {
+          "ref": "R236",
+          "quote": "The step's END is still public"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "205-haste-auto-ready.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R236 is not in the U24 pack (classified to U23); read from client/docs/digital-rules.md because it is the hidden-step reveal rule for D6. Overlap with U23 is possible.",
+    "sourceHashes": {
+      "R236": "fe2fe7688676d9518cc043d157c8a4c21c47a2c8a2dab36dca0d3a2ea557f99a"
+    }
+  },
+  {
+    "key": "annexd.reveal.glimpse",
+    "parent": "D6",
+    "order": 2,
+    "text": "A glimpse that happens inside a hidden step is shown to the other player at the reveal, not when it happens. At the end of the haste step or deployment it plays in the recap, at the moment it happened.",
+    "examples": [
+      {
+        "text": "Example: Oracle of Foretelling is played during deployment and glimpses 5. The opponent learns the five cards when deployment ends, in the recap.",
+        "test": "159-glimpse-reveal-visibility.test.ts::Oracle of Foretelling: its reveal is inside the hidden deployment segment, and waits for the barrier (R310)"
+      }
+    ],
+    "see": [
+      "annexd.reveal.hidden-steps"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R310",
+          "quote": "The owner: *\"Glimpse cards shouldn't be shown to an opponent *during*"
+        },
+        {
+          "ref": "R310",
+          "quote": "that step produces. The other seat gets it at the barrier, in the recap"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R235",
+          "relation": "reversed by R310: R235 had made the reveal public immediately"
+        },
+        {
+          "ruling": "R222",
+          "relation": "reversed by R310: the same \"immediately\" answer, round 29"
+        },
+        {
+          "ruling": "R188",
+          "relation": "the open question (barrier or moment), absorbed into R310"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "203-reveal-waits-for-the-barrier.test.ts",
+        "159-glimpse-reveal-visibility.test.ts",
+        "371-glimpse-in-the-recap.test.ts",
+        "435-cr-digital-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R310": "b026f1a777d5fb5d118b9486d9ac26b12a425835f8105f7f3be2090fdaeea801"
+    }
+  },
+  {
+    "key": "annexd.reveal.glimpse.own",
+    "parent": "annexd.reveal.glimpse",
+    "order": 1,
+    "text": "The player who glimpses sees their own revealed cards when they glimpse.",
+    "examples": [
+      {
+        "text": "Example: Oracle of Foretelling glimpses during deployment. Its controller is sent the revealed cards on the action that glimpses; the opponent is sent nothing until the step ends.",
+        "test": "203-reveal-waits-for-the-barrier.test.ts::R310 §1: inside deployment the opponent is sent nothing of a Glimpse — live or on a resync"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R310",
+          "quote": "sees their own reveal live, because it is their own action."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "203-reveal-waits-for-the-barrier.test.ts",
+        "435-cr-digital-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R310": "b026f1a777d5fb5d118b9486d9ac26b12a425835f8105f7f3be2090fdaeea801"
+    }
+  },
+  {
+    "key": "annexd.reveal.glimpse.once",
+    "parent": "annexd.reveal.glimpse",
+    "order": 2,
+    "text": "At the reveal the other player is shown the glimpse exactly once, with its card notice, and the finished game log holds it once.",
+    "examples": [
+      {
+        "text": "Example: The opponent's glimpse notice pops when the recap frame of the glimpse plays, and not before.",
+        "test": "371-glimpse-in-the-recap.test.ts::R310 §1: the opponent's glimpse notice pops when its recap frame plays, not before"
+      },
+      {
+        "text": "Example: When deployment ends, the opponent is sent the glimpse once, and the finished game log records it once.",
+        "test": "203-reveal-waits-for-the-barrier.test.ts::R310 §2: the barrier delivers the reveal exactly once, and the finished log holds it once"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R310",
+          "quote": "- **Barrier and recap.** The glimpse is flushed exactly once, inside the"
+        },
+        {
+          "ref": "R310",
+          "quote": "barrier. After the barrier it appears"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "203-reveal-waits-for-the-barrier.test.ts",
+        "371-glimpse-in-the-recap.test.ts",
+        "435-cr-digital-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R310": "b026f1a777d5fb5d118b9486d9ac26b12a425835f8105f7f3be2090fdaeea801"
+    }
+  },
+  {
+    "key": "annexd.reveal.glimpse.public",
+    "parent": "annexd.reveal.glimpse",
+    "order": 3,
+    "text": "Holding a glimpse until the reveal only delays it. The revealed cards are public, and every player sees them.",
+    "examples": [
+      {
+        "text": "Example: Foretell is played in battle. The card it reveals is shown to the opponent.",
+        "test": "159-glimpse-reveal-visibility.test.ts::Foretell: the Glimpse 1 reveal is public to the opponent (R41/R45)"
+      }
+    ],
+    "see": [
+      "annexd.reveal.hidden-steps.battle"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R310",
+          "quote": "- **Privacy.** A glimpse is still not private (`privateTo` is unset). The hold"
+        },
+        {
+          "ref": "R310",
+          "quote": "only delays it, which is why the barrier can deliver it."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "159-glimpse-reveal-visibility.test.ts",
+        "435-cr-digital-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R310": "b026f1a777d5fb5d118b9486d9ac26b12a425835f8105f7f3be2090fdaeea801"
+    }
+  },
+  {
+    "key": "annexd.reveal.glimpse.learn-to-play",
+    "parent": "annexd.reveal.glimpse",
+    "order": 4,
+    "text": "The same holds in Learn to Play: a glimpse by the Tutorial Bot inside a hidden step is shown to the learner in the recap.",
+    "examples": [
+      {
+        "text": "Example: The Tutorial Bot glimpses during deployment. The learner's glimpse notice pops when the recap plays.",
+        "test": "371-glimpse-in-the-recap.test.ts::R310 §2: Learn to Play holds the bot's glimpse for the recap, and the recap pops it"
+      }
+    ],
+    "see": [
+      "annexd.modes.learn-to-play"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R310",
+          "quote": "from `server/view.ts`. All three hidden-step runners now hold an action's"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "371-glimpse-in-the-recap.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R310": "b026f1a777d5fb5d118b9486d9ac26b12a425835f8105f7f3be2090fdaeea801"
+    }
+  },
+  {
+    "key": "annexd.reveal.resolving",
+    "parent": "D6",
+    "order": 3,
+    "text": "During the battle phase, when an item has begun to resolve and is waiting on a choice from its controller, every player is shown that the item is resolving and whose it is. The item has left the stack, and no player can respond to it (see 703.6).",
+    "examples": [
+      {
+        "text": "Example: An effect stops mid-resolution to ask its controller a question. Both players see it marked as resolving; neither can target or negate it.",
+        "test": "67-resolving-and-stack-viruses.test.ts::R78: a resolving item cannot be responded to, negated or targeted"
+      }
+    ],
+    "see": [
+      "703.6"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R78",
+          "quote": "An item stays on the stack until it has ACTUALLY resolved"
+        },
+        {
+          "ref": "R78",
+          "quote": "is `resolving.label` and *whose* effect it is is `resolving.controller` —"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "67-resolving-and-stack-viruses.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R78 is classified game (mixed); the display half is here, the respond-to half is 703.6 (U14).",
+    "sourceHashes": {
+      "R78": "d2630a4f6400d2df4daef0df97a2ce3c2a55a56143bba36c96675646a3f70eae"
+    }
+  },
+  {
+    "key": "annexd.reveal.resolving.battle-only",
+    "parent": "annexd.reveal.resolving",
+    "order": 1,
+    "text": "Outside the battle phase the other player is shown nothing of an item resolving. Its controller still sees the question.",
+    "examples": [
+      {
+        "text": "Example: Oracle of Foretelling is played in deployment and asks its controller which card to cache. The other player is served no resolving item and no pending question; the same kind of question from Premonition in battle is shown to them.",
+        "test": "435-cr-digital-2.test.ts::cr:annexd.reveal.resolving.battle-only — outside battle the other player is served nothing of an item resolving while its controller is asked; in battle they are"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R78",
+          "quote": "`beginResolving` publishes the marker only while `s.phase === 'battle'`."
+        },
+        {
+          "ref": "R78",
+          "quote": "battle still shows the opponent nothing. Its controller has the decision open"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "435-cr-digital-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "No test title asserts the battle-only gate directly; 67 pins the marker in battle and the nested-resolution case.",
+    "sourceHashes": {
+      "R78": "d2630a4f6400d2df4daef0df97a2ce3c2a55a56143bba36c96675646a3f70eae"
+    }
+  },
+  {
+    "key": "annexd.reveal.resolving.partial",
+    "parent": "annexd.reveal.resolving",
+    "order": 2,
+    "text": "While a resolution waits on a player's answer, every player is shown the board as it is partway through the resolution: whatever the effect has already done is on the table, including what its controller played and paid.",
+    "examples": [
+      {
+        "text": "Example: Insidious Invitation lets the caster play a unit first, then asks the opponent. When the opponent is asked, the caster's unit and spent mana are already on the table.",
+        "test": "72-resolution-window.test.ts::R85 Insidious Invitation: at the OPPONENT’s prompt, the caster’s play is already on the table"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R85",
+          "quote": "Between the question and the answer, the state on the table is the real,"
+        },
+        {
+          "ref": "R85",
+          "quote": "are on the published board along with their unit. Both halves of the report are"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "72-resolution-window.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R85": "2ed5ff9815827c7ce9fb99b80cfb4026534c35e30b007abc2060578975b2eea4"
+    }
+  },
+  {
+    "key": "annexd.reveal.resolving.only-answer",
+    "parent": "annexd.reveal.resolving",
+    "order": 3,
+    "text": "On a board partway through a resolution, the only actions any player may take are answering the open question and conceding.",
+    "examples": [
+      {
+        "text": "Example: Mid-resolution, neither player can cast or pass; the asked player can answer, and either player can concede.",
+        "test": "72-resolution-window.test.ts::R85 the mid-resolution board is a PREVIEW: only decide and concede are legal on it"
+      }
+    ],
+    "see": [
+      "104.4a"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R85",
+          "quote": "`apply()`'s dispatch refuses every action except `decide` and `concede` while"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "72-resolution-window.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R85": "2ed5ff9815827c7ce9fb99b80cfb4026534c35e30b007abc2060578975b2eea4"
+    }
+  },
+  {
+    "key": "annexd.reveal.pending-choice",
+    "parent": "D6",
+    "order": 4,
+    "text": "Outside a hidden simultaneous step, that a player owes an answer to a question is public, and so is the card it comes from when that card is already in view. What the question is is not: its prompt, its options, its candidate targets and its kind are shown only to the player who must answer. Inside a hidden simultaneous step, not even the fact that the other player owes an answer is shown.",
+    "examples": [
+      {
+        "text": "Example: The attacker's Tempest Wrangler makes them choose an {Alluring} target. The defender's bar reads \"Waiting for Rashi (Tempest Wrangler)\" and names neither the prompt nor the candidate.",
+        "test": "50-ui-inspect.test.ts::R247: the pause bar names the effect an opponent is answering, off the server stub"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R247",
+          "quote": "THAT A CHOICE IS PENDING IS PUBLIC; WHAT IS BEING CHOSEN IS NOT"
+        },
+        {
+          "ref": "R247",
+          "quote": "The FACT that a seat owes an answer is public information. The CONTENT of the"
+        },
+        {
+          "ref": "R247",
+          "quote": "decision **KIND**. Kind was considered and refused: \"they are choosing targets\""
+        },
+        {
+          "ref": "R247",
+          "quote": "**The SOURCE of a pending question is public when — and only when — it is"
+        },
+        {
+          "ref": "R247",
+          "quote": "3. `frozenOpp` — the SAME gate R144 uses for the stack, no second opinion. Inside"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "50-ui-inspect.test.ts",
+        "435-cr-digital-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Revision round 2: the hidden-step exception added from R247's own addendum (the frozenOpp gate), which the verifier measured in client/server/view.ts pendingAskFor.",
+    "sourceHashes": {
+      "R247": "00e4ed51cb8e3f125993351ee0ac4497112a46638a599d2fb0fd1436ed307d0d"
+    }
+  },
+  {
+    "key": "annexd.reveal.pending-choice.source",
+    "parent": "annexd.reveal.pending-choice",
+    "order": 1,
+    "text": "The waiting player may be told which card the question comes from, but only when that card is already visible to them. Inside a hidden step, it is not named.",
+    "examples": [
+      {
+        "text": "Example: An opponent's {Alluring} trigger asks them to choose a target. The other player's bar names the opponent and the card the trigger came from, and nothing about the targets.",
+        "test": "50-ui-inspect.test.ts::R247: the pause bar names the effect an opponent is answering, off the server stub"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R247",
+          "quote": "The SOURCE of a pending question is public when — and only when — it is"
+        },
+        {
+          "ref": "R247",
+          "quote": "a hidden simultaneous segment \"they are being asked about their Blightmound\""
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "50-ui-inspect.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R247": "00e4ed51cb8e3f125993351ee0ac4497112a46638a599d2fb0fd1436ed307d0d"
+    }
+  },
+  {
+    "key": "annexd.reveal.hidden-names",
+    "parent": "D6",
+    "order": 5,
+    "text": "No message the client receives names a card in a zone hidden from that player. When cards enter another player's hand, the player is told how many entered, not which.",
+    "examples": [
+      {
+        "text": "Example: The opponent draws two cards. The player sees the opponent's hand grow by two card backs and is not sent their names.",
+        "test": "172-event-channel-secrecy.test.ts::R202 §2: no event names a card in a zone the state channel hides — the invariant, not the instance"
+      }
+    ],
+    "see": [
+      "402.2"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R202",
+          "quote": "(hand size is already public from the card backs); only the names go."
+        },
+        {
+          "ref": "R202",
+          "quote": "pins the six routes. §2 asserts the INVARIANT — no event may name a card in a"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "172-event-channel-secrecy.test.ts",
+        "435-cr-digital-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R202": "8640477ec4f5f835d7388a6f8854e185f9a30cfcd2f13e8aab2f56279dc3da9d"
+    }
+  },
+  {
+    "key": "annexd.reveal.hidden-names.look-at",
+    "parent": "annexd.reveal.hidden-names",
+    "order": 1,
+    "text": "When an effect lets a player look at a hand, the cards seen are named in the game log to that player only. The other players' log says only that the hand was looked at.",
+    "examples": [
+      {
+        "text": "Example: Thought Extraction is aimed at a player's own hand. The opponent is not shown the cards in it.",
+        "test": "173-look-at-a-hand.test.ts::R197b §1 Thought Extraction: aimed at YOUR OWN hand, the opponent is the one seat it leaked to"
+      }
+    ],
+    "see": [
+      "402.2a"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R197b",
+          "quote": "is a private look — you see it, the table"
+        },
+        {
+          "ref": "R197b",
+          "quote": "(the client's note-taking strip) and writes only *\"X looks at Y's hand\"*, which"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "173-look-at-a-hand.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "engine differs: F-U24-5 (measured by the U24 tester: Thought Extraction aimed at the caster own hand writes no line at all to the other player; aimed at the other hand, the other log says \"looks at\").",
+    "sourceHashes": {
+      "R197b": "6dbeb39bb020fa68a46ae0b9e1fc0ab3e5ba72d2fadd82ef6d6681e64878c6bc"
+    },
+    "untested": true,
+    "engineDiffers": [
+      "F-U24-5"
+    ]
+  },
+  {
+    "key": "annexd.reveal.hidden-names.moved-card",
+    "parent": "annexd.reveal.hidden-names",
+    "order": 2,
+    "text": "A card that an effect moves out of a hidden hand into another hidden zone, without the effect saying \"reveal\", is named only to the player who chose it. The other players are told that a card moved, not which.",
+    "examples": [
+      {
+        "text": "Example: Bripp recycles a card from the looked-at hand. The table is told a card was recycled; only Bripp's controller sees its name.",
+        "test": "173-look-at-a-hand.test.ts::R197b §1 Bripp: \"Look at target player's hand\" — and the card it recycles is not named to the table either"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R197b",
+          "quote": "name is not the table's. It is split: a `privateTo` line carries the NAME to"
+        },
+        {
+          "ref": "R197b",
+          "quote": "the looker (who chose it), and a public line says a card moved without saying"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "173-look-at-a-hand.test.ts",
+        "435-cr-digital-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R197b": "6dbeb39bb020fa68a46ae0b9e1fc0ab3e5ba72d2fadd82ef6d6681e64878c6bc"
+    }
+  },
+  {
+    "key": "annexd.reveal.public-zones",
+    "parent": "D6",
+    "order": 6,
+    "text": "Both players' caches are shown to both players in full: every cached card, and any prophecy attached to it (see 403.2).",
+    "examples": [
+      {
+        "text": "Example: Both players are sent the same cache contents for both caches.",
+        "test": "36-cache-prophecy.test.ts::R41: the cache is PUBLIC — both seats read the same zone, unredacted"
+      }
+    ],
+    "see": [
+      "403.2"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R41",
+          "quote": "no server-side redaction for cache. (Bena's call 2026-08-19 — overturn if"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "36-cache-prophecy.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R41 digital half: no redaction of the cache. Inside a hidden step the cache is frozen like every other zone (annexd.reveal.hidden-steps.frozen).",
+    "sourceHashes": {
+      "R41": "b36860212932ef9298bbee65d84cfe617b23849e3e65bc03a7949f7e67dc0346"
+    }
+  },
+  {
+    "key": "annexd.reveal.public-zones.prophecy-meter",
+    "parent": "annexd.reveal.public-zones",
+    "order": 1,
+    "text": "A cached card whose prophecy condition counts toward a number shows its progress on the board, on its owner's cache, to every player. The count shown is the one for the cache's owner.",
+    "examples": [
+      {
+        "text": "Example: The opponent has prophesied Vengeance (\"13 Units Die\"). The player can see on the opponent's cache how many of the 13 deaths have been counted.",
+        "test": "294-prophecy-meter.test.ts::§4 it meters the OPPONENT's cache too — the zone is public (R41)"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R302",
+          "quote": "Owner, 2026-09-20: *\"the tally and 'progress toward Prophecy working' needs to be VISIBLE"
+        },
+        {
+          "ref": "R302",
+          "quote": "as your own, showing THAT seat's witnessed count. A hidden clock on a public zone is the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "294-prophecy-meter.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R302": "e62ab6c3b0d06431986946cbf0f1840e6b40b755f7ce22587b965f6d60b875b6"
+    }
+  },
+  {
+    "key": "annexd.reveal.public-zones.prophecy-state",
+    "parent": "annexd.reveal.public-zones",
+    "order": 2,
+    "text": "A prophecy whose condition is a state rather than a count shows no meter. A fulfilled prophecy shows as fulfilled instead of a meter.",
+    "examples": [
+      {
+        "text": "Example: A cached card whose prophecy reads \"Your life is 5 or less\" puts no meter on the board.",
+        "test": "294-prophecy-meter.test.ts::§4 a state condition puts no meter on the board — there is nothing to count"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R302",
+          "quote": "Only counting conditions get a meter. A state condition (\"your life is 5 or less\") has"
+        },
+        {
+          "ref": "R302",
+          "quote": "nothing to count and keeps the plain \"⏳ not yet\", and a fulfilled one drops its meter for"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "294-prophecy-meter.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R302": "e62ab6c3b0d06431986946cbf0f1840e6b40b755f7ce22587b965f6d60b875b6"
+    }
+  },
+  {
+    "key": "annexd.reveal.public-zones.erased",
+    "parent": "annexd.reveal.public-zones",
+    "order": 3,
+    "text": "Any player may open either player's erased pile, from the menu of the bare table (see 407.1a).",
+    "examples": [
+      {
+        "text": "Example: A player right-clicks the empty table and opens the opponent's erased pile.",
+        "test": "216-menu-scoping.test.ts::§2 both field entries are still reachable — from bare table"
+      }
+    ],
+    "see": [
+      "407.1a",
+      "annexd.display.menus"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R241",
+          "quote": "| bare table | 🚫 each player's erased pile · 🏳 concede |"
+        },
+        {
+          "ref": "R65 (its erased-pile half)",
+          "quote": "no way to look at it. `PlayerState.erased` keeps it, appended by `E.ev()` off"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R65",
+          "relation": "narrowed by R241: its view-erased entry left the card menus for the bare-table menu"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "216-menu-scoping.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R241": "5c1f39f2fff4d9d515f369487b6ccf419e36b237819054e79d891871a45d60af",
+      "R65": "e9ed084b299e697c3a8550bce01553259bfc5d6601416e6e6fc3adb041378a6d"
+    }
+  },
+  {
+    "key": "annexd.reveal.public-zones.bin",
+    "parent": "annexd.reveal.public-zones",
+    "order": 4,
+    "text": "Either player may open either player's bin. When something on the stack targets a card in a bin, that card is brought to the top of the bin on the board, for both players.",
+    "examples": [
+      {
+        "text": "Example: A Hooba-Mon trigger on the stack targets a card six deep in a bin. That card is drawn on top of the bin for both players.",
+        "test": "260-cost-ramp-and-bin-targets.test.ts::R280 §7b the opponent sees the target too, which is the half the report is really about"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R280",
+          "quote": "a bin card something on the stack is aiming at is surfaced onto the"
+        },
+        {
+          "ref": "R280",
+          "quote": "`viewFor` redacts no bin. What"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "260-cost-ramp-and-bin-targets.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R280": "a6e58fb86327704be34d7c6ddc940789ae69815e6b6d7649aeb3a89e01b6ead1"
+    }
+  },
+  {
+    "key": "annexd.reveal.public-zones.deck-elements",
+    "parent": "annexd.reveal.public-zones",
+    "order": 5,
+    "text": "In constructed, the elements a player's deck contains are sent to both players. Whether they should be public at the start of the game is an open question for the owner (see the discrepancy report).",
+    "examples": [
+      {
+        "text": "Example: A fire deck plays a water deck in constructed. Each player is sent that one deck is fire and the other water.",
+        "test": "435-cr-digital-2.test.ts::cr:annexd.reveal.public-zones.deck-elements — in constructed, the deck elements of both players are in the view each player is sent"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R99",
+          "quote": "**Shipped unredacted**, because redaction lives in `server/view.ts` and the engine cannot"
+        },
+        {
+          "ref": "R99",
+          "quote": "### ⚠ OPEN QUESTION FOR THE OWNER — is deck element identity PUBLIC at game start?"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "435-cr-digital-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "low",
+    "notes": "States the shipped default only; the ruling itself leaves it open. Discrepancy D-U24-2.",
+    "sourceHashes": {
+      "R99": "cfd4037ea46d2c5aea09ebf73bc20639fb3b512bd369be713ff28799d231b516"
+    }
+  },
+  {
+    "key": "annexd.reveal.beats",
+    "parent": "D6",
+    "order": 7,
+    "text": "Things that happen at the same time in the rules are shown at the same time, and things that happen one after another are shown one after another.",
+    "examples": [
+      {
+        "text": "Example: Combat kills several units at once and their death triggers are queued together. All of them appear on the stack strip in one beat.",
+        "test": "160-simultaneous-trigger-beats.test.ts::R189 THE REPORT: a trigger sweep puts every trigger on the strip in ONE frame"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R189 (its pacing rule)",
+          "quote": "a batch that is simultaneous in the rules must LOOK simultaneous, and a sequence must look sequential"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R189",
+          "relation": "amended by R242 (simultaneous items share one arrival but depart in resolution order); its sub-step fixture replaced by R261"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "160-simultaneous-trigger-beats.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R189": "b78d91ff66f343aa806b40323485f7a68870671663c9f25d335c1e5482355ee1"
+    }
+  },
+  {
+    "key": "annexd.reveal.beats.never-gates",
+    "parent": "annexd.reveal.beats",
+    "order": 1,
+    "text": "This pacing only explains what happened. It never delays the game: the board under it is already final.",
+    "examples": [
+      {
+        "text": "Example: While the beats of a death sweep are still playing, the units are already gone from the board state.",
+        "test": "160-simultaneous-trigger-beats.test.ts::R189 a beat explains and never gates: the board under it is already final"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R189 (its pacing rule)",
+          "quote": "before R189 and is final after it — docs/11's contract is that a beat explains"
+        },
+        {
+          "ref": "R189 (its pacing rule)",
+          "quote": "nothing about when anything resolves. The board underneath a beat was final"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "160-simultaneous-trigger-beats.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R189": "b78d91ff66f343aa806b40323485f7a68870671663c9f25d335c1e5482355ee1"
+    }
+  },
+  {
+    "key": "annexd.display.copies",
+    "parent": "D6",
+    "order": 8,
+    "text": "A unit that has become a copy of another card is drawn with the art of the card it copied, and stays marked as a copy.",
+    "examples": [
+      {
+        "text": "Example: Borrower of Forms copies Sporebloom Siren. It is drawn with Sporebloom Siren's art and a copy mark.",
+        "test": "198-copy-art.test.ts::R229 §1: a Borrower of Forms is DRAWN as the card it borrowed"
+      }
+    ],
+    "see": [
+      "710"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R229",
+          "quote": "a copy is DRAWN as the card it copied, and stays marked as a copy"
+        },
+        {
+          "ref": "R229",
+          "quote": "the face; the markings that say *this is a copy* must not. A fix that satisfied"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "198-copy-art.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R229": "fac4710b47c174bdf637bf8124a177496a0c99edf56e36a15edfde189cd2c6bd"
+    }
+  },
+  {
+    "key": "annexd.display.copies.marked",
+    "parent": "annexd.display.copies",
+    "order": 1,
+    "text": "A copy is marked even when its numbers match the card it copied. The bin shows the physical card, not the copied face.",
+    "examples": [
+      {
+        "text": "Example: Borrower of Forms (2/2) copies a 2/2. It still wears the copy mark.",
+        "test": "198-copy-art.test.ts::R229 §3b: a copy is marked even when the borrowed body matches its own"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R229",
+          "quote": "emits a `⧉ <first word of the physical card>` chip exactly when"
+        },
+        {
+          "ref": "R229",
+          "quote": "what bins, and the markings below — keeps reading"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "198-copy-art.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R229": "fac4710b47c174bdf637bf8124a177496a0c99edf56e36a15edfde189cd2c6bd"
+    }
+  },
+  {
+    "key": "annexd.display.copies.projection",
+    "parent": "annexd.display.copies",
+    "order": 2,
+    "text": "A card that only borrows abilities from another, without taking its name, keeps its own art.",
+    "examples": [
+      {
+        "text": "Example: Ancient One shares the text box of an adjacent ally but keeps its own portrait.",
+        "test": "198-copy-art.test.ts::R229 §3: an Ancient One keeps its OWN art — a projection is not an identity"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R229",
+          "quote": "its own face, so it keeps"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "198-copy-art.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R229": "fac4710b47c174bdf637bf8124a177496a0c99edf56e36a15edfde189cd2c6bd"
+    }
+  },
+  {
+    "key": "annexd.display.live-values",
+    "parent": "D6",
+    "order": 9,
+    "text": "Where a card's printed text uses a bare X, or names a card, and this copy of the card has a value for it, the text box shows that value in its place. Stat notation (X/X, +X/+X, -X/-X), the [x] cost pip and reminder text are never changed, even when X has a value. A board-read X on the stack is not written into the text box; it is shown as a forecast (see annexd.display.live-values.x-forecast).",
+    "examples": [
+      {
+        "text": "Example: A Poison created with X = 5 reads \"Put 5 -1/-1 counters on target unit\".",
+        "test": "127-token-x-and-dormant.test.ts::R151/CT-33: a Poison created with X=5 says \"Put 5 -1/-1 counters\", from the engine"
+      }
+    ],
+    "see": [
+      "annexd.display.live-values.x-forecast",
+      "annexd.display.live-values.token-x"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R151",
+          "quote": "> *\"Tokens should have their X value in their text box modified to say the"
+        },
+        {
+          "ref": "R279 (its §1, §3 and §4)",
+          "quote": "is a printed VARIABLE in exactly the sense X is, and `Entity.named` is"
+        },
+        {
+          "ref": "R151",
+          "quote": "| `X` (bare) | 59 | **substituted** — this is the value |"
+        },
+        {
+          "ref": "R151",
+          "quote": "| `X/X` | 9 | never touched — **stat notation** |"
+        },
+        {
+          "ref": "R151",
+          "quote": "| `[x]` | 8 | never touched — a **cost pip**: variable *mana*, drawn as `data/icons/cost_x`. A digit substituted in there silently becomes a different cost icon. |"
+        },
+        {
+          "ref": "R151",
+          "quote": "broken one. Reminder text **names** the variable; it does not use it."
+        },
+        {
+          "ref": "R246",
+          "quote": "is PUBLIC while the card is on the stack, and is shown as a FORECAST.**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "127-token-x-and-dormant.test.ts",
+        "259-card-text-surface.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R151": "94372dbd3d49bf1f08db7965552dc760ca020d3295582c003d2a9467faac063a",
+      "R246": "2de7bd404c75cd50c054bb578e025c0d30754d9e419cdbe1ff7115f729b69276",
+      "R279": "f3e7f1067f0c60b2e9ea64529c504e4af6a7eccc2662ce3e3112f1ff43ff919f"
+    }
+  },
+  {
+    "key": "annexd.display.live-values.token-x",
+    "parent": "annexd.display.live-values",
+    "order": 1,
+    "text": "A token's text box shows its actual X in place of X. Stat notation such as X/X, +X/+X and -X/-X is never changed, and neither is reminder text.",
+    "examples": [
+      {
+        "text": "Example: A Poison created with X = 5 reads \"Put 5 -1/-1 counters on target unit\".",
+        "test": "127-token-x-and-dormant.test.ts::R151/CT-33: a Poison created with X=5 says \"Put 5 -1/-1 counters\", from the engine"
+      },
+      {
+        "text": "Example: A Robot reads its X off its counters, so its text changes when they change.",
+        "test": "127-token-x-and-dormant.test.ts::R151/CT-33: a Robot reads its X off its COUNTERS, so it stays true as they change"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R151",
+          "quote": "> *\"Tokens should have their X value in their text box modified to say the"
+        },
+        {
+          "ref": "R151",
+          "quote": "broken one. Reminder text **names** the variable; it does not use it."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "127-token-x-and-dormant.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R151": "94372dbd3d49bf1f08db7965552dc760ca020d3295582c003d2a9467faac063a"
+    }
+  },
+  {
+    "key": "annexd.display.live-values.named-card",
+    "parent": "annexd.display.live-values",
+    "order": 2,
+    "text": "A card that names a card shows the named card in its text box, and so does a host carrying that text as a mod. With no card named, the printed text stands.",
+    "examples": [
+      {
+        "text": "Example: The Everywhere has named Triskaidekaphage. Its text box reads \"Triskaidekaphage loses all abilities.\"",
+        "test": "259-card-text-surface.test.ts::CT-163: the box of the card that named says WHICH card it named"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R279 (its §1, §3 and §4)",
+          "quote": "is a printed VARIABLE in exactly the sense X is, and `Entity.named` is"
+        },
+        {
+          "ref": "R279 (its §1, §3 and §4)",
+          "quote": "- `Entity.named === ''` is a REAL value — \"name no card (release my last"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R279",
+          "relation": "its §2 copy premise replaced by R336; the substitution in §1 is unaffected"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "259-card-text-surface.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R279": "f3e7f1067f0c60b2e9ea64529c504e4af6a7eccc2662ce3e3112f1ff43ff919f"
+    }
+  },
+  {
+    "key": "annexd.display.live-values.x-forecast",
+    "parent": "annexd.display.live-values",
+    "order": 3,
+    "text": "When a card on the stack reads its X from the board at resolution, and the card itself declares how to forecast that X, the stack shows what X would be right now, worded as a forecast. A declared mode narrows the forecast to that mode. If X was paid, the paid X is shown and no forecast is. A board-read X with no declared forecast shows none (see annexd.display.live-values.x-not-forecast).",
+    "examples": [
+      {
+        "text": "Example: Retribution Thing is on the stack. It shows the X it would deal now.",
+        "test": "225-stack-readout.test.ts::§1a Retribution Thing wears its X on the stack, and it is the number it will deal"
+      },
+      {
+        "text": "Example: A spell whose X was paid shows only the paid X.",
+        "test": "225-stack-readout.test.ts::§1c a paid X still wins — the forecast never doubles it"
+      },
+      {
+        "text": "Example: Retribution Thing was cast in the life-lost mode. The stack shows only that mode's forecast.",
+        "test": "225-stack-readout.test.ts::§1b the declared mode narrows the forecast to the half that was chosen"
+      }
+    ],
+    "see": [
+      "annexd.display.live-values.x-not-forecast"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R246",
+          "quote": "is PUBLIC while the card is on the stack, and is shown as a FORECAST.**"
+        },
+        {
+          "ref": "R246",
+          "quote": "2. **A committed X silences the forecast.** If `stackItemX` has anything to"
+        },
+        {
+          "ref": "R246",
+          "quote": "3. **A declared MODE narrows the forecast.** R57 fixes Retribution Thing's"
+        },
+        {
+          "ref": "R246",
+          "quote": "1. **The forecast is the card's own answer, not the client's.** The number comes"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "225-stack-readout.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R246": "2de7bd404c75cd50c054bb578e025c0d30754d9e419cdbe1ff7115f729b69276"
+    }
+  },
+  {
+    "key": "annexd.display.live-values.burst",
+    "parent": "annexd.display.live-values",
+    "order": 4,
+    "text": "Spell tokens in play are counted by name, with the X of each, because casting one burst token casts every token of that name (see 803). Each spell token shows its X as a large die face.",
+    "examples": [
+      {
+        "text": "Example: A player holds Fireball 1, Fireball 1 and Fireball 3. The strip shows one Fireball row: three of them, two at X = 1 and one at X = 3.",
+        "test": "233-burst-count-and-size.test.ts::§1b a group of one name at different sizes prints every size — the report verbatim"
+      },
+      {
+        "text": "Example: A Fireball with X = 3 shows a die face with three pips.",
+        "test": "358-burst-order-ui.test.ts::§3 a token wears its X as a die face, not \"X=n\" in the stat corner"
+      }
+    ],
+    "see": [
+      "803"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R254 (its §1, §3 and §4)",
+          "quote": "**1. A burst group is a NAME, and the board counts by group.** The spell-token"
+        },
+        {
+          "ref": "R309",
+          "quote": "Each spell token wears its X as a large die face (pips for 1 to 6, the"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R254",
+          "relation": "its §2 fixed entity-id cast order amended by R309 (the caster orders a burst)"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "233-burst-count-and-size.test.ts",
+        "358-burst-order-ui.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R254": "97aae316ad5976701bf054a69f8a26d96c18c5989eab0ae30050a7d1d3f84636",
+      "R309": "e49e87895134f608900e0c840a7d68bcdb1cd0ba07dfc2b9e8b67e7123c8c06f"
+    }
+  },
+  {
+    "key": "annexd.display.live-values.x-not-forecast",
+    "parent": "annexd.display.live-values",
+    "order": 5,
+    "text": "A card whose X is read from the board at resolution, but which declares no forecast for it, shows no forecast on the stack.",
+    "examples": [
+      {
+        "text": "Example: Burden of Life on the stack shows no forecast; its X is its controller's life total, which is already on the screen. (illustrative)",
+        "test": null
+      }
+    ],
+    "see": [
+      "annexd.display.live-values.x-forecast"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R246",
+          "quote": "cards are left: their X is read from the board at resolution and only a card"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "225-stack-readout.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Added in revision round 1 after the verifier found x-forecast overbroad. Revision round 2: dropped the sentence about a list of such cards; that list (X_NOT_FORECAST_YET) lives in client/ui/test/225-stack-readout.test.ts and is a repository gate, not a game rule. The example is illustrative because 225 §1e asserts the inventory, not the on-stack display. See D-U24-8.",
+    "sourceHashes": {
+      "R246": "2de7bd404c75cd50c054bb578e025c0d30754d9e419cdbe1ff7115f729b69276"
+    }
+  },
+  {
+    "key": "annexd.display.text-box",
+    "parent": "D6",
+    "order": 10,
+    "text": "A card whose printed text box is empty, but whose type line carries attributes, shows those attributes and their reminders in its text box instead of \"no rules text\". A card with no text and no attributes still says it has no rules text.",
+    "examples": [
+      {
+        "text": "Example: Whispering Mantid has no ability text and {Sneaky} on its type line. Its text box shows {Sneaky} and its reminder.",
+        "test": "262-type-line-attributes.test.ts::R282: a card whose only rules content is a type-line attribute stops saying no rules text"
+      },
+      {
+        "text": "Example: Tidal Menace has no text and no attributes, and still says it has no rules text.",
+        "test": "262-type-line-attributes.test.ts::R282: a card with no attribute and no text still says nothing, and the guard does not reach it"
+      }
+    ],
+    "see": [
+      "204"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R282",
+          "quote": "A card whose printed text box is empty prints, as its text box, the markers its"
+        },
+        {
+          "ref": "R282",
+          "quote": "A genuine vanilla still says nothing. Tidal Menace has no text and no"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "262-type-line-attributes.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R282": "75937cf1adfaa54c08a624eb297a4b93fe7c606be13c115240236e53fecaef1d"
+    }
+  },
+  {
+    "key": "annexd.display.text-box.modal",
+    "parent": "annexd.display.text-box",
+    "order": 1,
+    "text": "A printed bracket that offers two modes is drawn as two boxes, one around each mode, with the \"or\" outside them. On the stack, the mode that was not chosen is no longer shown.",
+    "examples": [
+      {
+        "text": "Example: Void Memory's \"[unit or spell]\" is drawn as a unit box and a spell box with \"or\" between them.",
+        "test": "122-cardtext-markup.test.ts::R284: a MODAL bracket draws two boxes with the \"or\" outside them"
+      },
+      {
+        "text": "Example: A cost bracket is still one box.",
+        "test": "122-cardtext-markup.test.ts::R284: a COST bracket still draws exactly one box"
+      }
+    ],
+    "see": [
+      "111"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R284",
+          "quote": "> *\"the OR should be outside the box and it should be **two** boxes, one around"
+        },
+        {
+          "ref": "R284",
+          "quote": "> each mode. And then, when it's put onto the stack, the non chosen mode"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "122-cardtext-markup.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R284": "df3133daddea821f11261091b347598f8bca431d9ca1bbbceede4a387fc15fb7"
+    }
+  },
+  {
+    "key": "annexd.display.text-box.spent",
+    "parent": "annexd.display.text-box",
+    "order": 2,
+    "text": "When a once-per-turn ability has been used, its note wears the marker printed on that ability: [Switch1] or [once]. A card that spells the limit out in words, with no marker, gets [Once].",
+    "examples": [
+      {
+        "text": "Example: A spent bounded graft ability shows [Switch1], as its card prints.",
+        "test": "228-spent-marker.test.ts::R249: a spent bounded GRAFT ability wears the [Switch1] its own card prints"
+      },
+      {
+        "text": "Example: A spent [once] ability shows [Once].",
+        "test": "228-spent-marker.test.ts::R249: a spent [once] ability wears [Once] — the same code, the other card"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R249",
+          "quote": "**A spent once-per-turn note wears the marker printed on the clause that budget"
+        },
+        {
+          "ref": "R249",
+          "quote": "**The fallback is `[Once]`, and it is R135's answer kept exactly where its"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "228-spent-marker.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R249": "c9c20fd77b0a6ad92d51578a3d7c023fb2969f671872f556e543c55d03173799"
+    }
+  },
+  {
+    "key": "annexd.display.text-box.unstable",
+    "parent": "annexd.display.text-box",
+    "order": 3,
+    "text": "A card that is {Unstable}, whether printed or acquired, shows {Unstable} on its attribute line, with how it became Unstable.",
+    "examples": [
+      {
+        "text": "Example: A modded unit shows {Unstable} on its attribute line, marked as coming from a mod.",
+        "test": "251-fizzle-label-and-mod-strips.test.ts::R271 §5b the acquired kind says WHICH way in, on the same line"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R271",
+          "quote": "### (d) #143 — {Unstable} is an attribute line, not a footnote"
+        },
+        {
+          "ref": "R271",
+          "quote": "line, with `AttrOrigin` carrying the reason `unstableWhy` used to spell out in"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "251-fizzle-label-and-mod-strips.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R271": "66e57ffcb3549eaabf58b842f7ae07cace8e017d935fe862da379896c5489770"
+    }
+  },
+  {
+    "key": "annexd.display.text-box.prophecy",
+    "parent": "annexd.display.text-box",
+    "order": 4,
+    "text": "A card with a prophecy banner shows the banner in its text box, as printed, and carries the Prophecy reminder.",
+    "examples": [
+      {
+        "text": "Example: The Foretold, whose whole printed text box is its banner, shows the banner instead of \"no rules text\".",
+        "test": "259-card-text-surface.test.ts::CT-165: the printed prophecy banner is IN the box, on every card that prints one"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R279 (its §1, §3 and §4)",
+          "quote": "1. `prophecyBanner()` reconstructs the printed line — `[0] Prophecy — One Turn"
+        },
+        {
+          "ref": "R279 (its §1, §3 and §4)",
+          "quote": "2. `Prophecy` joins the box's ATTRIBUTE row, on exactly R271's argument for"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "259-card-text-surface.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R279": "f3e7f1067f0c60b2e9ea64529c504e4af6a7eccc2662ce3e3112f1ff43ff919f"
+    }
+  },
+  {
+    "key": "annexd.display.text-box.transform",
+    "parent": "annexd.display.text-box",
+    "order": 5,
+    "text": "A card that can transform shows, in its details, what it transforms into, before the transform's cost is paid. A card that has already transformed shows no such row.",
+    "examples": [
+      {
+        "text": "Example: Scholar of the Void's details say it transforms into Beyond, Codex Incarnate, before its hand-discard cost is paid.",
+        "test": "50-ui-inspect.test.ts::the inspector says what Scholar of the Void transforms into, before the hand is discarded"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R101 (its inspector row)",
+          "quote": "Re-read the report: the complaint is that you cannot see what you would become *before*"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R101",
+          "relation": "its rot clause corrected by R102; its token transform reversed by R157 — neither touches the inspector row"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "50-ui-inspect.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R101": "b937ce970d76adefa8a8d4e7d281565beddb39e455ba1f6f91fddcbe49c6d2ee"
+    }
+  },
+  {
+    "key": "annexd.display.reminders",
+    "parent": "D6",
+    "order": 11,
+    "text": "The reminder shown for a keyword is the game's own words wherever the game has them, in this order of preference: a reminder printed on a card in the pool; the Manual's sentence under a heading that names the term; a dated quote of a designer-posted card; and only then this client's own sentence.",
+    "examples": [
+      {
+        "text": "Example: {Piercing} reads \"Excess damage from piercing sources is dealt to the recipient's controller.\" — the sentence Protective Adaptations prints.",
+        "test": "177-glossary-conformance.test.ts::R248: a row the pool prints a reminder for SHOWS that reminder, verbatim"
+      },
+      {
+        "text": "Example: The card-library sentence for {Rot} is used only because neither a card nor the Manual states one.",
+        "test": "245-printed-reminder-reach.test.ts::R267: the card library is consulted LAST, never over the pool or the manual"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R248",
+          "quote": "1. **What a player is shown is the game's own printed reminder, verbatim,"
+        },
+        {
+          "ref": "R252 (its order of channels)",
+          "quote": "**PRINTED BEATS MANUAL BEATS AUTHORED.** A card in the player's hand is the most"
+        },
+        {
+          "ref": "R267",
+          "quote": "**PRINTED (pool) BEATS MANUAL BEATS CARD LIBRARY BEATS AUTHORED**, extending"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R252",
+          "relation": "its §1 Ambush row and its §3/§4 claim that Glimpse and Unstable have no game statement corrected by R267"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "245-printed-reminder-reach.test.ts",
+        "231-manual-text.test.ts",
+        "177-glossary-conformance.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R248": "8ae131f2708881ef34e2033d7372888e38a4e7899bbb54ccfc74dcea1517f9f2",
+      "R252": "bcc4dd67d3a437165c079f36dddac552080438af234eb29da5b47b6f3bd52259",
+      "R267": "0085a279847890923408281560bdfa48454d4917464c1315bfb6fcb1b8909e2f"
+    }
+  },
+  {
+    "key": "annexd.display.reminders.no-numbers",
+    "parent": "annexd.display.reminders",
+    "order": 1,
+    "text": "No reminder, label or rules text shown to a player cites this client's ruling numbers.",
+    "examples": [
+      {
+        "text": "Example: Rendering every card in the pool shows no ruling number anywhere.",
+        "test": "227-reminder-text.test.ts::R248: rendering every card in the pool leaks no R-number"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R248",
+          "quote": "4. **`ruling` is machinery and never renders.** An R-number is meaningful only"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "227-reminder-text.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R248": "8ae131f2708881ef34e2033d7372888e38a4e7899bbb54ccfc74dcea1517f9f2"
+    }
+  },
+  {
+    "key": "annexd.display.reminders.fuller-rule",
+    "parent": "annexd.display.reminders",
+    "order": 2,
+    "text": "Where the game's reminder is shorter than the rule this client enforces, the client's fuller statement is kept and shown under the game's reminder in the card browser. Shortening what a player reads never deletes a rule.",
+    "examples": [
+      {
+        "text": "Example: {Piercing} shows the printed sentence, and the card browser also keeps the client's fuller rule beneath it.",
+        "test": "227-reminder-text.test.ts::R248: Piercing shows the sentence the card prints and keeps the one it does not"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R248",
+          "quote": "reminder in the card browser. Nothing may shorten a row by removing content:"
+        },
+        {
+          "ref": "R252 (its order of channels)",
+          "quote": "**2. Nothing is shortened. The authored sentence MOVES, exactly as R248 moved"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "227-reminder-text.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R248": "8ae131f2708881ef34e2033d7372888e38a4e7899bbb54ccfc74dcea1517f9f2",
+      "R252": "bcc4dd67d3a437165c079f36dddac552080438af234eb29da5b47b6f3bd52259"
+    }
+  },
+  {
+    "key": "annexd.display.reminders.browser",
+    "parent": "annexd.display.reminders",
+    "order": 3,
+    "text": "The card browser explains every keyword a card names, on its type line or in its text box, and never explains less about a card than the in-game inspector does.",
+    "examples": [
+      {
+        "text": "Example: Brough grants {Balanced} from its text box. The browser explains {Balanced} on Brough.",
+        "test": "236-browser-glossary-reach.test.ts::CT-129: an attribute a card grants from its text box gets a reminder row"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R257 (its union rule)",
+          "quote": "**A pinned card in the browser explains every glossary term the card NAMES,"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R257",
+          "relation": "its \"No skip\" bullet amended by R282 (a row gives way to a term the text box already states)"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "236-browser-glossary-reach.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R257": "b24f09601448eb97cdca9cc90f46982f24e2dc12f83a75c99f07ea9dfa556ffe"
+    }
+  },
+  {
+    "key": "annexd.display.stack-states",
+    "parent": "D6",
+    "order": 12,
+    "text": "Each item on the stack strip is shown in exactly one state: waiting, resolving, answered (negated), fizzled, or resolved. An item that fizzles is shown as fizzled, never as resolved.",
+    "examples": [
+      {
+        "text": "Example: A spell resolves with no legal target. The strip labels it fizzled.",
+        "test": "251-fizzle-label-and-mod-strips.test.ts::R271 §1b THE REPORT: the strip says the spell fizzled, not that it resolved"
+      }
+    ],
+    "see": [
+      "704"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R271",
+          "quote": "a fizzle is not a resolution, and a modded card is one picture"
+        },
+        {
+          "ref": "R271",
+          "quote": "— `resolving` (R78), `answered` (R68), `fizzled`, `resolved`, `waiting` — and"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "251-fizzle-label-and-mod-strips.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R271": "66e57ffcb3549eaabf58b842f7ae07cace8e017d935fe862da379896c5489770"
+    }
+  },
+  {
+    "key": "annexd.display.stack-states.mods",
+    "parent": "annexd.display.stack-states",
+    "order": 1,
+    "text": "A card on the stack carrying mods is drawn the same way as a unit carrying mods: its mods show beneath it.",
+    "examples": [
+      {
+        "text": "Example: A {Modular} spell with a mod is drawn on the stack with the mod peeking out beneath it, as it would be on a unit.",
+        "test": "251-fizzle-label-and-mod-strips.test.ts::R271 §4a a modded stack item composes the same picture as a modded unit"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R271",
+          "quote": "composed a modded UNIT as a physical stack of cards and a modded STACK ITEM not"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "251-fizzle-label-and-mod-strips.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R271": "66e57ffcb3549eaabf58b842f7ae07cace8e017d935fe862da379896c5489770"
+    }
+  },
+  {
+    "key": "annexd.display.declarations",
+    "parent": "D6",
+    "order": 13,
+    "text": "While the other player is building an attack or a block, the live view of it is drawn in the same orientation as the declared one. It differs only in being marked as not yet committed.",
+    "examples": [
+      {
+        "text": "Example: When the opponent confirms their attack, no unit changes side or column on the watching player's screen.",
+        "test": "253-combat-orientation.test.ts::the live attack and the declared attack put the same units in the same halves"
+      }
+    ],
+    "see": [
+      "604",
+      "606"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R273",
+          "quote": "**A live view of a declaration is the declaration, minus commitment.** It may"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "253-combat-orientation.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R273": "acd220ef6974f496df091205c81e96bfa6c56b81d3f0bcfe91bbc7ad41bfd0b5"
+    }
+  },
+  {
+    "key": "annexd.display.hand",
+    "parent": "D6",
+    "order": 14,
+    "text": "A card in hand is marked by what can be done with it now. A card that can be cast is drawn plainly; a card that can only be used another way, such as grafted, augmented or recycled, is drawn differently and says how.",
+    "examples": [
+      {
+        "text": "Example: During deployment a {Battle} spell can only be grafted. It is not drawn like a castable deployment card.",
+        "test": "155-hand-affordances.test.ts::R183 §2: a {Battle} spell in deployment is NOT drawn like a castable deployment card"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R183",
+          "quote": "**Casting is the unmarked case.** A plainly castable card in hand keeps the exact"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "155-hand-affordances.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R183": "276efc2123bde7a55a5ecd721114f972821aca65eff7bf61023dbefa1d8bbef6"
+    }
+  },
+  {
+    "key": "annexd.display.hand.cached",
+    "parent": "annexd.display.hand",
+    "order": 1,
+    "text": "A cached card that can be played right now is also shown at the right of the hand. It stays in the cache as well; clicking either copy plays the same card.",
+    "examples": [
+      {
+        "text": "Example: A card glimpsed this turn is drawn beside the hand and in the cache row.",
+        "test": "155-hand-affordances.test.ts::R183 §4: a playable cached card is drawn at the right of the hand AND left in the cache row"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R183",
+          "quote": "**Owner, report #103 (room GYSR):** cached cards that CAN be played should appear"
+        },
+        {
+          "ref": "R183",
+          "quote": "⚠ **Explicitly ADDITIVE:** *\"They should also be in the cache area as they are"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "155-hand-affordances.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R183": "276efc2123bde7a55a5ecd721114f972821aca65eff7bf61023dbefa1d8bbef6"
+    }
+  },
+  {
+    "key": "annexd.display.hand.resource-menu",
+    "parent": "annexd.display.hand",
+    "order": 2,
+    "text": "In constructed, the menu for recycling a card for a resource lists the elements in the player's own deck first, then Prismite. Every other element of the game, and the Shard, are behind an expander. The menu changes nothing about what is legal: a resource of any element of the game may still be made.",
+    "examples": [
+      {
+        "text": "Example: A mono-Fire constructed deck still has all seven elements legal for recycling; the menu just lists Fire first.",
+        "test": "34-constructed.test.ts::deckElements: it is a PRESENTATION default — all seven stay legal"
+      }
+    ],
+    "see": [
+      "105.9a",
+      "106.6a"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R99",
+          "quote": "faithful to the game.\"* The client should DEFAULT the menu to `deckElements[mySeat]` and keep"
+        },
+        {
+          "ref": "R99",
+          "quote": "the other elements reachable — a \"show all seven\" affordance, not a hard filter."
+        },
+        {
+          "ref": "R299",
+          "quote": "The hand menu lists `Recycle → Prismite` below the elements"
+        },
+        {
+          "ref": "R299",
+          "quote": "**only behind the expander**. The owner's layout (2026-09-19): the main menu is *\"all"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "34-constructed.test.ts",
+        "308-recycle-for-prismite.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R299": "46fc7e836df1d7e04bba74789f7fcde1ccbc21d3a515dc0c74abc3b6f211228c",
+      "R99": "cfd4037ea46d2c5aea09ebf73bc20639fb3b512bd369be713ff28799d231b516"
+    }
+  },
+  {
+    "key": "annexd.display.menus",
+    "parent": "D6",
+    "order": 15,
+    "text": "Right-clicking a card the player can read shows only things about that card. The erased piles, concede and the game log are on the menu of the bare table. Right-clicking a card back opens the bare-table menu.",
+    "examples": [
+      {
+        "text": "Example: Right-clicking a unit offers its details and the judge, not concede.",
+        "test": "216-menu-scoping.test.ts::§1 right-clicking a CARD shows card things, and nothing about the field"
+      },
+      {
+        "text": "Example: Right-clicking a card in the opponent's hand opens the table menu.",
+        "test": "216-menu-scoping.test.ts::§3 a card BACK is not a dead click: an unreadable card gets the table menu"
+      }
+    ],
+    "see": [
+      "104.4"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R241",
+          "quote": "> ONLY when right clicking the field. Righclicking a card should only show"
+        },
+        {
+          "ref": "R241",
+          "quote": "**An unreadable card is not a card, for menu purposes.** A back offers no card"
+        },
+        {
+          "ref": "R253",
+          "quote": "Granted as written. The log panel is gone from the side rail; the bare-table"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R65",
+          "relation": "narrowed by R241: view-erased and concede had been on every card menu"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "216-menu-scoping.test.ts",
+        "232-log-modal.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R241": "5c1f39f2fff4d9d515f369487b6ccf419e36b237819054e79d891871a45d60af",
+      "R253": "544952dd810b685783fa3f05a7595f5cd23bda5f5f8fa681f40b9240bc297c32"
+    }
+  },
+  {
+    "key": "annexd.display.menus.log",
+    "parent": "annexd.display.menus",
+    "order": 1,
+    "text": "The game log opens from the bare-table menu and shows the whole log.",
+    "examples": [
+      {
+        "text": "Example: A log longer than 80 lines is shown in full.",
+        "test": "252-viewport-and-log.test.ts::R272 §1a a log longer than the old 80-line window is shown WHOLE"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R253",
+          "quote": "Granted as written. The log panel is gone from the side rail; the bare-table"
+        },
+        {
+          "ref": "R272",
+          "quote": "**R272c — the game log modal shows the whole log.** The 80-line window in"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "232-log-modal.test.ts",
+        "252-viewport-and-log.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R253 carries a STALE warning in the register (its CT-55 cost was answered by R266); the menu placement itself stands.",
+    "sourceHashes": {
+      "R253": "544952dd810b685783fa3f05a7595f5cd23bda5f5f8fa681f40b9240bc297c32",
+      "R272": "a6e4899b6a66b29349e57a954f6ff4abdee2f3a730d0173cc36105aa43730839"
+    }
+  },
+  {
+    "key": "annexd.confirm.never-refuse",
+    "parent": "D7",
+    "order": 1,
+    "text": "A warning or a confirmation never makes a legal play illegal. The option stays offered, and going ahead does exactly what the play would have done without the warning.",
+    "examples": [
+      {
+        "text": "Example: Fight aimed at two of the player's own units is still offered and, if confirmed, resolves exactly as it would have.",
+        "test": "278-ally-misclick.test.ts::R288 §4 the question changes no legality: same candidates, same outcome"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R74",
+          "quote": "A variable cost may WARN that X = 0 does nothing; it may not forbid it"
+        },
+        {
+          "ref": "R288",
+          "quote": "**IT IS A QUESTION, NEVER A FILTER.** The owner says it twice — *\"we shouldn't"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "278-ally-misclick.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R288 is not in the U24 pack (classified to U23); read from client/docs/digital-rules.md because D7 is this unit's section.",
+    "sourceHashes": {
+      "R288": "dbf6942a32dbedcabb8808a3b45534465217b2bc16e168bbdbfcda93beef3940",
+      "R74": "457f2e9947acec05101d9c675b9e1d74a601c73f8fdd63f8fcb3999ebba39596"
+    }
+  },
+  {
+    "key": "annexd.confirm.never-refuse.x-zero",
+    "parent": "annexd.confirm.never-refuse",
+    "order": 1,
+    "text": "When choosing X = 0 makes an effect certain to do nothing, the option to stop at X = 0 carries a warning saying so. It stays legal (see 107.2b).",
+    "examples": [
+      {
+        "text": "Example: Necromantic Rebuke's option to stop at X = 0 is offered with a warning that it negates nothing.",
+        "test": "42-dark-b.test.ts::Necromantic Rebuke: stopping at X = 0 is offered WITH a warning, and stays legal (R74)"
+      }
+    ],
+    "see": [
+      "107.2b"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R74",
+          "quote": "**The ruling is a warning, not a prohibition.** X = 0 stays legal and the option"
+        },
+        {
+          "ref": "R74",
+          "quote": "Four cards share the shape and all four now declare it: **Necromantic Rebuke**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "42-dark-b.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R74": "457f2e9947acec05101d9c675b9e1d74a601c73f8fdd63f8fcb3999ebba39596"
+    }
+  },
+  {
+    "key": "annexd.confirm.never-refuse.ally",
+    "parent": "annexd.confirm.never-refuse",
+    "order": 2,
+    "text": "When a spell has one target that must be an ally and another that may be any unit, and the player picks one of their own units for the second, the client asks whether they meant to. Yes sends the pick. No sends nothing and leaves the same pick open.",
+    "examples": [
+      {
+        "text": "Example: Fight's first target is the player's ally; the player then picks another of their own units. The client asks whether they meant to target an ally.",
+        "test": "278-ally-misclick.test.ts::R288 §1 Fight aimed at a second unit of your own asks whether you meant it"
+      },
+      {
+        "text": "Example: Answering no leaves the second pick open.",
+        "test": "278-ally-misclick.test.ts::R288 §5 \"no\" sends nothing and leaves the same pick open"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R288",
+          "quote": "> \"Anything that says target ally AND target unit on the same card … if a card"
+        },
+        {
+          "ref": "R288",
+          "quote": "**WHAT \"NO\" DOES.** Nothing has been sent, so there is nothing to undo: the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "278-ally-misclick.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R288 read from client/docs/digital-rules.md (outside the pack).",
+    "sourceHashes": {
+      "R288": "dbf6942a32dbedcabb8808a3b45534465217b2bc16e168bbdbfcda93beef3940"
+    }
+  },
+  {
+    "key": "annexd.confirm.never-refuse.regroup",
+    "parent": "annexd.confirm.never-refuse",
+    "order": 3,
+    "text": "A pass that would end the battle phase, and with it erase the player's unused spell tokens at regroup, first asks the player to confirm. It asks on that pass and on no other window of the battle.",
+    "examples": [
+      {
+        "text": "Example: A player holding unused spell tokens passes in the last window of the battle. They are asked to confirm before Regroup erases the tokens.",
+        "test": "165-token-loss-warning.test.ts::[66] control: the Regroup confirm still fires on the pass that reaches Regroup"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R266",
+          "quote": "You're about to move to Regroup which will remove your Spell Tokens. Are you sure?"
+        },
+        {
+          "ref": "R266",
+          "quote": "one of the four armed-confirm bars, it carries Go back / Pass anyway, and it fires on the pass that would reach Regroup and on no other window of the same battle."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "165-token-loss-warning.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "The confirm is R194's (classified to U23); R266 states its wording and scope. The second quote is long but one line.",
+    "sourceHashes": {
+      "R266": "9d3d083537a4711ccfa46a7a91e286f3e55eb2c7ab658c818c3883471c6dace3"
+    }
+  },
+  {
+    "key": "annexd.confirm.dials",
+    "parent": "D7",
+    "order": 2,
+    "text": "A dial, a stepper or an \"All\" button only sets an amount. It never sends an answer; only the confirm button does.",
+    "examples": [
+      {
+        "text": "Example: Pressing \"All\" on a counter-removal cost sets the count to the most it can be, and waits for the player to confirm.",
+        "test": "124-counter-stepper.test.ts::\"All\" sets the count to the max and does NOT submit"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R139",
+          "quote": "**\"All\" SETS the count and does NOT submit**, and that is the whole point: on a"
+        },
+        {
+          "ref": "R197 (its §1)",
+          "quote": "the engine. As with both other steppers, moving the dial never submits; only"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "124-counter-stepper.test.ts",
+        "126-assign-split.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R139": "0f09cd51d3596c47bc673ad9c5a8415f3126d5c6d144cbb874a81d15341a0b29",
+      "R197": "d627780adff03b34e1b7b04e4acc2a54accb309bad61cfffc5d828d5aca9d32b"
+    }
+  },
+  {
+    "key": "annexd.confirm.dials.number",
+    "parent": "annexd.confirm.dials",
+    "order": 1,
+    "text": "A question whose answer is a number, such as predicting a life total, offers a typed box as well as a dial, so any number in range can be entered. The value itself is sent, not a choice from a list.",
+    "examples": [
+      {
+        "text": "Example: Prediction Prophet's prediction can be dialled or typed past the old cap of life + 5.",
+        "test": "168-three-card-divergences.test.ts::R197 §1c Prediction Prophet: THE CLIENT CAN EXPRESS IT — the numeric bar dials past the old cap and puts the VALUE on the wire, not an index"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R197 (its §1)",
+          "quote": "`ui/main.ts` a real bar: a typed box **first** and a −10/−1/+1/+10 dial"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R90",
+          "relation": "its menu cap of life + 5 replaced by R197's uncapped number question"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "168-three-card-divergences.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R197": "d627780adff03b34e1b7b04e4acc2a54accb309bad61cfffc5d828d5aca9d32b"
+    }
+  },
+  {
+    "key": "annexd.confirm.dials.ramp",
+    "parent": "annexd.confirm.dials",
+    "order": 2,
+    "text": "A variable cost paid one point at a time, such as paying X life, offers the same typed box and dial. Nothing is paid until the player confirms. The dial cannot go below what has already been paid.",
+    "examples": [
+      {
+        "text": "Example: Paying X life for Flesh Tithe, the player dials to 5 and back to 3; confirming pays 3.",
+        "test": "260-cost-ramp-and-bin-targets.test.ts::R280 §4 one confirm walks the ramp to the dialled X and then stops"
+      },
+      {
+        "text": "Example: With 1 life already paid, the dial does not go below 1.",
+        "test": "260-cost-ramp-and-bin-targets.test.ts::R280 §2b the dial goes DOWN as well as up, and never below what is already paid"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R280",
+          "quote": "Down is free because **nothing is spent until Confirm** — that is the \"and had"
+        },
+        {
+          "ref": "R280",
+          "quote": "paid the dial cannot show 0, because dialling there would promise a refund the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "260-cost-ramp-and-bin-targets.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R280": "a6e58fb86327704be34d7c6ddc940789ae69815e6b6d7649aeb3a89e01b6ead1"
+    }
+  },
+  {
+    "key": "annexd.confirm.dials.commit",
+    "parent": "annexd.confirm.dials",
+    "order": 3,
+    "text": "The button that ends a variable cost (\"That's enough\") is drawn as a full button that commits, distinct from the buttons that decline.",
+    "examples": [
+      {
+        "text": "Example: \"That's enough — X = 3\" is a filled button; \"decline\" stays a quiet one.",
+        "test": "260-cost-ramp-and-bin-targets.test.ts::R280 §3 that is enough is a full button, and the plain declines stay quiet"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R280",
+          "quote": "**Ruled: `doneCost` is not a decline.** It is the affirmative end of a ramp —"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "260-cost-ramp-and-bin-targets.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R280": "a6e58fb86327704be34d7c6ddc940789ae69815e6b6d7649aeb3a89e01b6ead1"
+    }
+  },
+  {
+    "key": "annexd.confirm.dials.counters",
+    "parent": "annexd.confirm.dials",
+    "order": 4,
+    "text": "A cost that removes counters from allies asks the player to click a unit. One click may take several counters from that unit, up to the most that one unit can give.",
+    "examples": [
+      {
+        "text": "Example: Four counters are spread over two allies, two each. One pick can take at most two.",
+        "test": "124-counter-stepper.test.ts::R139: the pick max is the biggest SINGLE stack, not the whole ally pool"
+      }
+    ],
+    "see": [
+      "111"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R139",
+          "quote": "- the prompt says it — \"— click a unit to take counters off it\" — in the"
+        },
+        {
+          "ref": "R139",
+          "quote": "The obvious answer — \"the max is `counterPool`\" — **is wrong for `from:"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "124-counter-stepper.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R139": "0f09cd51d3596c47bc673ad9c5a8415f3126d5c6d144cbb874a81d15341a0b29"
+    }
+  },
+  {
+    "key": "annexd.confirm.dials.damage-split",
+    "parent": "annexd.confirm.dials",
+    "order": 5,
+    "text": "When the dealing player splits combat damage, they are asked one victim at a time, with what is left to assign shown. The client never refuses or forces a split the game would accept.",
+    "examples": [
+      {
+        "text": "Example: A strike of 4 into a column of two: the player chooses how much the front unit takes, and the back unit gets the rest.",
+        "test": "126-assign-split.test.ts::R149 (1): the total is forced — under and over allocations are refused, with the remainder said out loud"
+      }
+    ],
+    "see": [
+      "608"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R149",
+          "quote": "1. **The sum is already forced by construction, and never by the client.** An"
+        },
+        {
+          "ref": "R149",
+          "quote": "time**, front-to-back, and each question is a single scalar — *\"how much of"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "126-assign-split.test.ts",
+        "435-cr-digital-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R149": "0520699effdbb16fa2e10c50e733b156bd77b0c58c230c76a688dcf08ed8ba91"
+    }
+  },
+  {
+    "key": "annexd.confirm.say-so",
+    "parent": "D7",
+    "order": 3,
+    "text": "When an effect does nothing, the game says so and says why. A printed clause that promises a per-seat outcome and then resolves over an empty collection of seats or of picks is announced for that clause, even when another clause of the same card is speaking. Saying so never changes what the effect does.",
+    "examples": [
+      {
+        "text": "Example: Bloated Manablub's \"Each opponent loses 3 life\" resolves in a region with no opponent. The game says so, and no life is lost.",
+        "test": "158-silent-region-branches.test.ts::Bloated Manablub — \"Each opponent loses 3 life\" in a region holding no opponent says so and takes no life"
+      },
+      {
+        "text": "Example: Cull resolves where no player has a unit. The game says so and nothing dies.",
+        "test": "179-empty-collection-branches.test.ts::Cull — \"each player sacrifices a unit\" with nobody holding a unit here says so and kills nothing"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R187",
+          "quote": "does nothing; *\"nothing happened\" is a legitimate outcome, not SAYING so never"
+        },
+        {
+          "ref": "R209",
+          "quote": "Do not make the loop run. The region genuinely holds nobody, the seats"
+        },
+        {
+          "ref": "R209",
+          "quote": "> **A printed clause that promises a per-seat outcome and then resolves over an"
+        },
+        {
+          "ref": "R209",
+          "quote": "> empty collection — of seats, or of picks — must emit a line saying so, FOR"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "158-silent-region-branches.test.ts",
+        "179-empty-collection-branches.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Revision round 2: narrowed from \"an effect, or one clause of it\" to R187 (the whole effect) and R209's stated class. Whether any other clause that does nothing must be announced is open; see D-U24-10.",
+    "sourceHashes": {
+      "R187": "6274df7b1d6ade0d7d34c24803a91a6d2a71ce82e7030aef03d35499247453ed",
+      "R209": "3222c165ef02f8edd512709d5eb111f00f6979febd55e281cd8f71d1f1d1fe05"
+    }
+  },
+  {
+    "key": "annexd.confirm.say-so.no-target",
+    "parent": "annexd.confirm.say-so",
+    "order": 1,
+    "text": "A spell that resolves with no legal target fizzles, and the log says \"<card>: it has no legal target — nothing happens.\" (see 704).",
+    "examples": [
+      {
+        "text": "Example: Luminous Arc reaches resolution with no target. It fizzles and the log says so.",
+        "test": "196-empty-target-fizzle.test.ts::R227 spell:Luminous Arc: no target → fizzles and logs (CT-89 #1)"
+      }
+    ],
+    "see": [
+      "704"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R223",
+          "quote": "> **\"Fizzle, and say so in the log.\"**"
+        },
+        {
+          "ref": "R227",
+          "quote": "  g.ev('info', `${ctx.sourceName}: it has no legal target — nothing happens.`);"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "196-empty-target-fizzle.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R223": "7f6daf7c0e5fefd7a4da465bf40c52d823738ea62a8da29ff5ac9b78d8e2323a",
+      "R227": "6ee05eef04b1367e192f3d56c6967fb54ebb28ea28d3907f7753abaa194aec9e"
+    }
+  },
+  {
+    "key": "annexd.confirm.say-so.no-opponent",
+    "parent": "annexd.confirm.say-so",
+    "order": 2,
+    "text": "An \"each opponent\" effect in a region where no opponent is present says that no opponent is present, and does nothing (see 102.2a).",
+    "examples": [
+      {
+        "text": "Example: Bloated Manablub's \"Each opponent loses 3 life\" during its controller's own deployment says so and takes no life.",
+        "test": "158-silent-region-branches.test.ts::Bloated Manablub — \"Each opponent loses 3 life\" in a region holding no opponent says so and takes no life"
+      }
+    ],
+    "see": [
+      "102.2a"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R187",
+          "quote": "does nothing; *\"nothing happened\" is a legitimate outcome, not SAYING so never"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "158-silent-region-branches.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R187": "6274df7b1d6ade0d7d34c24803a91a6d2a71ce82e7030aef03d35499247453ed"
+    }
+  },
+  {
+    "key": "annexd.confirm.say-so.per-clause",
+    "parent": "annexd.confirm.say-so",
+    "order": 3,
+    "text": "A clause that promises something for each player, or each of something, and finds none says so for that clause, even when another clause of the same card has done something.",
+    "examples": [
+      {
+        "text": "Example: Recall takes its life when nobody here has a unit to recall, and says the recall did not happen.",
+        "test": "179-empty-collection-branches.test.ts::Recall — the life loss happens, the recall does not, and the card now says which"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R209",
+          "quote": "> THAT CLAUSE, even when another clause of the same card is speaking.**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "179-empty-collection-branches.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R209": "3222c165ef02f8edd512709d5eb111f00f6979febd55e281cd8f71d1f1d1fe05"
+    }
+  },
+  {
+    "key": "annexd.confirm.say-so.no-damage",
+    "parent": "annexd.confirm.say-so",
+    "order": 4,
+    "text": "An effect that would deal damage to each of a group, and finds nobody in the group, says there was nothing to damage.",
+    "examples": [
+      {
+        "text": "Example: A \"deal 2 damage to each enemy unit\" effect with no enemy unit on the board announces that there was nothing to damage.",
+        "test": "93-engine-defects.test.ts::a damage batch handed an empty hit list announces that there was nothing to damage"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R109",
+          "quote": "`dealEffectDamageAll` handed an empty hit list used to return in silence. Every *\"I deal N"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "93-engine-defects.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "The test file 93-engine-defects is not cited by R109 itself; found by title search.",
+    "sourceHashes": {
+      "R109": "fbe52ae2fdff138031c7991bd78b168bd40e1f7ebf60fcb143382d269305c029"
+    }
+  },
+  {
+    "key": "annexd.confirm.not-only-log",
+    "parent": "D7",
+    "order": 4,
+    "text": "An announcement the player is expected to act on, or has lost something by, must be shown somewhere other than the game log. The log is the record, not the notice.",
+    "examples": [
+      {
+        "text": "Example: Spell tokens erased after a declined attack used to be announced only in the log; the player who lost them is now shown a notice where the prompts appear.",
+        "test": "244-log-is-not-the-only-surface.test.ts::[R266] the loss is put in front of the player who lost it, in the promptbar area"
+      }
+    ],
+    "see": [
+      "annexd.display.menus.log"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R266",
+          "quote": "An announcement the player is expected to act on, or to have lost something by, must reach a surface other than the log."
+        },
+        {
+          "ref": "R266",
+          "quote": "Nineteen tier-1 announcements remain log-only. That is a ticket list, not a bug list: which of them deserve a second surface is a product call"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "244-log-is-not-the-only-surface.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Revision round 2: stated as the standard R266 sets, not as a description of the client. R266 itself records announcements of a loss that are still log-only; see F-U24-4 and D-U24-9.",
+    "sourceHashes": {
+      "R266": "9d3d083537a4711ccfa46a7a91e286f3e55eb2c7ab658c818c3883471c6dace3"
+    },
+    "engineDiffers": [
+      "F-U24-4"
+    ]
+  },
+  {
+    "key": "annexd.confirm.not-only-log.token-loss",
+    "parent": "annexd.confirm.not-only-log",
+    "order": 1,
+    "text": "When a player's unused spell tokens are erased at regroup without a pass to confirm on, such as after a declined attack, that player is shown a notice in the prompt area. It stays until dismissed or until the next battle. The other player is not shown it.",
+    "examples": [
+      {
+        "text": "Example: The round-2 attacker declines; the defender's unused spell tokens are erased, and the defender sees a notice saying so.",
+        "test": "244-log-is-not-the-only-surface.test.ts::[R266] the loss is put in front of the player who lost it, in the promptbar area"
+      },
+      {
+        "text": "Example: The other player's lost tokens are not shown to this player, and the notice lapses at the next battle.",
+        "test": "244-log-is-not-the-only-surface.test.ts::[R266] a net client is not shown the opponent loss, and the notice goes stale at the next battle"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R266",
+          "quote": "A **notice**, not a warning — the tokens are already gone and there is no choice attached, so nothing about R194's \"announce rather than prevent\" call changes."
+        },
+        {
+          "ref": "R266",
+          "quote": "- **Net clients see only their own loss** — \"in front of the player who lost the tokens\" — while hotseat, being one screen for both, shows whichever seat lost."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "244-log-is-not-the-only-surface.test.ts",
+        "165-token-loss-warning.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Hotseat no longer exists (memory: hotseat removed 2026-09-23), so the hotseat clause is left out.",
+    "sourceHashes": {
+      "R266": "9d3d083537a4711ccfa46a7a91e286f3e55eb2c7ab658c818c3883471c6dace3"
+    }
+  },
+  {
+    "key": "annexd.confirm.not-only-log.toast",
+    "parent": "annexd.confirm.not-only-log",
+    "order": 2,
+    "text": "Any other announcement that a card or a cost the player spent did nothing is shown briefly near the board, under the label \"⚠ this did nothing\", with the game's own sentence beside it. Both players see it, and it is also in the log.",
+    "examples": [
+      {
+        "text": "Example: A spell resolves with nothing to aim at. A toast says so on the screen.",
+        "test": "256-cost-toasts.test.ts::[R276] a spell that resolves with nothing to aim at produces a toast, end to end"
+      },
+      {
+        "text": "Example: An ordinary resolution produces no toast.",
+        "test": "256-cost-toasts.test.ts::[R276] an ordinary resolution produces no toast at all"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R276",
+          "quote": "- **Q5, the wording: CHANGED.** The shared label is **`⚠ this did nothing`**, not"
+        },
+        {
+          "ref": "R276",
+          "quote": "client was allowed to be told, and it is a public log line"
+        },
+        {
+          "ref": "R276",
+          "quote": "- **Q2, card-text announcements: IN.** The five pool sites are toasted, as built."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "256-cost-toasts.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R276": "c52eb303219ef54bb042d1d798898c084e0b674f4b606899259fb4171d0b5098"
+    }
+  },
+  {
+    "key": "annexd.confirm.not-only-log.coalesce",
+    "parent": "annexd.confirm.not-only-log",
+    "order": 3,
+    "text": "Identical announcements from one resolution are shown once with a count. At most four are drawn at a time; the rest are counted and pointed to the log. None is dropped silently.",
+    "examples": [
+      {
+        "text": "Example: Three identical \"this did nothing\" sentences in one batch show as one row marked ×3.",
+        "test": "256-cost-toasts.test.ts::[R276] identical sentences in one batch coalesce into one row with a count"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R276",
+          "quote": "- **Several in one resolution**: identical sentences coalesce into one row with"
+        },
+        {
+          "ref": "R276",
+          "quote": "  a `×N`; distinct ones stack, at most 4 drawn, the rest counted in a"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "256-cost-toasts.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R276": "c52eb303219ef54bb042d1d798898c084e0b674f4b606899259fb4171d0b5098"
+    }
+  },
+  {
+    "key": "annexd.modes.learn-to-play",
+    "parent": "D8",
+    "order": 1,
+    "text": "Learn to Play is one learner against the Tutorial Bot in one continuous game, with lessons shown at the moment each rule first matters.",
+    "examples": [
+      {
+        "text": "Example: In every element, the core lessons open in order early in the game, and the game ends with the end lesson.",
+        "test": "305-lesson-flow.test.ts::§2 §3 in every element the core lessons open in order early, and the game ends with the end lesson"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R297",
+          "quote": "programmatic opponent in one continuous game, with lesson popups timed to the moment"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "305-lesson-flow.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R297": "2dacbdfd040a664c5053289996bb3fa470c89870d0386a9857bfcefd2985f8cd"
+    }
+  },
+  {
+    "key": "annexd.modes.learn-to-play.deal",
+    "parent": "annexd.modes.learn-to-play",
+    "order": 1,
+    "text": "Learn to Play is a constructed game with its own deal. Each player's opening hand and draw per turn are set separately, turn 1 included, and there is no bottom step. Decks may be stacked so that a lesson's card arrives on its turn. The learner starts with no cards in hand: the draw of 2 on turn 1 is the whole starting hand.",
+    "examples": [
+      {
+        "text": "Example: In a lesson game each seat draws its own number on turn 1, and neither puts cards on the bottom.",
+        "test": "303-lesson-deal.test.ts::§1 hands and draws are per seat, turn 1 included, with no bottom step"
+      }
+    ],
+    "see": [
+      "901"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R297",
+          "quote": "- the opening hand and the draw per turn, **per seat**, turn 1 included, with no bottom step;"
+        },
+        {
+          "ref": "R297",
+          "quote": "first.\"* The lesson deal already had the knob — the learner's `openingHand` is now 0, so"
+        },
+        {
+          "ref": "R297",
+          "quote": "turn 1's draw of 2 is the whole starting hand, and the stacked deck is laid out two cards"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "303-lesson-deal.test.ts",
+        "435-cr-digital-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R297": "2dacbdfd040a664c5053289996bb3fa470c89870d0386a9857bfcefd2985f8cd"
+    }
+  },
+  {
+    "key": "annexd.modes.learn-to-play.bot-card",
+    "parent": "annexd.modes.learn-to-play",
+    "order": 2,
+    "text": "The Tutorial Bot's only card is Training Construct: \"Create an X/X unit.\" It is an X-cost deploy spell with X at least 1, no element and no affinity cost. Training Construct exists only in Learn to Play; it is never in any other deck, pack or deal.",
+    "examples": [
+      {
+        "text": "Example: Training Construct is not in any constructed, draft or shared deal.",
+        "test": "303-lesson-deal.test.ts::§5 Training Construct lives only in lesson deals"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R297",
+          "quote": "The bot's only card: *\"Create an X/X unit.\"* — an X-cost deploy spell with `xMin` 1, no"
+        },
+        {
+          "ref": "R297",
+          "quote": "element and no affinity cost, so Shards alone pay for it. It is a synthetic registered"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "303-lesson-deal.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R297": "2dacbdfd040a664c5053289996bb3fa470c89870d0386a9857bfcefd2985f8cd"
+    }
+  },
+  {
+    "key": "annexd.modes.learn-to-play.bot-play",
+    "parent": "annexd.modes.learn-to-play",
+    "order": 3,
+    "text": "The Tutorial Bot gains one Shard each turn, starting on turn 1. It casts Training Construct at the largest X it can pay, attacks with every unit it has, and never blocks. Its hand is hidden from the learner.",
+    "examples": [
+      {
+        "text": "Example: The bot casts Construct at the largest X its Shards allow.",
+        "test": "304-tutorial-bot.test.ts::§2 every Construct is cast at the largest X its mana allows (one Shard a turn)"
+      },
+      {
+        "text": "Example: The bot attacks with every unit and never blocks.",
+        "test": "304-tutorial-bot.test.ts::§3 it attacks with every unit it has and never blocks"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R297",
+          "quote": "turn it makes \\[a\\] Shard resource and then makes the largest unit it can … it never"
+        },
+        {
+          "ref": "R297",
+          "quote": "1, no softening (2026-09-17). So `firstShardTurn` is 1, the tutorial is harder, and Metal"
+        },
+        {
+          "ref": "R297",
+          "quote": "draw-2-a-turn game (no constructed draw-4/bottom-2, no draft step), and the bot's hand"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "304-tutorial-bot.test.ts",
+        "306-solo-backend.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R297": "2dacbdfd040a664c5053289996bb3fa470c89870d0386a9857bfcefd2985f8cd"
+    }
+  },
+  {
+    "key": "annexd.modes.single-card-duel",
+    "parent": "D8",
+    "order": 2,
+    "text": "In a Single Card Duel, each player picks one card before the game, and their deck is 30 copies of that card. This is the one exception to the two-copy limit. Everything else in the game is the same, except the draw (annexd.modes.single-card-duel.draw).",
+    "examples": [
+      {
+        "text": "Example: A deck of 30 copies of one unit is a single-card deck; 29 copies is not. Two such decks make the game a duel.",
+        "test": "435-cr-digital-2.test.ts::cr:annexd.modes.single-card-duel — a deck of 30 copies of one card is a single-card deck, 29 is not, and two such decks make a duel"
+      }
+    ],
+    "see": [
+      "901"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R298",
+          "quote": "single card, before the game, and that is your deck. 30 copies of the exact same card."
+        },
+        {
+          "ref": "R298",
+          "quote": "It is the ONE exception to the Manual's two-copy cap, and it is not a new mode: the room"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "435-cr-digital-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Its guards are server/e2e/test-single-card.ts, which has no indexed titles; no executed example is bound here.",
+    "sourceHashes": {
+      "R298": "728d92d81ee3ba92b174a4c2f945bae9be811db2de2eb53fda020602c47c0e23"
+    }
+  },
+  {
+    "key": "annexd.modes.single-card-duel.draw",
+    "parent": "annexd.modes.single-card-duel",
+    "order": 1,
+    "text": "A duel has no draw phase. Each turn's card step is a flat draw of 2, and the draw-4, bottom-2 step never happens. The opening hand is still 4, so turn 1 starts with six cards.",
+    "examples": [
+      {
+        "text": "Example: In a duel each player starts turn 1 with six cards, is never asked to put cards on the bottom, and draws exactly 2 on turn 2.",
+        "test": "435-cr-digital-2.test.ts::cr:annexd.modes.single-card-duel.draw — a duel has no bottom step, turn 1 starts on six cards, and turn 2 draws a flat 2"
+      }
+    ],
+    "see": [
+      "503"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R298",
+          "quote": "turn's card step is `'shared'`'s flat draw of 2 (and Worldbender replaces it exactly as it"
+        },
+        {
+          "ref": "R298",
+          "quote": "does there — the turn's 2 plus 1), and the draw-4/bottom-2 never runs. The opening hand is"
+        },
+        {
+          "ref": "R298",
+          "quote": "still 4, so turn 1 starts on the same six cards. `createGame` sets `GameState.singleCard`"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "435-cr-digital-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "",
+    "sourceHashes": {
+      "R298": "728d92d81ee3ba92b174a4c2f945bae9be811db2de2eb53fda020602c47c0e23"
+    }
+  },
+  {
+    "key": "annexd.modes.single-card-duel.blind",
+    "parent": "annexd.modes.single-card-duel",
+    "order": 2,
+    "text": "Cards are picked blind. Before the game, each player is told only whether the other has picked, not what.",
+    "examples": [
+      {
+        "text": "Example: Ann picks her card first. Bob is told that Ann has picked, and not which card.",
+        "test": "435-cr-digital-2.test.ts::cr:annexd.modes.single-card-duel.blind — before the game the other player is told only that a card is picked, never which"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R298",
+          "quote": "The owner's call on picking: *\"Blind but NO reveal is all that's needed. The reveal"
+        },
+        {
+          "ref": "R298",
+          "quote": "comes in game.\"* The waiting room tells each seat only whether the opponent's card is in"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "435-cr-digital-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "",
+    "sourceHashes": {
+      "R298": "728d92d81ee3ba92b174a4c2f945bae9be811db2de2eb53fda020602c47c0e23"
+    }
+  },
+  {
+    "key": "annexd.modes.single-card-duel.no-units",
+    "parent": "annexd.modes.single-card-duel",
+    "order": 3,
+    "text": "If neither picked card can make a unit, no game is dealt. It is a draw: both players are told both cards and why, nothing is recorded, and both pick again.",
+    "examples": [
+      {
+        "text": "Example: Both players pick a spell that creates nothing. No game is dealt, each is shown both picks, and both pick again.",
+        "test": "435-cr-digital-2.test.ts::cr:annexd.modes.single-card-duel.no-units — two cards that make no unit deal no game: both are told both cards, nothing is recorded, and both pick again"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R298",
+          "quote": "does not deal: it keeps the pair as `Room.singleDraw`, clears both cards, and leaves the"
+        },
+        {
+          "ref": "R298",
+          "quote": "room waiting. The waiting payload then names both cards to both seats (`drawn: { mine,"
+        },
+        {
+          "ref": "R298",
+          "quote": "new pair includes a unit-maker. Nothing is recorded: no game was played, so there is no"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "435-cr-digital-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "",
+    "sourceHashes": {
+      "R298": "728d92d81ee3ba92b174a4c2f945bae9be811db2de2eb53fda020602c47c0e23"
+    }
+  },
+  {
+    "key": "annexd.modes.single-card-duel.makes-units",
+    "parent": "annexd.modes.single-card-duel",
+    "order": 4,
+    "text": "A card can make a unit if it is a unit or spell unit, or if it is declared to create a unit token. What its printed text says is not read for this.",
+    "examples": [
+      {
+        "text": "Example: A unit card makes units, and so does a spell declared to create a Unit Token. A spell that creates nothing does not.",
+        "test": "435-cr-digital-2.test.ts::cr:annexd.modes.single-card-duel.makes-units — unit cards and declared unit-token creators make units; a plain spell does not"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R298",
+          "quote": "`makesUnits(name)` (apply.ts) is true for a unit or spell-unit card and for any card whose"
+        },
+        {
+          "ref": "R298",
+          "quote": "DECLARED `creates` (R69, `createsOf`) includes a unit token — never read off the printed"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "435-cr-digital-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Names an engine function only because R298 names it.",
+    "sourceHashes": {
+      "R298": "728d92d81ee3ba92b174a4c2f945bae9be811db2de2eb53fda020602c47c0e23"
+    }
+  },
+  {
+    "key": "annexd.modes.single-card-duel.records",
+    "parent": "annexd.modes.single-card-duel",
+    "order": 5,
+    "text": "A duel counts toward no player's record, rating or achievements. It counts toward the card duel ladder instead, which rates cards rather than players.",
+    "examples": [
+      {
+        "text": "Example: A finished duel leaves every player rating where it was.",
+        "test": "435-cr-digital-2.test.ts::cr:annexd.modes.single-card-duel.records — a duel moves no player rating"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R298",
+          "quote": "length. It feeds `server/cardladder.ts` instead, served at `/api/cardladder` and shown as"
+        },
+        {
+          "ref": "R298",
+          "quote": "(BL-43), a duel is left out of every player fold — `foldSeat` (so no profile total,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "435-cr-digital-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "",
+    "sourceHashes": {
+      "R298": "728d92d81ee3ba92b174a4c2f945bae9be811db2de2eb53fda020602c47c0e23"
+    }
+  },
+  {
+    "key": "annexd.modes.single-card-duel.ladder",
+    "parent": "annexd.modes.single-card-duel",
+    "order": 6,
+    "text": "The card duel ladder counts any finished duel, except a mirror (the same card on both sides) and a walkover. An early concession counts at reduced weight. A card is ranked once it has five duels that are not mirrors.",
+    "examples": [
+      {
+        "text": "Example: A mirror duel and a turn-1 walkover put no game on the ladder. A turn-2 concession moves the card rating by 10, half the 20 of a full game.",
+        "test": "435-cr-digital-2.test.ts::cr:annexd.modes.single-card-duel.ladder — mirrors and walkovers do not rate cards, and an early concession counts at half weight"
+      }
+    ],
+    "see": [
+      "annexd.modes.concession"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R298",
+          "quote": "five games, the same total order), keyed by card. The owner chose **any finished game**:"
+        },
+        {
+          "ref": "R298",
+          "quote": "`mirrors` and nothing else), and an R290 **walkover** (conceded on turn 1). An early"
+        },
+        {
+          "ref": "R298",
+          "quote": "concession (turn 2) counts at R290's reduced weight. A card is listed as ranked once it"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "435-cr-digital-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "",
+    "sourceHashes": {
+      "R298": "728d92d81ee3ba92b174a4c2f945bae9be811db2de2eb53fda020602c47c0e23"
+    }
+  },
+  {
+    "key": "annexd.modes.custom-rules",
+    "parent": "D8",
+    "order": 3,
+    "text": "A live draft may be created with custom rules. Custom rules change the deal, never how a card works.",
+    "examples": [
+      {
+        "text": "Example: Custom rules given to a constructed game are ignored.",
+        "test": "296-custom-draft-deal.test.ts::BL-43 §1c a custom deal is ignored outside a live draft"
+      }
+    ],
+    "see": [
+      "902"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R292",
+          "quote": "**Ruling.** A live draft may be created with custom rules. They change the"
+        },
+        {
+          "ref": "R292",
+          "quote": "DEAL, never how a card works:"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "296-custom-draft-deal.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
+    }
+  },
+  {
+    "key": "annexd.modes.custom-rules.knobs",
+    "parent": "annexd.modes.custom-rules",
+    "order": 1,
+    "text": "The custom rules are: pack size (3 to 15; standard 10); the number of elements (2 to 7; standard 3, and two elements default to Fire and Wood); opening hand (1 to 15; standard 6); draws per turn after turn 1 (0 to 5; standard 2); starting life (1 to 99; standard 30); simple cards only; banned cards; and a card filter.",
+    "examples": [
+      {
+        "text": "Example: With packs of 5, every pack is dealt at 5 and the turn-4 refresh deals 5.",
+        "test": "296-custom-draft-deal.test.ts::BL-43 §2a pack size: packs of 5 at the deal, the commit leaves 5, and the turn-4 refresh deals 5"
+      },
+      {
+        "text": "Example: Two elements default to the rulebook pair, Fire and Wood.",
+        "test": "296-custom-draft-deal.test.ts::BL-43 §2c two elements: the rulebook pair by default, a chosen pair when given, 113 cards"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R292",
+          "quote": "- **Pack size** (3–15, standard 10). Every pack is dealt and refreshed at that"
+        },
+        {
+          "ref": "R292",
+          "quote": "- **Elements** (2–7, standard 3). The pool is every deck card whose factions"
+        },
+        {
+          "ref": "R292",
+          "quote": "- **Opening hand** (1–15, standard 6: Manual p.16's 4 plus turn 1's 2), **draws"
+        },
+        {
+          "ref": "R292",
+          "quote": "  per turn** after turn 1 (0–5, standard 2) and **starting life** (1–99,"
+        },
+        {
+          "ref": "R292",
+          "quote": "- **Banned cards** by name, and an **advanced card filter** in the card"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "296-custom-draft-deal.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
+    }
+  },
+  {
+    "key": "annexd.modes.custom-rules.simple",
+    "parent": "annexd.modes.custom-rules",
+    "order": 2,
+    "text": "Simple cards only keeps only cards with the silver complexity symbol in the pool.",
+    "examples": [
+      {
+        "text": "Example: Simple cards only leaves out exactly the cards that are not simple.",
+        "test": "297-custom-rules-resolve.test.ts::BL-43 resolve §3 Simple cards only leaves out exactly the cards that are not simple"
+      }
+    ],
+    "see": [
+      "209"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R292",
+          "quote": "- **Simple cards only**: only cards with the silver complexity symbol (the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "297-custom-rules-resolve.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
+    }
+  },
+  {
+    "key": "annexd.modes.custom-rules.floor",
+    "parent": "annexd.modes.custom-rules",
+    "order": 3,
+    "text": "The pool must hold at least 2 × opening hand + 4 × pack size + 6 × draws per turn cards: 64 for the standard game. Custom rules whose pool is smaller are refused before the game is created.",
+    "examples": [
+      {
+        "text": "Example: The standard game needs a pool of 64 cards; the Beginner preset needs 44.",
+        "test": "296-custom-draft-deal.test.ts::BL-43 §5 minPool: the standard game needs 64, the beginner deal 44"
+      },
+      {
+        "text": "Example: Rules leaving too small a pool are refused with a message saying how to fix them.",
+        "test": "297-custom-rules-resolve.test.ts::BL-43 resolve §8 too small a pool is refused with a message that names the fix"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R292",
+          "quote": "The pack refresh stays every N+1 turns. **A pool must hold at least"
+        },
+        {
+          "ref": "R292",
+          "quote": "2·hand + 4·pack + 6·draw cards** — the opening deal, the draws of turns 2–4,"
+        },
+        {
+          "ref": "R292",
+          "quote": "that size must pass. Rules below the floor are refused before the room exists."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "296-custom-draft-deal.test.ts",
+        "297-custom-rules-resolve.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
+    }
+  },
+  {
+    "key": "annexd.modes.custom-rules.standard",
+    "parent": "annexd.modes.custom-rules",
+    "order": 4,
+    "text": "Custom rules left at the standard values are not a custom game: they deal the same game as no custom rules at all.",
+    "examples": [
+      {
+        "text": "Example: For the same seed, no custom rules and custom rules at the defaults deal identical games.",
+        "test": "296-custom-draft-deal.test.ts::BL-43 §1b no deal and a deal left at the defaults deal the identical game in every mode"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R292",
+          "quote": "custom game: no deal and an untouched deal are the same game, the same shuffle."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "296-custom-draft-deal.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
+    }
+  },
+  {
+    "key": "annexd.modes.custom-rules.not-counted",
+    "parent": "annexd.modes.custom-rules",
+    "order": 5,
+    "text": "A custom game is kept in the match history, marked as custom, and counts toward no profile total, achievement, deck record, rating or average game length. Matchmaking never makes a custom game.",
+    "examples": [
+      {
+        "text": "Example: A custom game's row in the match history says it was not counted.",
+        "test": "298-custom-rules-ui.test.ts::BL-43 ui §7 a custom row in the match history says it was not counted"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R292",
+          "quote": "**Not counted.** A custom game is kept in the match history, tagged, and counts"
+        },
+        {
+          "ref": "R292",
+          "quote": "toward no profile total, achievement, deck record, rating or game-length"
+        },
+        {
+          "ref": "R292",
+          "quote": "average. The matchmaking queue never makes one."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "298-custom-rules-ui.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
+    }
+  },
+  {
+    "key": "annexd.modes.custom-rules.beginner",
+    "parent": "annexd.modes.custom-rules",
+    "order": 6,
+    "text": "The Beginner preset is two elements, simple cards only and packs of 5. It is this client's softening of the rulebook's Quick Start, not the Quick Start itself: 5-card packs are not in the printed rules.",
+    "examples": [
+      {
+        "text": "Example: Choosing the Beginner preset sends two elements, simple cards only and packs of 5.",
+        "test": "298-custom-rules-ui.test.ts::BL-43 ui §2 the Beginner preset sends two elements, simple cards and packs of 5"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R292",
+          "quote": "**Not rulebook text.** 5-card packs are not in the printed rules this repository"
+        },
+        {
+          "ref": "R292",
+          "quote": "holds; they are the reporter's suggestion. The Beginner preset (two elements,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "298-custom-rules-ui.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R292": "59084681d6df244a78f0ad4e1d0a95817e5b0e19e28575df370006e15e41b081"
+    }
+  },
+  {
+    "key": "annexd.modes.scenarios",
+    "parent": "D8",
+    "order": 4,
+    "text": "A scenario room, used to test a single card, is an ordinary game dealt from a declared starting board. It is a test fixture, not a game: it counts toward no player's record.",
+    "examples": [
+      {
+        "text": "Example: A finished scenario room is not folded into either player's record.",
+        "test": "186-scenario-library.test.ts::§3 history.ts refuses to fold a scenario room into anybody's record"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R216 (its scenario-room half)",
+          "quote": "> **A scenario room is an ordinary room with a different deal.** Its file holds"
+        },
+        {
+          "ref": "R216 (its scenario-room half)",
+          "quote": "- **A scenario room is a fixture, not a game.** It is skipped by the stats fold"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "186-scenario-library.test.ts",
+        "435-cr-digital-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R216 is game (mixed): its card ruling (donated \"you\") belongs to U17; only the tester architecture is drafted here.",
+    "sourceHashes": {
+      "R216": "2ee0f4a54ffe9e00c7c89393897f88f6c84faaf5aca812758970bdf0408ca214"
+    }
+  },
+  {
+    "key": "annexd.modes.scenarios.gated",
+    "parent": "annexd.modes.scenarios",
+    "order": 1,
+    "text": "Scenario rooms can be created only on a server configured for the tester. Elsewhere they do not exist.",
+    "examples": [
+      {
+        "text": "Example: An ordinary room is not affected by the tester existing.",
+        "test": "185-scenario-determinism.test.ts::§2 an ordinary room is untouched by the tester existing"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R216 (its scenario-room half)",
+          "quote": "> **With no `ALGO_TESTER_TOKEN` in the environment, the scenario routes do not"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "185-scenario-determinism.test.ts",
+        "435-cr-digital-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "",
+    "sourceHashes": {
+      "R216": "2ee0f4a54ffe9e00c7c89393897f88f6c84faaf5aca812758970bdf0408ca214"
+    }
+  },
+  {
+    "key": "annexd.modes.concession",
+    "parent": "D8",
+    "order": 5,
+    "text": "A conceded game is still a loss for the player who conceded (see 104.4). How much it counts toward records and ratings depends on the turn it was conceded on.",
+    "examples": [
+      {
+        "text": "Example: A player concedes on turn 1. The result says it is a walkover, names the conceder and the turn, and says it was not counted.",
+        "test": "291-concession-weight.test.ts::R290 §1 a walkover says so, names the conceder and the turn, and says it was not counted"
+      }
+    ],
+    "see": [
+      "104.4"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R290",
+          "quote": "is a WEIGHT beside the result, and the weight is decided by one number: the"
+        },
+        {
+          "ref": "R290",
+          "quote": "R65 made concede a real `Action` that \"reaches the result record exactly as a"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "291-concession-weight.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R290": "1f6f933316cfac037db66b59b31df63476e963f83edb66b1525109e7e883ab25"
+    }
+  },
+  {
+    "key": "annexd.modes.concession.walkover",
+    "parent": "annexd.modes.concession",
+    "order": 1,
+    "text": "A game conceded on turn 1 or earlier is a walkover. It counts toward nothing for either player: no game, win, loss, streak, statistic or achievement. In a rated game, the player who conceded loses 5 rating points and the winner gains nothing, and the game does not count toward the number of rated games played. It stays in each player's match history, marked \"not counted\".",
+    "examples": [
+      {
+        "text": "Example: A player concedes on turn 1. The post-game screen says it was a walkover and was not counted.",
+        "test": "291-concession-weight.test.ts::R290 §1 a walkover says so, names the conceder and the turn, and says it was not counted"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R290",
+          "quote": "| **walkover** | turn ≤ 1 | `WALKOVER_MAX_TURN = 1`, `WALKOVER_PENALTY = 5` |"
+        },
+        {
+          "ref": "R290",
+          "quote": "- **A walkover is not a game.** It counts toward NOTHING for EITHER player:"
+        },
+        {
+          "ref": "R290",
+          "quote": "  `WALKOVER_PENALTY` flat; the winner gains nothing; and it does not count as"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "291-concession-weight.test.ts",
+        "435-cr-digital-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R290": "1f6f933316cfac037db66b59b31df63476e963f83edb66b1525109e7e883ab25"
+    }
+  },
+  {
+    "key": "annexd.modes.concession.early",
+    "parent": "annexd.modes.concession",
+    "order": 2,
+    "text": "A game conceded on turn 2 is an early concession. It counts as a game for the record, and in a rated game it moves ratings by half as much as a full game. It does not count toward the fast-game achievements or the match-length statistics.",
+    "examples": [
+      {
+        "text": "Example: A player concedes on turn 2. The post-game screen says half weight, and that it still counts.",
+        "test": "291-concession-weight.test.ts::R290 §1 an early concession says half weight, and that it still counts"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R290",
+          "quote": "| **early** | turn 2 | `EARLY_MAX_TURN = 2`, `EARLY_K_SCALE = 0.5` |"
+        },
+        {
+          "ref": "R290",
+          "quote": "- **An early concession is a game for the record.** Win, loss, streak,"
+        },
+        {
+          "ref": "R290",
+          "quote": "  fast-game measures — the feats a game that barely happened would hand out"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "291-concession-weight.test.ts",
+        "435-cr-digital-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R290": "1f6f933316cfac037db66b59b31df63476e963f83edb66b1525109e7e883ab25"
+    }
+  },
+  {
+    "key": "annexd.modes.concession.normal",
+    "parent": "annexd.modes.concession",
+    "order": 3,
+    "text": "A game conceded on turn 3 or later counts exactly as if the conceding player had been defeated.",
+    "examples": [
+      {
+        "text": "Example: A turn-5 concession carries no note and no tag.",
+        "test": "291-concession-weight.test.ts::R290 §1 ⭐ a normal concession (turn 3+) and a game with no concession say NOTHING"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R290",
+          "quote": "| **normal** | turn ≥ 3, or no concession | — |"
+        },
+        {
+          "ref": "R290",
+          "quote": "- **Normal is normal.** A turn-3+ concession is byte-for-byte a lethal blow in"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "291-concession-weight.test.ts",
+        "435-cr-digital-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R290": "1f6f933316cfac037db66b59b31df63476e963f83edb66b1525109e7e883ab25"
+    }
+  },
+  {
+    "key": "annexd.modes.concession.rated-only",
+    "parent": "annexd.modes.concession",
+    "order": 4,
+    "text": "Only a rated game moves a rating at all. An unrated walkover moves nobody's rating.",
+    "examples": [
+      {
+        "text": "Example: A player concedes an unrated game on turn 1. Neither player has a rating change.",
+        "test": "435-cr-digital-2.test.ts::cr:annexd.modes.concession.rated-only — an unrated walkover moves nobody"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R290",
+          "quote": "Only a RATED game (rating.ts `isRated`) moves a rating at all; the tiers sit on"
+        },
+        {
+          "ref": "R290",
+          "quote": "top of that gate, never beside it. An unrated walkover moves nobody."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "435-cr-digital-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Its guard is server/e2e/test-concession.ts, which has no indexed titles.",
+    "sourceHashes": {
+      "R290": "1f6f933316cfac037db66b59b31df63476e963f83edb66b1525109e7e883ab25"
+    }
+  }
+]

@@ -1,0 +1,5176 @@
+[
+  {
+    "key": "effects.mods.what",
+    "parent": "720",
+    "order": 1,
+    "text": "A modification (mod) changes a card's abilities by combining cards together. A card that can be a mod carries one of two mod symbols: the augment symbol (721) or the graft symbol (722).",
+    "examples": [
+      {
+        "text": "Aetherflux Golem (augment) and Flame Juggle (graft) are offered as mods; The Foretold, with neither symbol, is not.",
+        "test": "428-cr-modifications.test.ts::cr:effects.mods.what — only a card with the augment or graft symbol is offered as a mod, and applying one changes the host"
+      }
+    ],
+    "see": [
+      "721",
+      "722",
+      "305"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.32",
+          "quote": "Some cards have one of two modification (or mod) symbols,"
+        },
+        {
+          "ref": "Manual p.32",
+          "quote": "Modification (or modding) enables the player to change card abilities by combining cards"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "428-cr-modifications.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Definitional; the Manual's own opening sentence of the Modifications chapter.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.mods.what.virus-modular",
+    "parent": "effects.mods.what",
+    "order": 1,
+    "text": "Virus and Modular are not further kinds of mod. A Virus is a card that can also be applied as an augment during battle (723). Modular lets mods be applied to a card as it is played (724).",
+    "examples": [
+      {
+        "text": "A Virus applied in battle is an ordinary augment action, and attaches as an augment.",
+        "test": "428-cr-modifications.test.ts::cr:effects.mods.what.virus-modular — a Virus applied in battle is an augment action and attaches as an augment; no virus or modular kind of mod exists"
+      }
+    ],
+    "see": [
+      "723",
+      "724"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.34",
+          "quote": "Viruses have the extra ability to mod units directly from your hand during combat in addition to being playable and augmentable normally during the deployment phase."
+        },
+        {
+          "ref": "card: Spellbind",
+          "quote": "You can apply mods to a modular card from your hand and/or bin as it is played. You still pay their costs."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "428-cr-modifications.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The Manual names only two mod symbols (augment, graft); Virus is a timing icon and Modular an attribute. Card text taken from extract.json cards[] (Spellbind is not in the pack's cards.md).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.mods.special-action",
+    "parent": "720",
+    "order": 2,
+    "text": "Applying a mod is a special action, which a player may perform during the deployment phase.",
+    "examples": [
+      {
+        "text": "A graft is offered in deployment and is not offered in the haste step or in battle.",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 point 1:"
+      }
+    ],
+    "see": [
+      "507.2"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.32",
+          "quote": "together in certain ways. Modification is a special action that"
+        },
+        {
+          "ref": "Manual p.32",
+          "quote": "players can perform during the deployment phase."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1357483405276614856#1",
+          "quote": "No because augment in general is a special action"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Print and Caleb agree. The exceptions are 720.2b.",
+    "sourceHashes": {
+      "RAQ 1357483405276614856#1": "6596eb521f6e565e13e38310b494ea231a98a3f040a434a97e8646b90b63f1b4"
+    }
+  },
+  {
+    "key": "effects.mods.special-action.timing-icons",
+    "parent": "effects.mods.special-action",
+    "order": 1,
+    "text": "A timing icon other than Virus does not change when a card can be applied as a mod. A Battle card cannot be applied as a mod during battle, except under a card that lets cards be augmented as if they were Viruses (723.5) or to a Modular card as it is played (724).",
+    "examples": [
+      {
+        "text": "Burning Vengeance, a Battle card, is not offered as a mod during battle, but it is offered to Spellbind, a Modular card, played in battle.",
+        "test": "428-cr-modifications.test.ts::cr:effects.mods.special-action.timing-icons — a {Battle} graft card is not offered as a mod in battle, but is on the menu of a Spellbind cast in battle"
+      },
+      {
+        "text": "Hooba-Lin, a Haste augment card, cannot be applied as a mod in the haste step when no card such as Slurpr allows it.",
+        "test": "428-cr-modifications.test.ts::cr:effects.mods.special-action.timing-icons — a {Haste} augment card (Hooba-Lin) is neither offered nor accepted as a mod in the haste step without Slurpr"
+      }
+    ],
+    "see": [
+      "207.6",
+      "723.5",
+      "724",
+      "effects.mods.special-action.exceptions"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.32",
+          "quote": "Modification is independent of timing modifiers that aren’t virus, so battle cards"
+        },
+        {
+          "ref": "Manual p.32",
+          "quote": "cannot be used as mods during battle, for example."
+        },
+        {
+          "ref": "card: Rook",
+          "quote": "You may augment cards from hand and bin during battle as if they were [Virus]."
+        },
+        {
+          "ref": "card: Spellbind",
+          "quote": "You can apply mods to a modular card from your hand and/or bin as it is played."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R105",
+          "quote": "> \"I think it's legal to apply ANYTHING to a Modular card. But many cards wont"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "428-cr-modifications.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The haste half (a Haste card is still grafted only in deployment) is 722.3a, from Graft 101. The two exceptions are the ones 720.2b lists; the verifier's probe applied Immolate, a {Battle} graft, to Spellbind in battle.",
+    "sourceHashes": {
+      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5"
+    }
+  },
+  {
+    "key": "effects.mods.special-action.exceptions",
+    "parent": "effects.mods.special-action",
+    "order": 2,
+    "text": "A mod can be applied outside deployment only where a rule or a card says so: a Virus during battle (723.2); a card augmented in battle under a card that lets it be augmented as if it were a Virus, such as Rook (723.5); a mod applied in the haste step under a card that allows it, such as Slurpr (504.8a); and a mod applied to a Modular card as it is played (724). No other card widens the window.",
+    "examples": [
+      {
+        "text": "Without a Slurpr, a mod is refused in the haste step.",
+        "test": "40-light-c.test.ts::without a Slurpr the [Haste] refusal is unchanged"
+      }
+    ],
+    "see": [
+      "723",
+      "504.8a",
+      "724"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Rook",
+          "quote": "You may augment cards from hand and bin during battle as if they were [Virus]."
+        },
+        {
+          "ref": "card: Slurpr",
+          "quote": "You can apply other mods during [Haste] as if it was deployment."
+        },
+        {
+          "ref": "Manual p.34",
+          "quote": "Viruses have the extra ability to mod units directly from your hand during combat in addition to being playable and augmentable normally during the deployment phase."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R95 (its opt-in permission half)",
+          "quote": "So the seam is opt-in per card, never a general widening of the battle window."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "40-light-c.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "The list of exceptions is assembled from the cards that print a window plus R95's \"opt-in per card\". No source enumerates them in one place. Rook and Slurpr card text from extract.json cards[] (Slurpr and Rook appear in the pack's cards.md).",
+    "sourceHashes": {
+      "R95": "f6a27c0893397fad2912dfff4be2be9bf0c4a8aceb667dc2d5dee7b44247c7eb"
+    }
+  },
+  {
+    "key": "effects.mods.special-action.tides",
+    "parent": "effects.mods.special-action",
+    "order": 3,
+    "text": "An effect that lets a player play cards does not let them apply mods. Tides of the Cosmos cannot graft a card or apply a non-Virus augment; it may only put a Virus card onto a unit as a Virus.",
+    "examples": [
+      {
+        "text": "Tides plays a card and is never offered a graft or a plain augment.",
+        "test": "396-raq-timing.test.ts::RAQ Tides 4:"
+      },
+      {
+        "text": "A Virus card picked by Tides augments a unit as a Virus and never enters play.",
+        "test": "404-raq-fix-tides.test.ts::R337: a Virus card played by Tides as a Virus augments a unit and never enters play"
+      }
+    ],
+    "see": [
+      "701.2c"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1396955380000755795#3",
+          "quote": "You cannot use cards to apply Mods (other than Viruses). So no Grafting or non-virus augments."
+        },
+        {
+          "ref": "RAQ 1357483405276614856#1",
+          "quote": "No because augment in general is a special action"
+        },
+        {
+          "ref": "RAQ 1537748882501668934#2",
+          "quote": "The only exceptions to this is Tides of Cosmos which allow you to use Viruses (despite Tides mentioning \"play\")"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R337",
+          "quote": "are not plays, and Tides cannot apply them (Caleb: \"augment in general is a"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "396-raq-timing.test.ts",
+        "404-raq-fix-tides.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "Also stated at 701.2c (U14); kept here because it is the mod side of the same answer.",
+    "sourceHashes": {
+      "R337": "9da68a070fcb1c43960dfb88272b30cdb15057ba2e0c9cf826221d506335c6cf",
+      "RAQ 1357483405276614856#1": "6596eb521f6e565e13e38310b494ea231a98a3f040a434a97e8646b90b63f1b4",
+      "RAQ 1396955380000755795#3": "03340644aaa8569500998dccb31c10ba56d4e70ad629c4c3acb533a0b4c485fb",
+      "RAQ 1537748882501668934#2": "1fd1e7b02083233cc1970fdb0f2fe6be108e789c03e043b2d7717258f46a9293"
+    }
+  },
+  {
+    "key": "effects.mods.not-played",
+    "parent": "720",
+    "order": 3,
+    "text": "Applying a mod is not playing a card, from whatever zone the mod comes. An ability that triggers when a player plays a unit, a spell or a card does not trigger when a mod is applied.",
+    "examples": [
+      {
+        "text": "Stalwart Sentinel counts a spell played from the bin, but not a mod applied from the bin.",
+        "test": "105-semantics-playwatch.test.ts::Stalwart Sentinel: R96/R123"
+      },
+      {
+        "text": "A Virus applied during battle is not a spell: Origon does not negate it, and its first-spell count is untouched.",
+        "test": "105-semantics-playwatch.test.ts::Origon: a virus applied during battle is not a spell"
+      }
+    ],
+    "see": [
+      "701.2",
+      "701.2a"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1537748882501668934#0",
+          "quote": "Mods are not considered 'played', so they wouldn't trigger any \"whenever you PLAY <unit/spell>\". They are Applied."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R37",
+          "quote": "elsewhere). Applying a modification — attaching a Virus, graft, or augment,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "105-semantics-playwatch.test.ts",
+        "119-play-and-token-events.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "R37 was the owner's errata before the RAQ thread; the thread now backs it (R37's own stale warning is about that).",
+    "sourceHashes": {
+      "R37": "faaf2c88301c46bb9da7780190591e57d72f3e51150aded7cdd007fc33ed29a3",
+      "RAQ 1537748882501668934#0": "a4e3cf36e2dcb6ca0c4c40c54631a21f25f4a2e6a393898ca0e58814e6a0516d"
+    }
+  },
+  {
+    "key": "effects.mods.cost",
+    "parent": "720",
+    "order": 4,
+    "text": "To apply a mod, a player must meet the mod card's affinity requirement and pay its mana cost, wherever the mod comes from.",
+    "examples": [
+      {
+        "text": "An augment from hand needs its affinity and pays its cost.",
+        "test": "408-raq-new-threads.test.ts::RAQ Mods are NOT Played: an augment from hand needs its affinity and pays its cost"
+      },
+      {
+        "text": "A Virus applied in battle needs its affinity and pays its cost.",
+        "test": "408-raq-new-threads.test.ts::RAQ Mods are NOT Played: a Virus in battle needs its affinity and pays its cost"
+      }
+    ],
+    "see": [
+      "105.8",
+      "720.4b"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.32",
+          "quote": "To apply an augment, the player must first meet its affinity"
+        },
+        {
+          "ref": "Manual p.32",
+          "quote": "requirement, followed by paying its mana cost and selecting"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1537748882501668934#1",
+          "quote": "When you use them you still need to pay the cost & meet affinity requirements."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "408-raq-new-threads.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The cache's prices are the exception (720.4b).",
+    "sourceHashes": {
+      "RAQ 1537748882501668934#1": "ca5bd5cf15d3b63877cfd8b3a05bced3bbce7b96c6f2c7b9245b9f46dc540ca3"
+    }
+  },
+  {
+    "key": "effects.mods.cost.not-taxed",
+    "parent": "effects.mods.cost",
+    "order": 1,
+    "text": "A modifier to the cost of playing cards or spells does not change the cost of applying a mod, and a modifier to the cost of activating or triggering abilities does not apply to applying a mod either.",
+    "examples": [
+      {
+        "text": "Under Crevice Lurker, applying an augment during battle costs only its own mana.",
+        "test": "16-earth-a.test.ts::Crevice Lurker: R121 — applying an augment during battle is NOT taxed"
+      }
+    ],
+    "see": [
+      "701.2b",
+      "111.10"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R303",
+          "quote": "(R37/R59 — applying a mod is not playing, so a \"spells cost more to play\" modifier must"
+        },
+        {
+          "ref": "R121 (its mod-not-taxed half)",
+          "quote": "activated abilities — applying a mod is not taxed (`purpose: 'mod'`)."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "16-earth-a.test.ts",
+        "40-light-c.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "The play-cost half rests on R37 (applying is not playing) as R303 restates it. The ability-tax half is R121 (\"applying a mod is not taxed\"), read from client/docs/digital-rules.md; R121 is partly superseded by R261 only in its combat-trigger half.",
+    "sourceHashes": {
+      "R121": "70cfe1343c4a705ff17c19cfa079161a0b8c2c6a592ff57e394cf3dc007cfa83",
+      "R303": "362c6d1e5a9c15d8912809d210e41b88548997fd1e9c63acbfa5b730f81e130c"
+    }
+  },
+  {
+    "key": "effects.mods.cost.cache",
+    "parent": "effects.mods.cost",
+    "order": 2,
+    "text": "A mod applied from the cache is priced by the permission that lets it be used. Under a fulfilled prophecy it costs nothing and ignores affinity. Under a glimpse this turn it costs its mana but ignores affinity.",
+    "examples": [
+      {
+        "text": "A live glimpse grafts for the card's mana, ignoring affinity.",
+        "test": "315-cache-mod-permission.test.ts::R303: a LIVE glimpse grafts for the card's mana, ignoring affinity"
+      },
+      {
+        "text": "A fulfilled prophecy grafts for free, affinity and all.",
+        "test": "315-cache-mod-permission.test.ts::R303: a FULFILLED prophecy still grafts for free, affinity and all"
+      },
+      {
+        "text": "A glimpse waives the pips but not the mana: with too little mana the mod is refused.",
+        "test": "315-cache-mod-permission.test.ts::R303: the glimpse waives the pips, NOT the mana"
+      }
+    ],
+    "see": [
+      "403.3c",
+      "effects.mods.zones.cache"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R303",
+          "quote": "| prophecy fulfilled (R42) | free, ignoring affinity | free, ignoring affinity |"
+        },
+        {
+          "ref": "R303",
+          "quote": "| glimpse, this turn only (R45) | the card's mana, ignoring affinity | the card's mana, ignoring affinity |"
+        },
+        {
+          "ref": "R303",
+          "quote": "yes you can graft or augment for free if the prophecy is completed"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "315-cache-mod-permission.test.ts",
+        "36-cache-prophecy.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "The prophecy price is Caleb's (2024-12-03, quoted inside R303); the glimpse price is the owner's (2026-09-20, R303). Neither reaches the pack as a RAQ claim, so basis owner.",
+    "sourceHashes": {
+      "R303": "362c6d1e5a9c15d8912809d210e41b88548997fd1e9c63acbfa5b730f81e130c"
+    }
+  },
+  {
+    "key": "effects.mods.zones",
+    "parent": "720",
+    "order": 5,
+    "text": "A mod may be applied from the player's hand or from their bin.",
+    "examples": [
+      {
+        "text": "A graft is applied from the bin.",
+        "test": "04-mods.test.ts::grafts can be applied from the bin"
+      },
+      {
+        "text": "A graft comes from the bin as well as the hand, when its cost and affinity are met.",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 point 3"
+      }
+    ],
+    "see": [
+      "405.8"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.32",
+          "quote": "Modifications can be applied from"
+        },
+        {
+          "ref": "Manual p.32",
+          "quote": "the bin as well as from your hand."
+        },
+        {
+          "ref": "Rulebook 2023 p.15",
+          "quote": "apply augments both from your hand and from your discard."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#2",
+          "quote": "You can either use Grafts from your Bin or Hand"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "04-mods.test.ts",
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1355115946032889914#2": "9f337d12f5fd058f571fec6cde21e8b5dc71e805c91a2651f132ecfc658f8d43"
+    }
+  },
+  {
+    "key": "effects.mods.zones.cache",
+    "parent": "effects.mods.zones",
+    "order": 1,
+    "text": "A mod may also be applied from the cache, but only while a permission to use that card is live: a fulfilled prophecy, or a glimpse this turn. A cached card with no live permission cannot be applied as a mod.",
+    "examples": [
+      {
+        "text": "An expired glimpse cannot be grafted or augmented.",
+        "test": "315-cache-mod-permission.test.ts::R303: an expired glimpse is not a graft, not an augment, not anything"
+      },
+      {
+        "text": "An unfulfilled prophecy cannot be grafted.",
+        "test": "315-cache-mod-permission.test.ts::R303: an UNFULFILLED prophecy cannot be grafted"
+      }
+    ],
+    "see": [
+      "403.3b",
+      "effects.mods.cost.cache"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1537748882501668934#4",
+          "quote": "OR 'play' regular mods like Augment / Graft during Deployment phase."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R303",
+          "quote": "**grafting or augmenting with it is gated on that same permission, at that same price.**"
+        },
+        {
+          "ref": "R303",
+          "quote": "do that. You can only play cached cards that allow you to play them (like glimpse). But"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "315-cache-mod-permission.test.ts",
+        "36-cache-prophecy.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The glossary's Graft row (ours) still says a cached card can be grafted only under a fulfilled prophecy, omitting the glimpse: F-U17-2.",
+    "sourceHashes": {
+      "R303": "362c6d1e5a9c15d8912809d210e41b88548997fd1e9c63acbfa5b730f81e130c",
+      "RAQ 1537748882501668934#4": "df4d0cd9f8f8f6ffe2cb2d5cb96411c53fe72b7bdf7ebd4d83a69d41061fd0ec"
+    }
+  },
+  {
+    "key": "effects.mods.one-card",
+    "parent": "720",
+    "order": 6,
+    "text": "A mod becomes part of the card it is applied to, its host. A modified card is treated as a single card with all of the additional text from its mods; the mods are not separate from it.",
+    "examples": [
+      {
+        "text": "Aetherflux Golem augmented onto a unit gives that unit +2/+2 and is not a unit of its own.",
+        "test": "428-cr-modifications.test.ts::cr:effects.mods.one-card — an augment becomes part of its host: the host has its text, and the mod is not a separate unit"
+      }
+    ],
+    "see": [
+      "305.1"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.32",
+          "quote": "When a card is augmented, it is treated as if it were a single"
+        },
+        {
+          "ref": "Rulebook 2023 p.15",
+          "quote": "its modifications. The augmented cards are not separate from the base card."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R244 (its part-of-the-unit half)",
+          "quote": "> \"When a mod goes onto a unit, it becomes PART of that unit. Here, it says"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "428-cr-modifications.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "\"Host\" is this document's word (the rulings use it throughout); print says \"the base card\".",
+    "sourceHashes": {
+      "R244": "080c30954c21cbfd6d041bc15712a2dc0db9582ff06e979cf06690adcac0b11f"
+    }
+  },
+  {
+    "key": "effects.mods.one-card.control",
+    "parent": "effects.mods.one-card",
+    "order": 1,
+    "text": "A mod is controlled by its host's controller. A player who augments a card onto an opponent's unit gives that opponent control of the mod and all of its text.",
+    "examples": [
+      {
+        "text": "Corrupting Blight applied as a Virus to an enemy unit steals that unit for the Virus's new controller's choice of player after combat.",
+        "test": "23-wood-a.test.ts::Corrupting Blight: defects after combat when played normally; steals the host as a Virus"
+      }
+    ],
+    "see": [
+      "102.6a"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.34",
+          "quote": "When a card is augmented onto an opposing unit, they"
+        },
+        {
+          "ref": "Manual p.34",
+          "quote": "will control the augment and its new ability."
+        },
+        {
+          "ref": "Rulebook 2023 p.15",
+          "quote": "This means that if you augment a card onto an opponent’s unit, they control that modification and all of"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R244 (its trasher half)",
+          "quote": "**1. Where a mod IS trashed, the HOST'S CONTROLLER trashes it.** Not the mod's"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "23-wood-a.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Ownership does not move: the mod card still belongs to the player who brought it.",
+    "sourceHashes": {
+      "R244": "080c30954c21cbfd6d041bc15712a2dc0db9582ff06e979cf06690adcac0b11f"
+    }
+  },
+  {
+    "key": "effects.mods.one-card.you",
+    "parent": "effects.mods.one-card",
+    "order": 2,
+    "text": "On a mod's text, \"you\" means the host's controller.",
+    "examples": [
+      {
+        "text": "Oorblak applied as a Virus to an enemy unit redirects the combat damage that would be dealt to that enemy, onto that enemy's own unit.",
+        "test": "17-earth-b.test.ts::Oorblak: as a Virus, \"me\" is the HOST"
+      }
+    ],
+    "see": [
+      "102.6a"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R216",
+          "quote": "> **On text donated by a mod, \"you\" is the controller of the HOST, not the"
+        },
+        {
+          "ref": "R157 (its §6)",
+          "quote": "> *\"The unit's controller. But why would that be a problem for Doot? You virus"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "17-earth-b.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Restates 102.6a (U01) at the mod section. R216's scenario test lives in client/server/test/185-scenario-determinism.test.ts.",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
+      "R216": "2ee0f4a54ffe9e00c7c89393897f88f6c84faaf5aca812758970bdf0408ca214"
+    }
+  },
+  {
+    "key": "effects.mods.one-card.me",
+    "parent": "effects.mods.one-card",
+    "order": 3,
+    "text": "On a mod's text, \"I\", \"me\" and \"my\" mean the host.",
+    "examples": [
+      {
+        "text": "Life Leech applied as a Virus gives its host, not the Leech, +3/+3 when its controller pays 5 life.",
+        "test": "40-light-c.test.ts::Life Leech: donated as a Virus, \"I\" is the HOST"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R131",
+          "quote": "being worn as a mod, and \"my\" means the HOST — which is exactly why the trigger"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "40-light-c.test.ts",
+        "17-earth-b.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Follows from print's \"treated as a single card\" (720.6), but no printed sentence says it.",
+    "sourceHashes": {
+      "R131": "43728cea609c04e1a04453063a2d517487923b3450504286c64547f2bde9262b"
+    }
+  },
+  {
+    "key": "effects.mods.one-card.other",
+    "parent": "effects.mods.one-card",
+    "order": 4,
+    "text": "On a mod's text, \"other\" and \"another\" exclude only that mod itself, not other mods made from copies of the same card.",
+    "examples": [
+      {
+        "text": "A host wearing two Rotbeast augments: each Rotbeast moves the other.",
+        "test": "121-another-identity.test.ts::R131 Rotbeast: a SECOND Rotbeast augment is \"another\""
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R131",
+          "quote": "So an \"other\"/\"another\" clause **never** filters by CARD NAME. Two copies of a"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "121-another-identity.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R131": "43728cea609c04e1a04453063a2d517487923b3450504286c64547f2bde9262b"
+    }
+  },
+  {
+    "key": "effects.mods.one-card.control-change",
+    "parent": "effects.mods.one-card",
+    "order": 5,
+    "text": "When a unit changes controller, its mods change controller with it.",
+    "examples": [
+      {
+        "text": "Download steals a modded unit token, and its augment changes controller with it.",
+        "test": "26-metal-a.test.ts::Download steals a MODDED unit token"
+      }
+    ],
+    "see": [
+      "711"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R112",
+          "quote": "the unit, so yes, they go with them to the unit's new controller. That's the"
+        },
+        {
+          "ref": "R148",
+          "quote": "> \"a stolen unit's mods are part of the unit, so yes, they go with them to the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "26-metal-a.test.ts",
+        "24-wood-b.test.ts",
+        "04-mods.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "04-mods' older test of the same claim hand-assigns the controller and never checks the mods: F-U17-3.",
+    "sourceHashes": {
+      "R112": "728a644cedd30998f520d22c619ac8d9ba14096de087aace58dff41ef917db12",
+      "R148": "3e651a34bc4e9de9d3d72192531464bcd66075bd5eef10a28c55750be73ca389"
+    }
+  },
+  {
+    "key": "effects.mods.one-card.no-limit",
+    "parent": "effects.mods.one-card",
+    "order": 6,
+    "text": "There is no limit to the number of mods a card can have.",
+    "examples": [
+      {
+        "text": "Six Aetherflux Golems augmented onto one unit give it +12/+12.",
+        "test": "428-cr-modifications.test.ts::cr:effects.mods.one-card.no-limit — six augments are applied to one unit and every one of them counts"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.32",
+          "quote": "restriction on the number of times a card can be augmented."
+        },
+        {
+          "ref": "Manual p.33",
+          "quote": "is no limit to how many effects can be grafted onto a"
+        },
+        {
+          "ref": "Rulebook 2023 p.15",
+          "quote": "There is no restriction on the number of times a card can be augmented, so go wild!"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "428-cr-modifications.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.mods.unstable",
+    "parent": "720",
+    "order": 7,
+    "text": "As long as a card is modded, it has {Unstable}: when it dies or is erased, it and all of its mods are erased.",
+    "examples": [
+      {
+        "text": "A host carrying Ephemeral Skywalker is destroyed; neither card reaches the bin.",
+        "test": "04-mods.test.ts::augments: type-line attribute grant, unstable erasure"
+      }
+    ],
+    "see": [
+      "410.4b",
+      "803"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.35",
+          "quote": "As long as a card is modded, it has the unstable attribute, meaning when it dies or is erased, it and all of its"
+        },
+        {
+          "ref": "Rulebook 2023 p.15",
+          "quote": "When a modified card dies or is erased (both Augment and Graft, which we will discuss next, are modifications), the card and all of its modifications are"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "04-mods.test.ts",
+        "224-mod-trash.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "How a dying {Unstable} body reaches the erased pile (through the bin, trashed on the way) is U07's and U21's question: see D-U07 and F-U07-6.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.mods.unstable.leave-play",
+    "parent": "effects.mods.unstable",
+    "order": 1,
+    "text": "If a modded card leaves play without dying or being erased, for example when it is returned to a hand, its mods are put into the bin and the card goes on alone.",
+    "examples": [
+      {
+        "text": "A nontoken mod on a host that is recalled, cached or killed is binned and trashed exactly once on each route.",
+        "test": "141-despawn-mods.test.ts::R167 (iv): a nontoken mod is binned and trashed exactly once on all three routes"
+      }
+    ],
+    "see": [
+      "410.4",
+      "410.4a"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.35",
+          "quote": "If a modded card would leave play but did not die or"
+        },
+        {
+          "ref": "Manual p.35",
+          "quote": "hand from play, all of its mods are put back into the"
+        },
+        {
+          "ref": "Manual p.35",
+          "quote": "bin, while the base card goes to the hand."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "141-despawn-mods.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Whose bin: 410.4a (the host's controller's, by R250). The example test asserts more than this rule (that a death also bins nontoken mods); its own title is the route-count invariant.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.mods.unstable.cache",
+    "parent": "effects.mods.unstable",
+    "order": 2,
+    "text": "When a modded unit is cached, its mods do not follow it into the cache; they go to the bin.",
+    "examples": [
+      {
+        "text": "Caching a unit sheds its mods to the bin.",
+        "test": "36-cache-prophecy.test.ts::R46: caching a unit sheds its mods to the bin"
+      }
+    ],
+    "see": [
+      "403.7"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R46",
+          "quote": "When a unit in play is cached, the mods attached to it go to the bin rather"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "36-cache-prophecy.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R46 credits Caleb (2024-09-15), but the words reach us only through the ruling.",
+    "sourceHashes": {
+      "R46": "b5a11201ce99a44ead0cf242a1d16bae8f03d8fd6d51d7064c725bbe3ab19665"
+    }
+  },
+  {
+    "key": "effects.mods.unstable.token-mod",
+    "parent": "effects.mods.unstable",
+    "order": 3,
+    "text": "A token mod has no card of its own. It never enters a bin: however its host leaves play, the token mod is erased.",
+    "examples": [
+      {
+        "text": "A token mod reaches the erased pile exactly once, and no bin, whether its host is recalled, cached or killed.",
+        "test": "141-despawn-mods.test.ts::R167 (v): a token mod reaches the erased pile exactly once"
+      }
+    ],
+    "see": [
+      "410.4c",
+      "407.3a"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R156 (its announce-on-every-route half)",
+          "quote": "has no card of its own, so it can never enter a bin — whichever way its host"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "141-despawn-mods.test.ts",
+        "129-disposal-tail.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R156 restates R69 (not in the pack). Whether a token mod erased off a host that STAYS in play is filed on the erased pile is open: D-U17-1.",
+    "sourceHashes": {
+      "R156": "a26d61b2a352d6e842fef1b8ee918a040eebaf7250d67127a0cef48bdd4db492"
+    }
+  },
+  {
+    "key": "effects.mods.unstable.moves",
+    "parent": "effects.mods.unstable",
+    "order": 4,
+    "text": "The {Unstable} that a mod gives goes with the mod. A unit stops having {Unstable} for this reason when its last mod leaves it, and a unit a mod is moved onto has it from then on.",
+    "examples": [
+      {
+        "text": "Rotbeast moves its host's other augments onto an enemy; the enemy becomes Unstable and the augment's static goes with it.",
+        "test": "151-copy-and-moved-mods.test.ts::R178 Rotbeast: a moved augment takes {Unstable} and its static with it"
+      }
+    ],
+    "see": [
+      "effects.mods.moving"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R178 (its §4 Unstable half)",
+          "quote": "Unstable is just an attribute granted to all entities that are modded."
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R178",
+          "relation": "§4's claim that every bounded budget rides with the moved mod corrected by R331; the Unstable half stands"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "151-copy-and-moved-mods.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "The owner's words: \"Of course it moves with the mods.\" A card can also have {Unstable} for other reasons (printed, or played from a bin); those do not move.",
+    "sourceHashes": {
+      "R178": "92613172ef363565035f3346c813b8e4fdf7cbf5ff2a45ae1543bf273254e204"
+    }
+  },
+  {
+    "key": "effects.mods.unstable.copy",
+    "parent": "effects.mods.unstable",
+    "order": 5,
+    "text": "A copy of a modded unit (Borrower of Forms) is not itself modded and does not have {Unstable} for that reason. A mod applied to the copy afterwards makes it {Unstable} in the ordinary way.",
+    "examples": [
+      {
+        "text": "A Borrower of Forms that has resolved becomes Unstable when a mod is attached to it.",
+        "test": "393-raq-mods.test.ts::RAQ Borrower of Forms: a mod attached to it after it resolved makes it Unstable"
+      },
+      {
+        "text": "A Borrower that copied a modded unit dies to the bin.",
+        "test": "403-raq-fix-mods.test.ts::R336: a Borrower that copied a modded unit dies to the bin"
+      }
+    ],
+    "see": [
+      "710"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1372468222158180424#3",
+          "quote": "Q: What if I attach some mods to him AFTER he resolved? A: Then he becomes Unstable"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R336",
+          "quote": "- **A fresh copy of a modded unit is NOT Unstable.** This reverses the second half of R118 ruling 2"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R118",
+          "relation": "ruling 2's 'the copy IS Unstable' half reversed by R336"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts",
+        "403-raq-fix-mods.test.ts",
+        "26-metal-a.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "The not-Unstable half is R336 reading the RAQ thread (the owner deferred to it). Copies are 710 (U16).",
+    "sourceHashes": {
+      "R336": "aab6004b9ea90667dc7257f50d7ed11f5ab5579c84b8a3a337abb5521da54278",
+      "RAQ 1372468222158180424#3": "23747815b7bd89b093607c9a5079da5836888a900a5c555c74ac83f09562b82d"
+    }
+  },
+  {
+    "key": "effects.mods.trash",
+    "parent": "720",
+    "order": 8,
+    "text": "When a host is recalled or cached and its nontoken mods are left in a bin, each of those mods is trashed, and the host's controller is the player who trashes it.",
+    "examples": [
+      {
+        "text": "A mod left behind by a recall is trashed by the host's controller, not by the mod's owner.",
+        "test": "224-mod-trash.test.ts::R244: a mod trashed on a recall is trashed by the host controller, not by its owner"
+      },
+      {
+        "text": "A cached host's left-behind mods are attributed the same way.",
+        "test": "224-mod-trash.test.ts::R244: a cached host attributes its left-behind mods the same way a recalled one does"
+      }
+    ],
+    "see": [
+      "405.4"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R244 (its trasher half)",
+          "quote": "**1. Where a mod IS trashed, the HOST'S CONTROLLER trashes it.** Not the mod's"
+        },
+        {
+          "ref": "R244 (its trasher half)",
+          "quote": "LEFT BEHIND in a bin, where it stays. It is a card in a bin. It is trashed."
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R244",
+          "relation": "§1's 'THE DESTINATION DOES NOT MOVE' paragraph (owner's bin) reversed by R250: the mod goes to the controller's bin"
+        },
+        {
+          "ruling": "R152",
+          "relation": "§2 (each mod to its owner's bin; trashed before the sweep) superseded by R244 and R250"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "224-mod-trash.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R244": "080c30954c21cbfd6d041bc15712a2dc0db9582ff06e979cf06690adcac0b11f"
+    }
+  },
+  {
+    "key": "effects.mods.trash.erased-with-host",
+    "parent": "effects.mods.trash",
+    "order": 1,
+    "text": "A nontoken mod erased together with its {Unstable} host is not trashed. The host's single trash counts for the whole unit.",
+    "examples": [
+      {
+        "text": "A Virus on a host that dies is erased with it and is not trashed.",
+        "test": "224-mod-trash.test.ts::R244: a nontoken mod erased with its Unstable host is not trashed at all"
+      }
+    ],
+    "see": [
+      "405.4"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R244 (its erased-with-host half)",
+          "quote": "**2. A nontoken mod erased with its {Unstable} host is not trashed at all.** It"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R152",
+          "relation": "§2's trash of a nontoken mod on an {Unstable} host superseded by R244"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "224-mod-trash.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Owner, from playtest #129. The body's own trash (R137) is U07/U21's.",
+    "sourceHashes": {
+      "R244": "080c30954c21cbfd6d041bc15712a2dc0db9582ff06e979cf06690adcac0b11f"
+    }
+  },
+  {
+    "key": "effects.mods.erase-off-host",
+    "parent": "720",
+    "order": 9,
+    "text": "An effect or a cost can erase a mod off a host that stays in play. The mod card goes to the erased pile of the mod's controller. The host stays in play, and can die if losing the mod leaves it unable to survive.",
+    "examples": [
+      {
+        "text": "Return to Nature negates everything on the stack and erases all mods in the region.",
+        "test": "17-earth-b.test.ts::Return to Nature: negates everything on the stack and erases all mods in the region"
+      },
+      {
+        "text": "A mod on a stolen host, erased off it, is filed on the thief's erased pile, not its owner's.",
+        "test": "246-zones-follow-control.test.ts::R262 §5: the erased pile files a stolen mod under the THIEF"
+      }
+    ],
+    "see": [
+      "407.2",
+      "407.2a"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R219",
+          "quote": "> **\"Obviously the card says where it should end up. It's erased… It should just"
+        },
+        {
+          "ref": "R208 (its primitive half)",
+          "quote": "afterwards, exactly as `moveMod` leaves it, because a host that loses a +X/+X"
+        },
+        {
+          "ref": "R262",
+          "quote": "| `eraseMod` → **R65 erased pile** | `{ seat: mod.owner }` | `{ seat: mod.controller }` |"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R208",
+          "relation": "its held behaviour that a mod erased off a living host files nothing reversed by R219"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "17-earth-b.test.ts",
+        "178-played-item-and-erased-mods.test.ts",
+        "246-zones-follow-control.test.ts",
+        "428-cr-modifications.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "engineDiffers": [
+      "F-U17-1"
+    ],
+    "notes": "R262 is not in the U17 pack; read from client/docs/digital-rules.md. Return to Nature files by mod OWNER (F-U17-1; measured by the r1 verifier). The 178 tests titled for the old no-filing law are F-U07-4.",
+    "sourceHashes": {
+      "R208": "749420ea3ab5eecb5fd1f599fbfacecad281193be579f5c923ed3f2fc823ab1f",
+      "R219": "91a197c7e851ffbf143b3dcf56a422b3db8045cd2765a61677648786776c30bb",
+      "R262": "285c09786add087f0d8ecb5046ca62c5f17bc6467b4bf16b1cdcae859881edf8"
+    },
+    "rebuttal": "Text kept: it states R262 (the erased pile follows control). engineDiffers F-U17-1 was already set for Return to Nature filing by owner (stripped from the verifier's copy); F-U17-1 now carries the verifier's probe measurement. The Return to Nature example claims only negation and erasure, which its test asserts; a second example now binds the controller-pile clause to the R262 §5 test."
+  },
+  {
+    "key": "effects.mods.erase-off-host.token",
+    "parent": "effects.mods.erase-off-host",
+    "order": 1,
+    "text": "A token mod erased off a host that stays in play is not recorded on the erased pile, because a token is not a card.",
+    "examples": [
+      {
+        "text": "A Wraith token mod erased off a host that stays in play, as the payment of a cost, is not filed on the erased pile.",
+        "test": "428-cr-modifications.test.ts::cr:effects.mods.erase-off-host.token — a Wraith token mod erased off a living host as a cost (eraseMod) is not filed on the erased pile"
+      }
+    ],
+    "see": [
+      "effects.mods.unstable.token-mod"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R219",
+          "quote": "- **A token mod is not filed.** R133: a token is not a card, and R65's pile is a"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "428-cr-modifications.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "low",
+    "notes": "R219 says this disagrees with how a token mod is filed when its host leaves play (R156), and left it: D-U17-1. The verifier measured that the cost route (eraseMod) files nothing for a token mod, but Return to Nature files it: F-U17-4.",
+    "sourceHashes": {
+      "R219": "91a197c7e851ffbf143b3dcf56a422b3db8045cd2765a61677648786776c30bb"
+    },
+    "engineDiffers": [
+      "F-U17-4"
+    ]
+  },
+  {
+    "key": "effects.mods.moving",
+    "parent": "720",
+    "order": 10,
+    "text": "An effect can move a mod from one host to another (Reconfigure, Rotbeast). Moving a mod is not a zone change: the mod never leaves play, and nothing despawns.",
+    "examples": [
+      {
+        "text": "Reconfigure moves Bubb and its Growing Plague onto a Robot; Growing Plague's \"when I despawn\" does not trigger.",
+        "test": "393-raq-mods.test.ts::RAQ Reconfigure vs Despawn"
+      }
+    ],
+    "see": [
+      "410.1b",
+      "effects.augment.reconfigure"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353847640214999170#0",
+          "quote": "Does Reconfigure causes units Despawn effect to trigger? No. The Unit never switch zones"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts",
+        "151-copy-and-moved-mods.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1353847640214999170#0": "0bff393adef7eae7d57a8fc64c94d828f9d0899aa4fff6b63e5be57023ecba70"
+    }
+  },
+  {
+    "key": "effects.mods.moving.control",
+    "parent": "effects.mods.moving",
+    "order": 1,
+    "text": "A moved mod is controlled by its new host's controller.",
+    "examples": [
+      {
+        "text": "Rotbeast's augments moved onto an enemy now work for that enemy. (illustrative)",
+        "test": null
+      }
+    ],
+    "see": [
+      "effects.mods.one-card.control"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R178 (its §4 controller half)",
+          "quote": "- **Controller** follows the new host, exactly as `attachMod` sets it. That is"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Follows from 720.6a; stated because a move is not an application.",
+    "sourceHashes": {
+      "R178": "92613172ef363565035f3346c813b8e4fdf7cbf5ff2a45ae1543bf273254e204"
+    }
+  },
+  {
+    "key": "effects.mods.moving.once",
+    "parent": "effects.mods.moving",
+    "order": 2,
+    "text": "Moving a mod does not refresh it. A once-per-turn ability on the mod that was already used this turn stays used on the new host.",
+    "examples": [
+      {
+        "text": "A Graxxlid used this turn and moved by Reconfigure cannot be used again this turn.",
+        "test": "393-raq-mods.test.ts::RAQ Reconfigure vs Once per Turn"
+      },
+      {
+        "text": "The spent mark is copied to the new host, so nothing is refreshed anywhere.",
+        "test": "403-raq-fix-mods.test.ts::R331: a moved mod carries its spent augment budget"
+      }
+    ],
+    "see": [
+      "109.9e"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353848722974445658#0",
+          "quote": "Since Graxxlid was already Activated this turn, you CANNOT use his Ability again."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R331",
+          "quote": "Reconfigure moves a mod. It does not refresh it."
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R178",
+          "relation": "§4's claim that every bounded budget rides with the moved mod entity corrected by R331"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts",
+        "403-raq-fix-mods.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R331": "223245cca189e0e0c7d67f18a07e3cfafd19f417166b9da103ed8d95d8de206b",
+      "RAQ 1353848722974445658#0": "c1e3d4b977462f57865aca1c6de0458031bbd80fb4632d8d8df6811b0e080a3e"
+    }
+  },
+  {
+    "key": "effects.mods.moving.not-applying",
+    "parent": "effects.mods.moving",
+    "order": 3,
+    "text": "Moving a mod is not applying it. An ability that triggers when a mod is applied does not trigger when a mod is moved, unless the moving effect says the mods are augmented (721.5a).",
+    "examples": [
+      {
+        "text": "Rotbeast moves its Curio Drifter augment onto an enemy Perpetual Construct, which makes no unit.",
+        "test": "428-cr-modifications.test.ts::cr:effects.mods.moving.not-applying — Rotbeast moving an augment onto Perpetual Construct fires no mod-applied event and makes no unit"
+      }
+    ],
+    "see": [
+      "effects.augment.reconfigure.each-applied"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R178 (its §4 no-event half)",
+          "quote": "- **No `modApplied` event.** Moving is not applying (R37's spirit), so nothing"
+        },
+        {
+          "ref": "R332",
+          "quote": "R178 says moving is not applying, and that holds in general."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "428-cr-modifications.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Rotbeast says \"move\", so it is the general case; Reconfigure says \"augment\", so it is the exception. No test in the pack watches a Rotbeast move for an applied-mod trigger.",
+    "sourceHashes": {
+      "R178": "92613172ef363565035f3346c813b8e4fdf7cbf5ff2a45ae1543bf273254e204",
+      "R332": "a4514ee56e3f362eaf3d41bd562810d04ba83246c325c861cc9eab50acfc63ef"
+    }
+  },
+  {
+    "key": "effects.mods.timestamps",
+    "parent": "720",
+    "order": 11,
+    "text": "A mod's effects take their timestamp from when the mod was applied. A mod applied after an effect that removes attributes and abilities on the same layer (Monke) still gives its attribute and ability.",
+    "examples": [
+      {
+        "text": "A Virus applied after Monke's effect began still gives its attribute.",
+        "test": "390-raq-stack.test.ts::RAQ timestamps: a virus applied AFTER Monke still gives its attribute"
+      }
+    ],
+    "see": [
+      "709",
+      "113.2"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1357965714807586897#0",
+          "quote": "Since both Chitin Shredder and Graxxlid apply to the same layer as Monke, but were played after Monke, their bonuses aren't affected by it"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "Layers and the dependency rule are 709 (U16).",
+    "sourceHashes": {
+      "RAQ 1357965714807586897#0": "f1aec3fc6a5038698b3357bca87ce84977d7c321ef7ffe93d71dfe8dc9d1d092"
+    }
+  },
+  {
+    "key": "effects.mods.applied-triggers",
+    "parent": "720",
+    "order": 12,
+    "text": "An ability that triggers when a mod is applied to its unit triggers once for each mod applied.",
+    "examples": [
+      {
+        "text": "Perpetual Construct makes an X/X for an applied mod, X the mod's cost.",
+        "test": "17-earth-b.test.ts::Perpetual Construct: an applied mod creates an X/X, X = the mod's cost"
+      },
+      {
+        "text": "Reconfigure moves three mods onto Perpetual Construct: three triggers, a 1/1, a 3/3 and a 4/4.",
+        "test": "393-raq-mods.test.ts::RAQ Reconfigure onto Perpetual Construct"
+      }
+    ],
+    "see": [
+      "effects.augment.reconfigure.each-applied"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Perpetual Construct",
+          "quote": "Whenever a mod is applied to me, create"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1353856176558706769#0",
+          "quote": "Perpetual Construct will trigger separetly for each of the Mods"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "17-earth-b.test.ts",
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Perpetual Construct text from extract.json cards[] (not in the pack's cards.md).",
+    "sourceHashes": {
+      "RAQ 1353856176558706769#0": "c3645e5b668d8436865f988b6ed50c8ecfa1a408c4ef86303565ad1719173a20"
+    }
+  },
+  {
+    "key": "effects.augment.what",
+    "parent": "721",
+    "order": 1,
+    "text": "Augment is a modification. An augment adds the text that follows its augment symbol to the card it is applied to.",
+    "examples": [
+      {
+        "text": "Aetherflux Golem, a 1/1 whose augment text is \"I gain +2/+2\", gives its host +2/+2.",
+        "test": "428-cr-modifications.test.ts::cr:effects.augment.what — an augment adds the text after its augment symbol to the host, not the rest of the card"
+      }
+    ],
+    "see": [
+      "208"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.32",
+          "quote": "The Augment mechanic allows players to take all of the text"
+        },
+        {
+          "ref": "Manual p.32",
+          "quote": "in the paragraph following the augment symbol and add it"
+        },
+        {
+          "ref": "Rulebook 2023 p.15",
+          "quote": "Some cards have a little “+” symbol (1) at the beginning of a line in their text box (or"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "428-cr-modifications.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The card text writes the symbol [Augment].",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.augment.what.text-box",
+    "parent": "effects.augment.what",
+    "order": 1,
+    "text": "An augment symbol at the start of a paragraph in the text box gives the host that whole paragraph.",
+    "examples": [
+      {
+        "text": "Growing Plague applied as an augment gives its host \"When I despawn, each other player draws two cards.\"",
+        "test": "23-wood-a.test.ts::Growing Plague: draws on spawn; despawn (as augment) makes each other player draw two"
+      }
+    ],
+    "see": [
+      "208.2"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.32",
+          "quote": "in the paragraph following the augment symbol and add it"
+        },
+        {
+          "ref": "Manual p.32",
+          "quote": "unit’s ability text box or before attributes in the type line."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "23-wood-a.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.augment.what.type-line",
+    "parent": "effects.augment.what",
+    "order": 2,
+    "text": "An augment symbol on the type line gives the host the attributes on that type line. It gives no stats.",
+    "examples": [
+      {
+        "text": "Bubb ([Augment] {Unaware}) gives its host Unaware, and not its 5/6.",
+        "test": "16-earth-a.test.ts::Bubb: 5/6 Unaware; type-line [Augment] donates Unaware (attrs only, no stats)"
+      }
+    ],
+    "see": [
+      "208.3"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.32",
+          "quote": "unit’s ability text box or before attributes in the type line."
+        },
+        {
+          "ref": "card: Chitin Shredder",
+          "quote": "[Augment] {Powerful} Insect {Virus} Unit"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "16-earth-a.test.ts",
+        "04-mods.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "\"No stats\" is what an augment's own words imply (it gives text) and what 208.3 states; no printed sentence says it outright.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.augment.what.box-only",
+    "parent": "effects.augment.what",
+    "order": 3,
+    "text": "On a host, only the augment's own augment text works. The rest of the augment card's text, including body text printed outside the augment paragraph and attributes printed before a text-box augment symbol, does nothing for the host.",
+    "examples": [
+      {
+        "text": "Infernal Wispweaver's body text radiates when it is played as a unit, and never from a mod.",
+        "test": "248-augment-box-scope.test.ts::§3 GUARD: a card that prints both halves radiates its body clause from play, never from a mod"
+      },
+      {
+        "text": "Smouldering Inferno, whose {Piercing} is on its type line before no augment symbol, gives its host only its text-box line.",
+        "test": "04-mods.test.ts::virus augment during battle: on the stack, donated to an enemy, text-only transfer"
+      }
+    ],
+    "see": [
+      "208.1"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R268",
+          "quote": "**The ruling.** When a card is applied as an augment, only the text printed"
+        },
+        {
+          "ref": "R268",
+          "quote": "inside its `[Augment]` box is live. Its body text — statics, cost modifiers,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "248-augment-box-scope.test.ts",
+        "04-mods.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "The owner's general rule from playtest ERJZ. Print says the augment adds \"the text in the paragraph following the augment symbol\", which agrees.",
+    "sourceHashes": {
+      "R268": "af4e96c5de37b7d0e395e7b84d029ca5f0301d21e2d4137907574594b95ba3e5"
+    }
+  },
+  {
+    "key": "effects.augment.what.played",
+    "parent": "effects.augment.what",
+    "order": 4,
+    "text": "A card that is played normally reads its whole text, its augment text included.",
+    "examples": [
+      {
+        "text": "A card played normally still reads its own augment paragraph.",
+        "test": "248-augment-box-scope.test.ts::§5 PIN: a card played normally still reads its own [Augment] box"
+      }
+    ],
+    "see": [
+      "305.4",
+      "109.7"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.43",
+          "quote": "A: Yes, the text is active on cards played normally."
+        },
+        {
+          "ref": "Manual p.35",
+          "quote": "Cards with the augment and graft abilities still function as written, even"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R268",
+          "quote": "**And it is NOT symmetric.** A card that is PLAYED reads its whole text box, its"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "248-augment-box-scope.test.ts",
+        "16-earth-a.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R268": "af4e96c5de37b7d0e395e7b84d029ca5f0301d21e2d4137907574594b95ba3e5"
+    }
+  },
+  {
+    "key": "effects.augment.what.kind-kept",
+    "parent": "effects.augment.what",
+    "order": 5,
+    "text": "Augment text keeps its kind on the host. A static ability given by an augment (\"I gain +2/+2\") is a continuous effect on the host for as long as the mod is attached; it is not a triggered ability and does not use the stack.",
+    "examples": [
+      {
+        "text": "Aetherflux Golem's \"[Augment] I gain +2/+2\" is a static, like the two other cards printing that sentence.",
+        "test": "142-static-conformance.test.ts::R168: Aetherflux Golem is a STATIC"
+      }
+    ],
+    "see": [
+      "707"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R168",
+          "quote": "It is a `StaticMod` on the anchor now, and the ruling is that the printed"
+        },
+        {
+          "ref": "R168",
+          "quote": "sentence decides the mechanism — the same rule 88 already runs on. Three things"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "142-static-conformance.test.ts",
+        "16-earth-a.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R168": "86536e0fb516f00a6526d98e58f76b8d04fcdb9812af914b9e00ba92fe3fb30f"
+    }
+  },
+  {
+    "key": "effects.augment.what.despawn",
+    "parent": "effects.augment.what",
+    "order": 6,
+    "text": "Augment text that triggers on the host's own departure (\"When I despawn\") triggers whichever way the host leaves play: when it dies, is recalled or is cached.",
+    "examples": [
+      {
+        "text": "A donated \"When I despawn\" fires on a recall.",
+        "test": "141-despawn-mods.test.ts::R167 (i): a donated \"[Augment] When I despawn\" fires on a RECALL"
+      },
+      {
+        "text": "It fires on a cache too.",
+        "test": "141-despawn-mods.test.ts::R167 (ii): a donated \"[Augment] When I despawn\" fires on a CACHE"
+      }
+    ],
+    "see": [
+      "410"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R167",
+          "quote": "## R167 — a printed \"when I despawn\" means it whichever way the unit leaves play"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "141-despawn-mods.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Moving the host's mods (Reconfigure) is not a despawn: 720.10.",
+    "sourceHashes": {
+      "R167": "7b3b795a55a9c9e8a63cd25ecd39a570d9a767790a2890de421ba72020f75770"
+    }
+  },
+  {
+    "key": "effects.augment.which-cards",
+    "parent": "721",
+    "order": 2,
+    "text": "A card can be applied as an augment if it prints the augment symbol, in its text box or on its type line, whether or not its augment text does anything.",
+    "examples": [
+      {
+        "text": "Chitin Shredder prints the augment symbol only on its type line and has no text box, and it can be applied as an augment.",
+        "test": "428-cr-modifications.test.ts::cr:effects.augment.which-cards — a card with the augment symbol on its type line and an empty text box (Chitin Shredder) is applied as an augment"
+      }
+    ],
+    "see": [
+      "208.4"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.32",
+          "quote": "onto other cards. The Augment symbol can appear either in a"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R55",
+          "quote": "If a card prints the `[Augment]` marker in its text box, it **can be applied as"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "428-cr-modifications.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Restates 208.4 (U05) at the augment section.",
+    "sourceHashes": {
+      "R55": "638e68004e564670113de924f89d7f039f7f4319cd39c7556b90fbb62c69e08c"
+    }
+  },
+  {
+    "key": "effects.augment.procedure",
+    "parent": "721",
+    "order": 3,
+    "text": "To apply an augment, the player takes these steps in order: (1) meets the augment's affinity requirement; (2) pays its mana cost; (3) selects a target to apply it onto; (4) places the augment card beneath the target, with its text box visible beneath the target's.",
+    "examples": [
+      {
+        "text": "An augment from hand needs its affinity and pays its cost.",
+        "test": "408-raq-new-threads.test.ts::RAQ Mods are NOT Played: an augment from hand needs its affinity and pays its cost"
+      }
+    ],
+    "see": [
+      "effects.mods.cost",
+      "110.10"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.32",
+          "quote": "To apply an augment, the player must first meet its affinity"
+        },
+        {
+          "ref": "Manual p.32",
+          "quote": "requirement, followed by paying its mana cost and selecting"
+        },
+        {
+          "ref": "Manual p.32",
+          "quote": "a target to apply the augment onto. Place the augment card"
+        },
+        {
+          "ref": "Manual p.32",
+          "quote": "beneath the targeted card, with the textbox visible beneath it"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "408-raq-new-threads.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Step 4 is the physical table; a client shows the stack of mods instead.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.augment.hosts",
+    "parent": "721",
+    "order": 4,
+    "text": "During deployment a player can augment only their own units. An opponent's unit can be augmented only with a Virus during battle (723.2), or under a card that lets cards be augmented as if they were Viruses (723.5).",
+    "examples": [
+      {
+        "text": "In deployment Curio Drifter can augment your own unit but not an opponent unit; in battle Aetherflux Golem (a Virus) can augment the attacking enemy.",
+        "test": "428-cr-modifications.test.ts::cr:effects.augment.hosts — in deployment an augment goes only onto your own unit; in battle a Virus may go onto an opposing unit"
+      }
+    ],
+    "see": [
+      "effects.virus.battle",
+      "effects.virus.permission"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.32",
+          "quote": "augmenting is typically only possible to do with a player’s own"
+        },
+        {
+          "ref": "Manual p.32",
+          "quote": "units - unless the mod being applied is a Virus (see page 34"
+        },
+        {
+          "ref": "Rulebook 2023 p.15",
+          "quote": "own units (unless the card is a virus, more on that later)."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "428-cr-modifications.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "Print says \"typically\" and gives the reason (modding happens in deployment, when a player reaches only their own units). The Rulebook also says \"You may augment cards onto any legal target\". No test in the pack checks that an enemy unit is refused as a deployment host.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.augment.hosts.spell-token",
+    "parent": "effects.augment.hosts",
+    "order": 1,
+    "text": "During deployment a player may also augment a spell token they have in play, with any augment, not only a Virus. The token gains only the augment's attributes.",
+    "examples": [
+      {
+        "text": "A spell token is offered as an augment host during deployment.",
+        "test": "78-round17-core.test.ts::R89: a spell token is a legal augment host during deployment"
+      },
+      {
+        "text": "An augmented token deals {Powerful} damage when cast.",
+        "test": "78-round17-core.test.ts::R89: only ATTRIBUTES transfer"
+      }
+    ],
+    "see": [
+      "305.6",
+      "507.2b"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R89",
+          "quote": "> deployment but currently that would only be possible with spell tokens. Also"
+        },
+        {
+          "ref": "R89",
+          "quote": "> you can only do this with attributes.**\" (calebgannon, rules-questions"
+        },
+        {
+          "ref": "R89",
+          "quote": "That is the axis the restriction runs along: **{Virus} buys you the TIMING, not"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R79",
+          "relation": "its 'not in scope' bullet excluding deployment augmenting of a spell token superseded by R89"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "78-round17-core.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Caleb (quoted in R89) says spell tokens can be augmented in deployment, attributes only. \"Not only a Virus\" is R89's reading of a player's chat (_passer outside a [Solved] write-up): D-U17-11.",
+    "sourceHashes": {
+      "R89": "784373f2e8f5ed90bf2121ff1bb5e8a44b216abda1116a8cc197df53973fcf90"
+    }
+  },
+  {
+    "key": "effects.augment.hosts.spell",
+    "parent": "effects.augment.hosts",
+    "order": 2,
+    "text": "An augment applied to a spell, on the stack (723.4) or as it is played through Modular (724), gives the spell only its type-line attributes. Augment text and static abilities give a spell nothing, but applying such an augment is still legal.",
+    "examples": [
+      {
+        "text": "A text-only augment on a spell token grants nothing.",
+        "test": "78-round17-core.test.ts::R89: a text-only augment on a token grants nothing, and says so"
+      },
+      {
+        "text": "An augment-text mod applied to Spellbind is accepted and does nothing.",
+        "test": "91-modular.test.ts::R105: an [Augment]-TEXT mod is accepted and does nothing"
+      }
+    ],
+    "see": [
+      "effects.virus.spell-host",
+      "effects.modular.effects"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R79 (its stack-host half)",
+          "quote": "> **A:** \"Yes. **This notably only works with attributes.**\" (Caleb 2025-04-06)"
+        },
+        {
+          "ref": "R79 (its stack-host half)",
+          "quote": "cannot gain static abilities like that, so the only useful thing you can do is"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "78-round17-core.test.ts",
+        "91-modular.test.ts",
+        "67-resolving-and-stack-viruses.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Caleb's words (2025-04-06, 2025-04-24) reach us through R79; no RAQ claim in the pack.",
+    "sourceHashes": {
+      "R79": "277d0cf45026e900543e1fb8289130794a9da06a12d6c29e967b7ba613b96f5d"
+    }
+  },
+  {
+    "key": "effects.augment.reconfigure",
+    "parent": "721",
+    "order": 5,
+    "text": "Reconfigure augments a unit and all of its mods onto another unit. Its first target must have the augment symbol.",
+    "examples": [
+      {
+        "text": "Reconfigure moves an augment unit and its mods onto another unit.",
+        "test": "29-hybrids-wm-a.test.ts::Reconfigure: moves target augment unit AND its mods onto another target unit"
+      }
+    ],
+    "see": [
+      "effects.mods.moving"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Reconfigure",
+          "quote": "Augment target unit and all of its mods onto another target unit."
+        },
+        {
+          "ref": "card: Reconfigure",
+          "quote": "(The first target must have{/i} [Augment] {i}to be able to be augmented.)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "29-hybrids-wm-a.test.ts",
+        "151-copy-and-moved-mods.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.augment.reconfigure.each-applied",
+    "parent": "effects.augment.reconfigure",
+    "order": 1,
+    "text": "Each mod Reconfigure moves is applied to the new host. An ability that triggers when a mod is applied to that unit triggers once for each moved mod.",
+    "examples": [
+      {
+        "text": "Bubb with two mods reconfigured onto Perpetual Construct makes three tokens, one per mod applied.",
+        "test": "393-raq-mods.test.ts::RAQ Reconfigure onto Perpetual Construct"
+      }
+    ],
+    "see": [
+      "effects.mods.applied-triggers"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353856176558706769#0",
+          "quote": "3 Triggers land on the stack: Create 1/1, Create 3/3, Create 4/4"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R332",
+          "quote": "Reconfigure is the exception, because its printed text says the mods are augmented."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R332": "a4514ee56e3f362eaf3d41bd562810d04ba83246c325c861cc9eab50acfc63ef",
+      "RAQ 1353856176558706769#0": "c3645e5b668d8436865f988b6ed50c8ecfa1a408c4ef86303565ad1719173a20"
+    }
+  },
+  {
+    "key": "effects.augment.reconfigure.copy",
+    "parent": "effects.augment.reconfigure",
+    "order": 2,
+    "text": "A unit that has become a copy of a card with the augment symbol does not have that symbol, so it cannot be Reconfigure's first target.",
+    "examples": [
+      {
+        "text": "A Borrower of Forms that copied an augment unit is not offered as Reconfigure's first target. (illustrative)",
+        "test": null
+      }
+    ],
+    "see": [
+      "208.5",
+      "710"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1372468222158180424#6",
+          "quote": "Q: Can BoFy (which copied augmentable unit) be 1st target of Reconfigure? A: No. True BoFy doesn't have :augment: symbol on him"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R336",
+          "quote": "Reconfigure's `[Augment]` check also stays printed, because the thread says \"True BoFy doesn't have :augment: symbol on him\"."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "The 393 guard for this claim asserts nothing (Reconfigure is never castable in its setup): F-U05-2, so no example is bound to it.",
+    "sourceHashes": {
+      "R336": "aab6004b9ea90667dc7257f50d7ed11f5ab5579c84b8a3a337abb5521da54278",
+      "RAQ 1372468222158180424#6": "d85bf21ea2b82c2373151dc7f1a82b03c80b7d150a101f7fc9c04cf28a251916"
+    }
+  },
+  {
+    "key": "effects.augment.by-effect",
+    "parent": "721",
+    "order": 6,
+    "text": "An effect can augment a card onto a unit when it resolves. When the effect augments a token (\"Augment a Wraith onto an ally\"), the token is created directly as a mod of that unit.",
+    "examples": [
+      {
+        "text": "\"Augment a Wraith onto a unit\" makes the Wraith token directly as a mod.",
+        "test": "37-attrs-wight.test.ts::R71: \"augment a Wraith onto a unit\" makes the same token, directly as a mod"
+      },
+      {
+        "text": "An augmented Wraith gives its host its first line: at the start of deployment the host puts a -1/-1 counter on an ally (itself, its only ally), so a 4/4 host becomes 3/3. The test does not exercise the second line.",
+        "test": "37-attrs-wight.test.ts::R71: an augmented Wraith donates BOTH lines to its host"
+      }
+    ],
+    "see": [
+      "304"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Wraith",
+          "quote": "When I die, Augment a Wraith onto an ally."
+        },
+        {
+          "ref": "card: Blight's End",
+          "quote": "Augment a Wight onto X target units."
+        },
+        {
+          "ref": "card: Xzydris",
+          "quote": "At the start of deployment you may Augment a Wraith onto a unit to recall me from your bin."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "37-attrs-wight.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "R71 (Wraith; Wight is the same card) is not in the U17 pack. Card texts from extract.json cards[] (Blight's End and Xzydris are in cards.md). Blight's End is a {Battle} spell, so an effect may augment during battle. Sources do not say whether such an augment targets or is a special action.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.graft.what",
+    "parent": "722",
+    "order": 1,
+    "text": "Graft is a modification that combines several effects under a single cause. It is marked by the graft symbol, written [Switch] (unbounded) or [Switch1] (bounded) in the card text this document quotes.",
+    "examples": [
+      {
+        "text": "Flame Juggle grafted onto Oracle of the Flame: one sacrifice makes the Oracle Fireball 1 and Flame Juggle three Fireball 1s.",
+        "test": "428-cr-modifications.test.ts::cr:effects.graft.what — a graft puts a second effect under the host cause: one sacrifice of Oracle of the Flame makes both effects"
+      }
+    ],
+    "see": [
+      "205.4"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.33",
+          "quote": "symbol on a card, is a modification that allows for"
+        },
+        {
+          "ref": "Manual p.33",
+          "quote": "the combination of multiple effects into a single cause,"
+        },
+        {
+          "ref": "card: Oracle of the Flame",
+          "quote": "Sacrifice me: [Switch] Create a Fireball 1."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "428-cr-modifications.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The [Switch]/[Switch1] spelling is the transcription's (printed.json).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.graft.what.cause-effect",
+    "parent": "effects.graft.what",
+    "order": 1,
+    "text": "A graft card's ability has a cause, before the graft symbol, and an effect, after it. Oracle of the Flame's cause is \"Sacrifice me\" and its effect is \"Create a Fireball 1\".",
+    "examples": [
+      {
+        "text": "Activating Oracle of the Flame sacrifices it and creates one Fireball 1.",
+        "test": "428-cr-modifications.test.ts::cr:effects.graft.what.cause-effect — Oracle of the Flame cause is Sacrifice me and its effect is Create a Fireball 1"
+      }
+    ],
+    "see": [
+      "205.4"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.33",
+          "quote": "All graft cards follow the template of cause and effect,"
+        },
+        {
+          "ref": "Manual p.33",
+          "quote": "Flame, the cause is “Sacrifice me” and the effect is"
+        },
+        {
+          "ref": "Rulebook 2023 p.16",
+          "quote": "All graft cards follow the template of “Cause ->(Graft) Effect”."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "428-cr-modifications.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.graft.what.after-symbol",
+    "parent": "effects.graft.what",
+    "order": 2,
+    "text": "When a card is grafted, only what follows its graft symbol is added to the host. Everything printed before the symbol, its cost and cause included, is ignored.",
+    "examples": [
+      {
+        "text": "A grafted Omniwield Evoker adds its counter to the host's trigger and charges nothing of its [three].",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 point 6"
+      }
+    ],
+    "see": [
+      "205.4"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#5",
+          "quote": "When attaching Grafts, you ignore everything that is written before the Graft symbol"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1355115946032889914#5": "516f6db355f982ca7ece13a11e72bfb071ccd19b2d97cbb015846aa4da2a5157"
+    }
+  },
+  {
+    "key": "effects.graft.what.played",
+    "parent": "effects.graft.what",
+    "order": 3,
+    "text": "A graft card still works as written when it is played normally. A spell or spell unit with a graft symbol resolves normally when it is played, and can later be grafted from the bin.",
+    "examples": [
+      {
+        "text": "A dead Leaping Lillik is a graft from the bin.",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 point 4"
+      }
+    ],
+    "see": [
+      "305.5",
+      "305.4"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.35",
+          "quote": "Cards with the augment and graft abilities still function as written, even"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#3",
+          "quote": "Spells or Spell-Units with Graft icon … later can be used as Graft from Bin"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1355115946032889914#3": "ba6dbebc80ea4d405c4c6c5f8070e1e04370fd6898df4a7c6fa8a5d4065aba0b"
+    }
+  },
+  {
+    "key": "effects.graft.requirements",
+    "parent": "722",
+    "order": 2,
+    "text": "Both cards must have the graft symbol. The host must be a unit in play with a graft cause of its own.",
+    "examples": [
+      {
+        "text": "A graft is refused onto a card without the graft symbol and a cause.",
+        "test": "04-mods.test.ts::grafting requires the graft symbol on both cards and a cause on the host"
+      },
+      {
+        "text": "Only a unit with a graft cause of its own can be grafted onto.",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 point 2"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.33",
+          "quote": "requirements in order to do so), with the additional requirement that both cards must have the graft symbol"
+        },
+        {
+          "ref": "Rulebook 2023 p.16",
+          "quote": "graft card, because there is no cause to trigger that effect. Grafts can only go"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#1",
+          "quote": "You need unit in play which will be target of the Grafts. That unit must have it's own Graft Cause"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "04-mods.test.ts",
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "A copy's graft cause is its face's (722.8).",
+    "sourceHashes": {
+      "RAQ 1355115946032889914#1": "ecac398c5257f57f5f592a6ee97d03a5ec2c07c72bbde856aefa4e6b1b67a58f"
+    }
+  },
+  {
+    "key": "effects.graft.applying",
+    "parent": "722",
+    "order": 3,
+    "text": "Applying a graft follows the same cost and timing as an augment: from the hand or the bin, during deployment, paying the card's cost and meeting its affinity.",
+    "examples": [
+      {
+        "text": "A graft comes from the bin as well as the hand, only when its cost and affinity are met.",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 point 3"
+      }
+    ],
+    "see": [
+      "effects.mods.cost",
+      "effects.mods.zones"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.33",
+          "quote": "Applying a graft follows the same cost and timing"
+        },
+        {
+          "ref": "Manual p.33",
+          "quote": "setup as augments (play from hand or bin during"
+        },
+        {
+          "ref": "Manual p.33",
+          "quote": "deployment, pay the card’s cost and meet affinity"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#2",
+          "quote": "You still must pay the cost and meet Affinity threshold"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1355115946032889914#2": "9f337d12f5fd058f571fec6cde21e8b5dc71e805c91a2651f132ecfc658f8d43"
+    }
+  },
+  {
+    "key": "effects.graft.applying.deployment-only",
+    "parent": "effects.graft.applying",
+    "order": 1,
+    "text": "A graft is applied only in deployment, never in the haste step or in battle, even when the graft card has Haste. The exceptions are a card that allows mods in the haste step, such as Slurpr (504.8a), and a Modular card, to which a graft card may be applied as the Modular card is played, in battle too (724).",
+    "examples": [
+      {
+        "text": "A graft is never offered in the haste step or in battle, even for a Haste card.",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 point 1:"
+      },
+      {
+        "text": "Under Slurpr a graft lands during the haste step.",
+        "test": "40-light-c.test.ts::Slurpr: a GRAFT lands during [Haste] too"
+      }
+    ],
+    "see": [
+      "504.8a",
+      "507.2a",
+      "724",
+      "effects.mods.special-action.exceptions"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Slurpr",
+          "quote": "You can apply other mods during [Haste] as if it was deployment."
+        },
+        {
+          "ref": "card: Spellbind",
+          "quote": "You can apply mods to a modular card from your hand and/or bin as it is played."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#0",
+          "quote": "Grafting can only be done during Deployment Phase"
+        },
+        {
+          "ref": "RAQ 1355115946032889914#0",
+          "quote": "Always in deployment. No matter what cards speed is"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R105",
+          "quote": "> \"I think it's legal to apply ANYTHING to a Modular card. But many cards wont"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts",
+        "40-light-c.test.ts",
+        "428-cr-modifications.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "That Slurpr's \"other mods\" includes grafts is R95's reading (\"R37's word for both\"). The Modular exception (verifier r1): Spellbind is a {Battle} card and R105 lets ANY card be applied to it, grafts included; the verifier's probe applied Immolate as a mod to Spellbind in battle. Graft 101's \"only during Deployment Phase\" is read as being about grafting onto a unit: D-U17-12.",
+    "sourceHashes": {
+      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5",
+      "RAQ 1355115946032889914#0": "570bdde45f267e2fa36e032e03d4220f54649c976e64bfc3afdf08fb321d1661"
+    }
+  },
+  {
+    "key": "effects.graft.applying.not-by-rook",
+    "parent": "effects.graft.applying",
+    "order": 2,
+    "text": "A card that lets cards be augmented in battle as if they were Viruses (Rook) does not let a card be grafted in battle.",
+    "examples": [
+      {
+        "text": "With Rook in play, Curio Drifter is offered as an augment in battle, but Flame Juggle is not offered as a graft.",
+        "test": "428-cr-modifications.test.ts::cr:effects.graft.applying.not-by-rook — with Rook in play an augment card is offered in battle but a graft card is not"
+      }
+    ],
+    "see": [
+      "effects.virus.permission"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Rook",
+          "quote": "You may augment cards from hand and bin during battle as if they were [Virus]."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R95 (its Rook-grant half)",
+          "quote": "3. **Does it cover GRAFT?** Printed text says \"augment\", `doGraft` is deployment-only,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "428-cr-modifications.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "Printed text answers it (\"augment\"); R95 left it as an open question with the recommendation no: D-U17-5. No test checks it.",
+    "sourceHashes": {
+      "R95": "f6a27c0893397fad2912dfff4be2be9bf0c4a8aceb667dc2d5dee7b44247c7eb"
+    }
+  },
+  {
+    "key": "effects.graft.applying.targets",
+    "parent": "effects.graft.applying",
+    "order": 3,
+    "text": "Applying a graft targets the host. An ability that triggers when its unit becomes targeted (Mohruung) triggers first, before the graft is attached.",
+    "examples": [
+      {
+        "text": "Grafting onto Mohruung targets it, so it makes its Crystal.",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 point 5"
+      }
+    ],
+    "see": [
+      "110.10",
+      "110.11"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#4",
+          "quote": "Applying Graft is 'targeting' effect, so if you try to Graft something underneath the Mohruung, he will trigger first"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts",
+        "428-cr-modifications.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "medium",
+    "notes": "The designer says only \"he will trigger first\". Whether the trigger must also RESOLVE before the graft attaches is D-U03-13 (owner question); the verifier measured that the engine attaches the graft before the trigger resolves (F-U03-5, which applies under reading (1) only). The verifier also measured that the graft being applied does not join the triggered composite (0 Fireballs): sources silent, D-U17-13.",
+    "sourceHashes": {
+      "RAQ 1355115946032889914#4": "2a28941d645c95cca0c5eaacec4f843c7b6adad38ca159527170c52dce59e0cc"
+    }
+  },
+  {
+    "key": "effects.graft.applying.position",
+    "parent": "effects.graft.applying",
+    "order": 4,
+    "text": "A player applying a new graft may insert it at any position below the host's own card, but may not re-order the grafts already applied.",
+    "examples": [
+      {
+        "text": "A new graft slides between two already applied, whose order stays fixed.",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 point 10"
+      },
+      {
+        "text": "The insert position decides the order the composite resolves in.",
+        "test": "04-mods.test.ts::graft insert position: below the base, order controls resolution"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.33",
+          "quote": "insert the new effect at any position within the graft"
+        },
+        {
+          "ref": "Manual p.33",
+          "quote": "stack below the original card, but you may not re-order"
+        },
+        {
+          "ref": "Manual p.43",
+          "quote": "A: No, but you can place new mods in-between old"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#9",
+          "quote": "You cannot change the order of the Grafts already applied, but new Grafts can be 'slided' between existing ones."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts",
+        "04-mods.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1355115946032889914#9": "d5a010b2c16e09dd87006d31e01779bcc080294be3413f074cdee3b4de17f4f4"
+    }
+  },
+  {
+    "key": "effects.graft.composite",
+    "parent": "722",
+    "order": 4,
+    "text": "Each grafted effect is added to the cause of the host's own card. The host's ability then reads \"cause: effect 1 AND effect 2 AND effect 3 …\", in the order the grafts sit.",
+    "examples": [
+      {
+        "text": "Accelerated Germination grafted onto Oracle of the Flame reads \"Sacrifice me: Create a Fireball 1 AND (once per turn) create two 1/1 units.\" (illustrative)",
+        "test": null
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.33",
+          "quote": "adding additional effects onto the cause of the topmost card. The resulting card is read as"
+        },
+        {
+          "ref": "Manual p.33",
+          "quote": "“Cause — effect1 AND effect2 AND effect3... etc.”"
+        },
+        {
+          "ref": "Rulebook 2023 p.16",
+          "quote": "Cause -> Effect1 AND Effect2 AND Effect3...etc”."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The example is the Manual's own (p.33).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.graft.composite.top-cause",
+    "parent": "effects.graft.composite",
+    "order": 1,
+    "text": "The host's own graft cause decides when the whole composite triggers or can be activated.",
+    "examples": [
+      {
+        "text": "The host's attack trigger fires the host's effect and every graft under it.",
+        "test": "04-mods.test.ts::graft composition: composite fires as ONE stack item, top-to-bottom"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#6",
+          "quote": "Once Grafts are attached, the original 'top' units Graft Cause dictates when the whole effect is triggered/activated."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "04-mods.test.ts",
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1355115946032889914#6": "318d8bf65cfe4f0db1d169bed40d355bf7016008932a34c484ac3b16f01ee5b6"
+    }
+  },
+  {
+    "key": "effects.graft.composite.one-ability",
+    "parent": "effects.graft.composite",
+    "order": 2,
+    "text": "The composite is a single ability. It goes on the stack as one item, resolves all at once, and a single negation stops all of it.",
+    "examples": [
+      {
+        "text": "The host trigger and every graft under it are one stack item, and one negate stops all of it.",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 point 8"
+      },
+      {
+        "text": "In battle a single negation kills the whole composite.",
+        "test": "04-mods.test.ts::composite is ONE stack item in battle"
+      }
+    ],
+    "see": [
+      "703"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.33",
+          "quote": "The resulting ability is treated as a single ability, so it"
+        },
+        {
+          "ref": "Manual p.33",
+          "quote": "entire effect can be negated by a single spell. There"
+        },
+        {
+          "ref": "Rulebook 2023 p.16",
+          "quote": "to bottom, and the entire thing can be countered by a single spell."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#7",
+          "quote": "Triggered/Activated Graft is SINGLE effect on the stack"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts",
+        "04-mods.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1355115946032889914#7": "ca18f8dd6ecd05db3432489330fa44d1393b2d394619490e8117e6f41cc0554c"
+    }
+  },
+  {
+    "key": "effects.graft.composite.order",
+    "parent": "effects.graft.composite",
+    "order": 3,
+    "text": "The composite resolves from top to bottom: the host's own effect first, then each graft in the order it sits.",
+    "examples": [
+      {
+        "text": "Under Mohruung, Overbloom above Spewing Mushroom makes a Poison 8; below it, a Poison 1.",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 point 9"
+      }
+    ],
+    "see": [
+      "704"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.33",
+          "quote": "will all resolve at once, from top to bottom, and the"
+        },
+        {
+          "ref": "Manual p.33",
+          "quote": "Grafted effects resolve as one ability from top to"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#8",
+          "quote": "Graft Effect will be resolved from top to bottom."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "\"The host's own effect first\" follows from it being the top card; no source says it in so many words.",
+    "sourceHashes": {
+      "RAQ 1355115946032889914#8": "5d8fdd0e7a197d01d98fb0a69b1ac3cd6b88715949d9ce8eb032b92da9b37163"
+    }
+  },
+  {
+    "key": "effects.graft.composite.targets",
+    "parent": "effects.graft.composite",
+    "order": 4,
+    "text": "Every target of the composite is declared when it is put on the stack. A part that requires a target must take one if any is legal, even one of the player's own units.",
+    "examples": [
+      {
+        "text": "With no enemy on the board, the grafted delete must take one of the player's own units.",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 Plodding Pebble example"
+      }
+    ],
+    "see": [
+      "110",
+      "702.8b"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#15",
+          "quote": "player must at that time delcare targets for all things"
+        },
+        {
+          "ref": "RAQ 1355115946032889914#15",
+          "quote": "If there wasn't Voltwrath Behemoth in the first place, player would still need to target something to be deleted"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1355115946032889914#15": "e0be6ade854b768d70790c837d9194c9624e35d2aeeab38d789e2fc926535cd6"
+    }
+  },
+  {
+    "key": "effects.graft.composite.no-target",
+    "parent": "effects.graft.composite",
+    "order": 5,
+    "text": "A triggered composite with a part that requires a target, when that part has no legal target, is not put on the stack at all. Its untargeted parts do not happen either.",
+    "examples": [
+      {
+        "text": "Megadeath with Resurrect grafted attacks with no cheap unit in the bin: no Poison 5 either.",
+        "test": "390-raq-stack.test.ts::RAQ target requirements: a graft trigger with a required target and none available makes nothing at all"
+      }
+    ],
+    "see": [
+      "702.8b"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1410252965276684418#2",
+          "quote": "'Create Poison 5' + 'Put target unit with cost 2 or less from your bin into play' can't be put on the stack unless you target such unit in your bin."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "engineDiffers": [
+      "F-U14-1"
+    ],
+    "notes": "The engine reaches the same visible result by stacking and fizzling the item (F-U14-1; measured by the r1 verifier's probe: \"Megadeath: Create a Poison 5 → stack.\" then a fizzle). The difference shows in a bounded use spent by the fizzle (R113), a response window, and a tax.",
+    "sourceHashes": {
+      "RAQ 1410252965276684418#2": "db27f57d93e2c1e65f0238cbb4d49645cdd87eb58adcf9d058fa1a7dc8b0e104"
+    },
+    "rebuttal": "Text kept: it states the designer ruling (RAQ 1410252965276684418#2: \"can't be put on the stack unless you target such unit\"), which outranks the engine. engineDiffers F-U14-1 was already set (stripped from the verifier's copy); the verifier's probe confirms that divergence (1 item pushed, then a fizzle). The example claims only \"no Poison 5\", which the bound test asserts."
+  },
+  {
+    "key": "effects.graft.composite.fizzle",
+    "parent": "effects.graft.composite",
+    "order": 6,
+    "text": "A composite fizzles only when it has lost all of its targets, and then none of it happens, its untargeted parts included. While at least one target remains, every part resolves as far as it can. A composite that declared no target anywhere never fizzles.",
+    "examples": [
+      {
+        "text": "A composite that loses its only target fizzles whole: no Poison from the untargeted grafts.",
+        "test": "78-round17-core.test.ts::R86: a graft composite that loses its ONLY target fizzles whole"
+      },
+      {
+        "text": "One surviving target carries the untargeted grafts through.",
+        "test": "78-round17-core.test.ts::R86: one surviving target carries the untargeted grafts through"
+      },
+      {
+        "text": "An item that declares no target anywhere never fizzles.",
+        "test": "78-round17-core.test.ts::R86: an item that declares NO target anywhere never fizzles"
+      }
+    ],
+    "see": [
+      "704"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R86",
+          "quote": "> **A:** \"**If effect loses ALL of its targets and wants to resolve.**\""
+        },
+        {
+          "ref": "R86",
+          "quote": "> when resolving **(yielding no card draw from 2nd and 3rd graft)**."
+        },
+        {
+          "ref": "R86",
+          "quote": "1 target must remain for whole effect to be carried out\"*, and *\"in order for"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "78-round17-core.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R86 quotes the RAQ thread \"[Solved] When does effect fizzles?\" verbatim, but the pack has no claim for that half, so the basis is the ruling. The same thread says Caleb may change this: D-U17-6.",
+    "sourceHashes": {
+      "R86": "639a304dbea161a97285440693b0b8e75776b784985f43b8071cdc46ade4824c"
+    }
+  },
+  {
+    "key": "effects.graft.composite.tax",
+    "parent": "effects.graft.composite",
+    "order": 7,
+    "text": "A graft composite is a triggered or activated ability like any other. A modifier to the cost of activating or triggering abilities (Crevice Lurker) applies to it.",
+    "examples": [
+      {
+        "text": "Crevice Lurker taxes a graft trigger like any other.",
+        "test": "390-raq-stack.test.ts::RAQ Crevice Lurker: a graft trigger is taxed like any other"
+      }
+    ],
+    "see": [
+      "111.10f"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355103348378042515#1",
+          "quote": "this INCLUDES Graft triggers like for Bellowing Boulder"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1355103348378042515#1": "e2335d4ac86097650aed08da338a5aa1b5f492a7b6d40187666ccbf908d9b16e"
+    }
+  },
+  {
+    "key": "effects.graft.bounded",
+    "parent": "722",
+    "order": 5,
+    "text": "A graft is either unbounded ([Switch]) or bounded ([Switch1]). An unbounded graft can trigger any number of times; a bounded graft can trigger only once per turn.",
+    "examples": [
+      {
+        "text": "Plodding Pebble's bounded graft gives one counter per turn.",
+        "test": "17-earth-b.test.ts::Plodding Pebble: dealt damage → a +1/+1 counter, once per turn ([Switch1])"
+      }
+    ],
+    "see": [
+      "109.9"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.33",
+          "quote": "denotes an unbounded graft, which can trigger an unlimited number of times, whereas"
+        },
+        {
+          "ref": "Manual p.33",
+          "quote": "trigger once per turn."
+        },
+        {
+          "ref": "Rulebook 2023 p.16",
+          "quote": "called a limited graft, which means that ability only triggers once per turn."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "17-earth-b.test.ts",
+        "04-mods.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "When a bounded use is spent is 109.9a (R113).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.graft.bounded.unbounded-cause",
+    "parent": "effects.graft.bounded",
+    "order": 1,
+    "text": "Under an unbounded cause, the composite can fire any number of times, but each bounded graft in it is included only the first time in a turn.",
+    "examples": [
+      {
+        "text": "An unbounded host activated twice carries its bounded graft only the first time.",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 point 12: an unbounded host activated twice"
+      }
+    ],
+    "see": [
+      "109.9i"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.33",
+          "quote": "bounded and unbounded effects, the graft cause will trigger an unlimited number of times, but each of the bounded effects will only trigger a limited number of times."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#13",
+          "quote": "Any Unbounded Grafts underneath will be included on every resolution, but Bounded Grafts underneath will be included only on 1st resolution."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts",
+        "04-mods.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1355115946032889914#13": "9c6de10396bd5ba4d54b8b2fc6e245fa17c45e9f051aa9181e4cdbd3fc8e8d7d"
+    }
+  },
+  {
+    "key": "effects.graft.bounded.bounded-cause",
+    "parent": "effects.graft.bounded",
+    "order": 2,
+    "text": "Under a bounded cause, the whole composite fires only once per turn, its unbounded grafts included.",
+    "examples": [
+      {
+        "text": "A bounded host triggers once per turn, so an unbounded graft under it happens once.",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 point 12: a bounded host triggers once per turn"
+      }
+    ],
+    "see": [
+      "109.9h"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.33",
+          "quote": "only trigger a limited number of times, even if unbounded effects are grafted onto it."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#14",
+          "quote": "it can only trigger once per turn, meaning any Unbounded Graft … will only happen once."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts",
+        "04-mods.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1355115946032889914#14": "9c9eef42aa233f5ed58f911d7ba93f8a33a9ff9d365455e127d814f61f75bb49"
+    }
+  },
+  {
+    "key": "effects.graft.bounded.per-mod",
+    "parent": "effects.graft.bounded",
+    "order": 3,
+    "text": "Each grafted card has its own use. Two copies of the same bounded graft on one host each have one use.",
+    "examples": [],
+    "see": [
+      "109.9k"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R113",
+          "quote": "The budget is per *card* (R9), which for the rider means per **mod entity** — two copies of"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "94-bounded-uses.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Restates 109.9k (U03) at the graft section.",
+    "sourceHashes": {
+      "R113": "5e60b78d62e0fcbcbf037cb9014632e2b5df2a9d0759f4a3ce713d7af2443f69"
+    }
+  },
+  {
+    "key": "effects.graft.bounded.new-object",
+    "parent": "effects.graft.bounded",
+    "order": 4,
+    "text": "A unit that leaves play and comes back is a new object, so its bounded graft can be used again the same turn.",
+    "examples": [
+      {
+        "text": "A recalled and replayed Engorged Caudex draws from its bounded graft again the same turn.",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 calebgannon"
+      }
+    ],
+    "see": [
+      "410"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#16",
+          "quote": "recall Caudex, play him again, play unit, get 2nd card\"; calebgannon: \"Yes that works\""
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1355115946032889914#16": "abae6cef85e10fe99218407de9525b8c3ed984778e54d0fc43a32c796d206b02"
+    }
+  },
+  {
+    "key": "effects.graft.costs",
+    "parent": "722",
+    "order": 6,
+    "text": "A graft printed \"{graft} [cost]: effect\" adds a cost to the composite. That cost must be paid; it cannot be declined.",
+    "examples": [
+      {
+        "text": "A payable [cost] graft must be paid; there is no opting out.",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 point 11: a payable [cost] graft must be paid"
+      },
+      {
+        "text": "A grafted Immolate's sacrifice is paid at composite cast time, with no decline offered.",
+        "test": "32-cast-costs.test.ts::grafted Immolate: the carrier must pay the cost at composite cast time"
+      }
+    ],
+    "see": [
+      "111.15"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#11",
+          "quote": "non-optional (you MUST pay it, you can't opt out)"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R334",
+          "quote": "- A grafted `[cost]` cannot be declined."
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R35",
+          "relation": "its grafted riders 'may be declined' and 'an unpayable rider is skipped' reversed by R334"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts",
+        "32-cast-costs.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "Restates 111.15 (U04) at the graft section. A Modular spell's graft part is different: 724.4c.",
+    "sourceHashes": {
+      "R334": "6c082324d0276473fe72532b3e3ba0c47e93f6f7d836b7e69cebe89191a37604",
+      "RAQ 1355115946032889914#11": "1a03577e8ae2aecb76a6b2b7fe9d3c4d7a66dd9bc8bf481524856a9808e43420"
+    }
+  },
+  {
+    "key": "effects.graft.costs.unpayable",
+    "parent": "effects.graft.costs",
+    "order": 1,
+    "text": "If a grafted cost cannot be paid, the whole composite stays off the stack: the host's own effect and every other graft with it.",
+    "examples": [
+      {
+        "text": "An unpayable [cost] graft keeps the host and the other grafts off the stack too.",
+        "test": "393-raq-mods.test.ts::RAQ Graft 101 point 11: an unpayable [cost] graft keeps the whole composite off the stack"
+      },
+      {
+        "text": "An activated graft cause whose grafted cost cannot be paid is not offered.",
+        "test": "403-raq-fix-mods.test.ts::R334: an activated graft cause whose grafted [cost] cannot be paid is not offered at all"
+      }
+    ],
+    "see": [
+      "111.15"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#10",
+          "quote": "if you can't pay it (no units to sacrifice) then the whole Graft Effect won't go on the stack."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R334",
+          "quote": "- If it cannot be paid, the **whole composite** stays off the stack: the graft cause's own effect and every other graft with it."
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R110",
+          "relation": "narrowed by R334: an unpayable multiplied graft cost withholds the whole composite, not just that graft"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts",
+        "403-raq-fix-mods.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R334": "6c082324d0276473fe72532b3e3ba0c47e93f6f7d836b7e69cebe89191a37604",
+      "RAQ 1355115946032889914#10": "c58ce2f15368b2ff1de72b60b7a77e93dab77f75a7f1d12d9c1530a82bff1ed7"
+    }
+  },
+  {
+    "key": "effects.graft.costs.instant",
+    "parent": "effects.graft.costs",
+    "order": 2,
+    "text": "The cost is paid as the composite goes on the stack. No player can respond to the payment, and units the composite itself would create cannot pay it.",
+    "examples": [
+      {
+        "text": "A \"[cost]: effect\" graft under Lost Guardian pays its cost twice and resolves twice.",
+        "test": "17-earth-b.test.ts::graft under Lost Guardian pays its cost TWICE and resolves twice"
+      }
+    ],
+    "see": [
+      "111"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1355115946032889914#12",
+          "quote": "This Additional cost must be paid instantly in order for Effect to go on stack"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "17-earth-b.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "The example is the RAQ register's guard; it shows payment at cast, not the unrespondability.",
+    "sourceHashes": {
+      "RAQ 1355115946032889914#12": "56640f1cc69f429df0aabe8a1988a0f16a646a596cc37162b8c55144564ff72c"
+    }
+  },
+  {
+    "key": "effects.graft.multiplier",
+    "parent": "722",
+    "order": 7,
+    "text": "Some graft causes trigger several copies of the graft ability as one single trigger: Lost Guardian two, Amphivore and Witness of the Crossing three. The copies are one effect on the stack.",
+    "examples": [
+      {
+        "text": "Amphivore's combat damage to an opponent triggers its grafts three times, in one trigger.",
+        "test": "14-water-a.test.ts::Amphivore: combat damage to an opponent triggers grafts thrice (one trigger)"
+      },
+      {
+        "text": "Lost Guardian's after-combat trigger runs each graft twice as one trigger.",
+        "test": "17-earth-b.test.ts::Lost Guardian: after combat, each attached graft triggers twice as one trigger"
+      }
+    ],
+    "see": [
+      "111.14"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Lost Guardian",
+          "quote": "(Trigger two copies of this graft ability as one single trigger.)"
+        },
+        {
+          "ref": "card: Amphivore",
+          "quote": "(Trigger three copies of this graft ability as one single trigger)"
+        },
+        {
+          "ref": "card: Witness of the Crossing",
+          "quote": "When your life total becomes 1 or 13 during battle, [Switch1][Switch1][Switch1]"
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1353859961855148103#0",
+          "quote": "It creates single effect on the stack with doubled/tripled Grafts Effect."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "14-water-a.test.ts",
+        "17-earth-b.test.ts",
+        "40-light-c.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Witness of the Crossing prints three graft symbols and no reminder; R110 groups it with the others. A multiplier grafted under a multiplier is unruled: D-U17-8.",
+    "sourceHashes": {
+      "RAQ 1353859961855148103#0": "ec001774d0204b0ac1afc724eb2609f348e58247e7c8ff03af0e41e1f9106fb6"
+    }
+  },
+  {
+    "key": "effects.graft.multiplier.order",
+    "parent": "effects.graft.multiplier",
+    "order": 1,
+    "text": "The copies run top to bottom, then top to bottom again, once for each copy.",
+    "examples": [
+      {
+        "text": "Amphivore with Plodding Pebble and Bellowing Boulder goes counter, damage, counter, damage, counter, damage.",
+        "test": "393-raq-mods.test.ts::RAQ Amphivore: a tripled composite runs its grafts top to bottom"
+      }
+    ],
+    "see": [
+      "effects.graft.composite.order"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353859961855148103#1",
+          "quote": "Order of Effects is 'top to bottom' and then 'top to bottom' again (Graft 1 -> Graft 2 -> Graft 3 -> Graft 1 …)"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1353859961855148103#1": "2974ddd85bb56cfd8dc9fa0e4faee8a9adc4dd45d13d4eb32964c49631877949"
+    }
+  },
+  {
+    "key": "effects.graft.multiplier.bounded",
+    "parent": "effects.graft.multiplier",
+    "order": 2,
+    "text": "A bounded graft under a multiplier is repeated too.",
+    "examples": [
+      {
+        "text": "Amphivore triples a bounded \"Create three\" graft into nine Fireballs.",
+        "test": "14-water-a.test.ts::R110: Amphivore triples a BOUNDED [Switch1] graft"
+      },
+      {
+        "text": "Lost Guardian repeats a bounded graft too.",
+        "test": "17-earth-b.test.ts::R110: Lost Guardian repeats a BOUNDED [Switch1] graft too"
+      }
+    ],
+    "see": [
+      "109.9j"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353859961855148103#2",
+          "quote": "Any Bounded Grafts will be repeated."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "14-water-a.test.ts",
+        "17-earth-b.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1353859961855148103#2": "5229887a1d8fcbb61f0fb1ee1295178c21b927850d32c4cf6c7fd6c2eb9b1652"
+    }
+  },
+  {
+    "key": "effects.graft.multiplier.targets",
+    "parent": "effects.graft.multiplier",
+    "order": 3,
+    "text": "Each copy of a targeted graft chooses its targets separately.",
+    "examples": [
+      {
+        "text": "A targeted graft under Amphivore aims each of its three copies separately.",
+        "test": "14-water-a.test.ts::R110: a TARGETED graft under Amphivore aims each of its three copies separately"
+      }
+    ],
+    "see": [
+      "110"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R110 (its copy-targeting half)",
+          "quote": "- A targeted graft aims each copy separately (each part collects its own"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "14-water-a.test.ts",
+        "40-light-c.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "The RAQ register's own note says the thread does not say this in so many words; R110 reads it out of the thread.",
+    "sourceHashes": {
+      "R110": "8776d97c50c209e6c9ee10cb7fa563ce5c67dd9b40041ab43e45de0c35fddb30"
+    }
+  },
+  {
+    "key": "effects.graft.multiplier.costs",
+    "parent": "effects.graft.multiplier",
+    "order": 4,
+    "text": "A cost in a repeated graft is paid once for each copy. If the multiplied cost cannot be paid in full, none of it is paid, and the composite stays off the stack (722.6a).",
+    "examples": [
+      {
+        "text": "With one card in hand, a doubled [Discard a card] cannot be paid: nothing is paid and nothing happens.",
+        "test": "17-earth-b.test.ts::R110: all or nothing — one card in hand cannot pay a doubled [Discard a card]"
+      }
+    ],
+    "see": [
+      "111.14",
+      "effects.graft.costs.unpayable"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353859961855148103#4",
+          "quote": "Cost must be paid twice (Lost Guardian) or trice (Amphivore)."
+        },
+        {
+          "ref": "RAQ 1353859961855148103#5",
+          "quote": "No Sacrifice at all and you don't get the effect."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R334",
+          "quote": "That covers paying it N times (R110's multiplied grafts) as well."
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R110",
+          "relation": "its 'skip only that effect' reading of an unpayable multiplied cost narrowed by R334 to the whole composite"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "17-earth-b.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "\"You don't get the effect\" (Amphivore thread) read narrowly by R110 and widely by R334 (from Graft 101 point 11): D-U17-7.",
+    "sourceHashes": {
+      "R334": "6c082324d0276473fe72532b3e3ba0c47e93f6f7d836b7e69cebe89191a37604",
+      "RAQ 1353859961855148103#4": "71d29601ef74cb10c94e3e126818f3f837800cf444b4ebef77603263c6f734a0",
+      "RAQ 1353859961855148103#5": "e76eb85747e60fd292c770c1843f8184363e120947d683bf484fd432d9730029"
+    }
+  },
+  {
+    "key": "effects.graft.multiplier.as-far-as-possible",
+    "parent": "effects.graft.multiplier",
+    "order": 5,
+    "text": "A copy that cannot do part of its effect does the rest. Ralph grafted under a multiplier gives the host away and makes three 1/1s on the first pass only; the later passes cannot give it away, and the rest of the composite still runs every time.",
+    "examples": [
+      {
+        "text": "Amphivore with Ralph grafted: the first pass gives the host away and makes three 1/1s, the later passes give nothing, and the other graft runs three times.",
+        "test": "393-raq-mods.test.ts::RAQ Amphivore with Ralph grafted"
+      }
+    ],
+    "see": [
+      "101"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353859961855148103#3",
+          "quote": "You just can't give Ralph, but that's okay - rest of graft still happens."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1353859961855148103#3": "0f00309dc741ed7d3ff9c1a0dbfa514d90cf1c3320dd08e4d1f95e0225957f20"
+    }
+  },
+  {
+    "key": "effects.graft.copies",
+    "parent": "722",
+    "order": 8,
+    "text": "A unit that has become a copy of a grafted unit runs the whole copied composite. More grafts may be added to it, but only below the copied grafts.",
+    "examples": [
+      {
+        "text": "A Borrower that copied a Bellowing Boulder with Flame Juggle grafted runs the whole copied composite.",
+        "test": "393-raq-mods.test.ts::RAQ Borrower of Forms: a Borrower that copied a Bellowing Boulder"
+      },
+      {
+        "text": "A graft added to that Borrower resolves below the copied grafts.",
+        "test": "393-raq-mods.test.ts::RAQ Borrower of Forms: a graft added to a Borrower"
+      }
+    ],
+    "see": [
+      "710"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1372468222158180424#4",
+          "quote": "it inherits all of the combined text"
+        },
+        {
+          "ref": "RAQ 1372468222158180424#5",
+          "quote": "Yes, BUT only 'underneath' original copied grafts."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R336",
+          "quote": "- **Copied grafts run.** \"It inherits all of the combined text\": a copy of a grafted unit runs its graft cause with the copied grafts."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "393-raq-mods.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "Copies are 710 (U16).",
+    "sourceHashes": {
+      "R336": "aab6004b9ea90667dc7257f50d7ed11f5ab5579c84b8a3a337abb5521da54278",
+      "RAQ 1372468222158180424#4": "7df1d2347ae80bbe46d437f62c7841dd43e74c3ee3fb7eb1aeacdbcc7a628037",
+      "RAQ 1372468222158180424#5": "82edfb53d8bbdcf31bee61244484fef0741789970ea31ed2dec111a502e0eaad"
+    }
+  },
+  {
+    "key": "effects.virus.what",
+    "parent": "723",
+    "order": 1,
+    "text": "Virus is a timing icon. A Virus card can be applied as an augment from the hand during battle, as well as being played and augmented normally during deployment.",
+    "examples": [
+      {
+        "text": "Aetherflux Golem augments the attacker from hand during battle; in deployment it may be played as a unit or augmented.",
+        "test": "428-cr-modifications.test.ts::cr:effects.virus.what — a Virus is applied as an augment from hand in battle, and in deployment it may be played or augmented normally"
+      }
+    ],
+    "see": [
+      "207.5"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.34",
+          "quote": "Viruses have the extra ability to mod units directly from your hand during combat in addition to being playable and augmentable normally during the deployment phase."
+        },
+        {
+          "ref": "Manual p.34",
+          "quote": "They are marked by the virus symbol in the top right of the card."
+        },
+        {
+          "ref": "Rulebook 2023 p.3",
+          "quote": "▪ The virus icon (4) allows you to augment cards from hand during"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "428-cr-modifications.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The transcription writes it {Virus} on the type line. The cache also reaches the battle window: 723.2a.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.virus.what.augment",
+    "parent": "effects.virus.what",
+    "order": 1,
+    "text": "A Virus applied in battle is an augment: it gives its host its augment text or its type-line attributes (721.1), and an ability that triggers when a player applies an augment triggers on it.",
+    "examples": [
+      {
+        "text": "Morphic Mentor's controller applies an augment in battle and the Mentor gets +2/+2; an enemy's augment does not count.",
+        "test": "17-earth-b.test.ts::Morphic Mentor: your battle augment gives +2/+2 until regroup; an enemy augment does not"
+      }
+    ],
+    "see": [
+      "effects.augment.what"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.34",
+          "quote": "Since they can be augmented during combat, viruses"
+        },
+        {
+          "ref": "card: Morphic Mentor",
+          "quote": "Whenever you apply an augment during battle, [Switch] I gain +2/+2 until regroup."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "17-earth-b.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.virus.what.timing-not-host",
+    "parent": "effects.virus.what",
+    "order": 2,
+    "text": "Virus changes when a card may be augmented, not what it may be augmented onto. In deployment a Virus is applied like any other augment.",
+    "examples": [
+      {
+        "text": "In deployment Aetherflux Golem, a Virus, can augment your own unit but not an opponent unit.",
+        "test": "428-cr-modifications.test.ts::cr:effects.virus.what.timing-not-host — in deployment a Virus is offered onto your own unit only, like any augment"
+      }
+    ],
+    "see": [
+      "effects.augment.hosts"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.34",
+          "quote": "Viruses have the extra ability to mod units directly from your hand during combat in addition to being playable and augmentable normally during the deployment phase."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R89",
+          "quote": "That is the axis the restriction runs along: **{Virus} buys you the TIMING, not"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "428-cr-modifications.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "R89 says its reading is sourced to the community (_passer in chat, not a [Solved] write-up): D-U17-11.",
+    "sourceHashes": {
+      "R89": "784373f2e8f5ed90bf2121ff1bb5e8a44b216abda1116a8cc197df53973fcf90"
+    }
+  },
+  {
+    "key": "effects.virus.battle",
+    "parent": "723",
+    "order": 2,
+    "text": "During a battle, a player who has priority may apply a Virus from their hand onto any unit in the battle's region, their own or an opponent's.",
+    "examples": [
+      {
+        "text": "A player applies Smouldering Inferno from hand to the opponent's attacker; the Virus goes on the stack and the host is modded when it resolves.",
+        "test": "04-mods.test.ts::virus augment during battle: on the stack, donated to an enemy, text-only transfer"
+      }
+    ],
+    "see": [
+      "703"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.34",
+          "quote": "Since they can be augmented during combat, viruses"
+        },
+        {
+          "ref": "Manual p.34",
+          "quote": "also are able to augment onto opposing units. This is"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R79 (its stack-host half)",
+          "quote": "modifier taxes it. The battle branch of `doAugment` already required priority"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "04-mods.test.ts",
+        "370-cached-virus-in-battle.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "Print gives the opposing-unit half. The priority and battle-region conditions come only from R79's description of the engine (\"required priority and the battle region\") and R311's KEMX account; no printed or designer sentence states them.",
+    "sourceHashes": {
+      "R79": "277d0cf45026e900543e1fb8289130794a9da06a12d6c29e967b7ba613b96f5d"
+    }
+  },
+  {
+    "key": "effects.virus.battle.cache",
+    "parent": "effects.virus.battle",
+    "order": 1,
+    "text": "A Virus may also be applied in battle from the cache, while a permission to use it is live, at the cache's price (720.4b). With no live permission it cannot.",
+    "examples": [
+      {
+        "text": "A glimpsed Virus in the cache goes onto an enemy unit in battle, ignoring affinity.",
+        "test": "370-cached-virus-in-battle.test.ts::R311: a glimpsed Virus in the cache goes onto an ENEMY unit in battle"
+      },
+      {
+        "text": "A Virus whose prophecy is fulfilled is applied in battle for free.",
+        "test": "370-cached-virus-in-battle.test.ts::R311: a Virus whose prophecy is fulfilled augments in battle for FREE"
+      },
+      {
+        "text": "An expired glimpse is nothing in battle.",
+        "test": "370-cached-virus-in-battle.test.ts::R311: an EXPIRED glimpse is still nothing in battle"
+      }
+    ],
+    "see": [
+      "403.3b",
+      "effects.mods.cost.cache"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1537748882501668934#3",
+          "quote": "Glimpse which would allow you to 'play' Viruses during Battle"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R311",
+          "quote": "functions 100% like the hand* except *for the fact that it's not considered your"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R95",
+          "relation": "its sentence that the base battle-augment rule refuses the cache corrected by R311"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "370-cached-virus-in-battle.test.ts",
+        "369-cache-is-the-hand.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The Manual's \"the virus ability only works from hand\" is already recorded against R311 as D-U07-2.",
+    "sourceHashes": {
+      "R311": "dff09246da3a81a8b90c1f386c3bdd5a463e44e7086278b0d4116e6bfd877122",
+      "RAQ 1537748882501668934#3": "58d15a8f21bd69d98736c68f7e52c872ebcbec1bd08dd995eedac13a2d589288"
+    }
+  },
+  {
+    "key": "effects.virus.battle.not-bin",
+    "parent": "effects.virus.battle",
+    "order": 2,
+    "text": "A Virus in a bin cannot be applied during battle by its Virus ability. From the bin it can be applied as an ordinary mod during deployment, and outside deployment only where another card opens a window: augmenting in battle under a card such as Rook (723.5), applying to a Modular card as it is played (724), or applying in the haste step under a card such as Slurpr (504.8a).",
+    "examples": [
+      {
+        "text": "Bumblecrab, a Virus, is offered from the hand in battle but not from the bin; in deployment it is offered from the bin.",
+        "test": "418-cr-zones.test.ts::cr:zones.bin.mods-from-bin.virus — a Virus card in the bin is offered as an augment in deployment, never in battle"
+      },
+      {
+        "text": "With a Rook in the battle's region, a card is augmented out of the bin during battle.",
+        "test": "29-hybrids-wm-a.test.ts::Rook: augmenting from the BIN during battle takes the card out of the BIN, not the hand"
+      }
+    ],
+    "see": [
+      "405.8a",
+      "723.5",
+      "724",
+      "504.8a",
+      "effects.mods.special-action.exceptions"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.34",
+          "quote": "If a virus is in a bin, it can be applied as normal during deployment but"
+        },
+        {
+          "ref": "Manual p.34",
+          "quote": "cannot be used as a mod during battle."
+        },
+        {
+          "ref": "card: Rook",
+          "quote": "You may augment cards from hand and bin during battle as if they were [Virus]."
+        },
+        {
+          "ref": "card: Spellbind",
+          "quote": "You can apply mods to a modular card from your hand and/or bin as it is played."
+        },
+        {
+          "ref": "card: Slurpr",
+          "quote": "You can apply other mods during [Haste] as if it was deployment."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "418-cr-zones.test.ts",
+        "29-hybrids-wm-a.test.ts",
+        "428-cr-modifications.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "The Manual's sentence is the base case. The exceptions are the card windows listed at effects.mods.special-action.exceptions; the r2 verifier measured Rook opening the bin in battle (probe u17-r2-probes). Spellbind's Modular reminder is cited as effects.mods.special-action.timing-icons cites it. Manual vs Rook: D-U17-14.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.virus.battle.control",
+    "parent": "effects.virus.battle",
+    "order": 3,
+    "text": "A Virus applied to an opponent's unit is controlled by that opponent, with its ability (720.6a). A Virus whose text works against its host's controller therefore works against the opponent.",
+    "examples": [
+      {
+        "text": "Smouldering Inferno augmented onto an opposing unit forces it to sacrifice itself after combat.",
+        "test": "04-mods.test.ts::virus augment during battle: on the stack, donated to an enemy, text-only transfer"
+      }
+    ],
+    "see": [
+      "effects.mods.one-card.control"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.34",
+          "quote": "will control the augment and its new ability."
+        },
+        {
+          "ref": "Manual p.34",
+          "quote": "Augment Smouldering"
+        },
+        {
+          "ref": "Manual p.34",
+          "quote": "unit to force it to sacrifice"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "04-mods.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.virus.stack",
+    "parent": "723",
+    "order": 3,
+    "text": "Applying a Virus in battle uses the stack. The Virus goes on the stack as an effect that targets its host, and it can be responded to, redirected and negated.",
+    "examples": [
+      {
+        "text": "A Virus being applied to Graxxlid is an effect targeting Graxxlid, which Graxxlid can negate.",
+        "test": "16-earth-a.test.ts::Graxxlid: a Virus being applied to me IS an effect targeting me"
+      }
+    ],
+    "see": [
+      "110.10a",
+      "703"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.34",
+          "quote": "Augmenting with viruses uses the stack, just like any other card and"
+        },
+        {
+          "ref": "Manual p.34",
+          "quote": "effect, so it can be interacted with and negated. If a virus is negated or"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R88",
+          "quote": "> **calebgannon:** \"You can redirect a virus, it is a targeted effect\""
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "16-earth-a.test.ts",
+        "23-wood-a.test.ts",
+        "04-mods.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R88": "7b7716c44586ac56b8b7dd3462406bac05b08622d6293893fda6dd740a5edb5a"
+    }
+  },
+  {
+    "key": "effects.virus.stack.negated",
+    "parent": "effects.virus.stack",
+    "order": 1,
+    "text": "A Virus that is negated, or whose target has become invalid, is put into the bin and cannot be used as a Virus again.",
+    "examples": [
+      {
+        "text": "A Virus whose host leaves the stack first fizzles to the bin.",
+        "test": "67-resolving-and-stack-viruses.test.ts::R79: a virus whose host leaves the stack first fizzles to the bin"
+      },
+      {
+        "text": "Negating the Virus itself bins it.",
+        "test": "67-resolving-and-stack-viruses.test.ts::R79: negating the CARRIER erases it too; negating the VIRUS ITSELF bins it"
+      }
+    ],
+    "see": [
+      "704.4a",
+      "704.6f"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.34",
+          "quote": "its target becomes invalid, it is placed into the bin, and cannot be used"
+        },
+        {
+          "ref": "Manual p.34",
+          "quote": "as a virus again, since the virus ability only works from hand."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "67-resolving-and-stack-viruses.test.ts",
+        "04-mods.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.virus.stack.not-a-spell",
+    "parent": "effects.virus.stack",
+    "order": 2,
+    "text": "A Virus being applied is not a spell. An effect that negates spells, or counts the spells played, does not see it.",
+    "examples": [
+      {
+        "text": "A spell-only negation cannot reach a Virus, and a negated Virus does not mod.",
+        "test": "04-mods.test.ts::a virus is not a \"spell effect\" (negation scoping); a negated virus does not mod"
+      },
+      {
+        "text": "Origon does not negate a Virus applied in battle, and its first-spell count is untouched.",
+        "test": "105-semantics-playwatch.test.ts::Origon: a virus applied during battle is not a spell"
+      }
+    ],
+    "see": [
+      "700.1b"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1537748882501668934#0",
+          "quote": "Mods are not considered 'played', so they wouldn't trigger any \"whenever you PLAY <unit/spell>\". They are Applied."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R37",
+          "quote": "elsewhere). Applying a modification — attaching a Virus, graft, or augment,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "04-mods.test.ts",
+        "105-semantics-playwatch.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "The sources say a mod is not PLAYED; that it is not a spell effect for negation scoping is the tests' and 700.1b's reading.",
+    "sourceHashes": {
+      "R37": "faaf2c88301c46bb9da7780190591e57d72f3e51150aded7cdd007fc33ed29a3",
+      "RAQ 1537748882501668934#0": "a4e3cf36e2dcb6ca0c4c40c54631a21f25f4a2e6a393898ca0e58814e6a0516d"
+    }
+  },
+  {
+    "key": "effects.virus.spell-host",
+    "parent": "723",
+    "order": 4,
+    "text": "During battle a Virus may be augmented onto a spell on the stack, the player's own or an opponent's. The spell gains only the Virus's attributes (721.4b).",
+    "examples": [
+      {
+        "text": "Chitin Shredder on Arc Lightning doubles its damage.",
+        "test": "67-resolving-and-stack-viruses.test.ts::R79: the powerful guy on a giant fireball"
+      },
+      {
+        "text": "A Virus can go onto an enemy spell.",
+        "test": "67-resolving-and-stack-viruses.test.ts::R79: you can hit an ENEMY spell"
+      }
+    ],
+    "see": [
+      "effects.augment.hosts.spell"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R79 (its stack-host half)",
+          "quote": "> \"It's very similar to how regular viruses work, so **you can hit enemy spells"
+        },
+        {
+          "ref": "R79 (its stack-host half)",
+          "quote": "> **A:** \"Yes. **This notably only works with attributes.**\" (Caleb 2025-04-06)"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "67-resolving-and-stack-viruses.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Caleb's words (2025-03-06, 2025-04-06) through R79; no RAQ claim in the pack.",
+    "sourceHashes": {
+      "R79": "277d0cf45026e900543e1fb8289130794a9da06a12d6c29e967b7ba613b96f5d"
+    }
+  },
+  {
+    "key": "effects.virus.spell-host.which",
+    "parent": "effects.virus.spell-host",
+    "order": 1,
+    "text": "Spells, spell units and spell tokens on the stack are legal hosts for a Virus.",
+    "examples": [
+      {
+        "text": "A spell token on the stack is a legal host.",
+        "test": "67-resolving-and-stack-viruses.test.ts::R79: a spell TOKEN is a legal host too"
+      }
+    ],
+    "see": [
+      "effects.virus.spell-host.not-hosts"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R79 (its stack-host half)",
+          "quote": "`STACK_VIRUS_HOSTS = { spell, spellUnit, spellToken }`. The ruling names spells"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "67-resolving-and-stack-viruses.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R79 names spells (Caleb: \"you can hit enemy spells\"); spell units and spell tokens are R79's and R89's reading. The exclusions are a separate engine-basis rule (effects.virus.spell-host.not-hosts), because R79 marks them unruled.",
+    "sourceHashes": {
+      "R79": "277d0cf45026e900543e1fb8289130794a9da06a12d6c29e967b7ba613b96f5d"
+    }
+  },
+  {
+    "key": "effects.virus.spell-host.not-hosts",
+    "parent": "effects.virus.spell-host",
+    "order": 5,
+    "text": "Triggered and activated abilities, Viruses, units being cast and Ambushes on the stack are not legal hosts for a Virus.",
+    "examples": [
+      {
+        "text": "A triggered ability on the stack is not offered as a Virus host, and is refused if asked for anyway.",
+        "test": "67-resolving-and-stack-viruses.test.ts::R79: only SPELLS are legal hosts"
+      }
+    ],
+    "see": [
+      "effects.virus.spell-host.which"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R79 (its stack-host half)",
+          "quote": "The four ⚠ are judgement calls, not sourced answers. **Bena to rule** if any of"
+        }
+      ],
+      "history": [],
+      "engine": [
+        "apply.ts:STACK_VIRUS_HOSTS"
+      ],
+      "tests": [
+        "67-resolving-and-stack-viruses.test.ts"
+      ]
+    },
+    "basis": "engine",
+    "confidence": "low",
+    "notes": "Engine-only: R79 itself calls the four exclusions \"judgement calls, not sourced answers\" awaiting the owner (D-U17-2). The verifier read the host set off apply.ts:STACK_VIRUS_HOSTS = spell, spellUnit, spellToken. Only the triggered-ability exclusion is tested.",
+    "sourceHashes": {
+      "R79": "277d0cf45026e900543e1fb8289130794a9da06a12d6c29e967b7ba613b96f5d"
+    }
+  },
+  {
+    "key": "effects.virus.spell-host.erased",
+    "parent": "effects.virus.spell-host",
+    "order": 2,
+    "text": "A spell carrying a Virus is modded, so it is {Unstable}: the spell and the Virus are erased instead of going to a bin, whether the spell resolves, fizzles or is negated.",
+    "examples": [
+      {
+        "text": "A spell that carried a Virus is erased, never binned.",
+        "test": "67-resolving-and-stack-viruses.test.ts::R79 ⚠: a spell that carried a virus is Unstable"
+      },
+      {
+        "text": "Negating the carrier erases it too.",
+        "test": "67-resolving-and-stack-viruses.test.ts::R79: negating the CARRIER erases it too"
+      }
+    ],
+    "see": [
+      "704.2c"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.35",
+          "quote": "As long as a card is modded, it has the unstable attribute, meaning when it dies or is erased, it and all of its"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R79 (its stack-host half)",
+          "quote": "> and the spell gets erased on resolution**. You can augment spells during"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "67-resolving-and-stack-viruses.test.ts",
+        "91-modular.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Caleb's \"the spell gets erased on resolution\" names the resolution case; R79 extends it to the fizzle and negation exits through Unstable as a bin replacement (R69), and the owner confirmed the reading through R105.",
+    "sourceHashes": {
+      "R79": "277d0cf45026e900543e1fb8289130794a9da06a12d6c29e967b7ba613b96f5d"
+    }
+  },
+  {
+    "key": "effects.virus.spell-host.spell-unit",
+    "parent": "effects.virus.spell-host",
+    "order": 3,
+    "text": "A spell unit carrying a Virus is not erased when it resolves. It enters play with the Virus attached as an augment, and so has {Unstable}.",
+    "examples": [
+      {
+        "text": "A spell unit carries its Virus into play as an augment mod.",
+        "test": "67-resolving-and-stack-viruses.test.ts::R79: a spell UNIT carries its virus into play as an augment mod"
+      }
+    ],
+    "see": [
+      "303"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R79 (its stack-host half)",
+          "quote": "**The spell UNIT exception.** A `spellUnit` does not *leave* on resolution — it"
+        },
+        {
+          "ref": "R79 (its stack-host half)",
+          "quote": "they always were, via `attachMod` — which makes the **body** Unstable, exactly"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "67-resolving-and-stack-viruses.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R79 says \"no ruling asks for\" erasing a spell unit and decides the exception itself: D-U17-3.",
+    "sourceHashes": {
+      "R79": "277d0cf45026e900543e1fb8289130794a9da06a12d6c29e967b7ba613b96f5d"
+    }
+  },
+  {
+    "key": "effects.virus.spell-host.resolving",
+    "parent": "effects.virus.spell-host",
+    "order": 4,
+    "text": "A spell that has begun to resolve cannot have a Virus applied to it.",
+    "examples": [
+      {
+        "text": "A resolving item cannot be responded to, negated or targeted.",
+        "test": "67-resolving-and-stack-viruses.test.ts::R78: a resolving item cannot be responded to, negated or targeted"
+      }
+    ],
+    "see": [
+      "703.6"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R79 (its stack-host half)",
+          "quote": "you cannot virus a spell that is RESOLVING.**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "67-resolving-and-stack-viruses.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R79": "277d0cf45026e900543e1fb8289130794a9da06a12d6c29e967b7ba613b96f5d"
+    }
+  },
+  {
+    "key": "effects.virus.permission",
+    "parent": "723",
+    "order": 5,
+    "text": "A card can let other cards be augmented during battle as if they were Viruses. Rook: \"You may augment cards from hand and bin during battle as if they were [Virus].\"",
+    "examples": [
+      {
+        "text": "A non-Virus augment from hand during battle is refused without Rook and legal with it.",
+        "test": "29-hybrids-wm-a.test.ts::Rook: a NON-virus augment from HAND during battle"
+      },
+      {
+        "text": "Rook's bin augment takes the card out of the bin.",
+        "test": "29-hybrids-wm-a.test.ts::Rook: augmenting from the BIN during battle takes the card out of the BIN, not the hand"
+      }
+    ],
+    "see": [
+      "effects.mods.special-action.exceptions"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Rook",
+          "quote": "You may augment cards from hand and bin during battle as if they were [Virus]."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "29-hybrids-wm-a.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Rook is the only such card in the pool as far as the pack shows.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.virus.permission.confers",
+    "parent": "effects.virus.permission",
+    "order": 1,
+    "text": "Such a card gives the augmented card the Virus ability itself, so the augment may go onto an opponent's unit or onto a spell on the stack.",
+    "examples": [
+      {
+        "text": "A Rook-enabled augment lands on an enemy unit during battle.",
+        "test": "136-triggers-and-modes.test.ts::R157 §26: a Rook-enabled augment lands on an ENEMY unit during battle"
+      },
+      {
+        "text": "A Rook-enabled augment reaches a spell on the stack.",
+        "test": "136-triggers-and-modes.test.ts::R157 §26: a Rook-enabled augment reaches a SPELL ON THE STACK"
+      }
+    ],
+    "see": [
+      "effects.virus.spell-host"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R157 (its §26)",
+          "quote": "> *\"(a) yes it does. and for (b) yes it can also go to an enemy. That's the"
+        },
+        {
+          "ref": "R161",
+          "quote": "### §26 — Rook grants {Virus} itself, and reaches stack hosts"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R95",
+          "relation": "its OPEN question 2 default (Rook grants only the timing permission) reversed by R157 §26"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "136-triggers-and-modes.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R157": "33a4ed2903238a225e37956e67df6631028f5b52b14a8d33c7c5dab7dcb13980",
+      "R161": "65276815ee877bd9e2976a66608a7c4105a3b44fd4aded63f8cad52dc6c88006"
+    }
+  },
+  {
+    "key": "effects.virus.permission.zones",
+    "parent": "effects.virus.permission",
+    "order": 2,
+    "text": "Such a card reaches only the zones it names. Rook names the hand and the bin, so a non-Virus card in the cache cannot be augmented in battle through Rook.",
+    "examples": [
+      {
+        "text": "Rook prints \"hand and bin\", so the cache stays shut.",
+        "test": "29-hybrids-wm-a.test.ts::Rook: it prints \"hand and bin\", so the CACHE stays shut"
+      }
+    ],
+    "see": [
+      "effects.virus.battle.cache"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Rook",
+          "quote": "You may augment cards from hand and bin during battle as if they were [Virus]."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R311",
+          "quote": "they were [Virus]\", still names its own zones. A non-Virus card in the cache"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "29-hybrids-wm-a.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R311": "dff09246da3a81a8b90c1f386c3bdd5a463e44e7086278b0d4116e6bfd877122"
+    }
+  },
+  {
+    "key": "effects.virus.permission.region",
+    "parent": "effects.virus.permission",
+    "order": 3,
+    "text": "Such a permission belongs to the controller of the card that grants it (the host's controller, when it is a mod), and works only in that card's region.",
+    "examples": [
+      {
+        "text": "Rook's permission is region-scoped and does not reach the opponent.",
+        "test": "29-hybrids-wm-a.test.ts::Rook: the permission is REGION-scoped, and does not reach the opponent"
+      },
+      {
+        "text": "Rook worn as an augment gives the permission to the host's controller.",
+        "test": "29-hybrids-wm-a.test.ts::Rook: the [Augment] half works, and the permission belongs to the HOST"
+      }
+    ],
+    "see": [
+      "effects.mods.one-card.you"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R95 (its Rook-grant half)",
+          "quote": "`self` is the ANCHOR, so the `[Augment]` half is free: augmented onto a host, the"
+        },
+        {
+          "ref": "R95 (its Rook-grant half)",
+          "quote": "the rules'. Region scoping is not a convenience either; on this exact card, rodanaw in"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "29-hybrids-wm-a.test.ts",
+        "136-triggers-and-modes.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "The region scope rests on a player's chat remark (rodanaw), quoted in R95; players are not authority: D-U17-10.",
+    "sourceHashes": {
+      "R95": "f6a27c0893397fad2912dfff4be2be9bf0c4a8aceb667dc2d5dee7b44247c7eb"
+    }
+  },
+  {
+    "key": "effects.modular.what",
+    "parent": "724",
+    "order": 1,
+    "text": "Modular is an attribute. A player may apply mods from their hand and/or bin to a Modular card as it is played, paying their costs.",
+    "examples": [
+      {
+        "text": "Spellbind's mods are applied at cast time, paid for, and ride on the stack item.",
+        "test": "37-attrs-wight.test.ts::{Modular}: mods are applied at cast time, paid for, and ride on the stack item"
+      }
+    ],
+    "see": [
+      "802.26"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Spellbind",
+          "quote": "You can apply mods to a modular card from your hand and/or bin as it is played. You still pay their costs."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "37-attrs-wight.test.ts",
+        "91-modular.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Spellbind text from extract.json cards[] (not in the pack's cards.md). The attribute's own entry is 802.26 (U20).",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.modular.what.pool",
+    "parent": "effects.modular.what",
+    "order": 1,
+    "text": "Spellbind is the only card that prints Modular.",
+    "examples": [
+      {
+        "text": "Spellbind is the only card in the pool that prints Modular.",
+        "test": "428-cr-modifications.test.ts::cr:effects.modular.what.pool — Spellbind is the only card in the pool with Modular"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Spellbind",
+          "quote": "{Battle} {Modular} Arcane Spell"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R105",
+          "quote": "`{Modular}` is printed on exactly one card, **Spellbind** — *\"(You can apply"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "428-cr-modifications.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "A fact about the current pool, as of R105 (2026-08-23).",
+    "sourceHashes": {
+      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5"
+    }
+  },
+  {
+    "key": "effects.modular.any-card",
+    "parent": "724",
+    "order": 2,
+    "text": "Any card in the player's hand or bin whose cost they can pay may be applied to a Modular card: a graft, an augment, a Virus, or a card that can do nothing on a spell.",
+    "examples": [
+      {
+        "text": "The Modular menu offers every card the player can pay for.",
+        "test": "91-modular.test.ts::R105: the {Modular} menu offers every card you can pay for"
+      },
+      {
+        "text": "A card in the bin is offered beside the hand; an unaffordable one is not.",
+        "test": "91-modular.test.ts::R105: a card in the BIN is offered beside the hand, and an unaffordable one is not"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R105",
+          "quote": "> \"I think it's legal to apply ANYTHING to a Modular card. But many cards wont"
+        },
+        {
+          "ref": "R105",
+          "quote": "So **the cost is the whole filter**: every card in your hand and bin whose cost"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "91-modular.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R105's quoted rule is not attributed in its body; its header says \"Owner rulings\" sourced to Caleb's messages.",
+    "sourceHashes": {
+      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5"
+    }
+  },
+  {
+    "key": "effects.modular.any-card.no-op",
+    "parent": "effects.modular.any-card",
+    "order": 1,
+    "text": "A mod that does nothing on a spell is still a legal choice, and its cost is still paid.",
+    "examples": [
+      {
+        "text": "Sparkwraith's augment text applied to Spellbind is accepted and does nothing.",
+        "test": "91-modular.test.ts::R105: an [Augment]-TEXT mod is accepted and does nothing"
+      }
+    ],
+    "see": [
+      "effects.augment.hosts.spell"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R105",
+          "quote": "**A mod that does nothing is a legal play.** That is the half of the ruling that"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "91-modular.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5"
+    }
+  },
+  {
+    "key": "effects.modular.any-card.cost",
+    "parent": "effects.modular.any-card",
+    "order": 2,
+    "text": "Each mod's cost is paid as it is applied, while the Modular card is cast. Applying it is not playing it.",
+    "examples": [
+      {
+        "text": "The mod is charged at cast, and applying it is not playing it.",
+        "test": "91-modular.test.ts::R105: \"you still pay their costs\""
+      }
+    ],
+    "see": [
+      "effects.mods.not-played"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Spellbind",
+          "quote": "You still pay their costs."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "91-modular.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "\"Not playing\" is 720.3.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "effects.modular.when",
+    "parent": "724",
+    "order": 3,
+    "text": "The mods are chosen and paid for while the Modular card is being cast, before it reaches the stack, and they go on the stack with it. The caster may apply none.",
+    "examples": [
+      {
+        "text": "The caster may decline, and a non-Modular spell is never asked.",
+        "test": "37-attrs-wight.test.ts::{Modular}: the caster may decline, and a non-modular spell is never asked"
+      }
+    ],
+    "see": [
+      "702.3b"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Spellbind",
+          "quote": "You can apply mods to a modular card from your hand and/or bin as it is played."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R105",
+          "quote": "offered was the bug**, and it was one line: `if (!isGraftable(name) …) return;`"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "37-attrs-wight.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "\"As it is played\" is the printed timing; the cast-window stage is R35's collection (R105: \"The window was built correctly in R35's cast-time collection\"). The R105 quote is weak support; the rule leans on print and the tests.",
+    "sourceHashes": {
+      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5"
+    }
+  },
+  {
+    "key": "effects.modular.effects",
+    "parent": "724",
+    "order": 4,
+    "text": "A graft applied to a Modular spell adds its effect to the spell's ability as an extra part.",
+    "examples": [
+      {
+        "text": "A graft mod contributes its effect as an extra part.",
+        "test": "91-modular.test.ts::R105: a GRAFT mod still contributes its [Switch] effect as an extra part"
+      },
+      {
+        "text": "A graft card in the bin is played again through Spellbind, happens, and is erased.",
+        "test": "91-modular.test.ts::R105: the flashback line"
+      }
+    ],
+    "see": [
+      "effects.graft.composite"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R105",
+          "quote": "| a `[Switch]` graft effect | joins the item as an **extra part** |"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "91-modular.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5"
+    }
+  },
+  {
+    "key": "effects.modular.effects.attributes",
+    "parent": "effects.modular.effects",
+    "order": 1,
+    "text": "A type-line augment applied to a Modular spell gives its attributes to the spell's effect.",
+    "examples": [
+      {
+        "text": "{Powerful} turns a Spellbind-carried Twin Flame from 2 damage into 4.",
+        "test": "91-modular.test.ts::R105: a type-line [Augment] mod really donates"
+      }
+    ],
+    "see": [
+      "effects.augment.hosts.spell"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R105",
+          "quote": "| a **type-line** `[Augment]` attribute | is **donated to the resolving effect** | R79's channel, by a different timing. |"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "91-modular.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5"
+    }
+  },
+  {
+    "key": "effects.modular.effects.text",
+    "parent": "effects.modular.effects",
+    "order": 2,
+    "text": "Augment text and static abilities applied to a Modular spell do nothing, because a spell has no body for them to work on.",
+    "examples": [
+      {
+        "text": "Sparkwraith on Spellbind: a spell played while it rides the stack puts no counter anywhere.",
+        "test": "91-modular.test.ts::R105: an [Augment]-TEXT mod is accepted and does nothing"
+      }
+    ],
+    "see": [
+      "effects.augment.hosts.spell"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R105",
+          "quote": "| **text-box** `[Augment]` text, statics | **nothing** |"
+        },
+        {
+          "ref": "R105",
+          "quote": "A spell has no body for a triggered ability or a static to live on."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "91-modular.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5"
+    }
+  },
+  {
+    "key": "effects.modular.effects.graft-cost",
+    "parent": "effects.modular.effects",
+    "order": 3,
+    "text": "A grafted cost on a Modular spell's graft part must be paid if it can be. If it cannot, only that part is skipped, and the spell still resolves.",
+    "examples": [
+      {
+        "text": "Spellbind carrying a grafted Immolate with no unit to sacrifice: the Immolate part is skipped and Spellbind still gives its rot. (illustrative)",
+        "test": null
+      },
+      {
+        "text": "Spellbind carrying a grafted Immolate, with a unit to sacrifice: the cost is paid, the unit is sacrificed and a card is drawn. Declining is not offered.",
+        "test": "428-cr-modifications.test.ts::cr:effects.modular.effects.graft-cost — Spellbind carrying a grafted Immolate with a unit to sacrifice offers no decline, sacrifices the unit and draws"
+      }
+    ],
+    "see": [
+      "effects.graft.costs"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R334",
+          "quote": "- A played **spell** that carries a `{Modular}` graft part keeps the per-part skip. Withholding a card already paid for would strand it."
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R35",
+          "relation": "its declinable and skippable grafted riders reversed by R334, except this Modular per-part skip"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "428-cr-modifications.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "An owner carve-out with no designer source; Graft 101 point 11 withholds a unit's whole composite: D-U17-9. No test in the pack exercises it.",
+    "sourceHashes": {
+      "R334": "6c082324d0276473fe72532b3e3ba0c47e93f6f7d836b7e69cebe89191a37604"
+    }
+  },
+  {
+    "key": "effects.modular.unstable",
+    "parent": "724",
+    "order": 5,
+    "text": "A Modular card with any mod applied is modded, so it has {Unstable}: it and all of its mods are erased instead of going to a bin, whether it resolves, fizzles or is negated.",
+    "examples": [
+      {
+        "text": "A graft card replayed from the bin by Spellbind is erased, so it cannot be used that way twice.",
+        "test": "91-modular.test.ts::R105: the flashback line"
+      },
+      {
+        "text": "A negated modded Spellbind is erased too.",
+        "test": "91-modular.test.ts::R105: a NEGATED modded Spellbind is erased too"
+      },
+      {
+        "text": "A mod applied through Modular and a Virus applied on the stack end the same way.",
+        "test": "91-modular.test.ts::R105 = R79"
+      }
+    ],
+    "see": [
+      "effects.mods.unstable",
+      "effects.virus.spell-host.erased"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.35",
+          "quote": "As long as a card is modded, it has the unstable attribute, meaning when it dies or is erased, it and all of its"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R105",
+          "quote": "> \"A modded Spellbind should also have unstable. It basically works as a"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "91-modular.test.ts",
+        "43-dark-c.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5"
+    }
+  },
+  {
+    "key": "effects.modular.unstable.unmodded",
+    "parent": "effects.modular.unstable",
+    "order": 1,
+    "text": "A Modular card with no mod applied does not have {Unstable}, and goes to the bin like any other spell.",
+    "examples": [
+      {
+        "text": "An unmodded Modular spell is binned like any other spell.",
+        "test": "91-modular.test.ts::R105: an UNMODDED {Modular} spell is not Unstable"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R105",
+          "quote": "**Unmodded, nothing changes.** A `{Modular}` spell nobody applied anything to is"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "91-modular.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5"
+    }
+  }
+]

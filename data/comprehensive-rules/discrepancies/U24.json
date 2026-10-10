@@ -1,0 +1,186 @@
+[
+  {
+    "id": "D-U24-1",
+    "kind": "g-other",
+    "rule": "annexd.display.copies",
+    "tier": 4,
+    "summary": "The outline gives Annex D part 2 three sections (D6 reveal timing, D7 confirmations and misclicks, D8 tutorial and single-card modes), but the unit's rulings also cover how the client draws cards and the board, its menus, its resource menu, custom rules, scenario rooms and how concessions count. Sources are not silent on these; the outline has no section for them. They are drafted under D6 (display, after the reveal rules), D7 (warnings and announcements) and D8 (custom rules, scenario rooms, concession weight).",
+    "sides": [
+      {
+        "source": "file: data/comprehensive-rules/outline.json",
+        "quote": "\"title\": \"Reveal Timing of Simultaneous Steps\""
+      },
+      {
+        "source": "file: data/comprehensive-rules/outline.json",
+        "quote": "\"title\": \"Tutorial and Single-Card Modes\""
+      }
+    ],
+    "resolution": "Question for the orchestrator only if the outline should grow sections (for example D9 Display and D10 Records and ratings). If it does, the keys annexd.display.* and annexd.modes.custom-rules / scenarios / concession can be re-parented without changing their text."
+  },
+  {
+    "id": "D-U24-2",
+    "kind": "c-owner-call-only",
+    "rule": "annexd.reveal.public-zones.deck-elements",
+    "tier": 1,
+    "summary": "R99 ships a constructed deck's element identity to both players, and says in its own words that whether it is public at game start is an open question for the owner.",
+    "sides": [
+      {
+        "source": "R99",
+        "quote": "### ⚠ OPEN QUESTION FOR THE OWNER — is deck element identity PUBLIC at game start?"
+      },
+      {
+        "source": "R99",
+        "quote": "It decides whether `deckElements` belongs in both players' views or only the owner's."
+      }
+    ],
+    "resolution": "Question for the owner. Reading 1: the deck's elements are public at game start (what ships today). Reading 2: they are private to the deck's owner (one line in the view redaction, per R99). The rule states only the shipped default, at low confidence."
+  },
+  {
+    "id": "D-U24-3",
+    "kind": "c-owner-call-only",
+    "rule": "annexd.reveal.resolving",
+    "tier": 1,
+    "summary": "R78 left one presentation call open: the log line \"X resolves.\" is written when resolution STARTS, so it is in the log while the controller is still choosing. R78 asks the owner to rule.",
+    "sides": [
+      {
+        "source": "R78",
+        "quote": "### ⚠ \"X resolves.\" still logs at the START of resolution — Bena to rule"
+      },
+      {
+        "source": "R78",
+        "quote": "follow — and the event is log-only (nothing dispatches on it), so moving it is"
+      }
+    ],
+    "resolution": "Question for the owner. Reading 1: keep the line where it is, as the heading for the effect lines under it (today's behaviour). Reading 2: write it only once the item has actually resolved. No rule states either; annexd.reveal.resolving covers only what the board shows."
+  },
+  {
+    "id": "D-U24-4",
+    "kind": "c-owner-call-only",
+    "rule": "annexd.display.live-values.token-x",
+    "tier": 4,
+    "summary": "R151 substitutes a token's live X into its text box but leaves the card's \"modified\" badge off, and says the badge question is the owner's to decide.",
+    "sides": [
+      {
+        "source": "R151",
+        "quote": "`CardTextBox.modified` stays **false** for a specialised token. It is the flag"
+      },
+      {
+        "source": "R151",
+        "quote": "call and not something R151 should have made on the side."
+      }
+    ],
+    "resolution": "Question for the owner only if a specialised token (a Poison 5) should wear the \"modified\" badge. The rule does not mention the badge."
+  },
+  {
+    "id": "D-U24-5",
+    "kind": "f-register-chain-wrong",
+    "rule": "annexd.confirm.not-only-log",
+    "tier": 2,
+    "summary": "R266 still says that nineteen costly announcements remain log-only and that choosing a surface for them is a later product call. R276 made that call (a shared toast tier) and gave them a surface. R266 carries no mark saying so.",
+    "sides": [
+      {
+        "source": "R266",
+        "quote": "Nineteen tier-1 announcements remain log-only."
+      },
+      {
+        "source": "R276",
+        "quote": "CT-142 asked which log-only announcements deserve a surface and refused to guess,"
+      },
+      {
+        "source": "R276",
+        "quote": "**shared toast tier** — one notice channel they all use, a brief toast near the"
+      }
+    ],
+    "resolution": "Mark R266's closing count as answered by R276 in the register (\"its log-only count answered by R276\"). The rules follow R276: annexd.confirm.not-only-log.toast."
+  },
+  {
+    "id": "D-U24-6",
+    "kind": "g-other",
+    "rule": "annexd.confirm.never-refuse.ally",
+    "tier": 4,
+    "summary": "Three rulings this unit's sections need are classified to U23, not U24, so they were not in this unit's pack: R288 (the misclicked-ally question, D7), R236 (haste readiness hidden while the step is open, D6) and R194 (the confirm before a pass reaches Regroup, D7, quoted here through R266). They were read from digital-rules.md. U23 may state the same facts under D2-D5.",
+    "sides": [
+      {
+        "source": "R288",
+        "quote": "**IT IS A QUESTION, NEVER A FILTER.** The owner says it twice — *\"we shouldn't"
+      },
+      {
+        "source": "R236",
+        "quote": "who is ready stops being public while it is open"
+      }
+    ],
+    "resolution": "At assembly, keep one statement of each fact: the D7 confirmation rules here, and whichever unit's haste-readiness rule reads better. Classification could add U24 to R288 and R236."
+  },
+  {
+    "id": "D-U24-7",
+    "kind": "g-other",
+    "rule": "annexd.display.menus",
+    "tier": 4,
+    "summary": "Some of this unit's digital rulings are about how the client is built or tested, not about a convention a player or judge meets. They are not drafted as rules: R192 (which click opens the cache panel), R205 (the test driver's DOM model), R230 and R272 parts a-b (hover tooltips and image sizing), R255 (arrowhead placement), R274 (a join error on the connecting screen), R206 and R281 (how the glossary is audited), and R209 sections 2 to 6 (how guards derive their lists). Their game halves, where they have one, belong to other units.",
+    "sides": [
+      {
+        "source": "R205",
+        "quote": "> **A fake that answers a question about the DOM must model the part of the DOM"
+      },
+      {
+        "source": "R230",
+        "quote": "the hover tooltip cancelled itself: a scroll hides it only if it could have MOVED the card"
+      }
+    ],
+    "resolution": "No action unless the owner wants Annex D to describe client mechanics too. Annex P will list them as uncited."
+  },
+  {
+    "id": "D-U24-8",
+    "kind": "g-other",
+    "rule": "annexd.display.live-values.x-not-forecast",
+    "tier": 4,
+    "summary": "R246 was asked for \"all cards with an X in them\" and makes a board-read X public on the stack as a forecast, but records that eighteen cards whose X is read from the board at resolution have no forecast and show nothing. The rule therefore states the forecast only for cards that declare one, and states the gap separately.",
+    "sides": [
+      {
+        "source": "R246",
+        "quote": "The owner's quantifier — \"all cards with an X in them\" — is 45 cards. Four"
+      },
+      {
+        "source": "R246",
+        "quote": "cards are left: their X is read from the board at resolution and only a card"
+      }
+    ],
+    "resolution": "Recorded as shipped: the forecast covers cards that declare one. Question for the owner only if the eighteen listed cards are meant to gain a forecast; the rule text would then lose annexd.display.live-values.x-not-forecast."
+  },
+  {
+    "id": "D-U24-9",
+    "kind": "c-owner-call-only",
+    "rule": "annexd.confirm.not-only-log",
+    "tier": 3,
+    "summary": "R266 makes it a rule that an announcement the player acts on, or has lost something by, reaches a surface other than the log, but the same ruling leaves the remaining log-only announcements of a loss as a ticket list and calls which of them get a second surface a product call. The client's own inventory test counts 21 such announcements; R266's text says nineteen.",
+    "sides": [
+      {
+        "source": "R266",
+        "quote": "An announcement the player is expected to act on, or to have lost something by, must reach a surface other than the log."
+      },
+      {
+        "source": "R266",
+        "quote": "Nineteen tier-1 announcements remain log-only. That is a ticket list, not a bug list: which of them deserve a second surface is a product call"
+      }
+    ],
+    "resolution": "The rule states R266's standard and carries engineDiffers F-U24-4. Question for the owner only if some of the log-only announcements are meant to stay log-only; the rule would then need an exception naming them."
+  },
+  {
+    "id": "D-U24-10",
+    "kind": "g-other",
+    "rule": "annexd.confirm.say-so",
+    "tier": 4,
+    "summary": "Sources silent on whether a clause that does nothing, outside R209's class (a per-seat promise over an empty collection), must be announced when another clause of the same effect speaks. R209 also records that the whole-pool sweep can only convict a wholly silent run, so half-silent effects are guarded only member by member.",
+    "sides": [
+      {
+        "source": "R209",
+        "quote": "> **A printed clause that promises a per-seat outcome and then resolves over an"
+      },
+      {
+        "source": "R209",
+        "quote": "not a gap to widen; it is a limit to write down, and to cover somewhere else."
+      }
+    ],
+    "resolution": "The rule states R187 for a whole effect and R209 for its stated class only, and does not generalise to every clause."
+  }
+]

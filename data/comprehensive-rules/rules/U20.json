@@ -1,0 +1,5444 @@
+[
+  {
+    "key": "attr.evasive",
+    "parent": "802",
+    "order": 13,
+    "text": "Evasive is an attribute. Its reminder text, printed under the type line, reads \"Evasive units require two blockers.\"",
+    "examples": [
+      {
+        "text": "Example: Curio Drifter is Evasive.",
+        "test": "07-cards.test.ts::Curio Drifter: Evasive requires two blockers"
+      }
+    ],
+    "see": [
+      "802.1",
+      "606.2c"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1460216519731577027#0",
+          "quote": "'A' cannot be used alone to block Alluring& Evasive column"
+        }
+      ],
+      "ours": [
+        {
+          "ref": "glossary: Evasive",
+          "quote": "Needs two blockers — a single unit cannot block it."
+        }
+      ],
+      "rulings": [
+        {
+          "ref": "R84",
+          "quote": "= 2 if the column is {Evasive}, else 1"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "07-cards.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "The reminder sentence is printed under the type line and is read off the scan (client/ui/scan-reminders.json); the oracle text does not carry it, so no card: quote can be checked (D-U20-1). The checkable sources (the RAQ and R84) state the two-blocker requirement, not the sentence itself.",
+    "sourceHashes": {
+      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd",
+      "RAQ 1460216519731577027#0": "63a4b895f811f113cde189e9a3ed5550ec06a1341d47212d337bee1a20f36ec8"
+    }
+  },
+  {
+    "key": "attr.evasive.two-blockers",
+    "parent": "attr.evasive",
+    "order": 1,
+    "text": "A column with Evasive cannot be blocked by a single unit. To block it, the defending player must place two units in front of it.",
+    "examples": [
+      {
+        "text": "Example: An Evasive Curio Drifter attacks. The defender may block it with two units placed in front of it, one behind the other, but not with one.",
+        "test": "07-cards.test.ts::Curio Drifter: Evasive requires two blockers"
+      }
+    ],
+    "see": [
+      "606.2c",
+      "602"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1460216519731577027#0",
+          "quote": "'A' cannot be used alone to block Alluring& Evasive column"
+        },
+        {
+          "ref": "RAQ 1460216519731577027#1",
+          "quote": "Opponent can choose to either block with A+B or he can forgo blocking this column at all."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R84",
+          "quote": "= 2 if the column is {Evasive}, else 1"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "07-cards.test.ts",
+        "388-raq-blocks-and-windows.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "\"Two blockers\": a blocking column has two slots, so this is a front and a back blocker.",
+    "sourceHashes": {
+      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd",
+      "RAQ 1460216519731577027#0": "63a4b895f811f113cde189e9a3ed5550ec06a1341d47212d337bee1a20f36ec8",
+      "RAQ 1460216519731577027#1": "55c986c1a23d77e4a10f36d1cede0466b0a50f5641466726505fc0923b8a6a54"
+    }
+  },
+  {
+    "key": "attr.evasive.pure",
+    "parent": "attr.evasive",
+    "order": 2,
+    "text": "Evasive does not apply if either the Evasive column or the units blocking it include a Pure card. A single Pure unit can block an Evasive column on its own (see rule 802.25).",
+    "examples": [
+      {
+        "text": "Example: Just a Unit (Pure) blocks an Evasive column by itself.",
+        "test": "40-light-c.test.ts::Just a Unit: {Pure} blocks an Evasive column alone"
+      }
+    ],
+    "see": [
+      "802.25"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R61",
+          "quote": "rule survives it: Flying, Evasive, and Sneaky's lone-attacker immunity. A"
+        },
+        {
+          "ref": "R84",
+          "quote": "a single {Pure} blocker switches {Evasive} off and can cover it alone."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "40-light-c.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R61 bullet \"Declaring blocks — one Pure card in either column and neither evasion rule survives it\". The printed Pure reminder supports it too (Just a Unit). The attacking-side half (a Pure card in the Evasive column itself) has no test.",
+    "sourceHashes": {
+      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e",
+      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
+    }
+  },
+  {
+    "key": "attr.sneaky",
+    "parent": "802",
+    "order": 14,
+    "text": "Sneaky is an attribute. Its reminder text, printed under the type line, reads \"Sneaky units can't be blocked if attacking alone.\"",
+    "examples": [
+      {
+        "text": "Example: Whispering Mantid is Sneaky.",
+        "test": "08-cards2.test.ts::Whispering Mantid: Sneaky"
+      }
+    ],
+    "see": [
+      "802.1",
+      "606.2c"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [
+        {
+          "ref": "glossary: Sneaky",
+          "quote": "Sneaky units can't be blocked if attacking alone."
+        }
+      ],
+      "rulings": [
+        {
+          "ref": "R20",
+          "quote": "Sneaky's \"attacking alone\""
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "08-cards2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "The reminder sentence is printed under the type line and is read off the scan (client/ui/scan-reminders.json); the oracle text does not carry it, so no card: quote can be checked (D-U20-1). R20 quotes the phrase \"unblockable if attacking alone\" and reads it; no designer source.",
+    "sourceHashes": {
+      "R20": "a7ed69765e88424d1df6f44df198512df5fa6376ae825ba31ff49b32390d7304"
+    }
+  },
+  {
+    "key": "attr.sneaky.alone",
+    "parent": "attr.sneaky",
+    "order": 1,
+    "text": "An attacking column with Sneaky cannot be blocked if its unit is the only attacking unit in the attacking formation.",
+    "examples": [
+      {
+        "text": "Example: Whispering Mantid attacks alone and cannot be blocked. Attacking with another unit, it can be.",
+        "test": "08-cards2.test.ts::Whispering Mantid: Sneaky"
+      }
+    ],
+    "see": [
+      "606"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R20",
+          "quote": "A Sneaky column cannot be blocked iff its unit is **the only attacking unit in the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "08-cards2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "\"Alone\" = the only attacking unit in the formation is R20's reading (an owner/engine call, marked ⚠ in R20): D-U20-3.",
+    "sourceHashes": {
+      "R20": "a7ed69765e88424d1df6f44df198512df5fa6376ae825ba31ff49b32390d7304"
+    }
+  },
+  {
+    "key": "attr.sneaky.spell-tokens",
+    "parent": "attr.sneaky",
+    "order": 2,
+    "text": "Spell tokens that go with an attack do not count as attacking units for Sneaky. A Sneaky unit attacking with only spell tokens beside it is attacking alone.",
+    "examples": [
+      {
+        "text": "Example (illustrative): A Sneaky unit attacks together with two Fireball spell tokens. It is still attacking alone and cannot be blocked.",
+        "test": "431-cr-attributes-2.test.ts::cr:attr.sneaky.spell-tokens — a Sneaky unit attacking with two riding Fireball spell tokens is still alone and cannot be blocked"
+      }
+    ],
+    "see": [
+      "604.2c"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R20",
+          "quote": "formation** (spell tokens riding along don't count as company)"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "431-cr-attributes-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "",
+    "sourceHashes": {
+      "R20": "a7ed69765e88424d1df6f44df198512df5fa6376ae825ba31ff49b32390d7304"
+    }
+  },
+  {
+    "key": "attr.sneaky.two-sneaky",
+    "parent": "attr.sneaky",
+    "order": 3,
+    "text": "Two Sneaky units attacking together are not alone. Both can be blocked.",
+    "examples": [
+      {
+        "text": "Example (illustrative): Two Whispering Mantids attack in different columns. The defender may block either or both.",
+        "test": "431-cr-attributes-2.test.ts::cr:attr.sneaky.two-sneaky — two Whispering Mantids attacking in two columns are not alone, and both can be blocked"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R20",
+          "quote": "attacking are NOT alone — both blockable."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "431-cr-attributes-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "",
+    "sourceHashes": {
+      "R20": "a7ed69765e88424d1df6f44df198512df5fa6376ae825ba31ff49b32390d7304"
+    }
+  },
+  {
+    "key": "attr.sneaky.side-block",
+    "parent": "attr.sneaky",
+    "order": 4,
+    "text": "A side-block does not block a lone Sneaky attacker. The defending player may side-block beside it, and it stays unblocked (see rule 606.4e).",
+    "examples": [
+      {
+        "text": "Example: A side-block beside a lone Sneaky attacker is allowed, and the Sneaky unit is still unblocked.",
+        "test": "422-cr-attacking-blocking.test.ts::cr:combat.blocks.side.blocks-nothing — a side-block beside a lone Sneaky attacker"
+      }
+    ],
+    "see": [
+      "606.4e"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R321",
+          "quote": "nothing, so it does not count as blocking a lone {Sneaky} attacker, and it"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "422-cr-attacking-blocking.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R321": "57bf15d8b02784f4b61ea34b6935e1fc693cc9bedc10c2d1d64e6d15cea5982b"
+    }
+  },
+  {
+    "key": "attr.sneaky.pure",
+    "parent": "attr.sneaky",
+    "order": 5,
+    "text": "A Pure unit ignores Sneaky, so it can block a lone Sneaky attacker (see rule 802.25).",
+    "examples": [
+      {
+        "text": "Example (illustrative): A lone Sneaky unit attacks. The defender can block it with Just a Unit (Pure), and with no other unit.",
+        "test": "431-cr-attributes-2.test.ts::cr:attr.sneaky.pure — Just a Unit (Pure) can block a lone Sneaky attacker, and a plain unit cannot"
+      }
+    ],
+    "see": [
+      "802.25"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R61",
+          "quote": "rule survives it: Flying, Evasive, and Sneaky's lone-attacker immunity. A"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R76",
+          "relation": "its 'able' sub-findings (a Pure blocker still sees through lone Sneaky) survive in R84; its Alluring rule was replaced by R84"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "431-cr-attributes-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "No test found that blocks a lone Sneaky attacker with a Pure unit.",
+    "sourceHashes": {
+      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
+    }
+  },
+  {
+    "key": "attr.alluring",
+    "parent": "802",
+    "order": 15,
+    "text": "Alluring is an attribute. Its reminder text, printed under the type line, reads \"When an alluring column attacks, target enemy can't attack and must block it this combat if able.\"",
+    "examples": [
+      {
+        "text": "Example: Tempest Wrangler is Alluring, and donates Alluring when applied as an augment.",
+        "test": "15-water-b.test.ts::Tempest Wrangler: {Alluring} 1/3"
+      }
+    ],
+    "see": [
+      "802.1",
+      "604.2e",
+      "606.2e"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [
+        {
+          "ref": "glossary: Alluring",
+          "quote": "When an alluring column attacks, target enemy can't attack and must block it this combat if able."
+        }
+      ],
+      "rulings": [
+        {
+          "ref": "R84",
+          "quote": "2. **Two effects on that target: it can't attack, and it must block that column"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "15-water-b.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "The reminder sentence is printed under the type line and is read off the scan (client/ui/scan-reminders.json); the oracle text does not carry it, so no card: quote can be checked (D-U20-1). R84 rests on Caleb's Discord words, which are not in a RAQ thread in the register, so the checkable basis is the ruling.",
+    "sourceHashes": {
+      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
+    }
+  },
+  {
+    "key": "attr.alluring.trigger",
+    "parent": "attr.alluring",
+    "order": 1,
+    "text": "When an attacking column with Alluring is declared, Alluring triggers. The trigger goes on the stack and targets one enemy unit, chosen by the attacking player from the enemy units in the battle region as the trigger is put on the stack.",
+    "examples": [
+      {
+        "text": "Example: Two attacking columns, one Alluring, against one possible blocker: the Alluring trigger targets that blocker, which then must block the Alluring column.",
+        "test": "53-playtest-round7.test.ts::R84: the minimal form"
+      }
+    ],
+    "see": [
+      "706",
+      "110"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R84",
+          "quote": "1. **It targets ONE enemy unit.** Asked \"Does alluring stop a whole enemy from"
+        },
+        {
+          "ref": "R84",
+          "quote": "3. **It goes on the stack and can be negated.** *\"'Alluring' effect goes to"
+        },
+        {
+          "ref": "R84",
+          "quote": "its target is chosen as it goes onto the stack (R67), by the attacker, from the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "53-playtest-round7.test.ts",
+        "431-cr-attributes-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
+    }
+  },
+  {
+    "key": "attr.alluring.one-per-column",
+    "parent": "attr.alluring",
+    "order": 2,
+    "text": "Alluring does not stack. An attacking column with Alluring has one Alluring trigger, however many of its units have Alluring.",
+    "examples": [
+      {
+        "text": "Example: Two Alluring units attack in one column. Alluring triggers once.",
+        "test": "53-playtest-round7.test.ts::R84: {Alluring} does not stack"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R84",
+          "quote": "5. **It does not stack.** *\"Nah alluring doesn't stack\"* … *\"It's just one"
+        },
+        {
+          "ref": "R84",
+          "quote": "alluring is shared to the column\"* — so it is one target per COLUMN."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "53-playtest-round7.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
+    }
+  },
+  {
+    "key": "attr.alluring.per-column",
+    "parent": "attr.alluring",
+    "order": 3,
+    "text": "Each attacking column with Alluring has its own trigger. Two Alluring columns make two triggers, which may target the same unit or different units.",
+    "examples": [
+      {
+        "text": "Example: Two Alluring columns attack. Each triggers, and both triggers may target the same defending unit.",
+        "test": "53-playtest-round7.test.ts::R84: two Alluring COLUMNS are two triggers, and may name the same unit"
+      },
+      {
+        "text": "Example: Two Alluring columns target two different units. Each of those units must block its column.",
+        "test": "53-playtest-round7.test.ts::R84: two Alluring columns naming DIFFERENT units compel both"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R84",
+          "quote": "Two Alluring columns may name the **same** unit, and it cannot block both."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "53-playtest-round7.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
+    }
+  },
+  {
+    "key": "attr.alluring.source",
+    "parent": "attr.alluring",
+    "order": 4,
+    "text": "Alluring is shared by the units of its column, but the column's Alluring trigger comes from the unit that has Alluring itself, not from the units it is shared with.",
+    "examples": [
+      {
+        "text": "Example: Tempest Wrangler attacks in a column with a vanilla unit. The trigger is Tempest Wrangler's.",
+        "test": "298-column-attrs-outside-combat.test.ts::R294 §4b {Alluring} still originates from the unit that prints it"
+      }
+    ],
+    "see": [
+      "802.1"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R294",
+          "quote": "> column and having it originate from the actual unit with Alluring is fine."
+        },
+        {
+          "ref": "R84",
+          "quote": "alluring is shared to the column\"* — so it is one target per COLUMN."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "298-column-attrs-outside-combat.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R294": "8cae16d380577db83dfb428eb40c37313643ed54a5a3131e6ef3efdc40475495",
+      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
+    }
+  },
+  {
+    "key": "attr.alluring.cannot-attack",
+    "parent": "attr.alluring",
+    "order": 5,
+    "text": "When the Alluring trigger resolves, its target cannot attack: it cannot be declared as an attacker or sent to counterattack for the rest of the battle phase (see rule 604.2e).",
+    "examples": [
+      {
+        "text": "Example: A lured unit cannot be sent out to counterattack when blocks are declared.",
+        "test": "53-playtest-round7.test.ts::R84: a lured unit cannot be sent out to counterattack"
+      }
+    ],
+    "see": [
+      "604.2e",
+      "610"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R84",
+          "quote": "2. **Two effects on that target: it can't attack, and it must block that column"
+        },
+        {
+          "ref": "R84",
+          "quote": "lasts the rest of the battle phase and is cleared at regroup with every other"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "53-playtest-round7.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
+    }
+  },
+  {
+    "key": "attr.alluring.must-block",
+    "parent": "attr.alluring",
+    "order": 6,
+    "text": "When the Alluring trigger resolves, its target must block the Alluring column in that battle round if it is able to. If the column is blocked at all, the target must be one of its blockers (see rule 606.2e).",
+    "examples": [
+      {
+        "text": "Example: The defender has two units able to block and leaves the Alluring column unblocked by putting both on other columns. The declaration is refused: the lured unit must block the Alluring column.",
+        "test": "53-playtest-round7.test.ts::R84 UFAB"
+      }
+    ],
+    "see": [
+      "606.2e"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1460216519731577027#2",
+          "quote": "he can block with either A+B or A+C, but he cannot declare block with B+C"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R84",
+          "quote": "- **If `blocks[ci]` is non-empty, `A` must be one of its members.**"
+        },
+        {
+          "ref": "R84",
+          "quote": "- **Must block** is `columns`, and only in the round that stamped it. The"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "53-playtest-round7.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd",
+      "RAQ 1460216519731577027#2": "d7698cffd19e07f01e242174c16a8c42a56a6e360df249219dc77b641e0d1bee"
+    }
+  },
+  {
+    "key": "attr.alluring.able",
+    "parent": "attr.alluring",
+    "order": 7,
+    "text": "Whether the target is able to block the Alluring column depends only on that unit and that column. If the target could not block the column by itself (because the column is Evasive and needs two blockers, the target is Feeble, the column has Flying and the target does not, or the column is a lone Sneaky attacker), the defending player may leave the column unblocked, and the target may block another column.",
+    "examples": [
+      {
+        "text": "Example: A lone lured unit cannot block an Alluring and Evasive column by itself, so it need not block it, and it may block another column.",
+        "test": "388-raq-blocks-and-windows.test.ts::RAQ Alluring: a lone lured unit cannot block an Evasive column"
+      }
+    ],
+    "see": [
+      "606.2b",
+      "802.13"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1460216519731577027#0",
+          "quote": "'A' cannot be used alone to block Alluring& Evasive column, as Alluring says 'If able'"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R84",
+          "quote": "- **If `blocks[ci]` is empty, that is legal only if `A` could not have satisfied"
+        },
+        {
+          "ref": "R84",
+          "quote": "all ({Feeble}; no {Flying} against a Flying column; R20's lone-{Sneaky}"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "388-raq-blocks-and-windows.test.ts",
+        "53-playtest-round7.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd",
+      "RAQ 1460216519731577027#0": "63a4b895f811f113cde189e9a3ed5550ec06a1341d47212d337bee1a20f36ec8"
+    }
+  },
+  {
+    "key": "attr.alluring.evasive",
+    "parent": "attr.alluring",
+    "order": 8,
+    "text": "An Alluring and Evasive column can be blocked only by two units, one of which is the target. The defending player chooses between blocking it with the target and one other unit, and not blocking it at all; blocking it with two other units is not allowed.",
+    "examples": [
+      {
+        "text": "Example: The target is A and the defender also has B and C. A+B and A+C may block the column; B+C may not.",
+        "test": "388-raq-blocks-and-windows.test.ts::RAQ Alluring: with three units, A+B or A+C may block the Evasive column, but never B+C"
+      },
+      {
+        "text": "Example: The defender has only A and B. They block the column with A+B, or leave it unblocked.",
+        "test": "388-raq-blocks-and-windows.test.ts::RAQ Alluring: with two units, the lured one blocks the Evasive column with the other, or nobody blocks it"
+      }
+    ],
+    "see": [
+      "802.13"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1460216519731577027#1",
+          "quote": "Opponent can choose to either block with A+B or he can forgo blocking this column at all."
+        },
+        {
+          "ref": "RAQ 1460216519731577027#2",
+          "quote": "he can block with either A+B or A+C, but he cannot declare block with B+C"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R84",
+          "quote": "| A, B, C | forgo it, **or** A+B, **or** A+C — **B+C is illegal** |"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "388-raq-blocks-and-windows.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd",
+      "RAQ 1460216519731577027#1": "55c986c1a23d77e4a10f36d1cede0466b0a50f5641466726505fc0923b8a6a54",
+      "RAQ 1460216519731577027#2": "d7698cffd19e07f01e242174c16a8c42a56a6e360df249219dc77b641e0d1bee"
+    }
+  },
+  {
+    "key": "attr.alluring.allurer-gone",
+    "parent": "attr.alluring",
+    "order": 9,
+    "text": "If, when the Alluring trigger would resolve, the unit with Alluring is no longer in an attacking column, or its column no longer has Alluring, the trigger does nothing.",
+    "examples": [
+      {
+        "text": "Example: The attacker's Alluring unit is killed while its trigger is on the stack. The trigger does nothing, and the targeted unit may attack and block freely.",
+        "test": "53-playtest-round7.test.ts::R84: killing the allurer while the trigger is ON the stack fizzles it"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R84",
+          "quote": "standing in an attack column, and that column must still be {Alluring}. Nothing"
+        },
+        {
+          "ref": "R84",
+          "quote": "you kill the allurer while the effect is on the stack\"*."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "53-playtest-round7.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Caleb (quoted in R84): \"this would stop the trigger if you kill the allurer while the effect is on the stack\". R84 says this is a check inside the effect, not the general fizzle rule.",
+    "sourceHashes": {
+      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
+    }
+  },
+  {
+    "key": "attr.alluring.after-resolution",
+    "parent": "attr.alluring",
+    "order": 10,
+    "text": "Once the Alluring trigger has resolved, removing the unit with Alluring does not undo it: its target still cannot attack. If the Alluring column ceases to exist, the duty to block it ends with it.",
+    "examples": [
+      {
+        "text": "Example: After the trigger resolves, the Alluring attacker is killed in the attack window. The lured unit may block another column, but it still cannot be sent to counterattack.",
+        "test": "53-playtest-round7.test.ts::R84: killing the allurer AFTER it resolves frees the block but not the attack"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R84",
+          "quote": "4. **Once it has resolved, killing the allurer does not undo it.** Asked whether"
+        },
+        {
+          "ref": "R84",
+          "quote": "effect fizzle: *\"You can't attack but you can block other things.\"*"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "53-playtest-round7.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
+    }
+  },
+  {
+    "key": "attr.alluring.two-duties",
+    "parent": "attr.alluring",
+    "order": 11,
+    "text": "If two Alluring triggers have targeted the same unit, it cannot block both columns. Blocking either of those columns with it satisfies both triggers, and the other column may then be blocked by other units or left unblocked.",
+    "examples": [
+      {
+        "text": "Example (illustrative): Two Alluring columns both target unit A. A blocks the first column. The second column may be blocked by B alone, or left unblocked.",
+        "test": "431-cr-attributes-2.test.ts::cr:attr.alluring.two-duties — one unit lured by two columns blocks one of them, and the other column may be blocked by another unit or left unblocked"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R84",
+          "quote": "**Discharging either duty excuses the rest**, and the \"must be among its"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "53-playtest-round7.test.ts",
+        "431-cr-attributes-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R84 marks this '⚠ a judgement call' (Bena's call, 2026-08-22): D-U20-5.",
+    "sourceHashes": {
+      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
+    }
+  },
+  {
+    "key": "attr.alluring.lone-sneaky",
+    "parent": "attr.alluring",
+    "order": 12,
+    "text": "An Alluring trigger from a lone Sneaky attacker compels no unit, because no unit is able to block that attacker (see rule 802.14), unless its target is Pure.",
+    "examples": [
+      {
+        "text": "Example: A lone Sneaky and Alluring unit attacks. The defender declares no blocks, and that is legal.",
+        "test": "53-playtest-round7.test.ts::R84: a lone {Sneaky} + {Alluring} attacker is not a stuck state"
+      }
+    ],
+    "see": [
+      "802.14"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R84",
+          "quote": "rather than about who is compelled: a lone {Sneaky} + {Alluring} attacker"
+        },
+        {
+          "ref": "R84",
+          "quote": "compels nobody (R20 forbids blocking it, so nobody is able), and an {Alluring}"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R76",
+          "relation": "first found the lone Sneaky + Alluring case; its Alluring rule was replaced by R84, which keeps this 'able' sub-finding"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "53-playtest-round7.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "The Pure exception is R76's sub-finding (\"except a {Pure} one, which sees through Sneaky\"), which R84 says survives.",
+    "sourceHashes": {
+      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
+    }
+  },
+  {
+    "key": "attr.alluring.pure-column",
+    "parent": "attr.alluring",
+    "order": 13,
+    "text": "An Alluring column that contains a Pure card does not trigger at all (see rule 802.25).",
+    "examples": [
+      {
+        "text": "Example: An Alluring column with Just a Unit in it attacks. No Alluring trigger is put on the stack.",
+        "test": "53-playtest-round7.test.ts::R84 + R61: an Alluring column that is itself {Pure} never even triggers"
+      }
+    ],
+    "see": [
+      "802.25"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R61",
+          "quote": "*itself* Pure ignores its own Alluring and compels nobody — under R84 that is"
+        },
+        {
+          "ref": "R84",
+          "quote": "column that is itself {Pure} compels nobody (R61) — under the new model that is"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "53-playtest-round7.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e",
+      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd"
+    }
+  },
+  {
+    "key": "attr.alluring.pure-target",
+    "parent": "attr.alluring",
+    "order": 14,
+    "text": "A Pure unit ignores the attributes that would stop it blocking, so a Pure target is able to block any Alluring column: it must block even a Flying Alluring column, and it satisfies an Evasive Alluring column by itself.",
+    "examples": [
+      {
+        "text": "Example: A lured Pure unit must block a Flying Alluring column.",
+        "test": "53-playtest-round7.test.ts::R84 + R61: a {Pure} lured unit is able against a Flying Alluring column"
+      },
+      {
+        "text": "Example: A lured Pure unit blocks an Evasive Alluring column alone.",
+        "test": "53-playtest-round7.test.ts::R84 + R61: a {Pure} lured unit discharges an EVASIVE Alluring column alone"
+      }
+    ],
+    "see": [
+      "802.25"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R61",
+          "quote": "- **Alluring** (R84) — a Pure blocker is \"able\" against anything, so a *lured*"
+        },
+        {
+          "ref": "R61",
+          "quote": "an Evasive Alluring column by itself (which makes \"could it have satisfied"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "53-playtest-round7.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
+    }
+  },
+  {
+    "key": "attr.alluring.tax-and-negate",
+    "parent": "attr.alluring",
+    "order": 15,
+    "text": "The Alluring trigger is a triggered ability. It can be negated while it is on the stack, and an effect that makes triggered abilities cost more to trigger (Crevice Lurker) applies to it: if that cost is not paid, the trigger does not happen.",
+    "examples": [
+      {
+        "text": "Example: Crevice Lurker is in play. The attacker declines to pay for the Alluring trigger, and nothing is lured.",
+        "test": "390-raq-stack.test.ts::RAQ trigger-like attributes: Crevice Lurker taxes the Alluring trigger"
+      },
+      {
+        "text": "Example: Containment Protocol negates a waiting Alluring trigger.",
+        "test": "390-raq-stack.test.ts::RAQ trigger-like attributes: Containment Protocol negates a waiting Alluring trigger"
+      }
+    ],
+    "see": [
+      "111.10f",
+      "706"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1366446116274442291#0",
+          "quote": "my intent is for it to stop those from triggering"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R84",
+          "quote": "3. **It goes on the stack and can be negated.** *\"'Alluring' effect goes to"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Whether Containment Protocol (\"triggered effects\") negates attribute triggers is an unanswered RAQ question (D-U20-6); R84's Caleb quote makes the trigger negatable in general.",
+    "sourceHashes": {
+      "R84": "6b363041a24738b9351c6d50fdbadc2f8b1aaf8ade4c727eb848c63cabd729bd",
+      "RAQ 1366446116274442291#0": "8377357b3934e6a3da06ecc08116930b252d309294440fba64594ce8378308dd"
+    }
+  },
+  {
+    "key": "attr.piercing",
+    "parent": "802",
+    "order": 16,
+    "text": "Piercing is an attribute. Its reminder text reads \"Excess damage from piercing sources is dealt to the recipient's controller.\"",
+    "examples": [
+      {
+        "text": "Example: Protective Adaptations gives a unit +1/+1 and Piercing until regroup.",
+        "test": "14-water-a.test.ts::Protective Adaptations: the target also gains piercing until regroup"
+      }
+    ],
+    "see": [
+      "802.1",
+      "608"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Protective Adaptations",
+          "quote": "Excess damage from piercing sources is dealt to the recipient's controller."
+        },
+        {
+          "ref": "Rulebook 2023 p.11",
+          "quote": "comes from a unit with the Piercing attribute."
+        }
+      ],
+      "designer": [],
+      "ours": [
+        {
+          "ref": "glossary: Piercing",
+          "quote": "Excess damage from piercing sources is dealt to the recipient's controller."
+        }
+      ],
+      "rulings": [],
+      "history": [
+        {
+          "ruling": "R7",
+          "relation": "Piercing half ('automatic, not elective') reversed by R319"
+        },
+        {
+          "ruling": "R103",
+          "relation": "its 'automatic, not elective' half reversed by R340"
+        },
+        {
+          "ruling": "R319",
+          "relation": "its closing note that noncombat Piercing is automatic reversed by R340"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "14-water-a.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "attr.piercing.excess",
+    "parent": "attr.piercing",
+    "order": 1,
+    "text": "Excess damage, for Piercing, is the damage a source deals to a unit beyond that unit's lethal damage. A unit's lethal damage is worked out after Powerful has doubled the source's damage; it is reduced for a Vulnerable unit, which is dealt double what reaches it; it is 1 if the source has Deadly; and damage already dealt to the unit counts towards it, including damage dealt to it earlier by the same effect (see rule 608.6e).",
+    "examples": [
+      {
+        "text": "Example: A Powerful Piercing source deals 3 to a 1/1. The 3 is doubled to 6; 1 is lethal; 5 is excess.",
+        "test": "82-attr-interactions.test.ts::Piercing + Powerful: the excess is what is left after the doubling"
+      },
+      {
+        "text": "Example: A 10-power Piercing column is blocked by a Vulnerable 3/8. Lethal damage is 4, which is dealt as 8; the other 6 is excess.",
+        "test": "387-raq-combat.test.ts::RAQ Vulnerable: a 10-power Piercing column into a Vulnerable 3/8 assigns 4 and 6 goes to the player"
+      },
+      {
+        "text": "Example: One effect names the same unit twice with Piercing. The unit is given its lethal damage once, and the rest of both hits is excess.",
+        "test": "82-attr-interactions.test.ts::Piercing: a unit named twice in one batch is overkilled ONCE"
+      }
+    ],
+    "see": [
+      "608.6e",
+      "802.3",
+      "802.10",
+      "802.11"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1372451771632320512#3",
+          "quote": "you are required to assing atleast 4 damage to Crumbling (which gets doubled due to Vulnerable) and excess damage is 10-4=6, which can go face"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R103 (its order of operations)",
+          "quote": "1. {Powerful} doubles the source's damage first (already in the per-hit loop)."
+        },
+        {
+          "ref": "R103 (its order of operations)",
+          "quote": "2. The victim is priced in what it RECEIVES, so {Vulnerable}'s receive-side"
+        },
+        {
+          "ref": "R103 (its order of operations)",
+          "quote": "3. Damage earlier hits in the same batch already assigned to that victim counts"
+        },
+        {
+          "ref": "R103 (its order of operations)",
+          "quote": "4. {Deadly} caps the need at ONE point, so a Deadly + Piercing source spends 1"
+        },
+        {
+          "ref": "R23",
+          "quote": "**Powerful** doubles the source's total damage once, **before** assignment/overflow (a"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "82-attr-interactions.test.ts",
+        "387-raq-combat.test.ts",
+        "09-attrs.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R103": "6b17215709fe377c2ddb2f947b1704122dc895c01b6c26357d55d4b3323ed247",
+      "R23": "04ef097d6068557fac2a6fffbbbf1b13e15d998f142ea3b79c9b8242ea6173e1",
+      "RAQ 1372451771632320512#3": "ea23f808b78cd79313aac3fbff1c8949a14188079fda3436adcefe3e6b8dea75"
+    }
+  },
+  {
+    "key": "attr.piercing.combat",
+    "parent": "attr.piercing",
+    "order": 2,
+    "text": "A half-column with Piercing that deals combat damage to the units of the opposing half-column must assign lethal damage to each of those units, front to back. Any of its damage that is not assigned to a unit is dealt to the player who controls those units.",
+    "examples": [
+      {
+        "text": "Example: A Piercing column with 10 power is blocked by a 1/2 in front of a 1/3. It must assign 2 to the front unit and 3 to the back unit; the other 5 may be dealt to the defending player.",
+        "test": "387-raq-combat.test.ts::RAQ Excessive: Piercing pays lethal to the front AND the back, and only the rest reaches the player"
+      }
+    ],
+    "see": [
+      "608.6",
+      "608.8"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353888077625561108#4",
+          "quote": "You need to assign enough damage to front & back"
+        },
+        {
+          "ref": "RAQ 1353888077625561108#5",
+          "quote": "however with Piercing any excess damage you won't assign to front or back unit will be assigned to Opponent Health."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R114 (its designer line)",
+          "quote": "> \"ALL damage is dealt to units, even if it surpasses its defense. The only exception is"
+        },
+        {
+          "ref": "R319 (its combat ruling)",
+          "quote": "So a Piercing strike is assigned like any other: each unit in front must be"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R7",
+          "relation": "'Piercing is automatic, not elective' reversed by R319"
+        },
+        {
+          "ruling": "R114",
+          "relation": "'its leftover is returned to the caller and hits the face' amended by R319: only what no unit is given goes to the controller"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts",
+        "431-cr-attributes-2.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R114": "72fe8ffddaac70bf365e990d2627680e698af427677f651cb92ec5a4dfe63d34",
+      "R319": "0dae2a17d049496f72aaa046c437f57fa624c4e4ec1214658772a1945e77cdd0",
+      "RAQ 1353888077625561108#4": "9083a13fdb5ec98a8f7f7b0e98f72b49be2459e8228849f2829b47a014e262ca",
+      "RAQ 1353888077625561108#5": "a01c3a3894e4ff28fa3d3a9550ca0ba2ae9e1a110d97c5c8c241953b6ceb0fed"
+    }
+  },
+  {
+    "key": "attr.piercing.elective",
+    "parent": "attr.piercing",
+    "order": 3,
+    "text": "Excess is elective. After each unit has been assigned its lethal damage, the dealing player may assign any part of the remaining damage to those units, including all of it, and only the damage no unit is assigned is dealt to the player.",
+    "examples": [
+      {
+        "text": "Example: A 10-power Piercing attacker is blocked by a lone Vulnerable 3/8. The attacker may put all 10 into it (dealt as 20), and none reaches the player.",
+        "test": "399-raq-fix-combat.test.ts::R319: a Piercing attacker may put all 10 into a lone Vulnerable 3/8"
+      },
+      {
+        "text": "Example: A Piercing split may keep part of the excess on the back unit and send the rest to the player.",
+        "test": "399-raq-fix-combat.test.ts::R319: a Piercing split may keep part of the excess on the back unit and send the rest"
+      }
+    ],
+    "see": [
+      "608.6c"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353888077625561108#5",
+          "quote": "You may still overkill front or back units, however with Piercing any excess damage you won't assign to front or back unit will be assigned to Opponent Health."
+        },
+        {
+          "ref": "RAQ 1372451771632320512#4",
+          "quote": "but then all that 20 damage sinks into Crumbling Ancient and nothing goes to opponent face."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R319 (its combat ruling)",
+          "quote": "any of the excess on the units (the last one included) — whatever no unit is"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R7",
+          "relation": "'Piercing is automatic, not elective' reversed by R319"
+        },
+        {
+          "ruling": "R21",
+          "relation": "'a Deadly Piercing column sends everything past 1-per-blocker through' amended by R319: that is the default only"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "399-raq-fix-combat.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R319": "0dae2a17d049496f72aaa046c437f57fa624c4e4ec1214658772a1945e77cdd0",
+      "RAQ 1353888077625561108#5": "a01c3a3894e4ff28fa3d3a9550ca0ba2ae9e1a110d97c5c8c241953b6ceb0fed",
+      "RAQ 1372451771632320512#4": "c0cb696285859a76caf8c5a328ef57f3dbb7330ef74a4ddfe29d70ba791f50ca"
+    }
+  },
+  {
+    "key": "attr.piercing.unblocked",
+    "parent": "attr.piercing",
+    "order": 4,
+    "text": "An unblocked attacking half-column with Piercing deals its combat damage to the defending player, as any unblocked half-column does.",
+    "examples": [
+      {
+        "text": "Example: An unblocked Piercing column hits the defending player.",
+        "test": "387-raq-combat.test.ts::RAQ Piercing: an unblocked Piercing column hits the player"
+      }
+    ],
+    "see": [
+      "608.4a"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1365594171867664445#0",
+          "quote": "An unblocked Piercing attacker hits the player."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1365594171867664445#0": "b990ca89d0c4565bbf79069547f8d0eaf4e7ca1be16c3ab74b1f468d08bb6194"
+    }
+  },
+  {
+    "key": "attr.piercing.dead-block",
+    "parent": "attr.piercing",
+    "order": 5,
+    "text": "If an attacking half-column with Piercing is blocked but no blocking unit is left in front of it when it strikes, all of its damage is excess and is dealt to the defending player. A blocked half-column without Piercing deals no damage in that case (see rule 608.4c).",
+    "examples": [
+      {
+        "text": "Example: A Piercing column's only blocker dies before damage. The column is still blocked, and its full power is dealt to the defending player.",
+        "test": "387-raq-combat.test.ts::RAQ Piercing: a Piercing column whose blocker died before damage puts its full power into the player"
+      },
+      {
+        "text": "Example: The same position without Piercing deals nothing to the player.",
+        "test": "387-raq-combat.test.ts::RAQ Piercing: a blocked NON-Piercing column whose blocker died deals nothing to the player"
+      }
+    ],
+    "see": [
+      "608.4c",
+      "606.3a"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1365594171867664445#1",
+          "quote": "BUT because it's attacking formation and that unit/column has Piercing, then full damage will go to face."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R13 (its conclusion)",
+          "quote": "**Piercing** column's damage carries entirely to the defending player (assignment"
+        },
+        {
+          "ref": "R185",
+          "quote": "the column stays blocked."
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R13",
+          "relation": "its reason ('piercing excess is automatic per R7') corrected by R319; its ⚠ resolved by the RAQ"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts",
+        "02-combat.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R13": "f9107a61224155c76ba3c104e88ff9f8a8b0967f8f840846f01d4ba43328a18b",
+      "R185": "a2baa6ebf7628aa9c8a0d6542c2ed9993d9d44ba4ad0db5d8e342b3e7135306d",
+      "RAQ 1365594171867664445#1": "41fb2d1e14c747d46e906f02dbce574711b100fd92a19711d509a39f0e43a878"
+    }
+  },
+  {
+    "key": "attr.piercing.defending",
+    "parent": "attr.piercing",
+    "order": 6,
+    "text": "A blocking half-column with Piercing deals excess combat damage to the attacking player only if there is an attacking unit in front of it when it strikes. If no attacking unit is in front of it (its attackers are all gone, or it is a side-block), it deals no combat damage at all (see rules 608.4e and 608.4f).",
+    "examples": [
+      {
+        "text": "Example: A Piercing blocking column with an attacker in front of it deals its excess to the attacking player.",
+        "test": "387-raq-combat.test.ts::RAQ Piercing: a defending Piercing column with an attacker in front of it carries its excess to the attacker"
+      },
+      {
+        "text": "Example: A Piercing side-blocker deals no combat damage to the attacking player.",
+        "test": "400-raq-fix-blocks.test.ts::R321 a Piercing side-blocker deals no combat damage to the attacking player"
+      }
+    ],
+    "see": [
+      "608.4e",
+      "608.4f"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1365594171867664445#3",
+          "quote": "as defender you can only deal combat damage to opponents face if your blocking columns has piercing AND there is enemy unit in front of them"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R72 (its attackers-gone half)",
+          "quote": "**A blocking column whose attackers are all dead deals nothing, Piercing"
+        },
+        {
+          "ref": "R321",
+          "quote": "A side-block deals **no combat damage**, Piercing included"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R72",
+          "relation": "its no-side-block note replaced by R321"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts",
+        "400-raq-fix-blocks.test.ts",
+        "64-formation-collapse.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "The side-block half is sourced by R321, which quotes _passer; the RAQ #2 claim line (not in the pack) was dropped.",
+    "sourceHashes": {
+      "R321": "57bf15d8b02784f4b61ea34b6935e1fc693cc9bedc10c2d1d64e6d15cea5982b",
+      "R72": "eed4648973a278cfbffddb860451cdd2629e8dfb6ab2b6c9a15137cdce515969",
+      "RAQ 1365594171867664445#3": "cd8215d0e5a46b53cfab6842a14326b1b194278f18d210e223711d1025228e1f"
+    }
+  },
+  {
+    "key": "attr.piercing.deadly",
+    "parent": "attr.piercing",
+    "order": 7,
+    "text": "If the Piercing source also has Deadly, lethal damage is 1 for each unit, so all damage beyond 1 for each unit may be excess.",
+    "examples": [
+      {
+        "text": "Example: A Deadly and Piercing column is blocked by two units. It assigns 1 to each, and the rest may go to the player.",
+        "test": "387-raq-combat.test.ts::RAQ Excessive: Deadly + Piercing over two blockers"
+      },
+      {
+        "text": "Example: A 10-power Deadly and Piercing column is blocked by one unit: 1 kills it and the other 9 may pierce.",
+        "test": "134-column-and-substep.test.ts::R157 §11 — {Deadly} + {Piercing}: 1 kills the blocker and the other 9 pierce"
+      }
+    ],
+    "see": [
+      "802.3"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353888077625561108#6",
+          "quote": "Atleast 1 damage to front, atleast 1 damage to back and rest can go to Opponent Health."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R103 (its order of operations)",
+          "quote": "4. {Deadly} caps the need at ONE point, so a Deadly + Piercing source spends 1"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts",
+        "134-column-and-substep.test.ts",
+        "82-attr-interactions.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R103": "6b17215709fe377c2ddb2f947b1704122dc895c01b6c26357d55d4b3323ed247",
+      "RAQ 1353888077625561108#6": "6d01b38c9afcd84e60f587ef5271145274a2679eb3584062c18f27d111c6b292"
+    }
+  },
+  {
+    "key": "attr.piercing.prevention",
+    "parent": "attr.piercing",
+    "order": 8,
+    "text": "Damage prevention on a unit does not change how much must be assigned to it before there is excess. Excess is worked out as though the unit were unprotected.",
+    "examples": [
+      {
+        "text": "Example: A Piercing column is blocked by a shielded 0/5 in front of a 5/6. It must assign 5 to the shielded unit and 6 to the unit behind; the rest may go to the player.",
+        "test": "387-raq-combat.test.ts::RAQ Excessive: with Piercing, 5 to the shielded Tomb"
+      },
+      {
+        "text": "Example: A Piercing effect hits a shielded unit. The shield changes what is dealt to the unit, never what pierces.",
+        "test": "82-attr-interactions.test.ts::Piercing vs a damage-shielded unit"
+      }
+    ],
+    "see": [
+      "608.6g",
+      "708"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1353888077625561108#10",
+          "quote": "Atleast 5 damage to Awoken … atleast 6 damage to Bubb, rest can go to Opponent HP"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R103 (its order of operations)",
+          "quote": "**as if it were unprotected**."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts",
+        "82-attr-interactions.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R103": "6b17215709fe377c2ddb2f947b1704122dc895c01b6c26357d55d4b3323ed247",
+      "RAQ 1353888077625561108#10": "a4d0326fd643a0bb1dd88780908e596b730f6c6354bbf2bedf7bdc9505a3188d"
+    }
+  },
+  {
+    "key": "attr.piercing.same-damage",
+    "parent": "attr.piercing",
+    "order": 9,
+    "text": "Piercing excess is dealt as part of the same damage as the rest, at the same time. It is not a triggered ability, and no player can act between the damage dealt to the units and the excess dealt to the player.",
+    "examples": [
+      {
+        "text": "Example: A Piercing effect deals 5 to a 1/1. The unit's 1 and the 4 to its controller are dealt together, with nothing on the stack in between.",
+        "test": "82-attr-interactions.test.ts::Piercing: 5 effect damage to a 1/1 kills it and the other 4 hit its controller"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [
+        {
+          "ref": "glossary: Piercing",
+          "quote": "as part of the same damage, never as a separate trigger"
+        }
+      ],
+      "rulings": [
+        {
+          "ref": "R103 (its not-a-trigger ruling)",
+          "quote": "> \"It redirects excess damage to that unit's controller (not as a trigger, just"
+        },
+        {
+          "ref": "R340",
+          "quote": "and the excess landing in the same R80 batch with nothing on the stack in between."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "82-attr-interactions.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R103 is the owner's ruling; only its \"automatic\" half was reversed (by R340). In combat the excess is part of the simultaneous combat damage (608.7).",
+    "sourceHashes": {
+      "R103": "6b17215709fe377c2ddb2f947b1704122dc895c01b6c26357d55d4b3323ed247",
+      "R340": "67cfb9ac70bf668d742367e9bdf7fd1a1db67635cb512f2b3e3e739feb051583"
+    }
+  },
+  {
+    "key": "attr.piercing.noncombat",
+    "parent": "attr.piercing",
+    "order": 10,
+    "text": "Piercing applies to noncombat damage too. A Piercing source that deals noncombat damage to a unit must deal that unit its lethal damage first. The dealing player may then keep any of the excess on that unit; the rest of the excess is dealt to that unit's controller.",
+    "examples": [
+      {
+        "text": "Example: Squish makes Bubb, in a column with Good Whale (Piercing), deal 6 to a 1/1. The dealing player may keep all 6 on the 1/1, or send up to 5 to its controller.",
+        "test": "405-raq-noncombat-piercing.test.ts::R340 Squish: Bubb with Good Whale's Piercing"
+      },
+      {
+        "text": "Example: A non-Piercing source's overkill stays on the unit, and no question is asked.",
+        "test": "405-raq-noncombat-piercing.test.ts::R340 control: no Piercing, no question"
+      }
+    ],
+    "see": [
+      "112.7"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1402292180499955884#5",
+          "quote": "Since Bubb will be the source of damage and he has Piercing, then any excess damage can be dealt to enemy player."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R340",
+          "quote": "victim in R319: the unit must be given lethal first, and then the dealing player"
+        },
+        {
+          "ref": "R340",
+          "quote": "may keep any of the excess on it. Whatever it is not given goes to its"
+        },
+        {
+          "ref": "R340",
+          "quote": "Asked whether \"can be\" means automatic or a choice, the owner: **\"Elective, like"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R103",
+          "relation": "its 'automatic, not elective' half reversed by R340"
+        },
+        {
+          "ruling": "R319",
+          "relation": "its closing note that noncombat Piercing is unchanged (automatic) reversed by R340"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "405-raq-noncombat-piercing.test.ts",
+        "82-attr-interactions.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The RAQ says the excess \"can be\" dealt to the player; the owner read \"can be\" as elective (R340).",
+    "sourceHashes": {
+      "R340": "67cfb9ac70bf668d742367e9bdf7fd1a1db67635cb512f2b3e3e739feb051583",
+      "RAQ 1402292180499955884#5": "fd2d00aa9bff849f20a909c4db14eb469425e48a93976cd94657d46050352ef7"
+    }
+  },
+  {
+    "key": "attr.piercing.noncombat-chooser",
+    "parent": "attr.piercing",
+    "order": 11,
+    "text": "For noncombat damage, the dealing player is the controller of the source unit, even if another player controls the spell that made it deal damage (for Squish, Fight and Battle the unit is the source; see rule 112.6). If the source is not a unit in play (a spell, or a unit that has left play), the controller of the effect decides.",
+    "examples": [
+      {
+        "text": "Example: A Battle makes an opponent's Piercing unit fight. The opponent, who controls that unit, places its excess.",
+        "test": "405-raq-noncombat-piercing.test.ts::R340 Battle: the question belongs to the Piercing unit's controller, not the caster"
+      }
+    ],
+    "see": [
+      "112.6"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R340",
+          "quote": "**Who decides.** The dealing player is the controller of the source unit (R318:"
+        },
+        {
+          "ref": "R340",
+          "quote": "When the source is not a unit in play (a spell, or a unit that has died), the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "405-raq-noncombat-piercing.test.ts",
+        "431-cr-attributes-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R340": "67cfb9ac70bf668d742367e9bdf7fd1a1db67635cb512f2b3e3e739feb051583"
+    }
+  },
+  {
+    "key": "attr.piercing.recipients",
+    "parent": "attr.piercing",
+    "order": 12,
+    "text": "Each unit's excess is dealt to that unit's controller. If one effect deals Piercing damage to units controlled by different players, each player is dealt the excess from their own units.",
+    "examples": [
+      {
+        "text": "Example: A Piercing effect damages units on both sides. Each unit's excess goes to that unit's controller.",
+        "test": "82-attr-interactions.test.ts::Piercing in a BATCH: each unit's excess goes to THAT unit's controller"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Protective Adaptations",
+          "quote": "Excess damage from piercing sources is dealt to the recipient's controller."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "82-attr-interactions.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "attr.piercing.column",
+    "parent": "attr.piercing",
+    "order": 13,
+    "text": "A unit in a column with a Piercing unit has Piercing while that column exists, for the noncombat damage it deals as well as for combat damage (see rule 802.1).",
+    "examples": [
+      {
+        "text": "Example: Bubb, in a column with Good Whale, squishes with Piercing: the excess reaches the player.",
+        "test": "388-raq-blocks-and-windows.test.ts::RAQ Squish: Bubb in a column with Good Whale squishes with Piercing"
+      }
+    ],
+    "see": [
+      "802.1"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1402292180499955884#5",
+          "quote": "Since Bubb will be the source of damage and he has Piercing, then any excess damage can be dealt to enemy player."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R294",
+          "quote": "> The whole card gets the attributes while it's in the column. And so when it"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "405-raq-noncombat-piercing.test.ts",
+        "388-raq-blocks-and-windows.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R294": "8cae16d380577db83dfb428eb40c37313643ed54a5a3131e6ef3efdc40475495",
+      "RAQ 1402292180499955884#5": "fd2d00aa9bff849f20a909c4db14eb469425e48a93976cd94657d46050352ef7"
+    }
+  },
+  {
+    "key": "attr.piercing.redirect",
+    "parent": "attr.piercing",
+    "order": 14,
+    "text": "If Piercing combat damage that would be dealt to a player is dealt to a unit instead (as Oorblak's ability does), that unit is dealt its lethal damage and the rest is still Piercing excess. That excess is dealt to the player, and it is not redirected again (see rule 608.8c).",
+    "examples": [
+      {
+        "text": "Example: 10 Piercing combat damage is redirected into a 2/4 Oorblak. 4 kill it and the other 6 reach the player.",
+        "test": "387-raq-combat.test.ts::RAQ Oorblak: 10 Piercing combat damage redirected into a 2/4 Oorblak"
+      },
+      {
+        "text": "Example: 5 Piercing combat damage is redirected into Oorblak on a 1/1 host. 1 kills the host and the remaining 4 reach the player.",
+        "test": "17-earth-b.test.ts::Oorblak: Caleb's case — 5 Piercing redirected, 1 kills the body, the remaining 4 hit the player"
+      }
+    ],
+    "see": [
+      "608.8c"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1397188292239163454#0",
+          "quote": "he takes 4 damage which is enough to kill him and leftover 6 damage is still Piercing so it goes to players face"
+        },
+        {
+          "ref": "RAQ 1397188292239163454#0",
+          "quote": "replacement effects only apply once in an effect Unless a new trigger occurs"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R237",
+          "quote": "With the kill delivered, R103 step 4's 1-point floor becomes the *right*"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R103",
+          "relation": "its Oorblak divergence (Deadly floor not read on the redirect path) replaced by R237"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts",
+        "17-earth-b.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "R237 is cited for the Deadly floor on the redirect path (1 is lethal for a Deadly hit). The round-1 verifier measured with two Oorblaks that the engine redirects the Piercing excess a second time (both die, 2 reach the player); the RAQ says a replacement applies once. Filed by U12 as F-U12-1. Whether the attacker may keep excess on a redirect target (the elective keep of 608) is not addressed: D-U20-23.",
+    "sourceHashes": {
+      "R237": "ec152f51160f9f8410800e8323fd9f676fdf45864242ec64e8d1e35ce6ae3cc7",
+      "RAQ 1397188292239163454#0": "859ade14197b364f8aed8a0d8462175435c6ba4ba8f67b055cf85849ae403635"
+    },
+    "engineDiffers": [
+      "F-U12-1"
+    ]
+  },
+  {
+    "key": "attr.piercing.electric",
+    "parent": "attr.piercing",
+    "order": 15,
+    "text": "If a source has both Electric and Piercing, excess that reaches a unit with no further unit to jump to is Piercing excess: the dealing player may keep any of it on that unit, and the rest is dealt to that unit's controller (see rule 802.17).",
+    "examples": [
+      {
+        "text": "Example: A 6-damage Electric and Piercing hit lands on a lone 1/2 with no neighbour. The dealing player chooses how much of the 4 excess stays on it; the rest goes to its controller.",
+        "test": "405-raq-noncombat-piercing.test.ts::R340 Electric + Piercing: where the chain dead-ends, the Piercing half is elective too"
+      }
+    ],
+    "see": [
+      "802.17"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R103 (its Electric and Piercing composition)",
+          "quote": "says where excess goes NEXT; Piercing says where it goes when there is no next."
+        },
+        {
+          "ref": "R340",
+          "quote": "closure asks the question at both places the method pierces: a plain hit"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R317",
+          "relation": "its closing sentence (with Piercing the dead-end excess 'still goes to that unit's controller') amended by R340: elective"
+        },
+        {
+          "ruling": "R103",
+          "relation": "its Electric dead end ('used to lose the remainder') amended by R317"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "405-raq-noncombat-piercing.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R103": "6b17215709fe377c2ddb2f947b1704122dc895c01b6c26357d55d4b3323ed247",
+      "R340": "67cfb9ac70bf668d742367e9bdf7fd1a1db67635cb512f2b3e3e739feb051583"
+    }
+  },
+  {
+    "key": "attr.piercing.pure",
+    "parent": "attr.piercing",
+    "order": 16,
+    "text": "Piercing does not apply in an interaction involving a Pure card (see rule 802.25).",
+    "examples": [
+      {
+        "text": "Example (illustrative): A 6-power Piercing column is blocked by Just a Unit (Pure). All 6 are dealt to Just a Unit; none reaches the defending player.",
+        "test": "431-cr-attributes-2.test.ts::cr:attr.piercing.pure — a 6-power Piercing column blocked by Just a Unit sends nothing to the defending player"
+      }
+    ],
+    "see": [
+      "802.25"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Just a Unit",
+          "quote": "(Pure cards and cards they are interacting with ignore all other attributes.)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R61",
+          "quote": "- **Combat damage** — both columns' attribute sets are empty for that"
+        },
+        {
+          "ref": "R61",
+          "quote": "exchange: no Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "40-light-c.test.ts",
+        "431-cr-attributes-2.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
+    }
+  },
+  {
+    "key": "attr.electric",
+    "parent": "802",
+    "order": 17,
+    "text": "Electric is an attribute. Its reminder text reads \"Excess damage from electric sources can be directed to an adjacent unit, recursively.\"",
+    "examples": [
+      {
+        "text": "Example: Arc Lightning is an Electric spell: \"I deal 6 damage to any target.\"",
+        "test": "387-raq-combat.test.ts::RAQ Vulnerable: Arc Lightning on a Vulnerable 3/8"
+      }
+    ],
+    "see": [
+      "802.1"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Envoy of Lightning",
+          "quote": "Excess damage from electric sources can {/n}be directed to an adjacent unit, recursively."
+        },
+        {
+          "ref": "card: Arc Lightning",
+          "quote": "{Battle} {Electric} Elemental Spell"
+        }
+      ],
+      "designer": [],
+      "ours": [
+        {
+          "ref": "glossary: Electric",
+          "quote": "Excess damage from electric sources can be directed to an adjacent unit, recursively."
+        }
+      ],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "{/n} in the quote is the oracle's line-break markup.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "attr.electric.jump",
+    "parent": "attr.electric",
+    "order": 1,
+    "text": "When an Electric source deals a unit more than its lethal damage, the excess may be dealt to a unit adjacent to that unit instead. The unit the excess jumps to is dealt the lethal damage it needs, and any excess beyond that may jump again, to a unit adjacent to it.",
+    "examples": [
+      {
+        "text": "Example: Arc Lightning (6, Electric) hits a Vulnerable 3/8. 4 kill it (dealt as 8), and the other 2 may jump to an adjacent unit.",
+        "test": "387-raq-combat.test.ts::RAQ Vulnerable: Arc Lightning on a Vulnerable 3/8"
+      }
+    ],
+    "see": [
+      "603.2",
+      "802.16"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Envoy of Lightning",
+          "quote": "Excess damage from electric sources can {/n}be directed to an adjacent unit, recursively."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1372451771632320512#0",
+          "quote": "you need 4 damage to kill it, because this 4 damage would be doubled on him … you are left with 2 damage to distribute further"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [
+        {
+          "ruling": "R4",
+          "relation": "'excess passes immediately along the chosen path' amended by R317: each hop is optional, and a dead end is dealt"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "05-rulings.test.ts",
+        "387-raq-combat.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1372451771632320512#0": "19a3404f9c39f50680d06325e5d5a322bbf6e4f4949ef8bf8fbf75e318fe3fa4"
+    }
+  },
+  {
+    "key": "attr.electric.no-revisit",
+    "parent": "attr.electric",
+    "order": 2,
+    "text": "The excess never jumps to a unit it has already been dealt to in that chain.",
+    "examples": [
+      {
+        "text": "Example: Electric excess follows a non-overlapping path chosen by the controller.",
+        "test": "05-rulings.test.ts::R4: electric excess follows a controller-chosen non-overlapping path, atomically"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [
+        {
+          "ref": "glossary: Electric",
+          "quote": "never revisiting one"
+        }
+      ],
+      "rulings": [
+        {
+          "ref": "R206 (its Electric row)",
+          "quote": "A `visited` chain (engine.ts:4123-4160), and Envoy of Lightning's printed reminder names it"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "05-rulings.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "No designer or printed statement; R206's Electric row records the engine's visited chain as the rule. D-U20-8.",
+    "sourceHashes": {
+      "R206": "e541d1d77f492dad0529d4075a87a0ef576c5834f85a1817d3388dedc61d9ea3"
+    }
+  },
+  {
+    "key": "attr.electric.chooser",
+    "parent": "attr.electric",
+    "order": 3,
+    "text": "The Electric source's controller chooses where the excess goes at each jump.",
+    "examples": [
+      {
+        "text": "Example: Arc Lightning's caster, who controls the source, is asked where the excess goes.",
+        "test": "05-rulings.test.ts::R4: electric excess follows a controller-chosen non-overlapping path, atomically"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R4 (its who-chooses and atomic halves)",
+          "quote": "The **Electric source's controller** chooses the path. There are **no formation changes"
+        },
+        {
+          "ref": "R317 (its optional-hop and dead-end ruling)",
+          "quote": "So at every hop the source's controller chooses the next unit **or keeps the excess"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "05-rulings.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Known divergence (CONTROL decision 6): the engine asks the effect's controller. The two coincide for every Electric card in the pool today, since the only Electric sources are spells and spell effects: F-U20-1.",
+    "sourceHashes": {
+      "R317": "9a76ea5c4f235e7d5a611428e77bd37486f4a761bd264bfccd411b535cf4ec84",
+      "R4": "4c55019bf37d05d4b2efe4dde848afd6fbe78b81e0dafbef0609b55a78494d15"
+    },
+    "engineDiffers": [
+      "F-U20-1"
+    ]
+  },
+  {
+    "key": "attr.electric.optional",
+    "parent": "attr.electric",
+    "order": 4,
+    "text": "Each jump is optional. At any jump, the source's controller may instead keep all the remaining excess on the unit it has reached; it is then all dealt to that unit and goes no further. This is so even when there is only one unit to jump to.",
+    "examples": [
+      {
+        "text": "Example: Arc Lightning hits a Vulnerable 3/8 with a unit beside it. Its controller keeps all 6 on the 3/8 (dealt as 12), and nothing jumps.",
+        "test": "387-raq-combat.test.ts::RAQ Vulnerable: Electric \"can be\""
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1372451771632320512#1",
+          "quote": "Since Electric reads 'can be', you can ignore it and just assign all 6 damage to Crumbling Ancient, which would then take 12 total damage, but then you are NOT ALLOWED to 'jump'"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R317 (its optional-hop and dead-end ruling)",
+          "quote": "on the unit it is on**, even when there is only one neighbour. And the same"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R4",
+          "relation": "'excess passes immediately along the chosen path' amended by R317"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R317": "9a76ea5c4f235e7d5a611428e77bd37486f4a761bd264bfccd411b535cf4ec84",
+      "RAQ 1372451771632320512#1": "688b18f2903bd9172e8c1df3c27c97393578377067c398494b7c7c155ee802ca"
+    }
+  },
+  {
+    "key": "attr.electric.dead-end",
+    "parent": "attr.electric",
+    "order": 5,
+    "text": "Excess that has no unit to jump to is dealt to the last unit it reached; it is not lost. If the source also has Piercing, that excess is Piercing excess instead (see rule 802.16).",
+    "examples": [
+      {
+        "text": "Example: Arc Lightning hits a lone Vulnerable 3/8 with nothing beside it. All 6 land on it, dealt as 12.",
+        "test": "387-raq-combat.test.ts::RAQ Vulnerable: Electric damage with nowhere to jump is still dealt"
+      }
+    ],
+    "see": [
+      "attr.piercing.electric"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1372451771632320512#2",
+          "quote": "All 12 damage sink into Crumbling - this has its use if you had Ember of Life in play"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R317 (its optional-hop and dead-end ruling)",
+          "quote": "no {Piercing} is read: it stays on the last unit — dealt, never lost (R114's \"ALL"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R103",
+          "relation": "says an Electric dead end 'used to lose the remainder (R4)'; amended by R317"
+        },
+        {
+          "ruling": "R4",
+          "relation": "its path amended by R317: a dead end is dealt"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "RAQ 1372451771632320512#2 is not in the pack's raq.md; it was read from the full RAQ register. Our glossary row still says the excess is \"lost\" (D-U20-9).",
+    "sourceHashes": {
+      "R317": "9a76ea5c4f235e7d5a611428e77bd37486f4a761bd264bfccd411b535cf4ec84",
+      "RAQ 1372451771632320512#2": "35c0da814c914558c5f5c60ee610436617efabaae0e1b7cc814d46f6d71d9cd2"
+    }
+  },
+  {
+    "key": "attr.electric.adjacency",
+    "parent": "attr.electric",
+    "order": 6,
+    "text": "Adjacency for Electric is adjacency in a formation (see rule 603.2). A unit that is not in a formation has no adjacent unit, so Electric excess dealt to it has nowhere to jump.",
+    "examples": [
+      {
+        "text": "Example (illustrative): During the deployment phase no unit is in a formation, so an Electric spell's excess stays on the unit it hit.",
+        "test": "431-cr-attributes-2.test.ts::cr:attr.electric.adjacency — outside a battle no unit is adjacent, so Electric excess stays on the unit it hit and nothing is asked"
+      }
+    ],
+    "see": [
+      "603.2b"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Envoy of Lightning",
+          "quote": "Excess damage from electric sources can {/n}be directed to an adjacent unit, recursively."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [
+        "engine.ts:adjacentInFormation"
+      ],
+      "tests": [
+        "431-cr-attributes-2.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "medium",
+    "notes": "The printed reminder supplies \"adjacent\" only. That adjacency means formation adjacency, and that a unit outside a formation has none, is engine behaviour measured by the round-1 verifier (adjacentInFormation answers nothing outside a battle; probe passed). D-U20-21.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "attr.electric.atomic",
+    "parent": "attr.electric",
+    "order": 7,
+    "text": "The whole Electric chain is part of one damage event. No formation changes happen while the excess is distributed.",
+    "examples": [
+      {
+        "text": "Example: An Electric chain of three units is dealt in one damage event; the units it kills die together afterwards.",
+        "test": "05-rulings.test.ts::R4: electric excess follows a controller-chosen non-overlapping path, atomically"
+      }
+    ],
+    "see": [
+      "112.8"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R4 (its who-chooses and atomic halves)",
+          "quote": "during damage distribution**: initial damage happens, then excess passes immediately along"
+        },
+        {
+          "ref": "R4 (its who-chooses and atomic halves)",
+          "quote": "the chosen path (it is excess damage, resolved atomically within the damage event)."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "05-rulings.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R4": "4c55019bf37d05d4b2efe4dde848afd6fbe78b81e0dafbef0609b55a78494d15"
+    }
+  },
+  {
+    "key": "attr.electric.lethal",
+    "parent": "attr.electric",
+    "order": 8,
+    "text": "Lethal damage along the chain is worked out as it is for Piercing (see rule 802.16): a Vulnerable unit needs only half, and damage already dealt to it by the same effect counts.",
+    "examples": [
+      {
+        "text": "Example: Arc Lightning on a Vulnerable 3/8: 4 is its lethal damage, so 2 is left to jump.",
+        "test": "387-raq-combat.test.ts::RAQ Vulnerable: Arc Lightning on a Vulnerable 3/8"
+      }
+    ],
+    "see": [
+      "attr.piercing.excess"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1372451771632320512#0",
+          "quote": "you need 4 damage to kill it, because this 4 damage would be doubled on him … you are left with 2 damage to distribute further"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R103 (its one lethal arithmetic)",
+          "quote": "read by both {Electric} and {Piercing}. That is deliberate: the previous inline"
+        },
+        {
+          "ref": "R80",
+          "quote": "**Electric got slightly better on the way.** Overflow is planned against damage"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R103": "6b17215709fe377c2ddb2f947b1704122dc895c01b6c26357d55d4b3323ed247",
+      "R80": "c5434669a23a89ae01595c26a66f57923d91ebfd7c0a53b47033f70e1d79d860",
+      "RAQ 1372451771632320512#0": "19a3404f9c39f50680d06325e5d5a322bbf6e4f4949ef8bf8fbf75e318fe3fa4"
+    }
+  },
+  {
+    "key": "attr.electric.single-target",
+    "parent": "attr.electric",
+    "order": 9,
+    "text": "Envoy of Lightning makes \"your spell effects with a single target\" Electric. A spell effect has a single target if it was cast with exactly one target.",
+    "examples": [
+      {
+        "text": "Example: Twin Flame cast with one target under Envoy of Lightning is Electric.",
+        "test": "12-fire-a.test.ts::Envoy of Lightning: your single-target spell effects are Electric"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Envoy of Lightning",
+          "quote": "[Augment] Your spell effects with a single target are {g}Electric."
+        }
+      ],
+      "designer": [
+        {
+          "ref": "RAQ 1397256636921417748#0",
+          "quote": "If Twin Flame is played with only 1 target, is it Electric thanks to Envoy? Yes, it will be Electric"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "12-fire-a.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1397256636921417748#0": "5a80b22a3636cfa5102a1704c2bed05f22925b63742cda925f79ba08a420e929"
+    }
+  },
+  {
+    "key": "attr.electric.single-target.declared",
+    "parent": "attr.electric",
+    "order": 10,
+    "text": "A spell effect cast with two targets does not have a single target, even if one of its targets has become illegal by the time it resolves.",
+    "examples": [
+      {
+        "text": "Example: Twin Flame is cast with two targets and one is removed. It is not Electric under Envoy of Lightning.",
+        "test": "12-fire-a.test.ts::Envoy of Lightning: two DECLARED targets is not \"a single target\", even after one is removed"
+      }
+    ],
+    "see": [
+      "110"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1397256636921417748#1",
+          "quote": "No, it still has 2 targets, but one of them is invalid"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R94",
+          "quote": "`part.targets.length` (the cast-time list), **never** `ctx.targets.length` (the"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "12-fire-a.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R94": "9dfaa17128fa1b9a95d19b4997d6321eade9ec1f9b04e251de4f34b13d0f1d8b",
+      "RAQ 1397256636921417748#1": "7ea9c270c116479b5fb4c23e3bfc75ed2df10b8bfa9a5712ca2eeaf02e9e41eb"
+    }
+  },
+  {
+    "key": "attr.poisonous",
+    "parent": "802",
+    "order": 18,
+    "text": "Poisonous is an attribute. Its reminder text reads \"Poisonous sources damage units in the form of -1/-1 counters.\"",
+    "examples": [
+      {
+        "text": "Example: Noxious Sporefiend is Poisonous.",
+        "test": "09-attrs.test.ts::Poisonous: Noxious Sporefiend deals combat damage as permanent -1/-1 counters"
+      }
+    ],
+    "see": [
+      "802.1"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Blightmound",
+          "quote": "Poisonous sources damage units in the form of -1/-1 counters."
+        }
+      ],
+      "designer": [],
+      "ours": [
+        {
+          "ref": "glossary: Poisonous",
+          "quote": "Poisonous sources damage units in the form of -1/-1 counters."
+        }
+      ],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "09-attrs.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "attr.poisonous.form",
+    "parent": "attr.poisonous",
+    "order": 1,
+    "text": "Damage a Poisonous source deals to a unit is put on that unit as that many -1/-1 counters instead of being marked on it.",
+    "examples": [
+      {
+        "text": "Example: Noxious Sporefiend deals 2 combat damage to a unit; the unit gets two -1/-1 counters and no marked damage.",
+        "test": "09-attrs.test.ts::Poisonous: Noxious Sporefiend deals combat damage as permanent -1/-1 counters"
+      },
+      {
+        "text": "Example: Poisonous effect damage becomes -1/-1 counters, and can kill.",
+        "test": "09-attrs.test.ts::Poisonous: effect damage becomes -1/-1 counters and can kill"
+      }
+    ],
+    "see": [
+      "112.5"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Blightmound",
+          "quote": "Poisonous sources damage units in the form of -1/-1 counters."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R237",
+          "quote": "**{Poisonous} is a MARK, not a substitution.** Everything above the mark —"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "09-attrs.test.ts",
+        "206-deadly-everywhere.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R237": "ec152f51160f9f8410800e8323fd9f676fdf45864242ec64e8d1e35ce6ae3cc7"
+    }
+  },
+  {
+    "key": "attr.poisonous.is-damage",
+    "parent": "attr.poisonous",
+    "order": 2,
+    "text": "Poisonous damage is damage dealt. Abilities that trigger when a unit is dealt damage trigger on it (see rule 112.10).",
+    "examples": [
+      {
+        "text": "Example: Noxious Sporefiend deals 2 to Awoken Tomb, which gets two -1/-1 counters and makes its 2/2.",
+        "test": "206-deadly-everywhere.test.ts::R237: an un-prevented {Poisonous} hit fires \"whenever I am dealt damage\""
+      }
+    ],
+    "see": [
+      "112.10"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1354148437355925554#0",
+          "quote": "It says 'damage units in the form of -1/-1 counters'. If it was replacing the damage it would say"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R237",
+          "quote": "> *\"Poisonous damage does count as damage. **If it was replacing the damage it"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "206-deadly-everywhere.test.ts",
+        "431-cr-attributes-2.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R166 still describes Poisonous as replacing the damage: D-U20-10.",
+    "sourceHashes": {
+      "R237": "ec152f51160f9f8410800e8323fd9f676fdf45864242ec64e8d1e35ce6ae3cc7",
+      "RAQ 1354148437355925554#0": "2c5e71d0b404519886a6dc5e831e2c8be50d5833f89d3e45576fd42fac56a76d"
+    }
+  },
+  {
+    "key": "attr.poisonous.lethal",
+    "parent": "attr.poisonous",
+    "order": 3,
+    "text": "For damage assignment and for Piercing, a unit's lethal damage is the same whether the source is Poisonous or not.",
+    "examples": [
+      {
+        "text": "Example: A Poisonous and Piercing effect deals 5 to a 1/1. One counter is lethal, and the other 4 may pierce.",
+        "test": "82-attr-interactions.test.ts::Piercing + Poisonous: the counters are lethal at the same number, so the rest still pierces"
+      }
+    ],
+    "see": [
+      "attr.piercing.excess",
+      "608.6e"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R103 (its Poisonous arithmetic)",
+          "quote": "**{Poisonous} pierces on the same arithmetic.** `checkDeaths` kills on"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "82-attr-interactions.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R103": "6b17215709fe377c2ddb2f947b1704122dc895c01b6c26357d55d4b3323ed247"
+    }
+  },
+  {
+    "key": "attr.poisonous.deadly",
+    "parent": "attr.poisonous",
+    "order": 4,
+    "text": "A source with both Deadly and Poisonous destroys the unit it damages and also puts the -1/-1 counters on it.",
+    "examples": [
+      {
+        "text": "Example: Deadly and Poisonous damage kills the unit, and the -1/-1 counter lands on it before it dies.",
+        "test": "82-attr-interactions.test.ts::Deadly DOES kill through Poisonous — and the counter lands too (R237)"
+      }
+    ],
+    "see": [
+      "802.3"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R237",
+          "quote": "> **Caleb Gannon:** *\"**yeah it'll get instakilled by deadly but also trigger to"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "82-attr-interactions.test.ts",
+        "206-deadly-everywhere.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Caleb's words (2023-08-23) as quoted in R237, not in a RAQ thread in the register.",
+    "sourceHashes": {
+      "R237": "ec152f51160f9f8410800e8323fd9f676fdf45864242ec64e8d1e35ce6ae3cc7"
+    }
+  },
+  {
+    "key": "attr.poisonous.powerful",
+    "parent": "attr.poisonous",
+    "order": 5,
+    "text": "Powerful doubles a Poisonous source's damage, and so doubles the -1/-1 counters it puts on a unit.",
+    "examples": [
+      {
+        "text": "Example: A Powerful Poisonous effect hit of 2 becomes 4 counters and kills a 4/3.",
+        "test": "206-deadly-everywhere.test.ts::R237: {Powerful} doubles a {Poisonous} effect hit too"
+      }
+    ],
+    "see": [
+      "802.10"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R237",
+          "quote": "damage dealt. Caleb 2023-08-23 says a damage-doubler doubles the counters, so"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "206-deadly-everywhere.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R237": "ec152f51160f9f8410800e8323fd9f676fdf45864242ec64e8d1e35ce6ae3cc7"
+    }
+  },
+  {
+    "key": "attr.poisonous.prevention",
+    "parent": "attr.poisonous",
+    "order": 6,
+    "text": "If a Poisonous source's damage to a unit is prevented, no damage is dealt and no -1/-1 counters are put on it.",
+    "examples": [
+      {
+        "text": "Example: Phytochemical Protection on Jollyglop prevents a Poisonous hit: no counters, no damage trigger, and the shield pays its +1/+1 counters.",
+        "test": "387-raq-combat.test.ts::RAQ Poisonous: a shielded Jollyglop hit by a Poisonous unit"
+      }
+    ],
+    "see": [
+      "112.11",
+      "708"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1354148437355925554#1",
+          "quote": "Jollyglop doesn't trigger, won't get -2/-2 from Poisonous but will receive +2/+2 counters from Phytochemical Protection."
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R98 (its prevention ruling)",
+          "quote": "> means **if there is not damage being dealt, then no counters are placed.**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "24-wood-b.test.ts",
+        "387-raq-combat.test.ts",
+        "82-attr-interactions.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R98": "3b5eca7b78135e3b83d9772ba1d9b4a61e98a52ee192747ede43080eb4f13a41",
+      "RAQ 1354148437355925554#1": "0cee7d451013b6afaa95e382f1b150732182e144830830fbfe16e51ceaef2394"
+    }
+  },
+  {
+    "key": "attr.poisonous.players",
+    "parent": "attr.poisonous",
+    "order": 7,
+    "text": "Poisonous changes only damage dealt to units. Damage a Poisonous source deals to a player is ordinary damage.",
+    "examples": [
+      {
+        "text": "Example (illustrative): An unblocked Poisonous column with 3 power makes the defending player lose 3 life.",
+        "test": "431-cr-attributes-2.test.ts::cr:attr.poisonous.players — an unblocked Poisonous column with 3 power makes the defending player lose 3 life"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Blightmound",
+          "quote": "Poisonous sources damage units in the form of -1/-1 counters."
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "42-dark-b.test.ts",
+        "431-cr-attributes-2.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "Read literally: the reminder names units. The 42-dark-b Blightmound test is about its trigger, not this rule.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "attr.poisonous.resonant",
+    "parent": "attr.poisonous",
+    "order": 8,
+    "text": "Poisonous damage triggers Resonant like any other damage (see rule 802.19).",
+    "examples": [
+      {
+        "text": "Example (illustrative): A Poisonous and Resonant source deals 2 to a unit. The unit gets two -1/-1 counters, and the Resonant trigger deals 2 to its controller.",
+        "test": "431-cr-attributes-2.test.ts::cr:attr.poisonous.resonant — a Poisonous Resonant hit of 2 puts two -1/-1 counters on the unit, and the Resonant trigger deals 2 to its controller"
+      }
+    ],
+    "see": [
+      "802.19"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R237",
+          "quote": "poisonous branch, and Caleb 2025-11-27: *\"Poisonous still triggers resonant\"*."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "431-cr-attributes-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Caleb's words quoted in R237; no test found that combines the two.",
+    "sourceHashes": {
+      "R237": "ec152f51160f9f8410800e8323fd9f676fdf45864242ec64e8d1e35ce6ae3cc7"
+    }
+  },
+  {
+    "key": "attr.poisonous.pure",
+    "parent": "attr.poisonous",
+    "order": 9,
+    "text": "Poisonous does not apply in an interaction involving a Pure card (see rule 802.25).",
+    "examples": [
+      {
+        "text": "Example (illustrative): A Poisonous column is blocked by Just a Unit. Just a Unit is dealt ordinary marked damage, not -1/-1 counters.",
+        "test": "431-cr-attributes-2.test.ts::cr:attr.poisonous.pure — a Poisonous column blocked by Just a Unit marks ordinary damage, not -1/-1 counters"
+      }
+    ],
+    "see": [
+      "802.25"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Just a Unit",
+          "quote": "(Pure cards and cards they are interacting with ignore all other attributes.)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R61",
+          "quote": "exchange: no Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "431-cr-attributes-2.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
+    }
+  },
+  {
+    "key": "attr.resonant",
+    "parent": "802",
+    "order": 19,
+    "text": "Resonant is an attribute. Its reminder text, printed under the type line, reads \"Whenever a resonant source deals damage to a unit, it deals that much damage to that unit's controller.\"",
+    "examples": [
+      {
+        "text": "Example: Resonant Form's combat damage to a unit also hits that unit's controller.",
+        "test": "09-attrs.test.ts::Resonant: Resonant Form combat damage to a unit also hits its controller"
+      }
+    ],
+    "see": [
+      "802.1"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1362838395298119912#1",
+          "quote": "Whenever a resonant source deals damage to a unit, it deals that much damage to that unit's controller."
+        }
+      ],
+      "ours": [
+        {
+          "ref": "glossary: Resonant",
+          "quote": "Whenever a resonant source deals damage to a unit, it deals that much damage to that unit's controller."
+        }
+      ],
+      "rulings": [
+        {
+          "ref": "R315 (its trigger ruling)",
+          "quote": "The printed reminder: *\"Whenever a resonant source deals damage to a unit, it deals"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "09-attrs.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "medium",
+    "notes": "The reminder sentence is printed under the type line and is read off the scan (client/ui/scan-reminders.json); the oracle text does not carry it, so no card: quote can be checked (D-U20-1). The RAQ register quotes the printed sentence in the claim's source line, which is the checkable quote used here.",
+    "sourceHashes": {
+      "R315": "6ca33ebc6ed5bca380a104b3da4e4e7bbf6136abea553cd4f5c0d0dda4a7b92f",
+      "RAQ 1362838395298119912#1": "8e8ca4f0df1888f765d57b6930bfbf7b893963245763d666d16f8ae3550cf284"
+    }
+  },
+  {
+    "key": "attr.resonant.trigger",
+    "parent": "attr.resonant",
+    "order": 1,
+    "text": "Resonant is a triggered ability of the Resonant source. When the source deals damage to a unit, the trigger goes on the stack, and when it resolves the source deals that much damage to that unit's controller.",
+    "examples": [
+      {
+        "text": "Example: The Resonant trigger from combat damage waits on the stack after combat, as its source's trigger, and can be negated.",
+        "test": "399-raq-fix-combat.test.ts::R315: the Resonant rider waits on the stack after combat"
+      },
+      {
+        "text": "Example: A Resonant effect deals 1 to a unit; the trigger then deals 1 to its controller as damage from the source.",
+        "test": "399-raq-fix-combat.test.ts::R315: effect damage riders too"
+      }
+    ],
+    "see": [
+      "706"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1362838395298119912#2",
+          "quote": "2/4 Resonant Powerful would deal 4 combat damage to enemy unit and then put effect on stack to deal 8 damage to enemy face"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R315 (its trigger ruling)",
+          "quote": "the resonant source**, put on the stack as that source's trigger — not life loss"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "399-raq-fix-combat.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R315": "6ca33ebc6ed5bca380a104b3da4e4e7bbf6136abea553cd4f5c0d0dda4a7b92f",
+      "RAQ 1362838395298119912#2": "13be376dafc911e98b9fd60517f7fc84ba94b25dcdfa1017a51f24d16bd972ec"
+    }
+  },
+  {
+    "key": "attr.resonant.not-combat",
+    "parent": "attr.resonant",
+    "order": 2,
+    "text": "The damage Resonant deals to the controller is not combat damage, even when the damage that triggered it was (see rule 608.8b).",
+    "examples": [
+      {
+        "text": "Example: Oorblak, which takes combat damage that would be dealt to its controller, does not take Resonant's extra damage; the player does.",
+        "test": "387-raq-combat.test.ts::RAQ Resonant: the extra damage is not combat damage"
+      }
+    ],
+    "see": [
+      "608.8b",
+      "112.7"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1362838395298119912#0",
+          "quote": "extra damage from Resonant effect wouldn't be considered as 'combat damage'"
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "RAQ 1362838395298119912#0": "f2bca29b34ca4054e89f4b875b3d7a76dfcd1624d98fd3d374c67f03e27eaf00"
+    }
+  },
+  {
+    "key": "attr.resonant.amount",
+    "parent": "attr.resonant",
+    "order": 3,
+    "text": "\"That much damage\" is the damage the unit was dealt: after Vulnerable doubled it and after any prevention. If all of the damage to the unit is prevented, Resonant does not trigger.",
+    "examples": [
+      {
+        "text": "Example (illustrative): A Resonant source deals 2 to a Vulnerable unit, which is dealt 4. The Resonant trigger deals 4 to that unit's controller.",
+        "test": "431-cr-attributes-2.test.ts::cr:attr.resonant.amount — a Resonant source dealing 2 to a Vulnerable unit, which is dealt 4, makes a Resonant trigger that deals 4 to its controller"
+      }
+    ],
+    "see": [
+      "802.11",
+      "112.11"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R315 (its trigger ruling)",
+          "quote": "The amount is what the unit **received** (\"that much damage\"): after {Vulnerable},"
+        },
+        {
+          "ref": "R315 (its trigger ruling)",
+          "quote": "after prevention. A fully prevented hit has no rider (R98)."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "431-cr-attributes-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R315's own reading of \"that much\"; no designer statement on Vulnerable. No test pins the Vulnerable case.",
+    "sourceHashes": {
+      "R315": "6ca33ebc6ed5bca380a104b3da4e4e7bbf6136abea553cd4f5c0d0dda4a7b92f"
+    }
+  },
+  {
+    "key": "attr.resonant.modifiers",
+    "parent": "attr.resonant",
+    "order": 4,
+    "text": "Resonant's damage is damage from the Resonant source, so everything that changes that source's damage applies to it: an allied Conduit of Pain adds 1 to it, and Powerful doubles it, even though the damage that triggered it was already doubled.",
+    "examples": [
+      {
+        "text": "Example: A Powerful Resonant 2/4 deals 4 combat damage to a unit, and then 8 to that unit's controller.",
+        "test": "387-raq-combat.test.ts::RAQ Resonant: a Powerful Resonant 2/4 deals 4 combat damage"
+      },
+      {
+        "text": "Example: With Conduit of Pain, a Resonant 2/4 deals 2 combat damage to a unit and then 3 to its controller.",
+        "test": "387-raq-combat.test.ts::RAQ Resonant: Conduit of Pain adds 1 to the Resonant damage"
+      }
+    ],
+    "see": [
+      "802.10",
+      "112.9"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1362838395298119912#1",
+          "quote": "2/4 dealing 2 damage to enemy unit would then put effect to deal 2+1=3 damage to opponent face"
+        },
+        {
+          "ref": "RAQ 1362838395298119912#2",
+          "quote": "2/4 Resonant Powerful would deal 4 combat damage to enemy unit and then put effect on stack to deal 8 damage to enemy face"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R315 (its trigger ruling)",
+          "quote": "So everything that prices damage from that source prices the rider: {Powerful}"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R315": "6ca33ebc6ed5bca380a104b3da4e4e7bbf6136abea553cd4f5c0d0dda4a7b92f",
+      "RAQ 1362838395298119912#1": "8e8ca4f0df1888f765d57b6930bfbf7b893963245763d666d16f8ae3550cf284",
+      "RAQ 1362838395298119912#2": "13be376dafc911e98b9fd60517f7fc84ba94b25dcdfa1017a51f24d16bd972ec"
+    }
+  },
+  {
+    "key": "attr.resonant.order",
+    "parent": "attr.resonant",
+    "order": 5,
+    "text": "When both apply to Resonant's damage, an added amount (Conduit of Pain's 1) is added before Powerful doubles (see rule 112.9).",
+    "examples": [
+      {
+        "text": "Example: A Powerful Resonant 2/4 with Conduit of Pain deals 4 combat damage, then (4+1)x2 = 10 to the controller.",
+        "test": "387-raq-combat.test.ts::RAQ Resonant: Resonant + Powerful + Conduit — 4 combat, then (4+1)x2 = 10 to the face"
+      }
+    ],
+    "see": [
+      "112.9"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1362838395298119912#3",
+          "quote": "2/4 would deal 4 combat damage to enemy unit, and then put effect on stack to deal (4+1)x2 = 10 damage to enemy face"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R316",
+          "quote": "## R316 — Additive damage modifiers apply before {Powerful} doubles"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R104",
+          "relation": "its order putting the additive modifier after Powerful reversed by R316"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R316": "0a120883d7cfa92ba527097fad739d9bf9c28e09964452ec7c89cef9578bb128",
+      "RAQ 1362838395298119912#3": "5d2874b098ec7b0da74051103612b657047dddc39cc12900bbbd2b931fc71940"
+    }
+  },
+  {
+    "key": "attr.resonant.each-unit",
+    "parent": "attr.resonant",
+    "order": 6,
+    "text": "Resonant triggers for each unit the source deals damage to. An effect that damages several units makes one Resonant trigger for each damaged unit.",
+    "examples": [
+      {
+        "text": "Example: A Resonant, Powerful Bellowing Boulder with Conduit of Pain deals 4 to each unit, then 10 to a controller for each damaged unit.",
+        "test": "387-raq-combat.test.ts::RAQ Resonant: Bellowing Boulder with Resonant + Powerful + Conduit"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1362838395298119912#5",
+          "quote": "then (4+1)x2 =10 damage to your/enemy face for each of your/their damaged unit"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R315 (its trigger ruling)",
+          "quote": "- Effect damage: `dealEffectDamageAll` queues the rider for each damaged unit,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "387-raq-combat.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R315": "6ca33ebc6ed5bca380a104b3da4e4e7bbf6136abea553cd4f5c0d0dda4a7b92f",
+      "RAQ 1362838395298119912#5": "e2ff175d1cc6f7353843ac0cd09fd77a21f93090d3ab9449a07fdc9839f4ee7a"
+    }
+  },
+  {
+    "key": "attr.resonant.units-only",
+    "parent": "attr.resonant",
+    "order": 7,
+    "text": "Resonant triggers only on damage dealt to a unit. Damage a Resonant source deals to a player does not trigger it.",
+    "examples": [
+      {
+        "text": "Example (illustrative): An unblocked Resonant column deals 3 combat damage to the defending player. Resonant does not trigger.",
+        "test": "431-cr-attributes-2.test.ts::cr:attr.resonant.units-only — an unblocked Resonant column dealing 3 combat damage to the defending player does not trigger Resonant"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1362838395298119912#1",
+          "quote": "Whenever a resonant source deals damage to a unit, it deals that much damage to that unit's controller."
+        }
+      ],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "431-cr-attributes-2.test.ts"
+      ]
+    },
+    "basis": "designer",
+    "confidence": "medium",
+    "notes": "Read literally from the printed reminder (\"deals damage to a unit\"). No test found.",
+    "sourceHashes": {
+      "RAQ 1362838395298119912#1": "8e8ca4f0df1888f765d57b6930bfbf7b893963245763d666d16f8ae3550cf284"
+    }
+  },
+  {
+    "key": "attr.resonant.tax-and-negate",
+    "parent": "attr.resonant",
+    "order": 8,
+    "text": "Because Resonant is a triggered ability, an effect that makes triggered abilities cost more to trigger (Crevice Lurker) applies to it, and if that cost is not paid the trigger does not happen. It can be negated while it is on the stack.",
+    "examples": [
+      {
+        "text": "Example: Crevice Lurker taxes the Resonant trigger.",
+        "test": "390-raq-stack.test.ts::RAQ trigger-like attributes: Crevice Lurker taxes Resonant"
+      },
+      {
+        "text": "Example: The Resonant trigger can be negated while it waits on the stack after combat.",
+        "test": "399-raq-fix-combat.test.ts::R315: the Resonant rider waits on the stack after combat"
+      }
+    ],
+    "see": [
+      "111.10f"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1366446116274442291#1",
+          "quote": "I think crevice lurker should say 'Effects cost 1 more to activate or trigger'. So as written it wouldn't work but my intent is for it to stop those from triggering"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R315 (its trigger ruling)",
+          "quote": "Crevice Lurker taxes it, and Containment Protocol can negate it."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "390-raq-stack.test.ts",
+        "399-raq-fix-combat.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Caleb's intent beats the printed word \"Abilities\" on Crevice Lurker (authority order, D-U20-11). Containment Protocol specifically is an unanswered RAQ question (D-U20-6).",
+    "sourceHashes": {
+      "R315": "6ca33ebc6ed5bca380a104b3da4e4e7bbf6136abea553cd4f5c0d0dda4a7b92f",
+      "RAQ 1366446116274442291#1": "039f665cd92e9cd0724ac39fa41c823da1d0e33e0db6533eaa91ea679d61c759"
+    }
+  },
+  {
+    "key": "attr.resonant.combat-timing",
+    "parent": "attr.resonant",
+    "order": 9,
+    "text": "A Resonant trigger caused by combat damage is put on the stack and resolved as other triggers caused by combat damage are (see rules 608 and 609).",
+    "examples": [
+      {
+        "text": "Example: A Resonant column's trigger from an unsplit combat damage step waits until after combat.",
+        "test": "399-raq-fix-combat.test.ts::R315: the Resonant rider waits on the stack after combat"
+      }
+    ],
+    "see": [
+      "609"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R315 (its trigger ruling)",
+          "quote": "the hit, and `commitUnitDamage` queues the rider. R261 holds it to after combat,"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R261",
+          "relation": "its unconditional hold narrowed by R295: in a split damage step, triggers resolve at the sub-step boundary"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "399-raq-fix-combat.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "",
+    "sourceHashes": {
+      "R315": "6ca33ebc6ed5bca380a104b3da4e4e7bbf6136abea553cd4f5c0d0dda4a7b92f"
+    }
+  },
+  {
+    "key": "attr.resonant.source-gone",
+    "parent": "attr.resonant",
+    "order": 10,
+    "text": "If the Resonant source has left play by the time its trigger resolves, the trigger still deals its damage, reading the source as it last was in play.",
+    "examples": [
+      {
+        "text": "Example (illustrative): A Powerful Resonant unit dies in combat with its trigger waiting. The trigger still deals double damage, because the unit was Powerful when it left play.",
+        "test": null
+      },
+      {
+        "text": "Example: A Powerful Resonant unit deals 1 to a unit, which is dealt 2, and then leaves play with its Resonant trigger waiting. The trigger still deals double damage, 4, because the unit was Powerful when it left play.",
+        "test": "431-cr-attributes-2.test.ts::cr:attr.resonant.source-gone — a Powerful Resonant source that leaves play with its trigger waiting still deals doubled damage"
+      }
+    ],
+    "see": [
+      "714"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R325",
+          "quote": "formation it stood in), it reads the source's **last-known state**: what the"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R315",
+          "relation": "its ⚠ that a gone source reads its printed card superseded by R325"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "431-cr-attributes-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R325 is general (a unit's effect whose source has left play); it names Resonant only through R315's superseded ⚠. No Resonant-specific test.",
+    "sourceHashes": {
+      "R325": "a8d4151f54c2ff13247eed657bddc54a936613942ac00b9140df2db6c13abfa2"
+    }
+  },
+  {
+    "key": "attr.resonant.pure",
+    "parent": "attr.resonant",
+    "order": 11,
+    "text": "Resonant does not apply in an interaction involving a Pure card (see rule 802.25).",
+    "examples": [
+      {
+        "text": "Example (illustrative): A Resonant column is blocked by Just a Unit. No Resonant trigger happens for the damage dealt to Just a Unit.",
+        "test": "431-cr-attributes-2.test.ts::cr:attr.resonant.pure — a Resonant column blocked by Just a Unit triggers no Resonant"
+      }
+    ],
+    "see": [
+      "802.25"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Just a Unit",
+          "quote": "(Pure cards and cards they are interacting with ignore all other attributes.)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R61",
+          "quote": "exchange: no Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "431-cr-attributes-2.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
+    }
+  },
+  {
+    "key": "attr.thieving",
+    "parent": "802",
+    "order": 20,
+    "text": "Thieving is an attribute. Its reminder text, printed under the type line, reads \"Whenever a thieving source deals combat damage to an opponent, draw a card.\"",
+    "examples": [
+      {
+        "text": "Example: Slink is Thieving.",
+        "test": "09-attrs.test.ts::Thieving: Slink draws when its column deals combat damage to a player"
+      }
+    ],
+    "see": [
+      "802.1"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [
+        {
+          "ref": "glossary: Thieving",
+          "quote": "Whenever a thieving source deals combat damage to an opponent, draw a card."
+        }
+      ],
+      "rulings": [
+        {
+          "ref": "R24",
+          "quote": "\"Combat damage to an opponent → draw\" = **one card per Thieving column that deals combat"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "09-attrs.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "The reminder sentence is printed under the type line and is read off the scan (client/ui/scan-reminders.json); the oracle text does not carry it, so no card: quote can be checked (D-U20-1).",
+    "sourceHashes": {
+      "R24": "8bf29a57881ea2a53d15819b763d91b970fb6b08e861466e73cc1d267d7792ef"
+    }
+  },
+  {
+    "key": "attr.thieving.draw",
+    "parent": "attr.thieving",
+    "order": 1,
+    "text": "When a column with Thieving deals combat damage to an opponent, the column's controller draws a card.",
+    "examples": [
+      {
+        "text": "Example: Slink attacks unblocked and deals combat damage to the defending player. Its controller draws a card.",
+        "test": "09-attrs.test.ts::Thieving: Slink draws when its column deals combat damage to a player"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R24",
+          "quote": "\"Combat damage to an opponent → draw\" = **one card per Thieving column that deals combat"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "09-attrs.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R24": "8bf29a57881ea2a53d15819b763d91b970fb6b08e861466e73cc1d267d7792ef"
+    }
+  },
+  {
+    "key": "attr.thieving.per-column",
+    "parent": "attr.thieving",
+    "order": 2,
+    "text": "The column is the source of the combat damage, so a Thieving column draws one card each time it deals combat damage to an opponent, however many Thieving units it holds and however much damage it deals.",
+    "examples": [
+      {
+        "text": "Example: Two Thieving units in one column deal combat damage to a player. Their controller draws one card.",
+        "test": "388-raq-blocks-and-windows.test.ts::RAQ Thieving: two Thieving units in one column draw ONE card"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1460213341011050536#0",
+          "quote": "No, you get to draw only 1 card. (Background: The source of combat damage is column"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R24",
+          "quote": "damage to a player** in a damage sub-step (unblocked or Piercing overflow), not one per"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "388-raq-blocks-and-windows.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R24": "8bf29a57881ea2a53d15819b763d91b970fb6b08e861466e73cc1d267d7792ef",
+      "RAQ 1460213341011050536#0": "fa52e9624ac82c44375508088e6d95241f0f446c0e79fb8e24e0fff0f169533d"
+    }
+  },
+  {
+    "key": "attr.thieving.piercing",
+    "parent": "attr.thieving",
+    "order": 3,
+    "text": "Piercing excess counts: a blocked Thieving column whose Piercing excess is dealt to the opponent draws a card.",
+    "examples": [
+      {
+        "text": "Example (illustrative): A Thieving and Piercing column is blocked by a 1/1 and deals 3 of excess to the defending player. Its controller draws a card.",
+        "test": "431-cr-attributes-2.test.ts::cr:attr.thieving.piercing — a Thieving and Piercing column blocked by a 1/1 deals 3 of excess to the defending player, and its controller draws a card"
+      }
+    ],
+    "see": [
+      "802.16"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R24",
+          "quote": "damage to a player** in a damage sub-step (unblocked or Piercing overflow), not one per"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "431-cr-attributes-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "",
+    "sourceHashes": {
+      "R24": "8bf29a57881ea2a53d15819b763d91b970fb6b08e861466e73cc1d267d7792ef"
+    }
+  },
+  {
+    "key": "attr.thieving.replaced",
+    "parent": "attr.thieving",
+    "order": 4,
+    "text": "If combat damage a Thieving column deals to an opponent is replaced (for example, by Blightsea Polyp, which deals it as rot), the damage was still dealt, and the column's controller still draws a card (see rule 608.8a).",
+    "examples": [
+      {
+        "text": "Example (illustrative): Blightsea Polyp turns a Thieving column's combat damage to the defending player into 1 rot. The attacker still draws a card.",
+        "test": "431-cr-attributes-2.test.ts::cr:attr.thieving.replaced — a Thieving column whose hit to the defending player Blightsea Polyp turns into 1 rot costs no life, and its controller still draws a card"
+      }
+    ],
+    "see": [
+      "608.8a",
+      "112.12"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R238",
+          "quote": "- **{Thieving} and {Lethal}** already read `L.playerHits` (pre-replacement) and"
+        },
+        {
+          "ref": "R238",
+          "quote": "> **\"Yes, blightsea pollup says it deals damage as, so its still damage. Just"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "431-cr-attributes-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R238: Caleb was shown Lethal only; the extension to Thieving is the client's inference, confirmed in general form by the owner (R238). No test for Thieving through a Polyp.",
+    "sourceHashes": {
+      "R238": "0e100f9b3442e2b363e7a1ca1abf5dfaa1189d9688d1ed9c1bdc237b3d6faccb"
+    }
+  },
+  {
+    "key": "attr.thieving.combat-only",
+    "parent": "attr.thieving",
+    "order": 5,
+    "text": "Thieving applies only to combat damage. Noncombat damage a Thieving source deals to an opponent does not draw a card.",
+    "examples": [
+      {
+        "text": "Example (illustrative): A unit in a Thieving column uses an ability that deals 2 damage to an opponent. No card is drawn.",
+        "test": null
+      },
+      {
+        "text": "Example: A Thieving unit deals 2 noncombat damage to an opponent. No card is drawn.",
+        "test": "431-cr-attributes-2.test.ts::cr:attr.thieving.combat-only — 2 noncombat damage from a Thieving source to an opponent draws nothing"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R24",
+          "quote": "\"Combat damage to an opponent → draw\" = **one card per Thieving column that deals combat"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "431-cr-attributes-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Read literally from the reminder (\"combat damage\"). No test found.",
+    "sourceHashes": {
+      "R24": "8bf29a57881ea2a53d15819b763d91b970fb6b08e861466e73cc1d267d7792ef"
+    }
+  },
+  {
+    "key": "attr.reaping",
+    "parent": "802",
+    "order": 21,
+    "text": "Reaping is an attribute. Its reminder text, printed under the type line, reads \"When a reaping source kills one or more units, draw a card. It loses reaping until regroup.\"",
+    "examples": [
+      {
+        "text": "Example: Flame of History is a Reaping spell: \"I deal 1 damage to any target.\"",
+        "test": "07-cards.test.ts::Flame of History: Reaping"
+      }
+    ],
+    "see": [
+      "802.1"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [
+        {
+          "ref": "glossary: Reaping",
+          "quote": "When a reaping source kills one or more units, draw a card. It loses reaping until regroup."
+        }
+      ],
+      "rulings": [
+        {
+          "ref": "R283",
+          "quote": "> *(When a reaping source kills one or more units, draw a card. It loses"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R184",
+          "relation": "its premise that Reaping prints no reminder, and its per-body payout, corrected by R283"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "07-cards.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "The reminder sentence is printed under the type line and is read off the scan (client/ui/scan-reminders.json); the oracle text does not carry it, so no card: quote can be checked (D-U20-1). R283 quotes the sentence (verified on the Seismomancy scan).",
+    "sourceHashes": {
+      "R283": "f530dc585388e4e771d8623dca670b1ca23a5e81b59810b6375158976bca2e60"
+    }
+  },
+  {
+    "key": "attr.reaping.draw",
+    "parent": "attr.reaping",
+    "order": 1,
+    "text": "When a Reaping source kills one or more units, its controller draws one card, however many units it killed.",
+    "examples": [
+      {
+        "text": "Example: Flame of History kills a unit and its controller draws a card.",
+        "test": "07-cards.test.ts::Flame of History: Reaping"
+      },
+      {
+        "text": "Example: Seismomancy kills a unit by damage and draws exactly once.",
+        "test": "156-reaping-and-formation.test.ts::Seismomancy: a kill by DAMAGE still pays {Reaping} exactly once"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R283",
+          "quote": "*\"kills ONE OR MORE units, draw A CARD\"* — singular, for any number of bodies."
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R184",
+          "relation": "its per-body payout amended by R283: one draw per kill"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "07-cards.test.ts",
+        "18-earth-c.test.ts",
+        "263-reaping-counts-the-kill.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R283": "f530dc585388e4e771d8623dca670b1ca23a5e81b59810b6375158976bca2e60"
+    }
+  },
+  {
+    "key": "attr.reaping.any-kill",
+    "parent": "attr.reaping",
+    "order": 2,
+    "text": "A unit counts as killed by a Reaping source however the source killed it: by damage, by -1/-1 counters, by changing its stats, or by destroying it outright.",
+    "examples": [
+      {
+        "text": "Example: Invasive Reassignment swaps a 0/4 into a 4/0, which dies. Reaping draws a card.",
+        "test": "156-reaping-and-formation.test.ts::Invasive Reassignment: a kill by a STAT SWAP pays {Reaping}"
+      },
+      {
+        "text": "Example: Noxious Demise kills a 1/1 with a -1/-1 counter. Reaping draws a card.",
+        "test": "156-reaping-and-formation.test.ts::Noxious Demise: a kill by a -1/-1 COUNTER pays {Reaping}"
+      },
+      {
+        "text": "Example: Invasive Reassignment kills nobody, and nothing is drawn.",
+        "test": "156-reaping-and-formation.test.ts::Invasive Reassignment: a swap that kills NOBODY draws nothing"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R184 (its kill-rider half)",
+          "quote": "source act, see who is gone. That covers damage, counters, stat swaps, deletes"
+        },
+        {
+          "ref": "R21 (its Deadly half)",
+          "quote": "damage too, and Deadly kills count for Reaping draws. Players don't \"die\" to Deadly —"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "156-reaping-and-formation.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R184 reads the printed \"kills\" by snapshotting who is alive before the source acts (Caleb 2024-09-10 for Afflicting, as quoted in R184).",
+    "sourceHashes": {
+      "R184": "64d36787c1084d75da052f3a80b7d2186fdf5734d785bcc0186720a149489635",
+      "R21": "c16390a9d33690be83ffdf59839ed7e0e3bee9f98b7f69322832e3c1ca48e215"
+    }
+  },
+  {
+    "key": "attr.reaping.loses",
+    "parent": "attr.reaping",
+    "order": 3,
+    "text": "After a Reaping source's kill has drawn a card, the source loses Reaping until regroup.",
+    "examples": [
+      {
+        "text": "Example (illustrative): If a unit had Reaping and killed a blocker in the first battle round, it would draw a card and then have no Reaping in the second round.",
+        "test": null
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R283",
+          "quote": "> *(When a reaping source kills one or more units, draw a card. It loses"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "confidence": "low",
+    "notes": "Printed. R283 says this second sentence is deliberately not built because no source in the pool can kill twice: all four Reaping cards are spells and nothing can give a unit Reaping. 263 §4 guards that premise, not this rule, so it is not cited as a test. D-U20-11; latent divergence F-U20-4.",
+    "sourceHashes": {
+      "R283": "f530dc585388e4e771d8623dca670b1ca23a5e81b59810b6375158976bca2e60"
+    },
+    "engineDiffers": [
+      "F-U20-4"
+    ]
+  },
+  {
+    "key": "attr.blessed",
+    "parent": "802",
+    "order": 22,
+    "text": "Blessed is an attribute. Its reminder text reads \"Damage dealt by a blessed source causes its controller to gain that much life.\"",
+    "examples": [
+      {
+        "text": "Example: Godray deals 3 damage to any target, and Blessed gains its controller 3.",
+        "test": "40-light-c.test.ts::Godray: 3 damage to any target"
+      }
+    ],
+    "see": [
+      "802.1"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Blessed Thing",
+          "quote": "(Damage dealt by a blessed source causes its controller to gain that much life.)"
+        },
+        {
+          "ref": "card: Godray",
+          "quote": "(Damage dealt by a blessed source causes its controller to gain that much life.)"
+        }
+      ],
+      "designer": [],
+      "ours": [
+        {
+          "ref": "glossary: Blessed",
+          "quote": "Damage dealt by a blessed source causes its controller to gain that much life."
+        }
+      ],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "40-light-c.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "attr.blessed.gain",
+    "parent": "attr.blessed",
+    "order": 1,
+    "text": "When a Blessed source deals damage, its controller gains that much life. This applies to combat and noncombat damage, and to damage dealt to units and to players.",
+    "examples": [
+      {
+        "text": "Example: A Blessed column's combat damage to a player gains its controller that much life.",
+        "test": "37-attrs-wight.test.ts::R48 {Blessed}: combat damage to a player gains too"
+      },
+      {
+        "text": "Example: A Blessed column's combat damage to a unit gains its controller that much life as well.",
+        "test": "37-attrs-wight.test.ts::R48 {Blessed}: combat damage to a UNIT gains as well"
+      },
+      {
+        "text": "Example: A Blessed effect's damage gains its controller exactly that much life.",
+        "test": "37-attrs-wight.test.ts::R48 {Blessed}: effect damage gains its controller exactly that much life"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Blessed Thing",
+          "quote": "(Damage dealt by a blessed source causes its controller to gain that much life.)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "37-attrs-wight.test.ts",
+        "44-hybrids-ld-a.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "attr.blessed.simultaneous",
+    "parent": "attr.blessed",
+    "order": 2,
+    "text": "The life is gained at the same time as the damage is dealt. It is not a triggered ability and does not use the stack, and it is gained before it is checked whether any player has reached 0 life.",
+    "examples": [
+      {
+        "text": "Example: A player at low life is dealt lethal damage by an opponent at the same moment their own Blessed source deals damage. They gain the life first, and survive if it is enough.",
+        "test": "37-attrs-wight.test.ts::R48 {Blessed}: the gain lands BEFORE the lethal check"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R48",
+          "quote": "Blessed life gain happens on the same game-state check as the damage, not as"
+        },
+        {
+          "ref": "R48",
+          "quote": "a trigger on the stack, so it applies before the lethal check and a blessed"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "37-attrs-wight.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R48 cites Caleb (2024-09-15, 2025-03-18: \"similar to lifelink in mtg\"); those words are not in a RAQ thread in the register.",
+    "sourceHashes": {
+      "R48": "74c2210f4e58485e88f35e09f0e0d1ed8ba7071d904779a3bb6bcc3c35e6193e"
+    }
+  },
+  {
+    "key": "attr.blessed.own-damage",
+    "parent": "attr.blessed",
+    "order": 3,
+    "text": "A Blessed source cannot kill its own controller with its own damage: damage it deals to its own controller is matched by the life that player gains at the same time.",
+    "examples": [
+      {
+        "text": "Example: Godray aimed at a player damages them and heals its controller on the same check.",
+        "test": "40-light-c.test.ts::Godray: aimed at a player it damages AND heals on the same check"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R48",
+          "quote": "source cannot kill its own controller through its own damage (Caleb"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "40-light-c.test.ts",
+        "431-cr-attributes-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R48": "74c2210f4e58485e88f35e09f0e0d1ed8ba7071d904779a3bb6bcc3c35e6193e"
+    }
+  },
+  {
+    "key": "attr.blessed.damage-only",
+    "parent": "attr.blessed",
+    "order": 4,
+    "text": "Blessed applies only to damage dealt. A kill without damage, and damage that is prevented, gain no life.",
+    "examples": [
+      {
+        "text": "Example: Noxious Demise carrying a Blessed Thing virus kills a unit with a -1/-1 counter. No life is gained.",
+        "test": "156-reaping-and-formation.test.ts::{Blessed} does not fire on a non-damage kill"
+      }
+    ],
+    "see": [
+      "112.11"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R98 (its prevention ruling)",
+          "quote": "**no {Blessed} gain** — every one of those is keyed on damage having been dealt."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "156-reaping-and-formation.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R98": "3b5eca7b78135e3b83d9772ba1d9b4a61e98a52ee192747ede43080eb4f13a41"
+    }
+  },
+  {
+    "key": "attr.blessed.column",
+    "parent": "attr.blessed",
+    "order": 5,
+    "text": "A unit in a column with a Blessed unit has Blessed while that column exists, so damage its abilities deal gains its controller life too (see rule 802.1).",
+    "examples": [
+      {
+        "text": "Example: A unit attacking in a column with Flzzz (Blessed) uses an ability to deal 1 damage. Its controller gains 1 life.",
+        "test": "298-column-attrs-outside-combat.test.ts::R294 §1 the report"
+      }
+    ],
+    "see": [
+      "802.1"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R294",
+          "quote": "> The whole card gets the attributes while it's in the column. And so when it"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "298-column-attrs-outside-combat.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R294": "8cae16d380577db83dfb428eb40c37313643ed54a5a3131e6ef3efdc40475495"
+    }
+  },
+  {
+    "key": "attr.blessed.pure",
+    "parent": "attr.blessed",
+    "order": 6,
+    "text": "Blessed does not apply in an interaction involving a Pure card (see rule 802.25).",
+    "examples": [
+      {
+        "text": "Example: A Pure Blessed source deals damage, and its controller gains nothing.",
+        "test": "290-pure-outside-combat.test.ts::§4 a Pure {Blessed} source gains nothing"
+      }
+    ],
+    "see": [
+      "802.25"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Just a Unit",
+          "quote": "(Pure cards and cards they are interacting with ignore all other attributes.)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R61",
+          "quote": "exchange: no Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "290-pure-outside-combat.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
+    }
+  },
+  {
+    "key": "attr.afflicting",
+    "parent": "802",
+    "order": 23,
+    "text": "Afflicting is an attribute. Its reminder text reads \"When an afflicting source kills one or more units, those units' controllers gain a rot.\"",
+    "examples": [
+      {
+        "text": "Example: Umbral Decay is an Afflicting spell that puts two -1/-1 counters on target unit.",
+        "test": "42-dark-b.test.ts::Umbral Decay: two -1/-1 counters"
+      }
+    ],
+    "see": [
+      "802.1",
+      "112.13"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Umbral Decay",
+          "quote": "(When an afflicting source kills one or more units, those units' controllers gain a rot.)"
+        }
+      ],
+      "designer": [],
+      "ours": [
+        {
+          "ref": "glossary: Afflicting",
+          "quote": "When an afflicting source kills one or more units, those units' controllers gain a rot."
+        }
+      ],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "42-dark-b.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "attr.afflicting.rot",
+    "parent": "attr.afflicting",
+    "order": 1,
+    "text": "When an Afflicting source kills one or more units, each player who controlled one of those units gains one rot.",
+    "examples": [
+      {
+        "text": "Example: Umbral Decay kills a unit with its counters. That unit's controller gains a rot.",
+        "test": "37-attrs-wight.test.ts::R48 {Afflicting}: a -1/-1 COUNTER kill gives the dead unit's controller a rot"
+      },
+      {
+        "text": "Example: Umbral Decay's target survives, shrunk. Nobody gains a rot.",
+        "test": "42-dark-b.test.ts::Umbral Decay: a survivor just shrinks, and nobody gains a rot"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Umbral Decay",
+          "quote": "(When an afflicting source kills one or more units, those units' controllers gain a rot.)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "37-attrs-wight.test.ts",
+        "42-dark-b.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "attr.afflicting.one-rot",
+    "parent": "attr.afflicting",
+    "order": 2,
+    "text": "A player gains one rot for each kill, however many of their units the source killed at once.",
+    "examples": [
+      {
+        "text": "Example: An Afflicting source kills two units of one player at once. That player gains one rot.",
+        "test": "37-attrs-wight.test.ts::R48 {Afflicting}: ONE rot per controller per kill event"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R48",
+          "quote": "kills anything. ⚠ One rot per affected controller per kill event, however"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "37-attrs-wight.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R48: Bena's reading of the reminder text; no designer statement. D-U20-13.",
+    "sourceHashes": {
+      "R48": "74c2210f4e58485e88f35e09f0e0d1ed8ba7071d904779a3bb6bcc3c35e6193e"
+    }
+  },
+  {
+    "key": "attr.afflicting.any-kill",
+    "parent": "attr.afflicting",
+    "order": 3,
+    "text": "A unit counts as killed by an Afflicting source however the source killed it: by damage, by -1/-1 counters, by changing its stats, or by destroying it outright.",
+    "examples": [
+      {
+        "text": "Example: A -1/-1 counter kill by an Afflicting source gives a rot.",
+        "test": "37-attrs-wight.test.ts::R48 {Afflicting}: a -1/-1 COUNTER kill gives the dead unit's controller a rot"
+      },
+      {
+        "text": "Example: Umbral Decay's counter kill gives a rot and draws nothing.",
+        "test": "156-reaping-and-formation.test.ts::Umbral Decay: an {Afflicting} counter-kill rots and draws NOTHING"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R48",
+          "quote": "its source kills units by -1/-1 counters as well as by damage (Caleb"
+        },
+        {
+          "ref": "R184 (its kill-rider half)",
+          "quote": "source act, see who is gone. That covers damage, counters, stat swaps, deletes"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "37-attrs-wight.test.ts",
+        "156-reaping-and-formation.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Caleb 2024-09-10 (counters), quoted in R48; the any-kill reading is R184's diff.",
+    "sourceHashes": {
+      "R184": "64d36787c1084d75da052f3a80b7d2186fdf5734d785bcc0186720a149489635",
+      "R48": "74c2210f4e58485e88f35e09f0e0d1ed8ba7071d904779a3bb6bcc3c35e6193e"
+    }
+  },
+  {
+    "key": "attr.afflicting.combat",
+    "parent": "attr.afflicting",
+    "order": 4,
+    "text": "Afflicting applies to kills by combat damage as well. An Afflicting column that kills units in combat gives their controllers rot.",
+    "examples": [
+      {
+        "text": "Example: An Afflicting column kills a blocker in combat. The blocker's controller gains a rot.",
+        "test": "37-attrs-wight.test.ts::R48 {Afflicting}: a plain COMBAT kill counts too"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Umbral Decay",
+          "quote": "(When an afflicting source kills one or more units, those units' controllers gain a rot.)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R48 (its Afflicting half)",
+          "quote": "its source kills units by -1/-1 counters as well as by damage (Caleb"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "37-attrs-wight.test.ts",
+        "431-cr-attributes-2.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "R48 (Caleb 2024-09-10) makes Afflicting fire on kills by damage as well as by counters; the bound test (titled R48) shows a plain combat kill counts. R61 was dropped: it is about Pure. Whether the combat payout is per sub-step or per battle is not stated by any source.",
+    "sourceHashes": {
+      "R48": "74c2210f4e58485e88f35e09f0e0d1ed8ba7071d904779a3bb6bcc3c35e6193e"
+    }
+  },
+  {
+    "key": "attr.afflicting.pure",
+    "parent": "attr.afflicting",
+    "order": 5,
+    "text": "Afflicting does not apply in an interaction involving a Pure card (see rule 802.25).",
+    "examples": [
+      {
+        "text": "Example (illustrative): An Afflicting column kills Just a Unit (Pure) in combat. Its controller gains no rot.",
+        "test": "431-cr-attributes-2.test.ts::cr:attr.afflicting.pure — an Afflicting column that kills Just a Unit gives its controller no rot"
+      }
+    ],
+    "see": [
+      "802.25"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Just a Unit",
+          "quote": "(Pure cards and cards they are interacting with ignore all other attributes.)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R61",
+          "quote": "Afflicting or Thieving, and the victim's Vulnerable is off too. With no"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "431-cr-attributes-2.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
+    }
+  },
+  {
+    "key": "attr.lethal",
+    "parent": "802",
+    "order": 24,
+    "text": "Lethal is an attribute. Its reminder text reads \"Any combat damage from a lethal unit will kill a player.\"",
+    "examples": [
+      {
+        "text": "Example: Gublin is Lethal.",
+        "test": "44-hybrids-ld-a.test.ts::Gublin: {Lethal}"
+      }
+    ],
+    "see": [
+      "802.1"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Gublin",
+          "quote": "(Any combat damage from a lethal unit will kill a player.)"
+        }
+      ],
+      "designer": [],
+      "ours": [
+        {
+          "ref": "glossary: Lethal",
+          "quote": "Any combat damage from a lethal unit will kill a player."
+        }
+      ],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "44-hybrids-ld-a.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "attr.lethal.kills",
+    "parent": "attr.lethal",
+    "order": 1,
+    "text": "If a column with Lethal deals any combat damage to a player, however little, that player is killed (see rule 104).",
+    "examples": [
+      {
+        "text": "Example: Gublin (1/4) attacks unblocked and deals 1 combat damage to the defending player, who is killed.",
+        "test": "44-hybrids-ld-a.test.ts::Gublin: {Lethal}"
+      },
+      {
+        "text": "Example: Any combat damage from a Lethal unit kills the player.",
+        "test": "37-attrs-wight.test.ts::R48 {Lethal}: any combat damage from a lethal unit kills the player"
+      }
+    ],
+    "see": [
+      "104.1"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Gublin",
+          "quote": "(Any combat damage from a lethal unit will kill a player.)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "44-hybrids-ld-a.test.ts",
+        "37-attrs-wight.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "\"Kill a player\" is not defined further by any source; 104 has elimination at 0 life.",
+    "sourceHashes": {}
+  },
+  {
+    "key": "attr.lethal.combat-only",
+    "parent": "attr.lethal",
+    "order": 2,
+    "text": "Lethal applies only to combat damage dealt to a player. It does not change noncombat damage, or damage dealt to units.",
+    "examples": [
+      {
+        "text": "Example (illustrative): A Lethal unit blocked by a 2/2 kills it as any unit would; Lethal does nothing to the blocker.",
+        "test": "431-cr-attributes-2.test.ts::cr:attr.lethal.combat-only — a Lethal unit blocked by a 2/2 kills it as any unit would, and the defending player is untouched"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Gublin",
+          "quote": "(Any combat damage from a lethal unit will kill a player.)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R166",
+          "quote": "{Piercing} carries excess to the PLAYER, {Lethal} kills a player outright,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "431-cr-attributes-2.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "medium",
+    "notes": "Read literally from the reminder. No test found for noncombat damage from a Lethal unit.",
+    "sourceHashes": {
+      "R166": "e7769ee2095ba744eee715fd650e38a8d8392b72e244ff467d95b1d32b4f4756"
+    }
+  },
+  {
+    "key": "attr.lethal.replaced",
+    "parent": "attr.lethal",
+    "order": 3,
+    "text": "If a Lethal column's combat damage to a player is replaced (for example, by Blightsea Polyp, which deals it as rot), the damage was still dealt, so the player is still killed.",
+    "examples": [
+      {
+        "text": "Example: Blightsea Polyp turns a Lethal column's combat damage into 1 rot. The player is still killed.",
+        "test": "37-attrs-wight.test.ts::R48 {Lethal} still kills THROUGH the Blightsea replacement"
+      }
+    ],
+    "see": [
+      "608.8a",
+      "112.12"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R98 (its prevention ruling)",
+          "quote": "unmake it: Caleb ruled (2024-10-24) the damage still counts as having been DEALT, so"
+        },
+        {
+          "ref": "R238",
+          "quote": "> **Caleb Gannon, 2024-10-24T00:23:09** *(reply)*: **\"Yes\"**"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "37-attrs-wight.test.ts",
+        "431-cr-attributes-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Caleb answered \"Yes\" (2024-10-24) when shown Rot Jelly (now Blightsea Polyp) and Gublin (R238); the exchange was in the main rules channel, not a RAQ thread.",
+    "sourceHashes": {
+      "R238": "0e100f9b3442e2b363e7a1ca1abf5dfaa1189d9688d1ed9c1bdc237b3d6faccb",
+      "R98": "3b5eca7b78135e3b83d9772ba1d9b4a61e98a52ee192747ede43080eb4f13a41"
+    }
+  },
+  {
+    "key": "attr.lethal.prevented",
+    "parent": "attr.lethal",
+    "order": 4,
+    "text": "[Removed: no source states how Lethal meets prevention of damage to a player, and no card in the pool prevents damage to a player; R98's prevention ruling is about damage to units. See D-U20-22.]",
+    "examples": [],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R98 (its prevention ruling)",
+          "quote": "So a fully prevented hit produces **no `damage` event** (\"whenever I am dealt damage\" stays"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": []
+    },
+    "basis": "owner",
+    "confidence": "low",
+    "notes": "Removed after verification round 1: the R98 span is about replacement, and the engine has no prevention seam for player damage. D-U20-22 records the silence. R98 is kept only as the record of what prevention does for units; it says nothing of Lethal.",
+    "sourceHashes": {
+      "R98": "3b5eca7b78135e3b83d9772ba1d9b4a61e98a52ee192747ede43080eb4f13a41"
+    }
+  },
+  {
+    "key": "attr.pure",
+    "parent": "802",
+    "order": 25,
+    "text": "Pure is an attribute. Its reminder text reads \"Pure cards and cards they are interacting with ignore all other attributes.\"",
+    "examples": [
+      {
+        "text": "Example: Just a Unit is Pure.",
+        "test": "40-light-c.test.ts::Just a Unit: the exchange is attribute-blind in BOTH directions"
+      }
+    ],
+    "see": [
+      "802.1"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Just a Unit",
+          "quote": "(Pure cards and cards they are interacting with ignore all other attributes.)"
+        }
+      ],
+      "designer": [],
+      "ours": [
+        {
+          "ref": "glossary: Pure",
+          "quote": "Pure cards and cards they are interacting with ignore all other attributes."
+        }
+      ],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "40-light-c.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "attr.pure.own",
+    "parent": "attr.pure",
+    "order": 1,
+    "text": "A Pure card ignores its own other attributes too.",
+    "examples": [
+      {
+        "text": "Example: An Alluring column that is itself Pure ignores its own Alluring and never triggers.",
+        "test": "53-playtest-round7.test.ts::R84 + R61: an Alluring column that is itself {Pure} never even triggers"
+      },
+      {
+        "text": "Example (illustrative): A Pure unit that is also Feeble can block.",
+        "test": null
+      }
+    ],
+    "see": [
+      "802.12"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Just a Unit",
+          "quote": "(Pure cards and cards they are interacting with ignore all other attributes.)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R61",
+          "quote": "attributes\", its own other attributes included."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "53-playtest-round7.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
+    }
+  },
+  {
+    "key": "attr.pure.combat-interaction",
+    "parent": "attr.pure",
+    "order": 2,
+    "text": "In combat, an interaction is one attacking half-column and the blocking half-column paired with it. If either contains a Pure card, the attributes of both are ignored for that exchange.",
+    "examples": [
+      {
+        "text": "Example: A Pure unit blocks a column; the exchange is attribute-blind in both directions.",
+        "test": "40-light-c.test.ts::Just a Unit: the exchange is attribute-blind in BOTH directions"
+      }
+    ],
+    "see": [
+      "608.4"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Just a Unit",
+          "quote": "(Pure cards and cards they are interacting with ignore all other attributes.)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R61",
+          "quote": "**attack-column / block-column pair**, which is exactly that interaction. So"
+        },
+        {
+          "ref": "R61",
+          "quote": "- **Combat damage** — both columns' attribute sets are empty for that"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "40-light-c.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "\"Ignored\" here covers the attributes R61 lists; for the stat-layer attributes see attr.pure.stat-attributes and D-U20-14.",
+    "sourceHashes": {
+      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
+    }
+  },
+  {
+    "key": "attr.pure.combat-damage",
+    "parent": "attr.pure",
+    "order": 3,
+    "text": "In a combat exchange involving a Pure card, neither side has Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed, Afflicting or Thieving, and a Vulnerable unit in it is not dealt double. Neither side has Swift or Sluggish, so both strike in the normal sub-step (see rule 608.2d).",
+    "examples": [
+      {
+        "text": "Example: Just a Unit switches off a Deadly attacker's Deadly.",
+        "test": "40-light-c.test.ts::Just a Unit: {Pure} switches off Deadly"
+      },
+      {
+        "text": "Example: A printed Swift column blocked by a Pure unit strikes in the normal sub-step.",
+        "test": "53-playtest-round7.test.ts::R117 threads {Pure}"
+      }
+    ],
+    "see": [
+      "608.2d",
+      "608.6e"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R61",
+          "quote": "exchange: no Piercing, Deadly, Powerful, Poisonous, Resonant, Blessed,"
+        },
+        {
+          "ref": "R61",
+          "quote": "Afflicting or Thieving, and the victim's Vulnerable is off too. With no"
+        },
+        {
+          "ref": "R61",
+          "quote": "Swift or Sluggish in it, the exchange strikes in the normal sub-step."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "40-light-c.test.ts",
+        "53-playtest-round7.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
+    }
+  },
+  {
+    "key": "attr.pure.blocking",
+    "parent": "attr.pure",
+    "order": 4,
+    "text": "When blocks are declared, a Pure card in either the attacking column or the units blocking it switches off Flying, Evasive and the lone Sneaky attacker's protection for that column, and a Pure unit's own Feeble does not stop it blocking.",
+    "examples": [
+      {
+        "text": "Example: Just a Unit can block a Flying column, and only it can among the defender's units.",
+        "test": "40-light-c.test.ts::Just a Unit: {Pure} blocks a Flying column, and only it can"
+      },
+      {
+        "text": "Example: Just a Unit blocks an Evasive column alone.",
+        "test": "40-light-c.test.ts::Just a Unit: {Pure} blocks an Evasive column alone"
+      }
+    ],
+    "see": [
+      "802.2",
+      "802.12",
+      "802.13",
+      "802.14"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R61",
+          "quote": "- **Declaring blocks** — one Pure card in either column and neither evasion"
+        },
+        {
+          "ref": "R61",
+          "quote": "rule survives it: Flying, Evasive, and Sneaky's lone-attacker immunity. A"
+        },
+        {
+          "ref": "R61",
+          "quote": "Pure unit's own Feeble does not stop it blocking, either."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "40-light-c.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R61 quotes the playtest report: \"Pure units should be able to block evasive or flying units.\"",
+    "sourceHashes": {
+      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
+    }
+  },
+  {
+    "key": "attr.pure.stat-attributes",
+    "parent": "attr.pure",
+    "order": 5,
+    "text": "Pure does not change stats. A Pure unit is destroyed by damage equal to its defense, and Tough, Balanced and Inverted still apply in an interaction involving a Pure card.",
+    "examples": [
+      {
+        "text": "Example (illustrative): A Tough 0/4 (defense 8) blocks a column containing Just a Unit. It still has 8 defense in that exchange.",
+        "test": "431-cr-attributes-2.test.ts::cr:attr.pure.stat-attributes — a Tough 0/4 still has 8 defense blocking a 5-power Just a Unit, and survives"
+      }
+    ],
+    "see": [
+      "802.6",
+      "802.7",
+      "802.8"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [
+        {
+          "ref": "glossary: Pure",
+          "quote": "Stat layers are untouched — {Tough}, {Balanced} and {Inverted} still read."
+        }
+      ],
+      "rulings": [
+        {
+          "ref": "R61",
+          "quote": "Stats are not attributes: a Pure 2/3 still dies to 3 damage."
+        },
+        {
+          "ref": "R289 (its per-pairing ruling)",
+          "quote": "{Tough}, {Balanced} and {Inverted} still read (they are stat layers, R61)."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "431-cr-attributes-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "low",
+    "notes": "Question for the owner (D-U20-14): the printed text says \"ignore all other attributes\", and Tough, Balanced and Inverted are attributes (Manual p.42 lists \"Attributes like Tough\" among the stat layers). R61/R289 keep them; the literal print would not.",
+    "sourceHashes": {
+      "R289": "81a5ae74249706f28fe64de238210a9a0ff35fa09a5ed556ac5c6dedd648781e",
+      "R61": "a480281f44b94379d4d7731761b2799079c5034be6ce452785f8698b7c62a94e"
+    }
+  },
+  {
+    "key": "attr.pure.unaware-combat",
+    "parent": "attr.pure",
+    "order": 6,
+    "text": "In combat, Unaware still applies in an exchange involving a Pure card: if an Unaware card is in the exchange, every unit in it is read at its printed stats.",
+    "examples": [
+      {
+        "text": "Example (illustrative): Bubb (Unaware) blocks a column containing Just a Unit. Both sides of the exchange still use their printed stats.",
+        "test": "431-cr-attributes-2.test.ts::cr:attr.pure.unaware-combat — Bubb (Unaware) blocking a buffed Just a Unit: both sides are read at printed stats"
+      }
+    ],
+    "see": [
+      "802.9"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R106",
+          "quote": "The collapse survives {Pure}: R61 switches the ATTRIBUTE layer off for an exchange, and"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "431-cr-attributes-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "low",
+    "notes": "R106 (combat) and R289 (outside combat, Unaware listed among the attributes Pure switches off) disagree, and the printed reminder would switch it off: D-U20-14.",
+    "sourceHashes": {
+      "R106": "fcdf4679f553417968ef6edaa505171e1cd1a4ecbcacaea97f6fb17fce6f0e83"
+    }
+  },
+  {
+    "key": "attr.pure.noncombat",
+    "parent": "attr.pure",
+    "order": 7,
+    "text": "Outside combat, an interaction is one effect and one recipient of its damage. Pure applies to each such pairing separately.",
+    "examples": [
+      {
+        "text": "Example: One batch damages two recipients; only the pairing with the Pure unit is attribute-blind.",
+        "test": "290-pure-outside-combat.test.ts::§3 one batch, two recipients"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R289 (its per-pairing ruling)",
+          "quote": "**THE INTERACTION UNIT OUTSIDE COMBAT IS THE EFFECT AND EACH RECIPIENT.**"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R289",
+          "relation": "its sentence that the recipient is read with its own attributes only (not its column's) superseded by R294"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "290-pure-outside-combat.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R289": "81a5ae74249706f28fe64de238210a9a0ff35fa09a5ed556ac5c6dedd648781e"
+    }
+  },
+  {
+    "key": "attr.pure.noncombat.source",
+    "parent": "attr.pure",
+    "order": 8,
+    "text": "A Pure source deals plain damage to every recipient: its own Powerful, Deadly, Piercing, Electric, Poisonous, Resonant, Blessed and Unaware do not apply, against units or players.",
+    "examples": [
+      {
+        "text": "Example: A Pure source's own Powerful does not double and its granted Deadly does not kill.",
+        "test": "290-pure-outside-combat.test.ts::§1 a Pure source"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R289 (its per-pairing ruling)",
+          "quote": "- **A Pure source deals plain damage to everyone.** Its own {Powerful},"
+        },
+        {
+          "ref": "R289 (its per-pairing ruling)",
+          "quote": "{Unaware} are all off, against units and against players alike — \"its own"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "290-pure-outside-combat.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R289": "81a5ae74249706f28fe64de238210a9a0ff35fa09a5ed556ac5c6dedd648781e"
+    }
+  },
+  {
+    "key": "attr.pure.noncombat.recipient",
+    "parent": "attr.pure",
+    "order": 9,
+    "text": "A Pure recipient is dealt plain damage by any source: the source's attributes do not apply to it, and neither do its own Vulnerable and Unaware.",
+    "examples": [
+      {
+        "text": "Example: The source's Powerful and Deadly do nothing to a Pure recipient.",
+        "test": "290-pure-outside-combat.test.ts::§2 a Pure recipient: the source's Powerful and Deadly do nothing to it"
+      },
+      {
+        "text": "Example: A Pure recipient's own Vulnerable is off.",
+        "test": "290-pure-outside-combat.test.ts::§2 a Pure recipient's own Vulnerable is off too"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R289 (its per-pairing ruling)",
+          "quote": "- **A Pure recipient takes plain damage from anyone.** The source's attributes"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "290-pure-outside-combat.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R289": "81a5ae74249706f28fe64de238210a9a0ff35fa09a5ed556ac5c6dedd648781e"
+    }
+  },
+  {
+    "key": "attr.pure.noncombat.others",
+    "parent": "attr.pure",
+    "order": 10,
+    "text": "A recipient that is not Pure, damaged by the same effect as a Pure recipient, is dealt damage with all attributes applying.",
+    "examples": [
+      {
+        "text": "Example: A Powerful source deals 1 to Just a Unit and 1 to Bubb in one resolution: 1 to the first and 2 to the second.",
+        "test": "290-pure-outside-combat.test.ts::§3 one batch, two recipients"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R289 (its per-pairing ruling)",
+          "quote": "- **A non-Pure recipient beside a Pure one in the same batch is hit with the"
+        },
+        {
+          "ref": "R289 (its per-pairing ruling)",
+          "quote": "layer ON.** Pure is a fact about the pairing, not about the batch: a"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "290-pure-outside-combat.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R289": "81a5ae74249706f28fe64de238210a9a0ff35fa09a5ed556ac5c6dedd648781e"
+    }
+  },
+  {
+    "key": "attr.pure.column",
+    "parent": "attr.pure",
+    "order": 11,
+    "text": "During a battle, a unit in a column with a Pure unit has Pure for noncombat damage too, as a source and as a recipient (see rule 802.1).",
+    "examples": [
+      {
+        "text": "Example (illustrative): A unit stands in a column with Just a Unit. A Powerful spell deals 1 damage to it: it is dealt 1, not 2.",
+        "test": "431-cr-attributes-2.test.ts::cr:attr.pure.column — a unit attacking in a column with Just a Unit is dealt 1, not 2, by a Powerful effect dealing 1"
+      }
+    ],
+    "see": [
+      "802.1"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R294",
+          "quote": "adjacent) share all of their attributes.\"* So both sides of a non-combat damage"
+        }
+      ],
+      "history": [
+        {
+          "ruling": "R289",
+          "relation": "its sentence that the recipient is read with its own attributes only superseded by R294"
+        }
+      ],
+      "engine": [],
+      "tests": [
+        "431-cr-attributes-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Follows from R294 (both sides read column-shared attributes) applied to Pure; no source or test names Pure here. Pure in combat is per column pair already (802.25c).",
+    "sourceHashes": {
+      "R294": "8cae16d380577db83dfb428eb40c37313643ed54a5a3131e6ef3efdc40475495"
+    }
+  },
+  {
+    "key": "attr.pure.not-targeting",
+    "parent": "attr.pure",
+    "order": 12,
+    "text": "Pure does not change what can be targeted.",
+    "examples": [
+      {
+        "text": "Example (illustrative): A spell that says \"target unit\" can target Just a Unit like any other unit.",
+        "test": "431-cr-attributes-2.test.ts::cr:attr.pure.not-targeting — a target-unit damage spell (Arc Lightning) can target Just a Unit"
+      }
+    ],
+    "see": [
+      "110"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R289 (its per-pairing ruling)",
+          "quote": "**NOT TOUCHED, and why.** Targeting. No printed target restriction in the pool"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "431-cr-attributes-2.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "R289: no target restriction in the pool names an attribute, so there is nothing for Pure to switch off at targeting.",
+    "sourceHashes": {
+      "R289": "81a5ae74249706f28fe64de238210a9a0ff35fa09a5ed556ac5c6dedd648781e"
+    }
+  },
+  {
+    "key": "attr.modular",
+    "parent": "802",
+    "order": 26,
+    "text": "Modular is an attribute. Its reminder text reads \"You can apply mods to a modular card from your hand and/or bin as it is played. You still pay their costs.\"",
+    "examples": [
+      {
+        "text": "Example: Spellbind is a Modular spell.",
+        "test": "43-dark-c.test.ts::Spellbind: {Modular} carrier"
+      }
+    ],
+    "see": [
+      "720"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Spellbind",
+          "quote": "(You can apply mods to a modular card from your hand and/or bin as it is played. You still pay their costs.)"
+        }
+      ],
+      "designer": [],
+      "ours": [
+        {
+          "ref": "glossary: Modular",
+          "quote": "You can apply mods to a modular card from your hand and/or bin as it is played. You still pay their costs."
+        }
+      ],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "43-dark-c.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "attr.modular.when",
+    "parent": "attr.modular",
+    "order": 1,
+    "text": "As a Modular card is played, its controller may apply mods to it from their hand and from their bin, paying each mod's cost. The mods go onto the stack with the card (see rule 702.3b).",
+    "examples": [
+      {
+        "text": "Example: Mods are applied to a Modular spell as it is cast, paid for, and ride on the stack with it.",
+        "test": "37-attrs-wight.test.ts::{Modular}: mods are applied at cast time"
+      },
+      {
+        "text": "Example: The caster may decline to apply any mod.",
+        "test": "37-attrs-wight.test.ts::{Modular}: the caster may decline"
+      }
+    ],
+    "see": [
+      "702.3b"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "card: Spellbind",
+          "quote": "(You can apply mods to a modular card from your hand and/or bin as it is played. You still pay their costs.)"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "37-attrs-wight.test.ts",
+        "91-modular.test.ts",
+        "425-cr-casting-and-stack.test.ts"
+      ]
+    },
+    "basis": "printed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {}
+  },
+  {
+    "key": "attr.modular.anything",
+    "parent": "attr.modular",
+    "order": 2,
+    "text": "Any card in the player's hand or bin whose cost they can pay may be applied to a Modular card, including a card that will do nothing as a mod there. No other condition restricts what may be applied.",
+    "examples": [
+      {
+        "text": "Example: The menu offers every card the player can pay for: a graft, a Virus, a non-Virus augment, and a card that can do nothing.",
+        "test": "91-modular.test.ts::R105: the {Modular} menu offers every card you can pay for"
+      },
+      {
+        "text": "Example: A card in the bin is offered beside the hand, and one the player cannot pay for is not.",
+        "test": "91-modular.test.ts::R105: a card in the BIN is offered beside the hand"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R105",
+          "quote": "> \"I think it's legal to apply ANYTHING to a Modular card. But many cards wont"
+        },
+        {
+          "ref": "R105",
+          "quote": "So **the cost is the whole filter**: every card in your hand and bin whose cost"
+        },
+        {
+          "ref": "R105",
+          "quote": "**A mod that does nothing is a legal play.** That is the half of the ruling that"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "91-modular.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "R105 rests on Caleb (2025-02-07, 2025-04-24) per its header; the verbatim \"apply ANYTHING\" line is not attributed in the text, so the basis is the ruling.",
+    "sourceHashes": {
+      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5"
+    }
+  },
+  {
+    "key": "attr.modular.not-played",
+    "parent": "attr.modular",
+    "order": 3,
+    "text": "Applying a mod to a Modular card is not playing that mod (see rule 701.2).",
+    "examples": [
+      {
+        "text": "Example: The mod is charged as the Modular spell is cast, and applying it is not playing it.",
+        "test": "91-modular.test.ts::R105: \"you still pay their costs\""
+      }
+    ],
+    "see": [
+      "701.2"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [
+        {
+          "ref": "RAQ 1537748882501668934#0",
+          "quote": "Mods are not considered 'played', so they wouldn't trigger any"
+        }
+      ],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R37",
+          "quote": "Applying a modification — attaching a Virus, graft, or augment,"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "91-modular.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "The RAQ and R37 say it of all mods; Modular is one more way to apply one.",
+    "sourceHashes": {
+      "R37": "faaf2c88301c46bb9da7780190591e57d72f3e51150aded7cdd007fc33ed29a3",
+      "RAQ 1537748882501668934#0": "a4e3cf36e2dcb6ca0c4c40c54631a21f25f4a2e6a393898ca0e58814e6a0516d"
+    }
+  },
+  {
+    "key": "attr.modular.graft",
+    "parent": "attr.modular",
+    "order": 4,
+    "text": "A graft mod applied to a Modular spell adds its graft effect to the spell as an extra part, and the spell and its grafted effects resolve as one.",
+    "examples": [
+      {
+        "text": "Example: A graft mod contributes its [Switch] effect as an extra part of Spellbind.",
+        "test": "91-modular.test.ts::R105: a GRAFT mod still contributes its [Switch] effect as an extra part"
+      }
+    ],
+    "see": [
+      "722"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.33",
+          "quote": "The resulting ability is treated as a single ability, so it"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R105",
+          "quote": "| a `[Switch]` graft effect | joins the item as an **extra part** | Manual p.33 — a graft's effect transfers, and the composite resolves as one ability."
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "91-modular.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5"
+    }
+  },
+  {
+    "key": "attr.modular.attributes",
+    "parent": "attr.modular",
+    "order": 5,
+    "text": "A mod whose type line grants attributes as an augment gives those attributes to the Modular spell's effect.",
+    "examples": [
+      {
+        "text": "Example: A Powerful mod applied to Spellbind carrying Twin Flame turns its 2 damage into 4.",
+        "test": "91-modular.test.ts::R105: a type-line [Augment] mod really donates"
+      }
+    ],
+    "see": [
+      "721"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R105",
+          "quote": "| a **type-line** `[Augment]` attribute | is **donated to the resolving effect** | R79's channel, by a different timing. |"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "91-modular.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "",
+    "sourceHashes": {
+      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5"
+    }
+  },
+  {
+    "key": "attr.modular.text-augment",
+    "parent": "attr.modular",
+    "order": 6,
+    "text": "An augment mod's text-box ability does nothing on a Modular spell: a spell cannot gain static or triggered abilities that way.",
+    "examples": [
+      {
+        "text": "Example: An [Augment]-text mod applied to Spellbind is accepted and does nothing.",
+        "test": "91-modular.test.ts::R105: an [Augment]-TEXT mod is accepted and does nothing"
+      }
+    ],
+    "see": [],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R105",
+          "quote": "*\"spells cannot gain static abilities like that, so the only useful thing you can do is give them attributes\"* (Caleb 2025-04-24)"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "91-modular.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "high",
+    "notes": "Caleb (2025-04-24) as quoted in R105.",
+    "sourceHashes": {
+      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5"
+    }
+  },
+  {
+    "key": "attr.modular.unstable",
+    "parent": "attr.modular",
+    "order": 7,
+    "text": "A Modular card with a mod applied is modded, so it is Unstable: when it leaves the stack, whether it resolved, failed to resolve or was negated, it and its mods are erased instead of going to a bin. An unmodded Modular card goes to the bin as usual.",
+    "examples": [
+      {
+        "text": "Example: A graft card in the bin is applied to Spellbind, resolves with it, and is erased, so it cannot be applied this way again.",
+        "test": "91-modular.test.ts::R105: the flashback line"
+      },
+      {
+        "text": "Example: A negated modded Spellbind is erased too.",
+        "test": "91-modular.test.ts::R105: a NEGATED modded Spellbind is erased too"
+      },
+      {
+        "text": "Example: An unmodded Modular spell is binned like any other spell.",
+        "test": "91-modular.test.ts::R105: an UNMODDED {Modular} spell is not Unstable"
+      }
+    ],
+    "see": [
+      "803",
+      "405"
+    ],
+    "sources": {
+      "printed": [
+        {
+          "ref": "Manual p.35",
+          "quote": "As long as a card is modded, it has the unstable attribute, meaning when it dies or is erased, it and all of its"
+        }
+      ],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R105",
+          "quote": "The owner ruled, and gave the design reason, which is the part worth keeping:"
+        },
+        {
+          "ref": "R105",
+          "quote": "**Unmodded, nothing changes.** A `{Modular}` spell nobody applied anything to is"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "91-modular.test.ts"
+      ]
+    },
+    "basis": "mixed",
+    "confidence": "high",
+    "notes": "Manual p.35 says \"when it dies or is erased\"; a resolving spell does neither, and R105 extends it to the stack exit on the owner's call (\"A modded Spellbind should also have unstable\"). D-U20-15.",
+    "sourceHashes": {
+      "R105": "78bb7918a4a08c583c283272994cd1902c107f7b9dc87bd1d62588b6cef0bcb5"
+    }
+  },
+  {
+    "key": "attr.modular.not-shared",
+    "parent": "attr.modular",
+    "order": 8,
+    "text": "Modular is not shared with the other units of a column.",
+    "examples": [
+      {
+        "text": "Example (illustrative): If a unit printed Modular, the other units in its column would not gain Modular.",
+        "test": null
+      }
+    ],
+    "see": [
+      "802.1"
+    ],
+    "sources": {
+      "printed": [],
+      "designer": [],
+      "ours": [],
+      "rulings": [
+        {
+          "ref": "R294",
+          "quote": "And, asked about a third: *\"Modular is also special. But doesn't matter yet cause"
+        }
+      ],
+      "history": [],
+      "engine": [],
+      "tests": [
+        "298-column-attrs-outside-combat.test.ts"
+      ]
+    },
+    "basis": "owner",
+    "confidence": "medium",
+    "notes": "Unreachable today: the only Modular card (Spellbind) is a spell and never stands in a column. R294 says Modular is in the engine's shared attribute set and is harmless only because no unit prints it; 298 §5c guards that premise, not the non-sharing. Latent divergence: F-U20-3.",
+    "sourceHashes": {
+      "R294": "8cae16d380577db83dfb428eb40c37313643ed54a5a3131e6ef3efdc40475495"
+    },
+    "engineDiffers": [
+      "F-U20-3"
+    ]
+  }
+]

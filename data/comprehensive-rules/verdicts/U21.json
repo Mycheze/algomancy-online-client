@@ -1,0 +1,2643 @@
+[
+  {
+    "key": "keywords.abilities.ambush",
+    "textHash": "7ac44943c34afc18",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doAmbush",
+        "agrees": true,
+        "note": "Ambush mode plays the unit as a recall-and-replace effect in battle"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:ambushSwap",
+        "agrees": true,
+        "note": ""
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "14-water-a.test.ts",
+        "pattern": "Mirage Walker: ambush [4bb] recalls an ally and takes its formation slot (R22)",
+        "passed": true,
+        "asserts_claim": "yes — Mirage Walker takes the ally's exact slot, ally recalled"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Good Whale",
+        "supports": "yes",
+        "note": "oracle has a double space after \"Ambush\" and a [Battle] prefix; otherwise verbatim"
+      },
+      {
+        "ref": "Manual p.40",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "Recall target ally, put me into their position in play."
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "you can play cards as an ambush during battle, even if"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.ambush.cache",
+    "textHash": "b22fb5135ef58791",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:ambushAffordable",
+        "agrees": true,
+        "note": "free → true; glimpse → mana only; hand → mana + pips"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "370-cached-virus-in-battle.test.ts",
+        "pattern": "R311: a glimpsed Ambush card ambushes out of the cache",
+        "passed": true,
+        "asserts_claim": "yes — [3] paid without the water pip, logged \"ignoring affinity\""
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R311",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (price.ignoreAffinity) return e.openMana(seat) >= c.ambush.mana;"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "## R311 — The cache plays like the hand, for every mode"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.ambush.cost",
+    "textHash": "60bee7e8dc4017a1",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U21-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:canPayAmbush",
+        "agrees": true,
+        "note": "checks openMana >= ambush.mana and every affinity pip of ambush.cost"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:doAmbush",
+        "agrees": true,
+        "note": "payMana(seat, c.ambush.mana) — the Ambush line's mana, not the card's"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "14-water-a.test.ts",
+        "pattern": "Lurking Slimebeast: [Battle] Ambush [3b] = 3 mana at one water pip (R22)",
+        "passed": true,
+        "asserts_claim": "partly: asserts 3 mana expended (not 4); the pip requirement is not exercised (the seat holds only water)"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U21/u21-r2-probes.test.ts",
+        "title": "keywords.abilities.ambush.cost: 4 mana with no water pip cannot Ambush [3b]; 1 water + 3 fire can, and spends exactly 3",
+        "passed": true,
+        "demonstrates": "yes: the pip is required (refused with 4 fire) and one water pip suffices; 3 mana spent"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "card: Lurking Slimebeast",
+        "supports": "partly",
+        "note": "prints the bracketed cost; the 'not the card's own cost' reading is R22's"
+      },
+      {
+        "ref": "R22",
+        "supports": "yes",
+        "note": "states bracketed cost, mana and affinity, not the printed cost"
+      },
+      {
+        "ref": "R301 (its Ambush comparison)",
+        "supports": "yes",
+        "note": "says Ambush mana is spent and affinity required"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "stack**: pay the bracketed cost (e.g. [4bb] = 4 mana, bb affinity — not the card's"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "same banner on the same cards — has always worked this way."
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "if (e.openMana(seat) < c.ambush.mana) return false;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Rule correct. The bound example's test proves only the mana half of the example; the pip half is shown by the probe — rebind or extend the example."
+  },
+  {
+    "key": "keywords.abilities.ambush.fizzle",
+    "textHash": "2a549e8ce9f1ac23",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:resolveItem (fizzle branch)",
+        "agrees": true,
+        "note": "a fizzled ambush bins the ambusher; slots are re-checked at resolution against the ally restriction (R324)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "08-cards2.test.ts",
+        "pattern": "Ambush fizzles when the target is removed",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "390-raq-stack.test.ts",
+        "pattern": "RAQ valid targets: an Ambush whose ally changed sides before it resolves recalls nothing",
+        "passed": true,
+        "asserts_claim": "yes — stolen ally not recalled (ambusher destination not asserted)"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.40",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1355466429788328066#2",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R22",
+        "supports": "yes",
+        "note": "\"you lose both\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "the ability will fizzle and the ambushing unit will be put"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "ambusher to the bin (\"you lose both\", card ruling). Recall = base card to its **owner's"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.ambush.resolution",
+    "textHash": "e3f3ccbf3405dbd2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:ambushSwap",
+        "agrees": true,
+        "note": "finds the target slot in battle columns or blocks, spawns the ambusher in target.region, writes it into the exact slot, then recalls the target; with no slot the ambusher is simply in the region"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "08-cards2.test.ts",
+        "pattern": "Orblish Horroth: Ambush swaps into the blocker",
+        "passed": true,
+        "asserts_claim": "yes — Horroth takes the exact blocking slot, blocker recalled to hand"
+      },
+      {
+        "file": "19-hybrids.test.ts",
+        "pattern": "Mirrorback Ambusher: Ambush [2be] recalls an ally and takes its position (R22)",
+        "passed": true,
+        "asserts_claim": "yes — ally recalled, ambusher in play (slot not asserted)"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.40",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R22",
+        "supports": "yes",
+        "note": "formation slot, or simply into the region"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (slot) slot.col[slot.idx] = u.id;      // take the exact slot…"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "into the region if the ally wasn't in formation). Target gone at resolution → fizzle,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.ambush.saves",
+    "textHash": "2926c8c840511037",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:ambushSwap + resolveItem",
+        "agrees": true,
+        "note": "the recalled target is gone when the Fireball resolves; its slot is not re-aimed, it fizzles"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U21/u21-verify-probes.test.ts",
+        "title": "keywords.abilities.ambush.saves: ambushing a Fireball's target saves it; the Fireball fizzles and does not hit the ambusher",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.40",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "save it. The spell will not change targets to the new"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "unit, and will fail to resolve (fizzle). This makes ambush"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "No bound test (the example is illustrative); probe demonstrates it."
+  },
+  {
+    "key": "keywords.abilities.ambush.spell-effect",
+    "textHash": "2633c58c608dd1a0",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U21-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/registry.ts:Dreadwave Devourer",
+        "agrees": true,
+        "note": "targets what:'stackSpell' — spell / spell unit / spell token / ambush"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:dischargeItem",
+        "agrees": true,
+        "note": "a negated ambush item puts the card in its owner's bin"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "114-literal-dark.test.ts",
+        "pattern": "Nothyr: an AMBUSH stays out of reach",
+        "passed": true,
+        "asserts_claim": "yes (static: Nothyr's restrict excludes 'ambush')"
+      },
+      {
+        "file": "119-play-and-token-events.test.ts",
+        "pattern": "Void Mandible: an AMBUSH is a card played too",
+        "passed": true,
+        "asserts_claim": "yes for the example; but Void Mandible negates 'that effect' on any nontoken play, so it does not show the spell-effect classification and does not assert the bin"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U21/u21-r2-probes.test.ts",
+        "title": "keywords.abilities.ambush.spell-effect: Dreadwave Devourer (\"negate target spell effect\") negates an Ambush; the ambusher goes to the bin",
+        "passed": true,
+        "demonstrates": "yes: the Ambush is a legal 'spell effect' target; negated → ambusher in bin, target not recalled"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U21/u21-verify-probes.test.ts",
+        "title": "keywords.abilities.ambush.spell-effect: a negated Ambush (Void Mandible) puts the ambushing card into the bin",
+        "passed": true,
+        "demonstrates": "yes: the bin half"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R22",
+        "supports": "yes",
+        "note": "but under its ⚠ 'Engine calls' — an engine decision, not an owner ruling; R128 later kept ambush spell-side"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "an ambush on the stack counts as a \"spell effect\" for negation targeting (Dreadwave"
+      },
+      {
+        "file": "client/engine/src/cards/registry.ts",
+        "text": "targets: { what: 'stackSpell', prompt: 'Dreadwave Devourer: negate target spell effect' },"
+      }
+    ],
+    "basis_ok": false,
+    "problem": "Rule matches the engine and R22. Basis 'owner' overstates it: R22 files this under '⚠ Engine calls' — basis should be 'engine'. Neither example demonstrates the headline claim (a 'spell effect' negator negating an Ambush); the Dreadwave probe does."
+  },
+  {
+    "key": "keywords.abilities.ambush.stack",
+    "textHash": "acddc1c33c4c62c2",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doAmbush",
+        "agrees": true,
+        "note": "pushes a kind:'ambush' stack item via castChain([item], 'push'); opponents get priority"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "08-cards2.test.ts",
+        "pattern": "Ambush fizzles when the target is removed",
+        "passed": true,
+        "asserts_claim": "yes — opponent responds with a Fireball that kills the target; ambusher never spawns"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.40",
+        "supports": "yes",
+        "note": "\"is a targeted effect, meaning if the target is removed ...\""
+      },
+      {
+        "ref": "R22",
+        "supports": "yes",
+        "note": "\"targeted effect on the stack\""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "is a targeted effect, meaning if the target is removed"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Ambush (Manual p.40) plays a unit from hand during battle as a **targeted effect on the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.ambush.target",
+    "textHash": "6bf13593fa3724a7",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U21-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doAmbush / pushSourcePlays",
+        "agrees": true,
+        "note": "gate uses specForSlot(ambushEffect(name).targets) = allyUnit in the battle region"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:canFillSlot (redirect)",
+        "agrees": true,
+        "note": "a redirect onto a non-ally is refused (R58)"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "243-ally-and-enemy-scope.test.ts",
+        "pattern": "R265 §4a the ambush legality gate asks for the same ally the ambush effect will",
+        "passed": true,
+        "asserts_claim": "partly: asserts every ambusher's slot is allyUnit and gate/effect agree; does not show an enemy refused"
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U21/u21-r2-probes.test.ts",
+        "title": "keywords.abilities.ambush.target: the Ambush menu holds only the caster's allies in the battle region",
+        "passed": true,
+        "demonstrates": "yes: enemy in region and own unit outside the region are both off the menu"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U21/u21-verify-probes.test.ts",
+        "title": "keywords.abilities.ambush.target: a redirect (Enigmatic Warder) cannot move an Ambush onto the opponent's unit",
+        "passed": true,
+        "demonstrates": "yes: the redirect clause"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "RAQ 1355466429788328066#4",
+        "supports": "yes",
+        "note": "_passer"
+      },
+      {
+        "ref": "R22",
+        "supports": "yes",
+        "note": "target an ally in the battle region"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/corpus/algomancy_corpus.jsonl",
+        "text": "You can't redirect Ambush to your Enigmatic Warder, becuase he is not \\\"allied unit\\\" for your opponents Ambush."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "printed cost), target an **ally** in the battle region; on resolution the ally is"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None; the bound example is weak (it checks gate/effect agreement, not the ally restriction) — the probes carry the claim."
+  },
+  {
+    "key": "keywords.abilities.ambush.tides",
+    "textHash": "31cc9ddc4811335a",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U21-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-water-b.ts:Tides of the Cosmos",
+        "agrees": true,
+        "note": "the pick filter uses manaOf (main cost) before any mode is chosen"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-water-a.ts:playInlineMode",
+        "agrees": true,
+        "note": "builds the ambush item without payment or timing gate"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "404-raq-fix-tides.test.ts",
+        "pattern": "R337: an Ambush card played by Tides as an Ambush takes an ally place",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U21/u21-r2-probes.test.ts",
+        "title": "keywords.abilities.ambush.tides: the Tides budget reads the MAIN cost, and an Ambush via Tides pays nothing",
+        "passed": true,
+        "demonstrates": "yes: with 3 budget left Slimebeast (main 4, Ambush 3) is not offered and Mirage Walker (main 3, Ambush 4) is; its Ambush play spends no mana"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "RAQ 1396955380000755795#2",
+        "supports": "yes",
+        "note": "_passer write-up"
+      },
+      {
+        "ref": "R337",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/corpus/algomancy_corpus.jsonl",
+        "text": "3. Tides allows you to play Viruses/Ambushes/Prophecy (you still look at 'main' cost of the card, even if you used it as Ambush/Prophecy)."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "or less\" still reads the card's main printed cost whichever mode it is played"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-water-b.ts",
+        "text": ".filter(o => !picks.includes(o.value) && manaOf(top[o.value]!) <= budget"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None. The example's test does not assert the cost clauses; the probe does."
+  },
+  {
+    "key": "keywords.abilities.ambush.timing",
+    "textHash": "8efb830ad120d333",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U21-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doAmbush",
+        "agrees": true,
+        "note": "e.need(phase === 'battle')"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:pushSourcePlays",
+        "agrees": true,
+        "note": "ambush mode only in the battle window, regardless of c.timing"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "08-cards2.test.ts",
+        "pattern": "Good Whale: the parked Ambush mode works",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U21/u21-r2-probes.test.ts",
+        "title": "keywords.abilities.ambush.timing: an Ambush is neither offered nor accepted during deployment",
+        "passed": true,
+        "demonstrates": "yes: the 'only during battle' clause"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.40",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R22 (its during-battle half)",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "you can play cards as an ambush during battle, even if"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(e.s.phase === 'battle', 'Ambush is played during battle');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None. Shib prints the [Battle] icon after the keyword ('[4lb] Ambush [Battle]'); 'in front of' describes the other five."
+  },
+  {
+    "key": "keywords.abilities.battle",
+    "textHash": "70b3e02d1d879656",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:pushSourcePlays",
+        "agrees": true,
+        "note": "c.timing === 'battle' only in the battle window; timingAllowsDeploy excludes it"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "36-cache-prophecy.test.ts",
+        "pattern": "R42: normal TIMING still applies",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.3",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "Cards with the battle icon (11) can only be played when in combat"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Battle cards can"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.battle.haste",
+    "textHash": "cbed8c2bc0d79f62",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:mayPlayAtHaste",
+        "agrees": true,
+        "note": "a {Battle} card is refused in the haste step even with a grant"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "26-metal-a.test.ts",
+        "pattern": "Dispatch Courier: a {Battle} unit stays a battle card even with the grant",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "396-raq-timing.test.ts",
+        "pattern": "RAQ Dispatch Courier: a Battle spell unit is not playable in the haste step either",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1464899726796390433#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1465292396664193171#0",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "RAQ 1465292396664193171#1",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/26-metal-a.test.ts",
+        "text": "'the {Battle} unit is NOT offered');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.battle.per-line",
+    "textHash": "64cc30c24f02e60e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:activateAbility timing marker",
+        "agrees": true,
+        "note": "Grox refused outside battle"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:pushSourcePlays",
+        "agrees": true,
+        "note": "Ambush offered in battle regardless of card timing"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "43-dark-c.test.ts",
+        "pattern": "Grox: R49 — the printed [Battle] marker is enforced at ACTIVATION",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.40",
+        "supports": "yes",
+        "note": "Ambush half"
+      },
+      {
+        "ref": "card: Grox",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R49",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/test/43-dark-c.test.ts",
+        "text": "/can only be activated during battle/);"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.burst",
+    "textHash": "fac4f97059cb3c49",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:spellTokenGroup",
+        "agrees": true,
+        "note": "a Burst token casts every token of the same card in the same region; priced and cast whole or refused"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "03-stack.test.ts",
+        "pattern": "Fireball goes to the stack in battle, Burst casts them all at once",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.15",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.4",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Fireball",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R16",
+        "supports": "yes",
+        "note": "\"in that region\""
+      },
+      {
+        "ref": "R309",
+        "supports": "yes",
+        "note": "all or nothing"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "? e.tokensOf(seat, tok.region).filter(t => t.card === tok.card).sort((a, z) => a.id - z.id)"
+      },
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "to cast all of your tokens with the same name at the same"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.burst.by-name",
+    "textHash": "a5e56bed8e81a9cf",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:spellTokenGroup",
+        "agrees": true,
+        "note": "t.card === tok.card"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "69-damage-batch.test.ts",
+        "pattern": "R81: Burst casts all your tokens OF THAT NAME, and leaves the others alone",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R81",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "The group is `t.card === tok.card` now. R16's remaining half still stands: the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.burst.individual",
+    "textHash": "eb4da9302776359b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:burstStep/castChain",
+        "agrees": true,
+        "note": "one stack item per token, each with its own targets"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "358-burst-order.test.ts",
+        "pattern": "R309: the caster picks each Fireball in RESOLVE order and aims it",
+        "passed": true,
+        "asserts_claim": "yes — three items on the stack, each aimed"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.15",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Rulebook 2023 p.4",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Multiple spell tokens played with burst are still individual spells, but they"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.burst.order",
+    "textHash": "c88b51e4cb34d5e1",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U21-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doCastSpellToken",
+        "agrees": true,
+        "note": "ordered && group.length>1 routes to burstStep; the whole group is priced and committed before priority moves"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:burstStep / decide burstPick",
+        "agrees": true,
+        "note": "each pick is aimed before the next is asked; the first pick ends on top"
+      },
+      {
+        "loc": "client/ui/main.ts:castSpellToken click",
+        "agrees": true,
+        "note": "the client always sends ordered:true; an unordered cast (entity-id order) survives only for old replays"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "358-burst-order.test.ts",
+        "pattern": "R309: the caster picks each Fireball in RESOLVE order and aims it",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "358-burst-order.test.ts",
+        "pattern": "R309: a lone token is not asked to be ordered",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R309",
+        "supports": "yes",
+        "note": "owner ruling states the group-at-once, resolve-order picking, aim-as-chosen"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "A {Burst} group still goes on the stack all at once (R16, R81): casting one"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "What is new is the ORDER. The caster picks the token that resolves first and"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "// R309: the caster orders the burst — see burstStep"
+      },
+      {
+        "file": "client/ui/main.ts",
+        "text": "act({ type: 'castSpellToken', seat: tok.controller, entityId: tok.id, ordered: true });"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None. Note: in deployment the group resolves immediately rather than sitting on a stack (then='resolve'); the ordering engine path is gated on the action's `ordered` flag, which the client always sets."
+  },
+  {
+    "key": "keywords.abilities.burst.targets",
+    "textHash": "0d4850c2732964c8",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:burstStep",
+        "agrees": true,
+        "note": "each token collects its own targets"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "358-burst-order.test.ts",
+        "pattern": "R309: the caster picks each Fireball in RESOLVE order and aims it",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R81",
+        "supports": "yes",
+        "note": "Caleb 2025-03-22"
+      },
+      {
+        "ref": "R16",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Targets are chosen per token."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.haste",
+    "textHash": "38bc3bc03398da34",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U21-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:timingAllowsDeploy",
+        "agrees": true,
+        "note": "deploy or haste timing may be played in deployment"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:pushSourcePlays (haste window)",
+        "agrees": true,
+        "note": "c.timing === 'haste' offered in the haste step"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "15-water-b.test.ts",
+        "pattern": "Tidal Menace: {Haste} 7/2",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U21/u21-verify-probes.test.ts",
+        "title": "keywords.abilities.haste: a {Haste} card is ALSO offered and playable during deployment (not \"instead of\")",
+        "passed": true,
+        "demonstrates": "yes: the deployment half"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "Manual p.13",
+        "supports": "yes",
+        "note": "'can also be played during the haste step'"
+      },
+      {
+        "ref": "R206 (its Haste row)",
+        "supports": "yes",
+        "note": "deployment too"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Haste cards can also"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "function timingAllowsDeploy(c: CardDef): boolean { return c.timing === 'deploy' || c.timing === 'haste'; }"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None."
+  },
+  {
+    "key": "keywords.abilities.haste.grants",
+    "textHash": "552545a156410aa1",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U21-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:mayPlayAtHaste / hastePlayAllowance",
+        "agrees": true,
+        "note": "a seat-level play-timing grant; the card's attributes are untouched"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:pushSourcePlays (haste window)",
+        "agrees": true,
+        "note": "offers a non-Haste card when mayPlayAtHaste grants it"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "26-metal-a.test.ts",
+        "pattern": "Dispatch Courier: \"play a unit during the mana step as if it had [Haste]\"",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "26-metal-a.test.ts",
+        "pattern": "Dispatch Courier: no Courier, no OFFER",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Dispatch Courier",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R97",
+        "supports": "yes",
+        "note": "play-timing grant"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Each turn, you may play a unit during the mana step as if it had [Haste]."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "## R97 — A card may be granted permission to be PLAYED at a timing its printed line refuses"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Accurate as far as it goes. It omits that a {Battle} card granted Haste still cannot be played in the haste step (RAQ 1465292396664193171#0, R97), so 'can let a card without Haste be played' must not be read as covering Battle cards; state that or point to the rule that does."
+  },
+  {
+    "key": "keywords.abilities.haste.mana-step",
+    "textHash": "727947add795e93d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:mayPlayAtHaste",
+        "agrees": true,
+        "note": "Dispatch Courier's grant opens the haste step and offers the play"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "26-metal-a.test.ts",
+        "pattern": "Dispatch Courier: \"play a unit during the mana step as if it had [Haste]\"",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Rulebook 2023 p.3",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Dispatch Courier",
+        "supports": "yes",
+        "note": "oracle has \"[Augment]\" prefix and a double space; wording otherwise matches"
+      },
+      {
+        "ref": "R97",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Rulebook-2023-07.txt",
+        "text": "Cards with the haste icon (10) can be played during the mana step"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.non-combat",
+    "textHash": "fe9209701883342c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [],
+    "tests_run": [],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.25",
+        "supports": "yes",
+        "note": "purple text, non-combat attributes, nothing to do with combat; the closing sentence about the other keywords is editorial framing"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Some attributes, like burst and unstable, are written in a"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.non-combat.not-shared",
+    "textHash": "b2afb4ca22fb29d4",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:colAttrs/effAttrs",
+        "agrees": true,
+        "note": "Unstable and Burst are not Attrs and never enter the column set; isUnstable is per entity"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "125-active-zone.test.ts",
+        "pattern": "R145: Unstable is NOT shared in formation",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "298-column-attrs-outside-combat.test.ts",
+        "pattern": "R294 §5b a modded (therefore Unstable) unit does not make its column-mate Unstable",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.25",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R145",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R294",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "These attributes are not shared in formation, and simply"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "4. {Unstable} is a **non-combat attribute** and is **not shared in formation**."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.once",
+    "textHash": "9fd6a77e6be6ab5f",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:bounded use tracking",
+        "agrees": true,
+        "note": "per-card per-turn budget"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "33-trigger-fixes.test.ts",
+        "pattern": "Unstable Apparition: [once] resets each turn",
+        "passed": true,
+        "asserts_claim": "yes — silent the same turn, fires again next turn"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R113",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R9",
+        "supports": "yes",
+        "note": "per card"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> A bounded ability **\"can only be activated or triggered once per turn. Regardless of if"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.prophecy",
+    "textHash": "92e5a2f0fcb8705c",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doProphesy",
+        "agrees": true,
+        "note": "needs c.prophecy; pays banner mana + pips; caches with the condition"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "36-cache-prophecy.test.ts",
+        "pattern": "R42: a card with no banner cannot be prophesied at all",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R42",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R301",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(banner, 'that card has no prophecy banner');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.prophecy.battles",
+    "textHash": "3ebd93924d8944c0",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U21-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:endBattleRound",
+        "agrees": true,
+        "note": "battlesCompleted +1 every battle round, both rounds, declined ones included"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:battlesPass condition",
+        "agrees": true,
+        "note": "met when battlesCompleted - anchor >= N"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "36-cache-prophecy.test.ts",
+        "pattern": "R43: \"One Battle Passes\"",
+        "passed": true,
+        "asserts_claim": "yes: both rounds already counted (>=2 after one turn), anchored forward, first next round fulfils"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R43",
+        "supports": "yes",
+        "note": "quotes Caleb 2024-09-24"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "battles in a turn tick \"One Battle Passes\" (Caleb 2024-09-24)."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "this.s.battlesCompleted = (this.s.battlesCompleted ?? 0) + 1;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None. Basis could be 'designer-via-ruling' (Caleb is quoted inside R43)."
+  },
+  {
+    "key": "keywords.abilities.prophecy.cost",
+    "textHash": "4e33e3cae4731a65",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:canPayProphecy",
+        "agrees": true,
+        "note": "mana and affinity pips"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "313-prophecy-affinity.test.ts",
+        "pattern": "R301 §2: mana without the affinity does not buy a prophecy",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R301",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(canPayProphecy(e, seat, banner), 'cannot pay the prophecy cost');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.prophecy.forward",
+    "textHash": "e563d9ba6b525d5e",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:makeProphecy",
+        "agrees": true,
+        "note": "snapshots the counters at prophesy time"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "36-cache-prophecy.test.ts",
+        "pattern": "R43: \"One Turn Passes\" counts from the PROPHESYING",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R43",
+        "supports": "yes",
+        "note": "Caleb 2024-09-22"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "\"Two Turns Pass\" means two turns after this card was prophesied, not two"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.prophecy.from",
+    "textHash": "5457d2b5057c7cc0",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doProphesy",
+        "agrees": true,
+        "note": "source must be hand, or bin only with c.prophesyFromBin"
+      },
+      {
+        "loc": "client/engine/src/apply.ts:doProphesyFromCache",
+        "agrees": true,
+        "note": "requires cachePermission === 'glimpse'; the entry stays in place, prophecy attached, glimpse spent"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "36-cache-prophecy.test.ts",
+        "pattern": "R42: only a card that SAYS SO may be prophesied from the bin",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "36-cache-prophecy.test.ts",
+        "pattern": "R308: a GLIMPSED card with a banner may be prophesied where it stands in the cache",
+        "passed": true,
+        "asserts_claim": "yes — same cache entry (uid), banner attached, glimpse spent"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Angel of Anguish",
+        "supports": "yes",
+        "note": "\"I can be prophesied from your bin.\""
+      },
+      {
+        "ref": "R42",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R308",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(from === 'hand' || c.prophesyFromBin, 'that card cannot be prophesied from your bin');"
+      },
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "e.need(e.cachePermission(seat, index) === 'glimpse', 'only a glimpsed card may be prophesied from the cache');"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.prophecy.granted",
+    "textHash": "43384cd23b59218e",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U21-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:cacheUnit (prophecy option)",
+        "agrees": true,
+        "note": "stores the granted banner on the cache entry, anchored now"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:cachePermission",
+        "agrees": true,
+        "note": "reads cc.prophecy whatever its origin — the same path as a printed banner"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "39-light-b.test.ts",
+        "pattern": "Grob: on attack, up to one unit's controller caches it with 'One Battle Passes'",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "36-cache-prophecy.test.ts",
+        "pattern": "R46: a cached unit can carry a granted prophecy (Grob / Waxen Witness)",
+        "passed": true,
+        "asserts_claim": "yes: carries it and is not fulfilled at once (counts forward)"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Waxen Witness",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Grob",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Up to one target unit's controller caches it. It gains 'Prophecy — One Battle Passes'."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (cc.prophecy && this.prophecyMet(seat, cc.prophecy)) return 'prophecy';"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None."
+  },
+  {
+    "key": "keywords.abilities.prophecy.latch",
+    "textHash": "b978e2583ac5dfd3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:prophecyMet",
+        "agrees": true,
+        "note": "fulfilled flag latches; answers true forever"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "36-cache-prophecy.test.ts",
+        "pattern": "R44: a fulfilled prophecy LATCHES",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R44",
+        "supports": "yes",
+        "note": "owner call"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "Once a prophecy's condition has been met it stays fulfilled, even if the"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.prophecy.mods",
+    "textHash": "f00bc2c846429b7b",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:sourcePrice/modPrice",
+        "agrees": true,
+        "note": "cache graft/augment gated on the same permission; fulfilled prophecy free, ignoring affinity; none → refused"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "315-cache-mod-permission.test.ts",
+        "pattern": "R303: an UNFULFILLED prophecy cannot be grafted",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "315-cache-mod-permission.test.ts",
+        "pattern": "R303: a FULFILLED prophecy still grafts for free",
+        "passed": true,
+        "asserts_claim": "yes — offered and nothing paid"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R303",
+        "supports": "yes",
+        "note": "Caleb 2024-12-03 + table"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "| prophecy fulfilled (R42) | free, ignoring affinity | free, ignoring affinity |"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.prophecy.release",
+    "textHash": "a4b2f95d8a888500",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doPlayCached/sourcePrice",
+        "agrees": true,
+        "note": "fulfilled prophecy: free, ignoring affinity"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "36-cache-prophecy.test.ts",
+        "pattern": "R42: a released prophecy is FREE and ignores affinity",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R42",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R301",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "| prophecy fulfilled (R42) | free, ignoring affinity | free, ignoring affinity |"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.prophecy.release-timing",
+    "textHash": "52f43aef477ff2d3",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:pushSourcePlays",
+        "agrees": true,
+        "note": "cache plays use the card's printed timing on every route (deploy / haste only by grant / battle)"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:mayProphesy",
+        "agrees": true,
+        "note": "a [Haste] banner widens the prophesy window, not the release"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "36-cache-prophecy.test.ts",
+        "pattern": "R42: normal TIMING still applies",
+        "passed": true,
+        "asserts_claim": "yes — a fulfilled {Battle} card is not offered and is refused at deployment, offered in battle"
+      },
+      {
+        "file": "257-prophecy-release-timing.test.ts",
+        "pattern": "R277: a fulfilled prophecy on a battle card is offered at a BATTLE window",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R42",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R277",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "1. **The RELEASE is always at the card's printed timing.** R42 governs, without"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.prophecy.tides",
+    "textHash": "a0bc2370c731f814",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/cards/sets/batch-water-b.ts:Tides of the Cosmos",
+        "agrees": true,
+        "note": "offers a 'Prophesy <name>' mode via inlineModes; playInline caches it with its banner for free"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "404-raq-fix-tides.test.ts",
+        "pattern": "R337: a card played by Tides as a Prophecy is cached with its banner",
+        "passed": true,
+        "asserts_claim": "yes — cached with its prophecy, not binned, not in play, nothing paid"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1396955380000755795#2",
+        "supports": "yes",
+        "note": "_passer write-up: Tides allows Viruses/Ambushes/Prophecy"
+      },
+      {
+        "ref": "R337",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "an Ambush, a card with a Prophecy banner as a Prophecy. The \"total cost of 8"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.prophecy.units-die",
+    "textHash": "db554a22ebf04135",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:deathsSeen / presentSeats",
+        "agrees": true,
+        "note": "per-seat tally at the died event; attack adds the attacker to presentSeats until regroup"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "314-prophecy-units-die.test.ts",
+        "pattern": "R302 §2: a death is counted only by the seats that were in the region",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "314-prophecy-units-die.test.ts",
+        "pattern": "R302 §3: combat puts the attacker in the region",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R302",
+        "supports": "yes",
+        "note": "owner ruling"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "region, and from then until regroup both sides witness everything that dies in it."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.prophecy.window",
+    "textHash": "8da3f5181f00ceab",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:mayProphesy",
+        "agrees": true,
+        "note": "deploying(seat), or the haste step when the condition ends in [Haste]"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "36-cache-prophecy.test.ts",
+        "pattern": "R42: prophesying is a DEPLOYMENT action",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "257-prophecy-release-timing.test.ts",
+        "pattern": "R277: a banner marked [Haste] may be prophesied during the haste step",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R42",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R277",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (normalizeProphecy(c.prophecy.condition).prophesyAt !== 'haste') return false;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.prophecy.x",
+    "textHash": "e921b01e0edbea81",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/apply.ts:doPlayFrom/baseItem",
+        "agrees": true,
+        "note": "a free release of a mana:'X' card fixes x = 0; only c.mana === 'X' is fixed, so a bracketed variable cost is untouched"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "36-cache-prophecy.test.ts",
+        "pattern": "R111: a fulfilled prophecy releases an X spell for X = 0",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R111",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/apply.ts",
+        "text": "free && c.mana === 'X' ? 0 : undefined,"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Second sentence (bracketed variable cost still paid) is supported by R111 and the code path, but no test exercises it."
+  },
+  {
+    "key": "keywords.abilities.unstable",
+    "textHash": "6c45791578cba541",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U21-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:isUnstable / disposeToBin",
+        "agrees": true,
+        "note": "Unstable unit leaving play is erased instead of binned"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:itemIsUnstable / dischargeItem",
+        "agrees": true,
+        "note": "Unstable stack item erased on resolution/negation"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "17-earth-b.test.ts",
+        "pattern": "Aberrant Statweaver: printed {Unstable}",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Abyssal Evocation",
+        "supports": "yes",
+        "note": "the reminder text is the replacement"
+      },
+      {
+        "ref": "Manual p.25",
+        "supports": "yes",
+        "note": "names unstable a non-combat attribute"
+      },
+      {
+        "ref": "R145",
+        "supports": "yes",
+        "note": "active zones = play and the stack"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "Some attributes, like burst and unstable, are written in a"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "1. **The ACTIVE ZONES are PLAY (the field / a formation) and the STACK.**"
+      },
+      {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "(If they would enter a bin, erase them instead.)"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None. The active-zone list is the owner's (R145 says so), not Caleb's."
+  },
+  {
+    "key": "keywords.abilities.unstable.active-zone",
+    "textHash": "45c9ecec5a41a44d",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:itemIsUnstable / isUnstable callers",
+        "agrees": true,
+        "note": "only the play and stack exits read Unstable; hand/cache/deck/bin go through toBin and trash"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "125-active-zone.test.ts",
+        "pattern": "R145: a printed-Unstable card DISCARDED FROM HAND",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "125-active-zone.test.ts",
+        "pattern": "R145: a printed-Unstable card binned from the CACHE",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R145",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "1. **The ACTIVE ZONES are PLAY (the field / a formation) and the STACK.**"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "3. A card leaving an **inactive** zone for a bin is **binned and trashed"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.unstable.card-says-bin",
+    "textHash": "481bba939a4b219a",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:disposeToBin (opts.keepBinned)",
+        "agrees": true,
+        "note": "Pull Under passes keepBinned: no Unstable sweep, mods stay in the bin"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "15-water-b.test.ts",
+        "pattern": "Pull Under: deletes the target; it and its mods land in YOUR bin",
+        "passed": true,
+        "asserts_claim": "yes — modded Good Whale and its mod land in the caster's bin"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R137",
+        "supports": "yes",
+        "note": "owner reading: the card's own destination wins over Unstable"
+      },
+      {
+        "ref": "card: Pull Under",
+        "supports": "yes",
+        "note": "printed text supports the quoted wording (not cited as printed)"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "destination wins over the Unstable erase. That override used to be card code"
+      },
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "Delete target unit. If you do, put it and {/n}all of its mods into your bin."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (unstable && !opts.keepBinned) {"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.unstable.copy",
+    "textHash": "9373d7d53c9e00da",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U21-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:isUnstable",
+        "agrees": true,
+        "note": "mods.length>0 || stamp || printed-Unstable face; the copied-mods derivation was removed by R336"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:copy (delete copy.unstable)",
+        "agrees": true,
+        "note": "a copy does not carry the stamp"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "26-metal-a.test.ts",
+        "pattern": "R336: copying a MODDED unit inherits the mods TEXT, and the copy is NOT {Unstable}",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "403-raq-fix-mods.test.ts",
+        "pattern": "R336: a Borrower that copied a modded unit dies to the bin",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "393-raq-mods.test.ts",
+        "pattern": "RAQ Borrower of Forms: a mod attached to it after it resolved makes it Unstable",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "RAQ 1372468222158180424#1",
+        "supports": "yes",
+        "note": "_passer"
+      },
+      {
+        "ref": "RAQ 1372468222158180424#3",
+        "supports": "yes",
+        "note": "_passer"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/corpus/algomancy_corpus.jsonl",
+        "text": "No, freshly resolved BoFy has no mods so he isn't Unstable."
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "* R336 / CT-225 removed it — the RAQ (\"Borrower of Forms\"): a freshly"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (e.mods.length > 0 || e.unstable === true) return true;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None. The text generalises from Borrower of Forms to any copy; the engine has one isUnstable, so the generalisation holds, but a copy of a PRINTED-Unstable unit is still Unstable through its face (not a contradiction, the rule is about modded units)."
+  },
+  {
+    "key": "keywords.abilities.unstable.granted",
+    "textHash": "4c94d0d3a93aeb56",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:isUnstable / itemIsUnstable",
+        "agrees": true,
+        "note": "R96 stamp on stack item and body"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "12-fire-a.test.ts",
+        "pattern": "Abyssal Evocation: a bin-played spell is {Unstable}",
+        "passed": true,
+        "asserts_claim": "yes — Luminous Arc erased, never re-binned"
+      },
+      {
+        "file": "15-water-b.test.ts",
+        "pattern": "Spell Excavation: GRANTS the bin play until regroup",
+        "passed": true,
+        "asserts_claim": "yes — erased, not binned; stamp logged \"Unstable until regroup\""
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Abyssal Evocation",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "Manual p.25",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "is often given to cards that have been played from the bin"
+      },
+      {
+        "file": "data/cards/AlgomancyCards-OracleText.json",
+        "text": "You may play target spell from your bin until regroup. It gains {p}unstable until regroup."
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.unstable.modded",
+    "textHash": "eed01416b537a691",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:isUnstable",
+        "agrees": true,
+        "note": "e.mods.length > 0 makes a unit Unstable"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:destroy/disposeToBin",
+        "agrees": true,
+        "note": "Unstable body and its nontoken mods are binned then swept to the erased pile"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:eraseFromPlay",
+        "agrees": true,
+        "note": "an erased host takes its mods off with it"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "42-dark-b.test.ts",
+        "pattern": "R152: the mods reach the public ERASED pile with the Unstable body (R65)",
+        "passed": true,
+        "asserts_claim": "yes — body, Hooba-Mon and Nothyr all reach the erased pile, none left in the bin"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.35",
+        "supports": "yes",
+        "note": "\"As long as a card is modded, it has the unstable attribute ... it and all of its mods are erased with it\""
+      },
+      {
+        "ref": "Rulebook 2023 p.15",
+        "supports": "partly",
+        "note": "fragment only (\"erased (permanantly removed from the game)\")"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "As long as a card is modded, it has the unstable attrib-"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (e.mods.length > 0 || e.unstable === true) return true;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.unstable.modded-spell",
+    "textHash": "e6f301a00b7e5359",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:itemIsUnstable",
+        "agrees": true,
+        "note": "augments on the item (virus) or the R105 cast stamp ({Modular})"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "91-modular.test.ts",
+        "pattern": "R105 = R79: the {Modular} window and the virus window agree",
+        "passed": true,
+        "asserts_claim": "yes — both routes erase spell and mod"
+      },
+      {
+        "file": "91-modular.test.ts",
+        "pattern": "R105: an UNMODDED {Modular} spell is not Unstable",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R79",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R105",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if ((item.augments?.length ?? 0) > 0 || item.unstable === true) return true;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.unstable.moved-mod",
+    "textHash": "30b29f769a6112ed",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:isUnstable",
+        "agrees": true,
+        "note": "reads mods.length live"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "151-copy-and-moved-mods.test.ts",
+        "pattern": "R178 Rotbeast: a moved augment takes {Unstable}",
+        "passed": true,
+        "asserts_claim": "yes — old host not Unstable, new host Unstable"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R178",
+        "supports": "yes",
+        "note": "owner ruling"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (e.mods.length > 0 || e.unstable === true) return true;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.unstable.printed",
+    "textHash": "4a179f06551e5e82",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:isUnstable",
+        "agrees": true,
+        "note": "reads faceDef(e).unstable"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "17-earth-b.test.ts",
+        "pattern": "Oorblak: printed {Unstable}",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "card: Aberrant Statweaver",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "card: Oorblak",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "return this.faceDef(e).unstable === true;"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.unstable.recall",
+    "textHash": "772404ed29896a92",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:recall/leavePlay",
+        "agrees": true,
+        "note": "base card to hand, mods to bin ('its N mod(s) → bin'); Unstable never applies to a hand"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "125-active-zone.test.ts",
+        "pattern": "R145: RECALLING an Unstable unit puts the CARD IN HAND",
+        "passed": true,
+        "asserts_claim": "yes for the unmodded half (Statweaver to hand, nothing erased); the modded-mods-to-bin half is not exercised"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "Manual p.35",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R145",
+        "supports": "yes",
+        "note": "Caleb quote"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "If a modded card would leave play but did not die or"
+      },
+      {
+        "file": "data/rules/Algomancy-Manual.txt",
+        "text": "bin, while the base card goes to the hand."
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "> \"unstable doesn't stop recalling. So you could recall aberrant statweaver for"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.unstable.stack",
+    "textHash": "145f4a67ba15a7ac",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:itemIsUnstable",
+        "agrees": true,
+        "note": "augments, stamp, or printed face; read by negate, dischargeItem and the virus fizzle sites"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "125-active-zone.test.ts",
+        "pattern": "R145: Aberrant Statweaver negated off the stack is ERASED",
+        "passed": true,
+        "asserts_claim": "yes"
+      },
+      {
+        "file": "125-active-zone.test.ts",
+        "pattern": "R145: a printed-Unstable virus whose HOST DIES",
+        "passed": true,
+        "asserts_claim": "yes"
+      }
+    ],
+    "probes": [],
+    "source_checks": [
+      {
+        "ref": "R145",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "1. **The ACTIVE ZONES are PLAY (the field / a formation) and the STACK.**"
+      }
+    ],
+    "basis_ok": true,
+    "problem": ""
+  },
+  {
+    "key": "keywords.abilities.unstable.still-dies",
+    "textHash": "49825c7d5ecbfdf1",
+    "verdict": "confirmed",
+    "round": 1,
+    "verifier": "U21-r1",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:destroy",
+        "agrees": true,
+        "note": "'died' fires on every branch; Unstable only redirects the bin to the erased pile"
+      }
+    ],
+    "tests_run": [],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U21/u21-verify-probes.test.ts",
+        "title": "keywords.abilities.unstable.still-dies: a modded (Unstable) unit that is destroyed still dies — a death watcher triggers, then it is erased",
+        "passed": true,
+        "demonstrates": "yes"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R69",
+        "supports": "yes",
+        "note": ""
+      },
+      {
+        "ref": "R145",
+        "supports": "yes",
+        "note": ""
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "### 2. Unstable replaces the BIN, not the DEATH"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "So the `died` event fires on every branch, death triggers go off, and other"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "Example is illustrative with no bound test; probe (Refuse Reclaimer) demonstrates it."
+  },
+  {
+    "key": "keywords.abilities.unstable.until-regroup",
+    "textHash": "9fc4991e3a1e94b8",
+    "verdict": "confirmed",
+    "round": 2,
+    "verifier": "U21-r2",
+    "engine": [
+      {
+        "loc": "client/engine/src/engine.ts:isUnstable",
+        "agrees": true,
+        "note": "reads the Entity.unstable stamp independent of any permission"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:mayPlaySpellsFromBin",
+        "agrees": true,
+        "note": "permission is a region-keyed battle counter, absent in round 2's region"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:startRegroup",
+        "agrees": true,
+        "note": "delete e.unstable in the regroup sweep"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:afterParts spawn",
+        "agrees": true,
+        "note": "if (item.unstable) u.unstable = true — the spell unit passes the stamp to its body"
+      }
+    ],
+    "tests_run": [
+      {
+        "file": "12-fire-a.test.ts",
+        "pattern": "Abyssal Evocation: a bin-played SPELL UNIT stamps its BODY",
+        "passed": true,
+        "asserts_claim": true
+      }
+    ],
+    "probes": [
+      {
+        "file": "data/comprehensive-rules/build/probes/U21/u21-r2-probes.test.ts",
+        "title": "keywords.abilities.unstable.until-regroup: the stamp outlives the \"in this battle\" permission (round 2), and ends at regroup",
+        "passed": true,
+        "demonstrates": "yes: in round 2 mayPlaySpellsFromBin is false for the new region while the body is still Unstable; false after regroup"
+      },
+      {
+        "file": "data/comprehensive-rules/build/probes/U21/u21-verify-probes.test.ts",
+        "title": "keywords.abilities.unstable.until-regroup: a bin-played spell unit body loses its Unstable stamp at regroup",
+        "passed": true,
+        "demonstrates": "yes: the regroup end"
+      }
+    ],
+    "source_checks": [
+      {
+        "ref": "R96",
+        "supports": "yes",
+        "note": "states the stamp outlives the permission and propagates to the spell unit's body"
+      },
+      {
+        "ref": "card: Abyssal Evocation (not cited)",
+        "supports": "yes",
+        "note": "prints 'gain unstable until regroup' — could be added as printed"
+      }
+    ],
+    "quote_spans": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "text": "\"Gain … **until regroup**\" means the card stays Unstable after the permission lapses, so"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if (item.unstable) u.unstable = true;"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "delete e.unstable;     // R96: \"they gain unstable UNTIL REGROUP\" — this is that"
+      }
+    ],
+    "basis_ok": true,
+    "problem": "None. The example's test proves stamp + erase but not 'until regroup' (despite its title); the probe proves the duration."
+  }
+]

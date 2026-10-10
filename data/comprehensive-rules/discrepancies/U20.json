@@ -1,0 +1,466 @@
+[
+  {
+    "id": "D-U20-1",
+    "kind": "g-other",
+    "rule": "attr.evasive",
+    "summary": "Six attributes in this unit (Evasive, Sneaky, Alluring, Resonant, Thieving, Reaping) print their reminder only under the type line. The oracle text and the extract do not carry it, so the quote checker cannot verify the reminder sentence each 802.N rule states; those rules cite the rulings and RAQ claims that restate it instead.",
+    "sides": [
+      {
+        "source": "file: client/ui/scan-reminders.json",
+        "quote": "\"text\": \"Evasive units require two blockers.\", \"card\": \"Curio Drifter\""
+      },
+      {
+        "source": "file: client/ui/scan-reminders.json",
+        "quote": "\"text\": \"Sneaky units can't be blocked if attacking alone.\", \"card\": \"Whispering Mantid\""
+      },
+      {
+        "source": "file: client/ui/scan-reminders.json",
+        "quote": "\"text\": \"When an alluring column attacks, target enemy can't attack and must block it this combat if able.\", \"card\": \"Tempest Wrangler\""
+      },
+      {
+        "source": "file: client/ui/scan-reminders.json",
+        "quote": "\"text\": \"Whenever a resonant source deals damage to a unit, it deals that much damage to that unit's controller.\", \"card\": \"Resonant Form\""
+      },
+      {
+        "source": "file: client/ui/scan-reminders.json",
+        "quote": "\"text\": \"Whenever a thieving source deals combat damage to an opponent, draw a card.\", \"card\": \"Slink\""
+      },
+      {
+        "source": "file: client/ui/scan-reminders.json",
+        "quote": "\"text\": \"When a reaping source kills one or more units, draw a card. It loses reaping until regroup.\", \"card\": \"Flame of History\""
+      }
+    ],
+    "resolution": "Tooling: let the extract fold client/ui/scan-reminders.json into each card's checkable text (or accept a scan reference as a printed source), then re-cite the six definitions as printed. The sentences themselves were read off the scans (R283 for Reaping).",
+    "tier": 2
+  },
+  {
+    "id": "D-U20-2",
+    "kind": "g-other",
+    "rule": "attr.sneaky.alone",
+    "summary": "Sources are silent on WHEN \"attacking alone\" is judged. If a Sneaky unit attacks with one other unit and that unit is removed in the attack window, it is not said whether the Sneaky unit is then alone when blocks are declared.",
+    "sides": [
+      {
+        "source": "file: client/ui/scan-reminders.json",
+        "quote": "\"text\": \"Sneaky units can't be blocked if attacking alone.\", \"card\": \"Whispering Mantid\""
+      },
+      {
+        "source": "R20",
+        "quote": "A Sneaky column cannot be blocked iff its unit is **the only attacking unit in the"
+      }
+    ],
+    "resolution": "Question for the owner. The printed words \"can't be blocked if attacking alone\" support two readings: (1) the Sneaky unit was declared as the only attacker; (2) it is the only attacking unit left when blocks are declared. R20 does not say which. The document states R20 only.",
+    "tier": 1
+  },
+  {
+    "id": "D-U20-3",
+    "kind": "c-owner-call-only",
+    "rule": "attr.sneaky.alone",
+    "summary": "What \"attacking alone\" means (the only attacking unit in the formation; spell tokens do not count; two Sneaky attackers are both blockable) is R20's engine reading, marked ⚠, with no designer source.",
+    "sides": [
+      {
+        "source": "R20",
+        "quote": "attacking are NOT alone — both blockable. ⚠ Engine reading of \"unblockable if attacking"
+      }
+    ],
+    "resolution": "Stands as owner law (basis owner). Seek a designer answer if a judge disputes it.",
+    "tier": 3
+  },
+  {
+    "id": "D-U20-4",
+    "kind": "c-owner-call-only",
+    "rule": "attr.alluring.two-duties",
+    "summary": "When two Alluring triggers target the same unit, R84 lets blocking either column excuse both duties. R84 calls this a judgement call by the owner; no designer source.",
+    "sides": [
+      {
+        "source": "R84",
+        "quote": "### ⚠ Two duties on one unit — a judgement call"
+      },
+      {
+        "source": "R84",
+        "quote": "**Discharging either duty excuses the rest**, and the \"must be among its"
+      }
+    ],
+    "resolution": "Stands as owner law (basis owner).",
+    "tier": 3
+  },
+  {
+    "id": "D-U20-5",
+    "kind": "d-raq-open",
+    "rule": "attr.alluring.tax-and-negate",
+    "summary": "The RAQ thread on trigger-like attributes asks whether Containment Protocol (\"Negate all activated and triggered effects.\") negates Alluring and Resonant triggers, and nobody answered. The engine negates a waiting Alluring trigger, and R315 says Containment Protocol can negate Resonant.",
+    "sides": [
+      {
+        "source": "RAQ 1366446116274442291#2",
+        "quote": "Whether Containment Protocol (\"triggered effects\") negates trigger-like attributes."
+      },
+      {
+        "source": "card: Containment Protocol",
+        "quote": "Negate all activated and triggered effects."
+      },
+      {
+        "source": "R315",
+        "quote": "Crevice Lurker taxes it, and Containment Protocol can negate it."
+      }
+    ],
+    "resolution": "Open. Caleb treats both as triggers for Crevice Lurker (RAQ 1366446116274442291#1) and R84 quotes him that the Alluring effect \"can be negated\", so the document treats both as negatable triggered abilities. Question for the owner only if the RAQ is answered otherwise.",
+    "tier": 4
+  },
+  {
+    "id": "D-U20-6",
+    "kind": "g-other",
+    "rule": "attr.resonant.tax-and-negate",
+    "summary": "The RAQ register's note on the Containment Protocol claim says Resonant never waits on the stack. Since R315 the Resonant trigger does go on the stack, so the note is stale.",
+    "sides": [
+      {
+        "source": "file: client/ledgers/raq.ts",
+        "quote": "Resonant never waits on the stack, so there is nothing to negate."
+      },
+      {
+        "source": "R315",
+        "quote": "the resonant source**, put on the stack as that source's trigger — not life loss"
+      }
+    ],
+    "resolution": "Register fix: update the note on RAQ 1366446116274442291#2 to say the Resonant trigger waits on the stack (R315) and would be negated by the engine.",
+    "tier": 2
+  },
+  {
+    "id": "D-U20-7",
+    "kind": "c-owner-call-only",
+    "rule": "attr.electric.no-revisit",
+    "summary": "That Electric excess never jumps back to a unit already in the chain is stated only by R206's description of the engine (a visited chain) and our glossary; no printed or designer source says so. \"Recursively\" does not settle it.",
+    "sides": [
+      {
+        "source": "R206",
+        "quote": "A `visited` chain (engine.ts:4123-4160), and Envoy of Lightning's printed reminder names it"
+      },
+      {
+        "source": "card: Envoy of Lightning",
+        "quote": "Excess damage from electric sources can {/n}be directed to an adjacent unit, recursively."
+      }
+    ],
+    "resolution": "Stands as owner law (basis owner, confidence medium). No reachable card makes it matter often; ask Caleb if a judge disputes it.",
+    "tier": 3
+  },
+  {
+    "id": "D-U20-8",
+    "kind": "g-other",
+    "rule": "attr.electric.dead-end",
+    "summary": "Our glossary's Electric row still says the excess is lost when the chain runs out. R317 (from the RAQ) deals it to the last unit.",
+    "sides": [
+      {
+        "source": "glossary: Electric",
+        "quote": "When the chain runs out the excess is lost"
+      },
+      {
+        "source": "R317",
+        "quote": "no {Piercing} is read: it stays on the last unit — dealt, never lost (R114's \"ALL"
+      },
+      {
+        "source": "RAQ 1372451771632320512#2",
+        "quote": "All 12 damage sink into Crumbling - this has its use if you had Ember of Life in play"
+      }
+    ],
+    "resolution": "Glossary fix (our text, not authority): the row should say the remainder stays on the last unit, and that with Piercing it is elective. Already known to the orchestrator as a register-level finding.",
+    "tier": 2
+  },
+  {
+    "id": "D-U20-9",
+    "kind": "f-register-chain-wrong",
+    "rule": "attr.poisonous.is-damage",
+    "summary": "R166, still current with no supersession mark, says Poisonous \"replaces the damage with counters and never reaches the branch\". R237 later ruled, on Caleb's words, that Poisonous is a form of dealing damage and not a replacement.",
+    "sides": [
+      {
+        "source": "R166",
+        "quote": "{Resonant} drains life, {Poisonous} replaces the damage with counters and never"
+      },
+      {
+        "source": "R237",
+        "quote": "**{Poisonous} is a MARK, not a substitution.** Everything above the mark —"
+      },
+      {
+        "source": "RAQ 1354148437355925554#0",
+        "quote": "Poisonous damage is damage dealt: it fires \"when I am dealt damage\" (Awoken Tomb makes its X/X)."
+      }
+    ],
+    "resolution": "Register fix: mark R166's Poisonous sentence as corrected by R237 (a scoped supersession edge). The document follows R237 and the RAQ.",
+    "tier": 2
+  },
+  {
+    "id": "D-U20-10",
+    "kind": "a-sources-disagree",
+    "rule": "attr.resonant.tax-and-negate",
+    "summary": "Crevice Lurker prints \"Abilities cost [one] more to activate or trigger\"; Alluring and Resonant are attributes, not abilities, so read literally it does not tax them. Caleb says his intent is that it does.",
+    "sides": [
+      {
+        "source": "card: Crevice Lurker",
+        "quote": "[Augment] Abilities cost [one] more to activate or trigger during battle."
+      },
+      {
+        "source": "RAQ 1366446116274442291#1",
+        "quote": "I think crevice lurker should say 'Effects cost 1 more to activate or trigger'. So as written it wouldn't work but my intent is for it to stop those from triggering"
+      }
+    ],
+    "resolution": "Follow Caleb (the authority order: where Caleb states an intent that differs from print, follow Caleb). The document says Crevice Lurker taxes both triggers.",
+    "tier": 4
+  },
+  {
+    "id": "D-U20-11",
+    "kind": "g-other",
+    "rule": "attr.reaping.loses",
+    "summary": "Reaping's second printed sentence (\"It loses reaping until regroup.\") is deliberately not built: R283 says no source in the pool can kill twice with Reaping, because all four Reaping cards are spells and nothing can give a unit Reaping. A guard test goes red if that changes.",
+    "sides": [
+      {
+        "source": "R283",
+        "quote": "### 2. \"It loses reaping until regroup\" is deliberately NOT built"
+      },
+      {
+        "source": "R283",
+        "quote": "clause would bite only if a UNIT could carry {Reaping}, and nothing in the pool"
+      }
+    ],
+    "resolution": "The document states the printed rule (basis owner, confidence low, citing R283's quote of the reminder). No engine bug while it stays unreachable; 263 §4 is the tripwire.",
+    "tier": 3
+  },
+  {
+    "id": "D-U20-12",
+    "kind": "c-owner-call-only",
+    "rule": "attr.afflicting.one-rot",
+    "summary": "One rot per controller per kill event, however many of that player's units died, is the owner's reading of the Afflicting reminder; R48 says no designer statement was found.",
+    "sides": [
+      {
+        "source": "R48",
+        "quote": "kills anything. ⚠ One rot per affected controller per kill event, however"
+      },
+      {
+        "source": "card: Umbral Decay",
+        "quote": "(When an afflicting source kills one or more units, those units' controllers gain a rot.)"
+      }
+    ],
+    "resolution": "Stands as owner law. The printed \"those units' controllers gain a rot\" (singular rot, plural units) supports it.",
+    "tier": 3
+  },
+  {
+    "id": "D-U20-13",
+    "kind": "a-sources-disagree",
+    "rule": "attr.pure.stat-attributes",
+    "summary": "Does Pure switch off the stat-layer attributes (Tough, Balanced, Inverted, Unaware)? The printed reminder says Pure cards and what they interact with ignore all other attributes, and the Manual calls Tough an attribute. R61 and R289 keep Tough, Balanced and Inverted. For Unaware, R106 keeps it in combat, while R289 switches a Pure card's Unaware off outside combat.",
+    "sides": [
+      {
+        "source": "card: Just a Unit",
+        "quote": "(Pure cards and cards they are interacting with ignore all other attributes.)"
+      },
+      {
+        "source": "Manual p.42",
+        "quote": "counters, 4. Attributes like Tough, 5. Inverted, 6.Unaware"
+      },
+      {
+        "source": "R289",
+        "quote": "{Tough}, {Balanced} and {Inverted} still read (they are stat layers, R61)."
+      },
+      {
+        "source": "R106",
+        "quote": "The collapse survives {Pure}: R61 switches the ATTRIBUTE layer off for an exchange, and"
+      },
+      {
+        "source": "R289",
+        "quote": "{Unaware} are all off, against units and against players alike — \"its own"
+      }
+    ],
+    "resolution": "Question for the owner. \"ignore all other attributes\" supports two readings: (1) every attribute, the stat-layer ones included, so a Tough unit facing a Pure card is not doubled and Unaware does not collapse; (2) only the attributes that change how cards interact, while a stat layer stays part of the card's stats (R61: \"Stats are not attributes\"). The rulings take (2) for Tough, Balanced and Inverted, but they split on Unaware: R106 keeps it in combat and R289 drops it outside combat. The document states the rulings and marks those rules confidence low.",
+    "tier": 1
+  },
+  {
+    "id": "D-U20-14",
+    "kind": "c-owner-call-only",
+    "rule": "attr.modular.unstable",
+    "summary": "The Manual makes a modded card Unstable \"when it dies or is erased\". A resolving or negated spell does neither. R105 extends the erase to a modded Modular spell leaving the stack, on the owner's design reason (Spellbind is a flashback).",
+    "sides": [
+      {
+        "source": "Manual p.35",
+        "quote": "As long as a card is modded, it has the unstable attribute, meaning when it dies or is erased, it and all of its"
+      },
+      {
+        "source": "R105",
+        "quote": "> \"A modded Spellbind should also have unstable. It basically works as a"
+      }
+    ],
+    "resolution": "Stands as owner law. The Manual's next sentence (\"even though mods can be applied from the bin, they are generally only able to be applied once\") has only Modular as a referent, which supports the owner.",
+    "tier": 3
+  },
+  {
+    "id": "D-U20-15",
+    "kind": "g-other",
+    "rule": "attr.electric",
+    "summary": "Sources are silent on Electric combat damage. The printed reminder speaks of \"electric sources\", which on its face includes a column, but no ruling or RAQ claim covers it, and no unit in the pool can have Electric: Envoy of Lightning grants it to spell effects only, and Arc Lightning is a spell. The pilot verifier recorded that the engine ignores Electric in combat.",
+    "sides": [
+      {
+        "source": "card: Envoy of Lightning",
+        "quote": "[Augment] Your spell effects with a single target are {g}Electric."
+      },
+      {
+        "source": "card: Arc Lightning",
+        "quote": "{Battle} {Electric} Elemental Spell"
+      }
+    ],
+    "resolution": "No rule written. Question for the owner only if a card ever lets a unit have Electric.",
+    "tier": 4
+  },
+  {
+    "id": "D-U20-16",
+    "kind": "g-other",
+    "rule": "attr.thieving.draw",
+    "summary": "Sources are silent on whether Thieving's draw is a triggered ability that uses the stack (and so can be negated or taxed) or happens as part of combat damage. The reminder reads \"Whenever …, draw a card\".",
+    "sides": [
+      {
+        "source": "file: client/ui/scan-reminders.json",
+        "quote": "\"text\": \"Whenever a thieving source deals combat damage to an opponent, draw a card.\", \"card\": \"Slink\""
+      },
+      {
+        "source": "R24",
+        "quote": "damage to a player** in a damage sub-step (unblocked or Piercing overflow), not one per"
+      }
+    ],
+    "resolution": "No rule written on timing. Question for the owner only if Crevice Lurker or a negate is used against a Thieving draw in play.",
+    "tier": 4
+  },
+  {
+    "id": "D-U20-17",
+    "kind": "g-other",
+    "rule": "attr.lethal.kills",
+    "summary": "No source says what it means for Lethal to \"kill a player\": whether the player is eliminated outright, or loses life equal to their life total (which a life-loss multiplier or a \"life can't change\" effect could then alter).",
+    "sides": [
+      {
+        "source": "card: Gublin",
+        "quote": "(Any combat damage from a lethal unit will kill a player.)"
+      },
+      {
+        "source": "R166",
+        "quote": "{Piercing} carries excess to the PLAYER, {Lethal} kills a player outright,"
+      }
+    ],
+    "resolution": "The document states the printed words only. Question for the owner only if a life-total lock (rule 112.4) or a multiplier meets a Lethal hit.",
+    "tier": 4
+  },
+  {
+    "id": "D-U20-18",
+    "kind": "c-owner-call-only",
+    "rule": "attr.thieving.replaced",
+    "summary": "Caleb was shown only Lethal when he said a replaced combat hit still counts as dealt (2024-10-24). The extension to Thieving, and to Blessed, is the client's inference, made general by the owner in R238.",
+    "sides": [
+      {
+        "source": "R238",
+        "quote": "- **Caleb was shown {Lethal} only.** The client's extension of the ruling to"
+      },
+      {
+        "source": "R238",
+        "quote": "> **\"Yes, blightsea pollup says it deals damage as, so its still damage. Just"
+      }
+    ],
+    "resolution": "Stands as owner law (R238).",
+    "tier": 3
+  },
+  {
+    "id": "D-U20-19",
+    "kind": "g-other",
+    "rule": "attr.pure.column",
+    "summary": "No source applies R294's column sharing to Pure outside combat. The rule is derived: R294 makes both sides of a noncombat damage pairing read column-shared attributes, and Pure is an attribute.",
+    "sides": [
+      {
+        "source": "R294",
+        "quote": "adjacent) share all of their attributes.\"* So both sides of a non-combat damage"
+      },
+      {
+        "source": "R289",
+        "quote": "- **A Pure recipient takes plain damage from anyone.** The source's attributes"
+      }
+    ],
+    "resolution": "Rule written as derived (basis owner, confidence medium). Question for the owner only if a judge disputes it.",
+    "tier": 4
+  },
+  {
+    "id": "D-U20-20",
+    "kind": "c-owner-call-only",
+    "rule": "attr.resonant.amount",
+    "summary": "That Resonant's \"that much damage\" is the damage the unit received, after Vulnerable doubled it and after prevention, is R315's own reading. The RAQ examples never involve Vulnerable.",
+    "sides": [
+      {
+        "source": "R315",
+        "quote": "The amount is what the unit **received** (\"that much damage\"): after {Vulnerable},"
+      }
+    ],
+    "resolution": "Stands as owner law.",
+    "tier": 3
+  },
+  {
+    "id": "D-U20-21",
+    "kind": "b-engine-only",
+    "rule": "attr.electric.adjacency",
+    "tier": 3,
+    "summary": "Sources are silent on what \"adjacent\" means for Electric outside a battle. The printed reminder says only \"an adjacent unit\"; the engine reads adjacency off the two battle grids, so outside a formation no unit is adjacent and Electric excess stays on the unit it hit (measured by the round-1 verifier's probe).",
+    "sides": [
+      {
+        "source": "card: Envoy of Lightning",
+        "quote": "Excess damage from electric sources can {/n}be directed to an adjacent unit, recursively."
+      },
+      {
+        "source": "file: client/engine/src/engine.ts",
+        "quote": "push(grid[ci]![1 - ri]);"
+      }
+    ],
+    "resolution": "The rule states the engine (formation adjacency only), basis mixed, awaiting owner sign-off (Annex P). Question for the owner only if a judge's CR treats units in the same region, or deployed side by side, as adjacent outside combat."
+  },
+  {
+    "id": "D-U20-22",
+    "kind": "g-other",
+    "rule": "attr.lethal.prevented",
+    "tier": 3,
+    "summary": "Sources are silent on Lethal when combat damage to a player is prevented. R98's prevention ruling covers damage to units only, and no card in the pool prevents damage to a player, so the engine has no path for it. The rule was removed rather than derived by analogy.",
+    "sides": [
+      {
+        "source": "R98",
+        "quote": "So a fully prevented hit produces **no `damage` event** (\"whenever I am dealt damage\" stays"
+      },
+      {
+        "source": "R98",
+        "quote": "{Lethal} still kills through it\"*. **Replacement is a substitution; prevention is a"
+      }
+    ],
+    "resolution": "No rule. Question for the owner only if a card that prevents damage to a player is ever printed."
+  },
+  {
+    "id": "D-U20-23",
+    "kind": "g-other",
+    "rule": "attr.piercing.redirect",
+    "tier": 3,
+    "summary": "Since R319 the attacker may keep Piercing excess on a unit it strikes. No source says whether the same elective keep applies when the hit is redirected into Oorblak; the engine's redirect absorbs exactly lethal (1 if Deadly) and passes the rest on, with no choice (round-1 verifier).",
+    "sides": [
+      {
+        "source": "RAQ 1397188292239163454#0",
+        "quote": "he takes 4 damage which is enough to kill him and leftover 6 damage is still Piercing so it goes to players face"
+      },
+      {
+        "source": "RAQ 1353888077625561108#5",
+        "quote": "You may still overkill front or back units, however with Piercing any excess damage you won't assign to front or back unit will be assigned to Opponent Health."
+      }
+    ],
+    "resolution": "The rule follows the Oorblak RAQ (exactly lethal into Oorblak, the rest to the player). Question for the owner only if a player asks to overkill a redirect target: the overkill RAQ speaks of units the attacker assigns to, and Oorblak is dealt the hit by its own replacement, not assigned it."
+  },
+  {
+    "id": "D-U20-24",
+    "kind": "c-owner-call-only",
+    "rule": "attr.lethal.replaced",
+    "tier": 3,
+    "summary": "The round-1 verifier measured that a Lethal column whose whole hit is redirected into Oorblak still kills the player, though the player is dealt no damage. Caleb's \"Yes\" (R238) was given on a replacement that turns the hit into rot for the same player; applying it to Oorblak, which deals the hit to a unit instead, is the owner's extension.",
+    "sides": [
+      {
+        "source": "R238",
+        "quote": "> **Caleb Gannon, 2024-10-24T00:23:09** *(reply)*: **\"Yes\"**"
+      },
+      {
+        "source": "file: client/engine/src/engine.ts",
+        "quote": "if (hit.attrs.has('Lethal')) this.killPlayer(hit.seat, `${hit.label} is Lethal`);"
+      }
+    ],
+    "resolution": "attr.lethal.replaced states the general reading (replaced damage still counts as dealt) and the engine agrees. Question for the owner: \"the damage still counts as having been DEALT\" reads either as dealt to the player whatever the replacement does with it, or as dealt only where the replacement leaves the player as its recipient (rot, not Oorblak)."
+  }
+]

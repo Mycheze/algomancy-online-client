@@ -1,0 +1,90 @@
+[
+  {
+    "id": "F-U15-1",
+    "rule": "effects.static.permission",
+    "title": "The Bonesculptor's bin-play permission is built as an activated ability, so it reaches the stack and can be negated",
+    "summary": "R165 and R168 both say \"You may play one unit with no abilities from your bin each deployment\" is a standing permission that no one should be able to answer, and both record that the engine builds it as a free bounded activated ability that reaches the stack, where Containment Protocol can negate it. Both left it open (\"filed rather than fixed\"). The round-1 verifier's probe confirmed it still resolves as an activated item.",
+    "evidence": [
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "deployment\"* is not an effect anyone should be able to answer, but it is built"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "should simply be true reaches the stack and Containment Protocol can negate"
+      },
+      {
+        "file": "client/engine/src/cards/sets/batch-earth-c.ts",
+        "quote": "    type: 'activated', cost: {}, bounded: true, timing: 'deploy',"
+      }
+    ]
+  },
+  {
+    "id": "F-U15-2",
+    "rule": "effects.static.continuous.on-arrival",
+    "title": "A RAQ register note still warns that the Wispweaver Nectar Ridge guard may be green for the wrong reason",
+    "summary": "The RAQ register note on claim 1355633589890584636#1 says the Infernal Wispweaver guard is \"green partly for the wrong reason given the Sandstone defect\" and should be re-checked when the Sandstone case is fixed. The note on #0 says the Sandstone case was a fixture error and the engine was already right, so the warning is stale or the re-check is still owed. A test-and-register problem, not an engine bug.",
+    "evidence": [
+      {
+        "file": "client/ledgers/raq.ts",
+        "quote": "Filed as broken (CT-217); it was a fixture error"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "quote": "⚠ Green partly for the wrong reason given the Sandstone defect"
+      }
+    ]
+  },
+  {
+    "id": "F-U15-3",
+    "rule": "effects.replacement.once.one-applies",
+    "title": "Two Oorblaks both redirect one combat hit",
+    "summary": "replaceCombatDamage offers the damage to every holder in turn; with Piercing, the leftover the first Oorblak lets through is redirected again by a second Oorblak. The round-1 verifier's probe: 10 Piercing into two 2/4 Oorblaks, the player loses 2 and both die. Designer: 'replacement effects only apply once in an effect'; R104: a thing can only be replaced once. Expected: one Oorblak absorbs 4, the player loses 6. Same defect as F-U12-1 (there with a Blightsea Polyp); merge when ticketing.",
+    "evidence": [
+      {
+        "file": "client/engine/src/cards/sets/batch-earth-b.ts",
+        "quote": "//     effect\") — the engine's own loop moves on to the next holder — which is"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "quote": "    for (const { face, def, anchor } of this.donorFaces(holders, 'replaceCombatDamageToPlayer')) {"
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "quote": "replacement effects only apply once in an effect Unless a new trigger occurs"
+      }
+    ]
+  },
+  {
+    "id": "F-U15-4",
+    "title": "The Bonesculptor's permission is an activated ability",
+    "summary": "'You may play one unit with no abilities from your bin each deployment' is built as a free bounded activated ability and resolves as an activated item (probe), where R165/R168 say a permission should simply be true and not reach the stack. Already filed in R165 'Left open'.",
+    "evidence": [
+      {
+        "file": "client/engine/src/cards/sets/batch-earth-c.ts",
+        "quote": "    type: 'activated', cost: {}, bounded: true, timing: 'deploy',"
+      },
+      {
+        "file": "client/docs/digital-rules.md",
+        "quote": "- **The Bonesculptor's permission is an ACTIVATED ABILITY, so it reaches the"
+      }
+    ],
+    "rule": "effects.static.permission"
+  },
+  {
+    "id": "F-U15-5",
+    "title": "A second combat-damage redirect absorbs what the first passed through (two Oorblaks)",
+    "summary": "replaceCombatDamage offers the leftover of one holder's replacement to the next holder, so two Oorblaks both absorb a single Piercing hit (D at 28, both die) where the designer says a replacement applies once per event (D at 24, one dies). Already flagged by the rule as engineDiffers.",
+    "evidence": [
+      {
+        "file": "client/engine/src/engine.ts",
+        "quote": "for (const { face, def, anchor } of this.donorFaces(holders, 'replaceCombatDamageToPlayer')) {"
+      },
+      {
+        "file": "client/engine/test/387-raq-combat.test.ts",
+        "quote": "// face\" — and Caleb: \"replacement effects only apply once in an effect\", so"
+      }
+    ],
+    "rule": "effects.replacement.once.one-applies"
+  }
+]
