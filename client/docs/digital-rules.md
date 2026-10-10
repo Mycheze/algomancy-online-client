@@ -27135,3 +27135,38 @@ Borrower of Forms: "Erase target unit. I become an exact copy of that unit (I co
 - The copied text reads from the copy itself (holder = anchor = the copy). So "your OTHER units" excludes the copy, and its region and controller are the copy's.
 - `CopyRef.modText` is display only and says so. What the copied mods do is read off `CopyRef.mods`.
 - Guards: `engine/test/406-copied-augments.test.ts`. It covers Powerful copied, the bin after death, Graxxlid offered, used and then refused as already used, the address refused on a copy with no Graxxlid, Dreadspawn Horror's static, Mirage Scuttler's trigger, a no-mod copy unchanged, Suppression Field, Transmogrifant, a copy of a copy, and a copied Glowhaven Elder radiating plus Ancient One borrowing it. With the engine change reverted, 9 of its 11 tests fail. The two that still pass are the bin test and the refusal test, which are invariants that hold either way.
+
+## R342 — A spell token is cast from play, so it is played from somewhere other than the hand (extends R305)
+
+*(RAQ re-export 2026-10-10. Thread "[Solved] Spell Tokens vs Hand. Recall
+Spell Token / Token unit. Token Unit dying.", `_passer`, the point 1 added on
+2026-08-14: "Spell tokens are not in hand. They won't count for things like
+Dreadspawn Horror or Astral Tidewraith. Playing spell token like Fireball will
+trigger Stalwart Sentinel.")*
+
+### The ruling
+
+A spell token is never in a hand. Anything that counts the cards in a hand
+(Dreadspawn Horror, Astral Tidewraith) does not count it. Casting one is
+playing a spell (R305) from where it stands in play, so "when you play a unit
+or spell from anywhere other than your hand" hears it: Stalwart Sentinel takes
+its two +1/+1 counters. Proph prints the same words and draws.
+
+A token is still not a card (R133). Nothing that watches for a CARD being
+played hears a token cast, and an effect-created unit token was not played at
+all (R263 §7 is untouched).
+
+### How it is encoded
+
+- `StackItem.from` gained `'play'`, beside R49's `'hand' | 'cache' | 'bin'` and
+  R263's `'deck'`. `spellTokenItem` (apply.ts), the one place a spell token
+  becomes a stack item, stamps it. Before this the item carried no zone, and
+  both readers of the field (`playedFromElsewhere` for Stalwart Sentinel,
+  Proph's own `when`) read the blank as "not a play".
+- `'spellPlayed'` already passed `item.from` through, so the zone reaches the
+  listeners with no other change. `'cardPlayed'` is not fired for a token
+  (R129, R133), and a spell copy still drops `from` (R49).
+- The hand half needed nothing: spell tokens are entities in a region and
+  `hand` is a list of card names.
+- Guards: `engine/test/408-raq-new-threads.test.ts` "RAQ Spell Tokens vs Hand:"
+  (Dreadspawn Horror, Astral Tidewraith, Stalwart Sentinel, Proph).
