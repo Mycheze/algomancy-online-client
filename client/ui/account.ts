@@ -201,6 +201,18 @@ export const screen = (): 'auth' | 'profile' | null => view;
  * (main.ts nav-league / nav-admin): this screen is checked first in render. */
 export function leaveScreen(): void { view = null; }
 
+/** set by signInThenReturn: a successful sign-in goes back to the page that
+ * asked, not on to the profile */
+let returnAfterAuth = false;
+
+/** The rules review page's "Sign in to comment": the sign-in screen, and on
+ * success straight back to whatever the host repaints (that page, which is
+ * still open underneath), instead of the profile and its Return to Lobby. */
+export function signInThenReturn(): void {
+  view = 'auth'; authMode = 'login'; authMsg = ''; returnAfterAuth = true;
+  renderScreen();
+}
+
 /** the engine's own element list, so a new element never leaves this file
  * with a stale copy (the string type fits the server's weight records) */
 const ELEMENTS: readonly string[] = ALL_ELEMENTS;
@@ -417,6 +429,7 @@ function renderProfile(): void {
       <div class="accthbtns">
         <button data-btn="nav-league" title="the league: sign up, your matches, the standings">🏅 League</button>
         ${me.admin ? '<button data-btn="nav-admin" title="the operator dashboard">🛠 Admin</button>' : ''}
+        ${me.admin || me.badge?.judge ? '<button data-btn="nav-crreview" title="the comprehensive rules, open for review and comments">📜 Rules review</button>' : ''}
         <button data-btn="acct-refresh" title="reload from the server">↻</button>
         <button data-btn="acct-logout">Log out</button>
         <button class="primary" data-btn="acct-close">Return to Lobby</button>
@@ -837,6 +850,7 @@ async function submitAuth(): Promise<void> {
     // keep the home screen's name box in step rather than letting them differ
     localStorage.setItem('algoName', r.me.username);
     me = r.me;
+    if (returnAfterAuth) { returnAfterAuth = false; view = null; rerenderHost(); return; }
     view = 'profile';
     tab = 'stats';
     renderScreen();
@@ -883,7 +897,7 @@ export function handleButton(btn: HTMLElement): boolean {
 
   switch (b) {
     case 'acct-open-auth':
-      view = 'auth'; authMode = me ? 'login' : 'register'; authMsg = '';
+      view = 'auth'; authMode = me ? 'login' : 'register'; authMsg = ''; returnAfterAuth = false;
       renderScreen(); return true;
 
     case 'acct-open-profile':
@@ -900,7 +914,7 @@ export function handleButton(btn: HTMLElement): boolean {
       void submitAuth(); return true;
 
     case 'acct-close':
-      view = null; rerenderHost(); return true;
+      view = null; returnAfterAuth = false; rerenderHost(); return true;
 
     case 'acct-refresh':
       void refreshMe(); return true;

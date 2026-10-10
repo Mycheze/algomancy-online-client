@@ -4444,3 +4444,171 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
 .homedecks.lgnavjoin { border-color: var(--accent); color: var(--accent); }
 .lgbhowfold { background: none; border: 0; padding: 0; font: inherit; color: inherit; letter-spacing: inherit; text-transform: inherit; cursor: pointer; }
 .lgbhowfold:hover { color: var(--text); }
+
+/* ── THE RULES REVIEW PAGE (ui/crreview.ts, ui/crlayer.ts) ─────────────────
+   Three columns from 1180px (contents · document · comments margin); between
+   820 and 1179 — the iPad in portrait lays out at 980, there being no viewport
+   meta — the contents become a ☰ drawer; under 820 one column, and a rule's
+   💬 count opens its threads in a sheet instead of the margin.
+   The document is the renderer's own HTML. Its classes (rule, chip, meta, num,
+   res…) are generic, so every rule for them is scoped under .crdoc, with the
+   renderer's dark palette as custom properties on .crdoc alone. The client has
+   a global .res (a resource orb) — reset below. */
+.crpage { min-height: 100vh; }
+.crbar { position: sticky; top: 0; z-index: 30; display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  background: var(--panel); border-bottom: 1px solid var(--line); padding: 8px 16px; }
+.crbar button.on { border-color: var(--accent); color: var(--accent); }
+.crtitle { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
+.crtabs, .crfilters { display: flex; flex-wrap: wrap; gap: 4px; }
+.crtab.on { border-color: var(--accent); color: var(--accent); }
+.crgrow { flex: 1; }
+.crn { color: var(--dim); font-size: 12px; margin-left: 4px; white-space: nowrap; }
+.crnote { color: var(--dim); font-size: 12px; }
+.crtocbtn { display: none; }
+.crmsg:empty { display: none; }
+.crmsg { margin: 8px 16px; color: var(--danger); }
+.crdl { margin: 8px 16px; padding: 10px 14px; background: var(--panel2); border: 1px solid var(--line); border-radius: 6px;
+  display: flex; flex-direction: column; gap: 6px; }
+.crdl a { color: var(--accent); margin-left: 6px; }
+.crbody { display: grid; grid-template-columns: 230px minmax(0, 74ch) 300px; gap: 24px; justify-content: center;
+  padding: 16px 16px 120px; align-items: start; }
+.crtoc { position: sticky; top: 64px; max-height: calc(100vh - 80px); overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+.crtoc button { text-align: left; background: transparent; border: 0; border-left: 2px solid var(--line); border-radius: 0;
+  padding: 3px 8px; color: var(--dim); }
+.crtoc button:hover, .crtoc button.on { color: var(--text); border-left-color: var(--accent); }
+.crtoc .crtocsec { padding-left: 20px; font-size: 12px; }
+.crtochead { font-weight: 600; padding: 4px 8px; }
+.crcol { min-width: 0; }
+.crmargin { position: relative; min-width: 0; }
+.crbody.tab-comments .crmargin { display: none; }
+.crbody.tab-comments { grid-template-columns: 230px minmax(0, 90ch); }
+
+/* the threads */
+.crthread { position: absolute; left: 0; right: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 10px; font-size: 12.5px; box-shadow: 0 2px 6px rgba(0,0,0,.25); }
+.crthread.focus { border-color: var(--accent); }
+.crthread.crdone { padding: 0; border: 0; background: transparent; box-shadow: none; }
+.crdonebtn { width: 100%; text-align: left; font-size: 12px; color: var(--glow); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.crthread.crresolved { opacity: .8; }
+.crlistitem .crthread, .crsheet .crthread { position: static; margin: 6px 0 14px; }
+.crwhere { font-family: ui-monospace, monospace; color: var(--accent); margin-top: 10px; }
+.crc { padding: 4px 0; border-top: 1px solid var(--line); }
+.crc:first-of-type { border-top: 0; }
+.crby { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; }
+.crwhen { color: var(--dim); font-size: 11px; }
+.crtext { white-space: pre-wrap; overflow-wrap: anywhere; margin-top: 2px; }
+.cracts { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.cracts button, .croqbtns button { padding: 2px 8px; font-size: 12px; }
+.crstatus { margin-bottom: 4px; display: flex; flex-wrap: wrap; gap: 4px; }
+.crchipx { font-size: 11px; padding: 1px 6px; border-radius: 3px; border: 1px solid var(--line); color: var(--dim); }
+.crchipx.warn { color: var(--accent); border-color: var(--accent); }
+.crchipx.ok { color: var(--glow); border-color: var(--glow); }
+.crchipx.crans { color: var(--pending); border-color: var(--pending); }
+.crquote { margin: 0 0 6px; padding: 4px 8px; border-left: 3px solid var(--target); background: var(--panel2);
+  font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 7.5em; overflow: hidden; }
+.crquote.gone { text-decoration: line-through; color: var(--dim); border-left-color: var(--dim); }
+.croq { margin: 18px 0; }
+.croqn { font-weight: 600; color: var(--accent); }
+.croqans { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 6px 0; }
+.croqbtns { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+
+/* the decorations the page adds to the document */
+mark.crhl { background: rgba(224, 185, 60, .22); color: inherit; border-bottom: 2px solid var(--target); cursor: pointer; }
+mark.crhl.on { background: rgba(224, 185, 60, .45); }
+.crplus, .crcount { padding: 0 6px; font-size: 12px; line-height: 18px; margin-left: 6px; vertical-align: middle; }
+.crplus { color: var(--dim); }
+.crcount { color: var(--accent); border-color: var(--accent); }
+.crflash { animation: crflash 1.4s ease-out; }
+@keyframes crflash { from { background: rgba(224, 185, 60, .35); } to { background: transparent; } }
+
+/* the layer: the chip, the composer, the sheet */
+.crchip { position: fixed; z-index: 75; padding: 4px 10px; border-color: var(--accent); background: var(--panel);
+  box-shadow: 0 2px 8px rgba(0,0,0,.4); }
+.crscrim { position: fixed; inset: 0; z-index: 72; background: rgba(6,8,11,.55); }
+.crcomposer { position: fixed; right: 24px; top: 90px; width: min(420px, calc(100vw - 32px)); background: var(--panel);
+  border: 1px solid var(--accent); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.5); }
+.crcomposer textarea { width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 5px;
+  padding: 6px 8px; font: inherit; resize: vertical; }
+.crhead { font-size: 13px; }
+.crrow { display: flex; align-items: center; gap: 8px; }
+.crerr { color: var(--danger); }
+.crsheet { position: fixed; left: 0; right: 0; bottom: 0; max-height: 70vh; overflow-y: auto; background: var(--panel);
+  border-top: 1px solid var(--accent); border-radius: 10px 10px 0 0; padding: 12px 16px 24px; }
+
+@media (max-width: 1179px) {
+  .crtocbtn { display: inline-block; }
+  .crbody, .crbody.tab-comments { grid-template-columns: minmax(0, 1fr) 280px; }
+  .crbody.tab-comments { grid-template-columns: minmax(0, 1fr); }
+  .crtoc { display: none; position: fixed; top: 0; left: 0; bottom: 0; width: 280px; max-height: none; z-index: 40;
+    background: var(--panel); border-right: 1px solid var(--line); padding: 10px; }
+  .crtoc.open { display: flex; }
+}
+@media (max-width: 819px) {
+  .crbody { grid-template-columns: minmax(0, 1fr); }
+  .crmargin { display: none; }
+  .crcomposer { left: 0; right: 0; top: auto; bottom: 0; width: auto; border-radius: 10px 10px 0 0; }
+}
+
+/* the document itself: render.mjs's stylesheet, its dark palette, scoped */
+.crdoc {
+  --surface: #1a2026; --fg: #e3e8ec; --muted: #9aa6b0; --line: #2e3740;
+  --accent: #7fb6e0; --accent-soft: #1d3142;
+  --ok: #6fcf9c; --ok-bg: #173327; --warn: #e6b75c; --warn-bg: #3a2d12; --bad: #f08a8d; --bad-bg: #3c1c1e;
+  --c-printed: #82b3dd; --c-designer: #c3a3ec; --c-mixed: #8cc6bf; --c-owner: #e6ac63; --c-engine: #f08a8d;
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color: var(--fg); font: 15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-user-select: text; user-select: text;
+}
+.crdoc h2 { font: 600 22px/1.3 Georgia, serif; margin: 28px 0 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.crdoc h2:first-child { margin-top: 0; }
+.crdoc h3 { font-size: 16px; margin: 28px 0 8px; }
+.crdoc h4 { font-size: 15px; margin: 20px 0 6px; }
+.crdoc .front { border: 1px solid var(--line); background: var(--surface); padding: 4px 18px; border-radius: 6px; font-size: 14.5px; }
+.crdoc code, .crdoc .num, .crdoc .meta, .crdoc .tb, .crdoc .sk { font-family: var(--font-mono); }
+.crdoc code { font-size: .88em; background: var(--accent-soft); padding: 1px 4px; border-radius: 3px; overflow-wrap: anywhere; }
+.crdoc .sym { font: 500 .85em var(--font-mono); background: var(--accent-soft); padding: 0 3px; border-radius: 3px; white-space: nowrap; }
+.crdoc .figs { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 18px 0; }
+.crdoc .fig { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; }
+.crdoc .fig b { display: block; font: 600 24px/1.2 var(--font-mono); }
+.crdoc .fig span { color: var(--muted); font-size: 12.5px; }
+.crdoc .rule { padding: 10px 0 12px; border-bottom: 1px solid var(--line); }
+.crdoc .rule.r-sub { padding-left: 22px; }
+.crdoc .rule.tomb .rt { color: var(--muted); }
+.crdoc .rt { margin: 0; }
+.crdoc .num { font-weight: 500; color: var(--accent); margin-right: 4px; font-size: .92em; text-decoration: none; }
+.crdoc .ex { margin: 6px 0 0; font-style: italic; color: var(--muted); font-size: 14px; }
+.crdoc .exl { font-style: normal; font-weight: 500; }
+.crdoc .tb { font-style: normal; font-size: 11.5px; overflow-wrap: anywhere; }
+.crdoc .differs { font-size: 12.5px; font-weight: 500; color: var(--bad); background: var(--bad-bg); padding: 1px 6px; border-radius: 3px; }
+.crdoc .differs a { color: inherit; }
+.crdoc .tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px; }
+.crdoc .chip { font: 500 11.5px/1 system-ui, sans-serif; padding: 4px 7px; border-radius: 3px; border: 1px solid currentColor; letter-spacing: .02em; }
+.crdoc .b-printed { color: var(--c-printed); } .crdoc .b-designer { color: var(--c-designer); } .crdoc .b-mixed { color: var(--c-mixed); }
+.crdoc .b-owner { color: var(--c-owner); } .crdoc .b-engine { color: var(--c-engine); }
+.crdoc .v-confirmed { color: var(--ok); background: var(--ok-bg); border-color: transparent; }
+.crdoc .v-partial, .crdoc .v-untested { color: var(--warn); background: var(--warn-bg); border-color: transparent; }
+.crdoc .v-contradicted, .crdoc .v-unsupported { color: var(--bad); background: var(--bad-bg); border-color: transparent; }
+.crdoc .v-none { color: var(--muted); }
+.crdoc .k-a, .crdoc .k-d { color: var(--c-designer); } .crdoc .k-b { color: var(--c-engine); } .crdoc .k-c { color: var(--c-owner); }
+.crdoc .k-f { color: var(--warn); } .crdoc .k-g { color: var(--muted); }
+.crdoc .meta { font-size: 11.5px; color: var(--muted); }
+.crdoc .meta a, .crdoc a.meta, .crdoc a { color: var(--accent); }
+.crdoc .vnote { margin: 6px 0 0; font-size: 13.5px; background: var(--warn-bg); padding: 6px 10px; border-radius: 4px; }
+.crdoc details { margin-top: 6px; }
+.crdoc summary { cursor: pointer; font-size: 13px; color: var(--accent); }
+.crdoc ul.src { margin: 6px 0 0; padding-left: 18px; font-size: 13px; overflow-wrap: anywhere; }
+.crdoc .sk { font-size: 11.5px; color: var(--muted); margin-right: 4px; }
+.crdoc q { quotes: "\201C" "\201D"; }
+.crdoc .disc { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 10px 14px; margin: 10px 0; }
+.crdoc .disc p { margin: 4px 0; }
+.crdoc .dh { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+/* render's discrepancy resolution line is <p class="res">; the client's .res is a 20px orb */
+.crdoc .res { width: auto; height: auto; border: 0; border-radius: 0; background: none; cursor: auto; font-size: 14px; }
+.crdoc .count { font: 500 13px var(--font-mono); color: var(--muted); }
+.crdoc .legend { display: flex; flex-wrap: wrap; gap: 8px; font-size: 13px; margin: 8px 0; }
+.crdoc .gloss dt { font-weight: 600; margin-top: 10px; }
+.crdoc .gloss dd { margin: 2px 0 0 18px; }
+.crdoc .tw { overflow-x: auto; }
+.crdoc table { border-collapse: collapse; font-size: 13.5px; margin: 8px 0; }
+.crdoc th, .crdoc td { border-bottom: 1px solid var(--line); padding: 5px 10px 5px 0; text-align: left; vertical-align: top; }

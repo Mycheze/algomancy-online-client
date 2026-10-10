@@ -126,6 +126,9 @@ import * as cb from './cards.ts';
 import * as meta from './meta.ts';
 import * as lg from './league.ts';
 import * as admin from './admin.ts';
+// the Comprehensive Rules review page (?crreview), and its layer beside #app
+import * as crr from './crreview.ts';
+import { installCrLayer } from './crlayer.ts';
 import * as lob from './lobby.ts';
 import * as crp from './customrulespanel.ts';
 import * as sc from './singlecard.ts';
@@ -8765,6 +8768,9 @@ function renderHome(): void {
   if (!acct.token()) dk.resetCollection();
   // an open account screen (sign-in / profile) owns the page instead
   if (acct.screen()) { acct.renderScreen(); return; }
+  // the rules review page: right after the account screen, because its
+  // "Sign in to comment" goes through that screen and comes straight back
+  if (crr.screen()) { crr.renderScreen(); return; }
   // …and so does the deck collection
   // …and the card browser, which is checked FIRST because it can be opened
   // from ON TOP of the deck page (deckbuilding mode leaves that page open)
@@ -10428,6 +10434,9 @@ function handleButton(btn: HTMLElement, e: MouseEvent): void {
   // offers both; the home header offers the league while one is visible.
   if (btn.dataset['btn'] === 'nav-league') { acct.leaveScreen(); lg.openLeague(); return; }
   if (btn.dataset['btn'] === 'nav-admin') { acct.leaveScreen(); admin.openAdmin(); return; }
+  if (btn.dataset['btn'] === 'nav-crreview') { acct.leaveScreen(); crr.openReview(); return; }
+  // the rules review page owns everything prefixed cr-
+  if (crr.handleButton(btn)) return;
   // accounts own everything prefixed acct- (sign-in, profile, friends)
   if (mm.handleButton(btn)) return;
   if (acct.handleButton(btn)) return;
@@ -11481,6 +11490,8 @@ lg.initLeague({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 // route it calls 404s to a non-admin, so this costs a signed-out browser one
 // refused fetch and nothing else.
 admin.initAdmin({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
+// the rules review page, at ?crreview=1 or from a judge's or admin's profile
+crr.initCrReview({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 // BL-01 — the matchmaking queue. It borrows the home screen's deck picker
 // rather than growing a second one: which decks are offered for constructed is
 // a rule with one home (deckPickerHtml), and a queue that offered a different
@@ -11504,6 +11515,8 @@ installLegal();
 // the Report form: its own layer beside #app, on every page — the pill off
 // the board, the rail button on it (ui/report.ts)
 installReport(reportOpenChanged);
+// the rules review page's selection chip, comment composer and sheet (ui/crlayer.ts)
+installCrLayer();
 // tablets and foldables (2026-09-27): html.touch, the one-shot click swallow
 // a peek or a drag needs, and the taps that stand in for Ctrl and hover
 // (ui/touch.ts)
