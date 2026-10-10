@@ -491,7 +491,14 @@ function railCounts(): { byView: Map<string, number>; bySec: Map<string, number>
 
 const countHtml = (n: number | undefined): string => (n ? ` <span class="crn">💬 ${n}</span>` : '');
 
+/** the rail; under 1180px it is a drawer drawn OVER the toolbar's ☰ button,
+ * so it carries its own way to close (found driving the page at 980, 2026-10-10) */
 function tocHtml(): string {
+  const entries = tocEntriesHtml();
+  return entries ? `<button class="crtocclose" data-btn="cr-toc">✕ Close contents</button>${entries}` : '';
+}
+
+function tocEntriesHtml(): string {
   if (!doc || (tab !== 'doc' && tab !== 'annexD')) return '';
   const { byView, bySec } = railCounts();
   const secs = (e: { sections?: { num: string; title: string }[] }, viewId: string): string =>
@@ -585,8 +592,26 @@ function downloadsHtml(): string {
   if (ch && (tab === 'doc' || tab === 'annexD')) rows.push(`<div><b>This chapter</b> ${three(`ch:${ch}`)}</div>`);
   if (sec && (tab === 'doc' || tab === 'annexD')) rows.push(`<div><b>This section (${esc(sec)})</b> ${three(`sec:${sec}`)}</div>`);
   rows.push(`<div><b>Annex D</b> ${a('annexD', 'md')} · <b>Discrepancy report</b> ${a('disc', 'md')} · <b>Owner questions</b> ${a('oq', 'md')} · <b>Changelog</b> ${a('changelog', 'md')}</div>`);
-  rows.push(`<div><b>Comments</b> ${a('comments', 'md')}${you.admin ? ` ${a('comments', 'jsonl')} <span class="crnote">(raw journal, admins only)</span>` : ''}</div>`);
+  // the raw journal is a button, not a link: a link sends no bearer token, so
+  // the server (which 404s it to anyone but an admin) would refuse the admin too
+  rows.push(`<div><b>Comments</b> ${a('comments', 'md')}${you.admin ? ` <button class="crlink" data-btn="cr-dljsonl">.jsonl</button> <span class="crnote">(raw journal, admins only)</span>` : ''}</div>`);
   return `<div class="crdl">${rows.join('')}<div class="crnote">A section or chapter saved as .html is a page of its own: its links to other sections do not work there.</div></div>`;
+}
+
+/** the admin's raw journal: fetched with the token, then saved as a file */
+async function saveJournal(): Promise<void> {
+  try {
+    const res = await fetch('/api/cr/download?part=comments&fmt=jsonl', { headers: acct.authHeaders(false) });
+    if (!res.ok) { showError(`could not download the journal (${res.status})`); return; }
+    const url = URL.createObjectURL(await res.blob());
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'cr-comments.jsonl';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  } catch { showError('could not download the journal'); }
 }
 
 /** the section nearest the top of the window, for "This section" */
@@ -900,6 +925,7 @@ export function handleButton(btn: HTMLElement): boolean {
       btn.classList.toggle('on', dlOpen);
       return true;
     }
+    case 'cr-dljsonl': void saveJournal(); return true;
     case 'cr-signin': resetCrLayer(); acct.signInThenReturn(); return true;
     case 'cr-filter': {
       const f = FILTERS.find(([k]) => k === btn.dataset['filter']);

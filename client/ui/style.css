@@ -4470,6 +4470,7 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
 .crdl { margin: 8px 16px; padding: 10px 14px; background: var(--panel2); border: 1px solid var(--line); border-radius: 6px;
   display: flex; flex-direction: column; gap: 6px; }
 .crdl a { color: var(--accent); margin-left: 6px; }
+.crdl .crlink { background: none; border: 0; padding: 0; margin-left: 6px; color: var(--accent); font: inherit; cursor: pointer; text-decoration: underline; }
 .crbody { display: grid; grid-template-columns: 230px minmax(0, 74ch) 300px; gap: 24px; justify-content: center;
   padding: 16px 16px 120px; align-items: start; }
 .crtoc { position: sticky; top: 64px; max-height: calc(100vh - 80px); overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
@@ -4478,6 +4479,7 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
 .crtoc button:hover, .crtoc button.on { color: var(--text); border-left-color: var(--accent); }
 .crtoc .crtocsec { padding-left: 20px; font-size: 12px; }
 .crtochead { font-weight: 600; padding: 4px 8px; }
+.crtoc .crtocclose { display: none; }
 .crcol { min-width: 0; }
 .crmargin { position: relative; min-width: 0; }
 .crbody.tab-comments .crmargin { display: none; }
@@ -4543,6 +4545,7 @@ mark.crhl.on { background: rgba(224, 185, 60, .45); }
   .crtoc { display: none; position: fixed; top: 0; left: 0; bottom: 0; width: 280px; max-height: none; z-index: 40;
     background: var(--panel); border-right: 1px solid var(--line); padding: 10px; }
   .crtoc.open { display: flex; }
+  .crtoc .crtocclose { display: block; border-left: 0; margin-bottom: 6px; color: var(--accent); }
 }
 @media (max-width: 819px) {
   .crbody { grid-template-columns: minmax(0, 1fr); }

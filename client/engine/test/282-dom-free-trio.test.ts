@@ -23,6 +23,8 @@
  *    is proved DOM-free down its WHOLE import chain rather than by its name:
  *    it imports nothing at runtime, and every file its types reach is walked
  *    and scanned
+ * §5 ⭐ the rules review page's wire contract, ui/crtypes.ts (2026-10-10), is
+ *    proved TYPES ONLY: no import, no value, no DOM name in code
  *
  * Textual, on purpose: the point is to catch an import that WOULD compile.
  */
@@ -77,6 +79,16 @@ const PASS = ['passrelease.ts'] as const;
  */
 const PACE = ['pace.ts'] as const;
 
+/**
+ * The rules review page's wire contract (2026-10-10). The server's
+ * /api/cr/* routes and the page have to agree on the shape of a comment, an
+ * anchor and the review document, and a second copy of those types on the
+ * server is the drift the search trio was let in to avoid. It is TYPES ONLY,
+ * so it can carry nothing into the server at runtime: §5 proves that, rather
+ * than the name.
+ */
+const WIRE = ['crtypes.ts'] as const;
+
 const readUi = (f: string): string => readFileSync(new URL(f, UI), 'utf8');
 
 /* ══ §1 — no DOM in the three files the server compiles ════════════════ */
@@ -122,7 +134,7 @@ test('BL-41 §2 ⭐ server/ imports only the search trio from ui/', () => {
   const files = readdirSync(SERVER).filter(f => f.endsWith('.ts'));
   assert.ok(files.length > 20, 'non-vacuous: the server really was scanned');
 
-  const allowed = new Set<string>([...TRIO, ...PASS, ...PACE]);
+  const allowed = new Set<string>([...TRIO, ...PASS, ...PACE, ...WIRE]);
   let sawTheEdge = false;
 
   for (const f of files) {
@@ -135,7 +147,8 @@ test('BL-41 §2 ⭐ server/ imports only the search trio from ui/', () => {
         allowed.has(target),
         `server/${f} imports ui/${target}. The server may reach into ui/ for the `
         + `card query language and the deck format ONLY (${TRIO.join(', ')}), `
-        + `plus the standing pass's release list (${PASS.join(', ')}) and the recap tempo (${PACE.join(', ')}). `
+        + `plus the standing pass's release list (${PASS.join(', ')}), the recap tempo (${PACE.join(', ')}) `
+        + `and the rules review's wire types (${WIRE.join(', ')}). `
         + 'Importing anything else makes the game server depend on the browser page.',
       );
     }
@@ -209,5 +222,29 @@ test('BL-41 §4 ⭐ ui/passrelease.ts and ui/pace.ts import nothing at runtime, 
       }
     }
     assert.ok(seen.size >= 2, `non-vacuous: the chain from ui/${f} was walked (${seen.size} files)`);
+  }
+});
+
+/* ══ §5 — the review page's wire contract is types and nothing else ═══════ */
+
+test('BL-41 §5 ⭐ ui/crtypes.ts imports nothing, declares only types, and names no DOM', () => {
+  const DOM = [
+    'document', 'window', 'localStorage', 'sessionStorage', 'navigator',
+    'HTMLElement', 'HTMLInputElement', 'querySelector', 'addEventListener',
+    'createElement', 'innerHTML', 'textContent', 'requestAnimationFrame',
+  ];
+  for (const f of WIRE) {
+    const body = code(readUi(f));
+    assert.ok(/export (type|interface) /.test(body), `non-vacuous: ui/${f}'s declarations were found`);
+    assert.doesNotMatch(body, /^\s*import\s/m, `ui/${f} imports something: the wire contract stands alone`);
+    assert.doesNotMatch(body, /^export\s[^;]*\sfrom\s+'/m, `ui/${f} re-exports from another module`);
+    // every top-level statement is a type or an interface: no value can ride into server/
+    const tops = [...body.matchAll(/^(export\s+)?(\w+)/gm)].map(m => m[2]);
+    for (const t of tops) {
+      assert.ok(t === 'type' || t === 'interface', `ui/${f} declares a top-level \`${t}\` — the wire contract is types only`);
+    }
+    for (const id of DOM) {
+      assert.ok(!new RegExp(`\\b${id}\\b`).test(body), `ui/${f} names \`${id}\` in code — it compiles into server/, which is built without DOM`);
+    }
   }
 });

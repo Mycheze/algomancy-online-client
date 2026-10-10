@@ -75,6 +75,15 @@ test('§2 every cr- button the page or the layer draws has a case, and every cas
   assert.match(fn, /if \(!b\.startsWith\('cr-'\)\) return false;/, 'it claims its own prefix and nothing else');
 });
 
+test('§2b under 1180px the contents drawer covers the toolbar, so it draws its own close button', () => {
+  const p = code(page);
+  assert.match(p, /<button class="crtocclose" data-btn="cr-toc">/, 'the drawer carries a cr-toc button');
+  assert.match(p, /function tocHtml\(\): string \{\s*const entries = tocEntriesHtml\(\);/, 'on every paint of the rail');
+  const css = src('style.css');
+  assert.match(css, /\.crtoc \.crtocclose \{ display: none; \}/, 'hidden where the rail is a column');
+  assert.match(css, /@media \(max-width: 1179px\) \{[^@]*\.crtoc \.crtocclose \{ display: block;/, 'shown where it is a drawer');
+});
+
 test('§3 the layer takes its own clicks in capture and stops them, with its own scrim', () => {
   const l = code(layer);
   assert.match(l, /document\.addEventListener\('click', [\s\S]*?\}, \{ capture: true \}\);/);
@@ -137,6 +146,16 @@ test('§5 the page draws edit and resolve from the server, and reads no local cl
   assert.ok(admins.length >= 2, 'positive control: the admin-only controls were found');
   assert.deepEqual([...new Set(admins)], ['you'], 'admin-only controls are drawn from the server\'s own `you`, nothing else');
   assert.ok(!/localStorage|sessionStorage/.test(p + code(layer)), 'no browser storage (267 would need a line for it)');
+});
+
+test('§5b the admin journal goes out with the token: a bare link would carry none and the server 404s it', () => {
+  const p = code(page);
+  // the server reads the bearer header only (api-util tokenOf), so an <a href>
+  // to the journal 404s for the admin too: found driving the page, 2026-10-10
+  assert.ok(!/a\('comments', 'jsonl'\)|fmt=jsonl[^']*" download/.test(p), 'no plain link to the jsonl');
+  assert.match(p, /data-btn="cr-dljsonl"/, 'a button draws it');
+  assert.match(p, /fetch\('\/api\/cr\/download\?part=comments&fmt=jsonl', \{ headers: acct\.authHeaders\(false\) \}\)/,
+    'and the button fetches it with the account\'s headers');
 });
 
 test('§6 the URL is written with replaceState, never pushState', () => {
