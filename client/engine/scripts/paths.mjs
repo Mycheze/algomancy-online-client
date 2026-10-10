@@ -172,6 +172,11 @@ export const CR_SOURCE_CLASSIFICATION = join(CR_DIR, 'source-classification.json
 /** one drafting unit's source pack (`<unit>/`), written by `cr/pack.mjs`.
  *  Gitignored, inside the build dir */
 export const CR_PACKS_DIR = join(CR_BUILD_DIR, 'packs');
+/** the rules review page's data as a file, written ONLY by a debug flag of
+ *  `cr/render.mjs`. The page never reads it: the game server builds the same
+ *  object in-process (`buildReview`) from the committed records. Gitignored,
+ *  inside the build dir */
+export const CR_REVIEW_DEBUG_JSON = join(CR_BUILD_DIR, 'review.json');
 /** the illustrated Manual: 23 sheets, sheets 2–22 two-page spreads */
 export const MANUAL_PDF = join(RULES_DIR, 'Algomancy-Manual.pdf');
 /** the 2023-07 Rulebook: one page per sheet, no printed page numbers */

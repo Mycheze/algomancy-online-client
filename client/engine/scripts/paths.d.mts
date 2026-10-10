@@ -48,6 +48,8 @@ export const CR_PRINTED_PAGES: string;
 export const CR_UNITS: string;
 export const CR_SOURCE_CLASSIFICATION: string;
 export const CR_PACKS_DIR: string;
+/** gitignored debug dump of buildReview(); the server builds it in-process */
+export const CR_REVIEW_DEBUG_JSON: string;
 export const MANUAL_PDF: string;
 export const RULEBOOK_PDF: string;
 /** the engine's source and the four test directories */
