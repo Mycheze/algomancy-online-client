@@ -1,0 +1,590 @@
+{
+  "title": "Algomancy Comprehensive Rules",
+  "subtitle": "Unofficial. Generated from this project's digital client.",
+  "edition": {
+    "name": "First generation (draft)",
+    "effective": "2026-10-10",
+    "engineCommit": "76d01fa",
+    "note": "set by hand at release; the renderer never reads git, so a commit does not change the document"
+  },
+  "chapters": [
+    {
+      "num": "1",
+      "title": "Game Concepts",
+      "sections": [
+        {
+          "num": "100",
+          "key": "concepts.general",
+          "title": "General"
+        },
+        {
+          "num": "101",
+          "key": "concepts.golden-rules",
+          "title": "Golden Rules"
+        },
+        {
+          "num": "102",
+          "key": "concepts.players",
+          "title": "Players, Ownership and Control"
+        },
+        {
+          "num": "103",
+          "key": "concepts.starting",
+          "title": "Starting the Game"
+        },
+        {
+          "num": "104",
+          "key": "concepts.ending",
+          "title": "Ending the Game"
+        },
+        {
+          "num": "105",
+          "key": "concepts.elements",
+          "title": "Elements and Affinity"
+        },
+        {
+          "num": "106",
+          "key": "concepts.resources",
+          "title": "Resources"
+        },
+        {
+          "num": "107",
+          "key": "concepts.numbers",
+          "title": "Numbers, X and Symbols"
+        },
+        {
+          "num": "108",
+          "key": "concepts.cards",
+          "title": "Cards, Tokens, Faces and Copies"
+        },
+        {
+          "num": "109",
+          "key": "concepts.abilities",
+          "title": "Abilities"
+        },
+        {
+          "num": "110",
+          "key": "concepts.targets",
+          "title": "Targets"
+        },
+        {
+          "num": "111",
+          "key": "concepts.costs",
+          "title": "Costs"
+        },
+        {
+          "num": "112",
+          "key": "concepts.life",
+          "title": "Life, Damage, Rot and Debt"
+        },
+        {
+          "num": "113",
+          "key": "concepts.timestamps",
+          "title": "Timestamps"
+        }
+      ]
+    },
+    {
+      "num": "2",
+      "title": "Parts of a Card",
+      "sections": [
+        {
+          "num": "200",
+          "key": "card.general",
+          "title": "General"
+        },
+        {
+          "num": "201",
+          "key": "card.name",
+          "title": "Name"
+        },
+        {
+          "num": "202",
+          "key": "card.cost-orb",
+          "title": "Cost Orb and Pips"
+        },
+        {
+          "num": "203",
+          "key": "card.banner",
+          "title": "Alternative-Cost Banner"
+        },
+        {
+          "num": "204",
+          "key": "card.type-line",
+          "title": "Type Line"
+        },
+        {
+          "num": "205",
+          "key": "card.text-box",
+          "title": "Text Box and Bracketed Text"
+        },
+        {
+          "num": "206",
+          "key": "card.stats",
+          "title": "Power and Defense"
+        },
+        {
+          "num": "207",
+          "key": "card.timing",
+          "title": "Timing Glyph"
+        },
+        {
+          "num": "208",
+          "key": "card.augment-box",
+          "title": "Augment Box"
+        },
+        {
+          "num": "209",
+          "key": "card.complexity",
+          "title": "Complexity Glyph"
+        }
+      ]
+    },
+    {
+      "num": "3",
+      "title": "Card Types",
+      "sections": [
+        {
+          "num": "300",
+          "key": "types.general",
+          "title": "General"
+        },
+        {
+          "num": "301",
+          "key": "types.units",
+          "title": "Units"
+        },
+        {
+          "num": "302",
+          "key": "types.spells",
+          "title": "Spells"
+        },
+        {
+          "num": "303",
+          "key": "types.spell-units",
+          "title": "Spell Units"
+        },
+        {
+          "num": "304",
+          "key": "types.tokens",
+          "title": "Tokens"
+        },
+        {
+          "num": "305",
+          "key": "types.mods",
+          "title": "Modifications"
+        }
+      ]
+    },
+    {
+      "num": "4",
+      "title": "Zones",
+      "sections": [
+        {
+          "num": "400",
+          "key": "zones.general",
+          "title": "General"
+        },
+        {
+          "num": "401",
+          "key": "zones.deck",
+          "title": "Deck"
+        },
+        {
+          "num": "402",
+          "key": "zones.hand",
+          "title": "Hand"
+        },
+        {
+          "num": "403",
+          "key": "zones.cache",
+          "title": "Cache"
+        },
+        {
+          "num": "404",
+          "key": "zones.play",
+          "title": "Play"
+        },
+        {
+          "num": "405",
+          "key": "zones.bin",
+          "title": "Bin"
+        },
+        {
+          "num": "406",
+          "key": "zones.stack",
+          "title": "The Stack"
+        },
+        {
+          "num": "407",
+          "key": "zones.erased",
+          "title": "Erased Pile"
+        },
+        {
+          "num": "408",
+          "key": "zones.recycle",
+          "title": "Recycling"
+        },
+        {
+          "num": "409",
+          "key": "zones.pack",
+          "title": "The Pack"
+        },
+        {
+          "num": "410",
+          "key": "zones.changes",
+          "title": "Zone Changes"
+        }
+      ]
+    },
+    {
+      "num": "5",
+      "title": "Turn Structure",
+      "sections": [
+        {
+          "num": "500",
+          "key": "turn.general",
+          "title": "General"
+        },
+        {
+          "num": "501",
+          "key": "turn.planning",
+          "title": "Planning Phase"
+        },
+        {
+          "num": "502",
+          "key": "turn.resource",
+          "title": "Resource Step"
+        },
+        {
+          "num": "503",
+          "key": "turn.draw",
+          "title": "Draw and Draft Step"
+        },
+        {
+          "num": "504",
+          "key": "turn.haste",
+          "title": "Haste Step"
+        },
+        {
+          "num": "505",
+          "key": "turn.battle",
+          "title": "Battle Phase"
+        },
+        {
+          "num": "506",
+          "key": "turn.regroup",
+          "title": "Regroup Phase"
+        },
+        {
+          "num": "507",
+          "key": "turn.deploy",
+          "title": "Deployment Phase"
+        },
+        {
+          "num": "508",
+          "key": "turn.initiative",
+          "title": "Passing the Initiative"
+        }
+      ]
+    },
+    {
+      "num": "6",
+      "title": "Regions, Formations and Battle",
+      "sections": [
+        {
+          "num": "600",
+          "key": "combat.general",
+          "title": "General"
+        },
+        {
+          "num": "601",
+          "key": "combat.regions",
+          "title": "Regions"
+        },
+        {
+          "num": "602",
+          "key": "combat.formations",
+          "title": "Formations"
+        },
+        {
+          "num": "603",
+          "key": "combat.columns",
+          "title": "Columns, Adjacency and Edges"
+        },
+        {
+          "num": "604",
+          "key": "combat.attack",
+          "title": "Attacking"
+        },
+        {
+          "num": "605",
+          "key": "combat.attack-window",
+          "title": "Attack Window"
+        },
+        {
+          "num": "606",
+          "key": "combat.blocks",
+          "title": "Blocking"
+        },
+        {
+          "num": "607",
+          "key": "combat.block-window",
+          "title": "Block Window"
+        },
+        {
+          "num": "608",
+          "key": "combat.damage",
+          "title": "Combat Damage Step"
+        },
+        {
+          "num": "609",
+          "key": "combat.after",
+          "title": "After Combat"
+        },
+        {
+          "num": "610",
+          "key": "combat.counterattack",
+          "title": "Counterattacks and Later Battle Rounds"
+        }
+      ]
+    },
+    {
+      "num": "7",
+      "title": "Spells, Abilities and Effects",
+      "sections": [
+        {
+          "num": "700",
+          "key": "effects.general",
+          "title": "General"
+        },
+        {
+          "num": "701",
+          "key": "effects.playing",
+          "title": "Playing and Applying"
+        },
+        {
+          "num": "702",
+          "key": "effects.casting",
+          "title": "Casting Spells"
+        },
+        {
+          "num": "703",
+          "key": "effects.priority",
+          "title": "The Stack and Priority"
+        },
+        {
+          "num": "704",
+          "key": "effects.resolution",
+          "title": "Resolution and Fizzling"
+        },
+        {
+          "num": "705",
+          "key": "effects.activated",
+          "title": "Activated Abilities"
+        },
+        {
+          "num": "706",
+          "key": "effects.triggered",
+          "title": "Triggered Abilities"
+        },
+        {
+          "num": "707",
+          "key": "effects.static",
+          "title": "Static Abilities"
+        },
+        {
+          "num": "708",
+          "key": "effects.replacement",
+          "title": "Replacement and Prevention Effects"
+        },
+        {
+          "num": "709",
+          "key": "effects.continuous",
+          "title": "Continuous Effects and Timestamps"
+        },
+        {
+          "num": "710",
+          "key": "effects.copies",
+          "title": "Copies and Faces"
+        },
+        {
+          "num": "711",
+          "key": "effects.control",
+          "title": "Control Change"
+        },
+        {
+          "num": "712",
+          "key": "effects.stripping",
+          "title": "Stripping and Suppression"
+        },
+        {
+          "num": "713",
+          "key": "effects.state-checks",
+          "title": "State Checks"
+        },
+        {
+          "num": "714",
+          "key": "effects.last-known",
+          "title": "Last-Known State"
+        },
+        {
+          "num": "720",
+          "key": "effects.mods",
+          "title": "Modifications, General"
+        },
+        {
+          "num": "721",
+          "key": "effects.augment",
+          "title": "Augment"
+        },
+        {
+          "num": "722",
+          "key": "effects.graft",
+          "title": "Graft"
+        },
+        {
+          "num": "723",
+          "key": "effects.virus",
+          "title": "Virus"
+        },
+        {
+          "num": "724",
+          "key": "effects.modular",
+          "title": "Modular"
+        }
+      ]
+    },
+    {
+      "num": "8",
+      "title": "Keywords",
+      "sections": [
+        {
+          "num": "800",
+          "key": "keywords.general",
+          "title": "General"
+        },
+        {
+          "num": "801",
+          "key": "keywords.actions",
+          "title": "Keyword Actions"
+        },
+        {
+          "num": "802",
+          "key": "keywords.attributes",
+          "title": "Attributes",
+          "slots": [
+            {
+              "key": "attr.general",
+              "title": "General",
+              "order": 1
+            }
+          ],
+          "generate": {
+            "from": "attrs",
+            "key": "attr.{slug}",
+            "title": "{name}",
+            "orderStart": 2,
+            "note": "one rule per attribute, in the engine's Attr order (extract enums.attrs); never typed by hand"
+          }
+        },
+        {
+          "num": "803",
+          "key": "keywords.abilities",
+          "title": "Other Keyword Abilities"
+        }
+      ]
+    },
+    {
+      "num": "9",
+      "title": "Multiplayer and Formats",
+      "sections": [
+        {
+          "num": "900",
+          "key": "formats.general",
+          "title": "General"
+        },
+        {
+          "num": "901",
+          "key": "formats.constructed",
+          "title": "Constructed"
+        },
+        {
+          "num": "902",
+          "key": "formats.draft",
+          "title": "Draft and Cube"
+        },
+        {
+          "num": "903",
+          "key": "formats.ffa",
+          "title": "Free-for-All"
+        },
+        {
+          "num": "904",
+          "key": "formats.teams",
+          "title": "Teams"
+        },
+        {
+          "num": "905",
+          "key": "formats.intent",
+          "title": "Intent Cards"
+        }
+      ]
+    }
+  ],
+  "annexD": {
+    "title": "Annex D — Digital Play Conventions",
+    "precedence": "These are the conventions of this digital client: how it times, shows and confirms the game, where a table of players would simply agree. They are not rules of Algomancy. Where a convention here and a rule in the main document both speak to the game itself, the main document governs. Where they concern only how the client presents, times or confirms play, this annex governs.",
+    "sections": [
+      {
+        "num": "D1",
+        "key": "annexd.general",
+        "title": "General and Precedence"
+      },
+      {
+        "num": "D2",
+        "key": "annexd.auto-pass",
+        "title": "Priority and Auto-Pass"
+      },
+      {
+        "num": "D3",
+        "key": "annexd.clocks",
+        "title": "Clocks"
+      },
+      {
+        "num": "D4",
+        "key": "annexd.undo",
+        "title": "Undo"
+      },
+      {
+        "num": "D5",
+        "key": "annexd.recap",
+        "title": "Recap and Playback"
+      },
+      {
+        "num": "D6",
+        "key": "annexd.reveal",
+        "title": "Reveal Timing of Simultaneous Steps"
+      },
+      {
+        "num": "D7",
+        "key": "annexd.confirm",
+        "title": "Confirmations and Misclicks"
+      },
+      {
+        "num": "D8",
+        "key": "annexd.modes",
+        "title": "Tutorial and Single-Card Modes"
+      }
+    ]
+  },
+  "annexP": {
+    "title": "Annex P — Provenance and Coverage"
+  },
+  "glossary": {
+    "title": "Glossary"
+  },
+  "changelog": {
+    "title": "Changelog"
+  }
+}

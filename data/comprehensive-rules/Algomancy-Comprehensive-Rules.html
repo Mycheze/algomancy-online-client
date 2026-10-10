@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Algomancy Comprehensive Rules</title>
+<style>
+:root {
+  --bg: #f6f7f8; --surface: #ffffff; --fg: #1d2329; --muted: #5b6670; --line: #d9dee3;
+  --accent: #1f5f8b; --accent-soft: #e3eef6;
+  --ok: #1e7a4c; --ok-bg: #e2f3ea; --warn: #8a5a00; --warn-bg: #fbefd5; --bad: #a3262a; --bad-bg: #f8e1e1;
+  --c-printed: #2d5f8a; --c-designer: #6b3fa0; --c-mixed: #3f6f6a; --c-owner: #9a5b12; --c-engine: #a3262a;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-display: "IBM Plex Serif", Georgia, serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12161a; --surface: #1a2026; --fg: #e3e8ec; --muted: #9aa6b0; --line: #2e3740;
+  --accent: #7fb6e0; --accent-soft: #1d3142;
+  --ok: #6fcf9c; --ok-bg: #173327; --warn: #e6b75c; --warn-bg: #3a2d12; --bad: #f08a8d; --bad-bg: #3c1c1e;
+  --c-printed: #82b3dd; --c-designer: #c3a3ec; --c-mixed: #8cc6bf; --c-owner: #e6ac63; --c-engine: #f08a8d; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #12161a; --surface: #1a2026; --fg: #e3e8ec; --muted: #9aa6b0; --line: #2e3740;
+  --accent: #7fb6e0; --accent-soft: #1d3142;
+  --ok: #6fcf9c; --ok-bg: #173327; --warn: #e6b75c; --warn-bg: #3a2d12; --bad: #f08a8d; --bad-bg: #3c1c1e;
+  --c-printed: #82b3dd; --c-designer: #c3a3ec; --c-mixed: #8cc6bf; --c-owner: #e6ac63; --c-engine: #f08a8d; color-scheme: dark }
+* { box-sizing: border-box }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.6 var(--font-body); }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 28px 16px 80px; display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 40px; }
+nav.rail { position: sticky; top: 20px; align-self: start; font-size: 13px; max-height: calc(100vh - 40px); overflow-y: auto; }
+nav.rail a { display: block; color: var(--muted); text-decoration: none; padding: 3px 0 3px 10px; border-left: 2px solid var(--line); }
+nav.rail a:hover, nav.rail a:focus-visible { color: var(--accent); border-left-color: var(--accent); outline: none }
+main { min-width: 0; max-width: 74ch; }
+header h1 { font: 600 30px/1.2 var(--font-display); margin: 0 0 6px; text-wrap: balance }
+header .sub { color: var(--muted); margin: 0 0 18px }
+h2 { font: 600 22px/1.3 var(--font-display); margin: 48px 0 12px; padding-top: 12px; border-top: 1px solid var(--line); text-wrap: balance }
+h3 { font-size: 16px; margin: 28px 0 8px; } h4 { font-size: 15px; margin: 20px 0 6px }
+.front { border: 1px solid var(--line); background: var(--surface); padding: 4px 18px; border-radius: 6px; font-size: 14.5px }
+code, .num, .meta, .tb, .sk { font-family: var(--font-mono) }
+code { font-size: 0.88em; background: var(--accent-soft); padding: 1px 4px; border-radius: 3px; overflow-wrap: anywhere }
+.sym { font: 500 0.85em var(--font-mono); background: var(--accent-soft); padding: 0 3px; border-radius: 3px; white-space: nowrap }
+.figs { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 18px 0 }
+.fig { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px }
+.fig b { display: block; font: 600 24px/1.2 var(--font-mono); font-variant-numeric: tabular-nums }
+.fig span { color: var(--muted); font-size: 12.5px }
+.rule { padding: 10px 0 12px; border-bottom: 1px solid var(--line) }
+.rule.r-sub { padding-left: 22px }
+.rule.tomb .rt { color: var(--muted) }
+.rt { margin: 0 }
+.num { font-weight: 500; color: var(--accent); margin-right: 4px; font-size: 0.92em; text-decoration: none }
+.ex { margin: 6px 0 0; font-style: italic; color: var(--muted); font-size: 14px }
+.exl { font-style: normal; font-weight: 500 }
+.tb { font-style: normal; font-size: 11.5px; overflow-wrap: anywhere }
+.differs { font: 500 12.5px var(--font-body); color: var(--bad); background: var(--bad-bg); padding: 1px 6px; border-radius: 3px; white-space: nowrap }
+.differs a { color: inherit }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px }
+.chip { font: 500 11.5px/1 var(--font-body); padding: 4px 7px; border-radius: 3px; border: 1px solid currentColor; letter-spacing: 0.02em }
+.b-printed { color: var(--c-printed) } .b-designer { color: var(--c-designer) } .b-mixed { color: var(--c-mixed) }
+.b-owner { color: var(--c-owner) } .b-engine { color: var(--c-engine) }
+.v-confirmed { color: var(--ok); background: var(--ok-bg); border-color: transparent }
+.v-partial, .v-untested { color: var(--warn); background: var(--warn-bg); border-color: transparent }
+.v-contradicted, .v-unsupported { color: var(--bad); background: var(--bad-bg); border-color: transparent }
+.v-none { color: var(--muted) }
+.k-a, .k-d { color: var(--c-designer) } .k-b { color: var(--c-engine) } .k-c { color: var(--c-owner) } .k-f { color: var(--warn) } .k-g { color: var(--muted) }
+.meta { font-size: 11.5px; color: var(--muted) }
+.meta a, a.meta { color: var(--accent) }
+.vnote { margin: 6px 0 0; font-size: 13.5px; background: var(--warn-bg); padding: 6px 10px; border-radius: 4px }
+details { margin-top: 6px } summary { cursor: pointer; font-size: 13px; color: var(--accent) }
+summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+ul.src { margin: 6px 0 0; padding-left: 18px; font-size: 13px; overflow-wrap: anywhere }
+.sk { font-size: 11.5px; color: var(--muted); margin-right: 4px }
+q { quotes: "\201C" "\201D" }
+.disc { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 10px 14px; margin: 10px 0 }
+.disc p { margin: 4px 0 } .dh { display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
+.res { font-size: 14px }
+.count { font: 500 13px var(--font-mono); color: var(--muted) }
+.legend { display: flex; flex-wrap: wrap; gap: 8px; font-size: 13px; margin: 8px 0 }
+.gloss dt { font-weight: 600; margin-top: 10px } .gloss dd { margin: 2px 0 0 18px }
+a { color: var(--accent) }
+.tw { overflow-x: auto } table { border-collapse: collapse; font-size: 13.5px; margin: 8px 0 }
+th, td { border-bottom: 1px solid var(--line); padding: 5px 10px 5px 0; text-align: left; vertical-align: top; font-variant-numeric: tabular-nums }
+@media (max-width: 860px) { .wrap { grid-template-columns: minmax(0, 1fr); gap: 0 } nav.rail { display: none } }
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail" aria-label="Contents">
+<a href="#intro">Introduction</a>
+<a href="#ch1">1. Game Concepts</a>
+<a href="#ch2">2. Parts of a Card</a>
+<a href="#ch3">3. Card Types</a>
+<a href="#ch4">4. Zones</a>
+<a href="#ch5">5. Turn Structure</a>
+<a href="#ch6">6. Regions, Formations and Battle</a>
+<a href="#ch7">7. Spells, Abilities and Effects</a>
+<a href="#ch8">8. Keywords</a>
+<a href="#ch9">9. Multiplayer and Formats</a>
+<a href="#annex-p">Annex P</a>
+<a href="#glossary">Glossary</a>
+<a href="#changelog">Changelog</a>
+<a href="#annex-d">Annex D</a>
+<a href="#discrepancies">Discrepancy report</a>
+</nav>
+<main>
+<header><h1>Algomancy Comprehensive Rules</h1><p class="sub">Unofficial. Generated from this project's digital client. First generation (draft), effective 2026-10-10, engine at 76d01fa.</p></header>
+<div class="front" id="intro"><h3>Introduction</h3>
+<p><strong>This document is UNOFFICIAL.</strong> It describes this digital client's implementation of Algomancy, not Caleb Gannon's game. Where it and the published Manual disagree, the Manual is the game and this document is our client. The card text and rules text it quotes are Caleb Gannon's, used with permission on the terms in <code>data/NOTICE.md</code>.</p>
+<p>Edition: First generation (draft). Effective 2026-10-10. Engine at commit 76d01fa.</p>
+<h4>How to read a rule</h4>
+<p>Every rule carries its provenance: the sources that state it. In the HTML edition it is folded under the rule; in this edition it is the small line beneath it. Each rule also carries a <strong>basis</strong>, the strongest kind of source that actually states it:</p>
+<ul>
+<li><strong>Printed</strong>: the Manual, the 2023 Rulebook or a card's printed text, read literally.</li>
+<li><strong>Designer</strong>: Caleb Gannon's own answer in the rules-questions threads.</li>
+<li><strong>Mixed</strong>: more than one kind of source states it together.</li>
+<li><strong>Owner call</strong>: a ruling by this project's owner, with no designer source. It is the client's law, and it may not be the game's.</li>
+<li><strong>Engine only</strong>: no source states it; it is what the engine does. These rules are listed in Annex P and await the owner's sign-off.</li>
+</ul>
+<p>Our own glossary is quoted where it helps, and is never counted as a source.</p>
+<p>Where a ruling and the engine disagree, the rule states the ruling and says &quot;engine differs&quot;, with a link to the finding. The engine is the one that is wrong, and the finding is filed as a bug.</p>
+<p>Each rule also shows whether an independent verifier confirmed it against the engine and its tests, and in which round.</p>
+<h4>Examples are not rules</h4>
+<p>An example illustrates the rule above it. It is never a rule in its own right, and where it seems to say more than the rule, the rule wins. Most examples are bound to a test that was run and asserts them.</p>
+<h4>How numbering works</h4>
+<p>Rules are numbered in three levels: section 608, rule 608.2, subrule 608.2b. Subrule letters skip l and o. A number, once published, never moves and is never reused. A new rule goes to the end of its section, even when it would read better earlier. A removed rule keeps its number and reads &quot;[Removed: …]&quot;. Section 802 has one rule per attribute, in the engine's own order.</p></div>
+<div class="legend"><span class="chip b-printed">Printed</span><span class="chip b-designer">Designer</span><span class="chip b-owner">Owner call</span><span class="chip b-engine">Engine only</span><span class="chip b-mixed">Mixed</span></div>
+<h2 id="ch1">1. Game Concepts</h2>
+<section class="sec"><h3 id="r100"><a class="num" href="#r100">100.</a> General</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r101"><a class="num" href="#r101">101.</a> Golden Rules</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r102"><a class="num" href="#r102">102.</a> Players, Ownership and Control</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r103"><a class="num" href="#r103">103.</a> Starting the Game</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r104"><a class="num" href="#r104">104.</a> Ending the Game</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r105"><a class="num" href="#r105">105.</a> Elements and Affinity</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r106"><a class="num" href="#r106">106.</a> Resources</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r107"><a class="num" href="#r107">107.</a> Numbers, X and Symbols</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r108"><a class="num" href="#r108">108.</a> Cards, Tokens, Faces and Copies</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r109"><a class="num" href="#r109">109.</a> Abilities</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r110"><a class="num" href="#r110">110.</a> Targets</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r111"><a class="num" href="#r111">111.</a> Costs</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r112"><a class="num" href="#r112">112.</a> Life, Damage, Rot and Debt</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r113"><a class="num" href="#r113">113.</a> Timestamps</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<h2 id="ch2">2. Parts of a Card</h2>
+<section class="sec"><h3 id="r200"><a class="num" href="#r200">200.</a> General</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r201"><a class="num" href="#r201">201.</a> Name</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r202"><a class="num" href="#r202">202.</a> Cost Orb and Pips</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r203"><a class="num" href="#r203">203.</a> Alternative-Cost Banner</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r204"><a class="num" href="#r204">204.</a> Type Line</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r205"><a class="num" href="#r205">205.</a> Text Box and Bracketed Text</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r206"><a class="num" href="#r206">206.</a> Power and Defense</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r207"><a class="num" href="#r207">207.</a> Timing Glyph</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r208"><a class="num" href="#r208">208.</a> Augment Box</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r209"><a class="num" href="#r209">209.</a> Complexity Glyph</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<h2 id="ch3">3. Card Types</h2>
+<section class="sec"><h3 id="r300"><a class="num" href="#r300">300.</a> General</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r301"><a class="num" href="#r301">301.</a> Units</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r302"><a class="num" href="#r302">302.</a> Spells</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r303"><a class="num" href="#r303">303.</a> Spell Units</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r304"><a class="num" href="#r304">304.</a> Tokens</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r305"><a class="num" href="#r305">305.</a> Modifications</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<h2 id="ch4">4. Zones</h2>
+<section class="sec"><h3 id="r400"><a class="num" href="#r400">400.</a> General</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r401"><a class="num" href="#r401">401.</a> Deck</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r402"><a class="num" href="#r402">402.</a> Hand</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r403"><a class="num" href="#r403">403.</a> Cache</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r404"><a class="num" href="#r404">404.</a> Play</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r405"><a class="num" href="#r405">405.</a> Bin</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r406"><a class="num" href="#r406">406.</a> The Stack</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r407"><a class="num" href="#r407">407.</a> Erased Pile</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r408"><a class="num" href="#r408">408.</a> Recycling</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r409"><a class="num" href="#r409">409.</a> The Pack</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r410"><a class="num" href="#r410">410.</a> Zone Changes</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<h2 id="ch5">5. Turn Structure</h2>
+<section class="sec"><h3 id="r500"><a class="num" href="#r500">500.</a> General</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r501"><a class="num" href="#r501">501.</a> Planning Phase</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r502"><a class="num" href="#r502">502.</a> Resource Step</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r503"><a class="num" href="#r503">503.</a> Draw and Draft Step</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r504"><a class="num" href="#r504">504.</a> Haste Step</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r505"><a class="num" href="#r505">505.</a> Battle Phase</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r506"><a class="num" href="#r506">506.</a> Regroup Phase</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r507"><a class="num" href="#r507">507.</a> Deployment Phase</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r508"><a class="num" href="#r508">508.</a> Passing the Initiative</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<h2 id="ch6">6. Regions, Formations and Battle</h2>
+<section class="sec"><h3 id="r600"><a class="num" href="#r600">600.</a> General</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r601"><a class="num" href="#r601">601.</a> Regions</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r602"><a class="num" href="#r602">602.</a> Formations</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r603"><a class="num" href="#r603">603.</a> Columns, Adjacency and Edges</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r604"><a class="num" href="#r604">604.</a> Attacking</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r605"><a class="num" href="#r605">605.</a> Attack Window</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r606"><a class="num" href="#r606">606.</a> Blocking</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r607"><a class="num" href="#r607">607.</a> Block Window</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r608"><a class="num" href="#r608">608.</a> Combat Damage Step</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r609"><a class="num" href="#r609">609.</a> After Combat</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r610"><a class="num" href="#r610">610.</a> Counterattacks and Later Battle Rounds</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<h2 id="ch7">7. Spells, Abilities and Effects</h2>
+<section class="sec"><h3 id="r700"><a class="num" href="#r700">700.</a> General</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r701"><a class="num" href="#r701">701.</a> Playing and Applying</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r702"><a class="num" href="#r702">702.</a> Casting Spells</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r703"><a class="num" href="#r703">703.</a> The Stack and Priority</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r704"><a class="num" href="#r704">704.</a> Resolution and Fizzling</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r705"><a class="num" href="#r705">705.</a> Activated Abilities</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r706"><a class="num" href="#r706">706.</a> Triggered Abilities</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r707"><a class="num" href="#r707">707.</a> Static Abilities</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r708"><a class="num" href="#r708">708.</a> Replacement and Prevention Effects</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r709"><a class="num" href="#r709">709.</a> Continuous Effects and Timestamps</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r710"><a class="num" href="#r710">710.</a> Copies and Faces</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r711"><a class="num" href="#r711">711.</a> Control Change</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r712"><a class="num" href="#r712">712.</a> Stripping and Suppression</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r713"><a class="num" href="#r713">713.</a> State Checks</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r714"><a class="num" href="#r714">714.</a> Last-Known State</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r720"><a class="num" href="#r720">720.</a> Modifications, General</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r721"><a class="num" href="#r721">721.</a> Augment</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r722"><a class="num" href="#r722">722.</a> Graft</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r723"><a class="num" href="#r723">723.</a> Virus</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r724"><a class="num" href="#r724">724.</a> Modular</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<h2 id="ch8">8. Keywords</h2>
+<section class="sec"><h3 id="r800"><a class="num" href="#r800">800.</a> General</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r801"><a class="num" href="#r801">801.</a> Keyword Actions</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r802"><a class="num" href="#r802">802.</a> Attributes</h3>
+<article class="rule r-top" id="r802.1"><p class="rt"><a class="num" href="#r802.1">802.1.</a> <strong class="rtitle">General.</strong> </p></article>
+<article class="rule r-top" id="r802.2"><p class="rt"><a class="num" href="#r802.2">802.2.</a> <strong class="rtitle">Flying.</strong> </p></article>
+<article class="rule r-top" id="r802.3"><p class="rt"><a class="num" href="#r802.3">802.3.</a> <strong class="rtitle">Deadly.</strong> </p></article>
+<article class="rule r-top" id="r802.4"><p class="rt"><a class="num" href="#r802.4">802.4.</a> <strong class="rtitle">Swift.</strong> </p></article>
+<article class="rule r-top" id="r802.5"><p class="rt"><a class="num" href="#r802.5">802.5.</a> <strong class="rtitle">Sluggish.</strong> </p></article>
+<article class="rule r-top" id="r802.6"><p class="rt"><a class="num" href="#r802.6">802.6.</a> <strong class="rtitle">Tough.</strong> </p></article>
+<article class="rule r-top" id="r802.7"><p class="rt"><a class="num" href="#r802.7">802.7.</a> <strong class="rtitle">Balanced.</strong> </p></article>
+<article class="rule r-top" id="r802.8"><p class="rt"><a class="num" href="#r802.8">802.8.</a> <strong class="rtitle">Inverted.</strong> </p></article>
+<article class="rule r-top" id="r802.9"><p class="rt"><a class="num" href="#r802.9">802.9.</a> <strong class="rtitle">Unaware.</strong> </p></article>
+<article class="rule r-top" id="r802.10"><p class="rt"><a class="num" href="#r802.10">802.10.</a> <strong class="rtitle">Powerful.</strong> </p></article>
+<article class="rule r-top" id="r802.11"><p class="rt"><a class="num" href="#r802.11">802.11.</a> <strong class="rtitle">Vulnerable.</strong> </p></article>
+<article class="rule r-top" id="r802.12"><p class="rt"><a class="num" href="#r802.12">802.12.</a> <strong class="rtitle">Feeble.</strong> </p></article>
+<article class="rule r-top" id="r802.13"><p class="rt"><a class="num" href="#r802.13">802.13.</a> <strong class="rtitle">Evasive.</strong> </p></article>
+<article class="rule r-top" id="r802.14"><p class="rt"><a class="num" href="#r802.14">802.14.</a> <strong class="rtitle">Sneaky.</strong> </p></article>
+<article class="rule r-top" id="r802.15"><p class="rt"><a class="num" href="#r802.15">802.15.</a> <strong class="rtitle">Alluring.</strong> </p></article>
+<article class="rule r-top" id="r802.16"><p class="rt"><a class="num" href="#r802.16">802.16.</a> <strong class="rtitle">Piercing.</strong> </p></article>
+<article class="rule r-top" id="r802.17"><p class="rt"><a class="num" href="#r802.17">802.17.</a> <strong class="rtitle">Electric.</strong> </p></article>
+<article class="rule r-top" id="r802.18"><p class="rt"><a class="num" href="#r802.18">802.18.</a> <strong class="rtitle">Poisonous.</strong> </p></article>
+<article class="rule r-top" id="r802.19"><p class="rt"><a class="num" href="#r802.19">802.19.</a> <strong class="rtitle">Resonant.</strong> </p></article>
+<article class="rule r-top" id="r802.20"><p class="rt"><a class="num" href="#r802.20">802.20.</a> <strong class="rtitle">Thieving.</strong> </p></article>
+<article class="rule r-top" id="r802.21"><p class="rt"><a class="num" href="#r802.21">802.21.</a> <strong class="rtitle">Reaping.</strong> </p></article>
+<article class="rule r-top" id="r802.22"><p class="rt"><a class="num" href="#r802.22">802.22.</a> <strong class="rtitle">Blessed.</strong> </p></article>
+<article class="rule r-top" id="r802.23"><p class="rt"><a class="num" href="#r802.23">802.23.</a> <strong class="rtitle">Afflicting.</strong> </p></article>
+<article class="rule r-top" id="r802.24"><p class="rt"><a class="num" href="#r802.24">802.24.</a> <strong class="rtitle">Lethal.</strong> </p></article>
+<article class="rule r-top" id="r802.25"><p class="rt"><a class="num" href="#r802.25">802.25.</a> <strong class="rtitle">Pure.</strong> </p></article>
+<article class="rule r-top" id="r802.26"><p class="rt"><a class="num" href="#r802.26">802.26.</a> <strong class="rtitle">Modular.</strong> </p></article>
+</section>
+<section class="sec"><h3 id="r803"><a class="num" href="#r803">803.</a> Other Keyword Abilities</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<h2 id="ch9">9. Multiplayer and Formats</h2>
+<section class="sec"><h3 id="r900"><a class="num" href="#r900">900.</a> General</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r901"><a class="num" href="#r901">901.</a> Constructed</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r902"><a class="num" href="#r902">902.</a> Draft and Cube</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r903"><a class="num" href="#r903">903.</a> Free-for-All</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r904"><a class="num" href="#r904">904.</a> Teams</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="r905"><a class="num" href="#r905">905.</a> Intent Cards</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<h2 id="annex-p">Annex P — Provenance and Coverage</h2>
+<p>Generated from the records, the verdicts and the ruling classification. Nothing here is a rule.</p>
+<div class="figs"><div class="fig"><b>0</b><span>numbered rules</span></div><div class="fig"><b>0</b><span>Printed</span></div><div class="fig"><b>0</b><span>Designer</span></div><div class="fig"><b>0</b><span>Owner call</span></div><div class="fig"><b>0</b><span>Engine only</span></div><div class="fig"><b>0</b><span>Mixed</span></div></div>
+<h3>Verification</h3>
+<div class="tw"><table><tr><th>verdict</th><th>rules</th></tr><tr><td>confirmed</td><td>0</td></tr><tr><td>partial</td><td>0</td></tr><tr><td>contradicted</td><td>0</td></tr><tr><td>unsupported</td><td>0</td></tr><tr><td>untested</td><td>0</td></tr><tr><td>not verified</td><td>0</td></tr><tr><td>text changed</td><td>0</td></tr></table></div>
+<h3>Engine-only rules (awaiting the owner's sign-off)</h3>
+<p>None.</p>
+<h3>Findings: where the engine differs</h3>
+<p>None.</p>
+<h3>Game rulings no rule cites</h3>
+<p>The rulings are not classified yet.</p>
+<h3>Process rulings, excluded</h3>
+<p>The rulings are not classified yet.</p>
+<h2 id="glossary">Glossary</h2>
+<p class="meta">No entries yet.</p>
+<h2 id="changelog">Changelog</h2>
+<p>Keyed by rule key. A number never moves, so a rule is new, removed or renamed; text changes to a rule are not listed yet.</p>
+<h3>First generation (draft)</h3><ul><li>New: 26 rules and 99 sections.</li></ul>
+<h2 id="annex-d">Annex D — Digital Play Conventions</h2>
+<p>These are the conventions of this digital client: how it times, shows and confirms the game, where a table of players would simply agree. They are not rules of Algomancy. Where a convention here and a rule in the main document both speak to the game itself, the main document governs. Where they concern only how the client presents, times or confirms play, this annex governs.</p>
+<section class="sec"><h3 id="rD1"><a class="num" href="#rD1">D1.</a> General and Precedence</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="rD2"><a class="num" href="#rD2">D2.</a> Priority and Auto-Pass</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="rD3"><a class="num" href="#rD3">D3.</a> Clocks</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="rD4"><a class="num" href="#rD4">D4.</a> Undo</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="rD5"><a class="num" href="#rD5">D5.</a> Recap and Playback</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="rD6"><a class="num" href="#rD6">D6.</a> Reveal Timing of Simultaneous Steps</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="rD7"><a class="num" href="#rD7">D7.</a> Confirmations and Misclicks</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<section class="sec"><h3 id="rD8"><a class="num" href="#rD8">D8.</a> Tutorial and Single-Card Modes</h3>
+<p class="meta">No rules drafted yet.</p>
+</section>
+<h2 id="discrepancies">Discrepancy report</h2>
+<p>Every place where the sources disagree, the register contradicts itself, or a rule rests only on the engine or on an owner call. Each quote is checked to be verbatim. Only the first tier needs a decision.</p>
+<h3>Questions for the owner <span class="count">0</span></h3>
+<h3>Register and test fixes <span class="count">0</span></h3>
+<h3>Engine-only and owner-only rules <span class="count">0</span></h3>
+<h3>Everything else <span class="count">0</span></h3>
+</main>
+</div>
+</body>
+</html>

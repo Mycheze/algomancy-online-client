@@ -30,7 +30,9 @@ data/comprehensive-rules/
   verdicts.json                        the verifier's verdicts   reviewed    CR_VERDICTS
   discrepancies.json, .md              what did not reconcile    generated   CR_DISCREPANCIES
   findings.json                        engine bugs -> CT tickets generated   CR_FINDINGS
-  changelog.md                         what changed per generation
+  changelog.md                         what changed per edition  generated   CR_CHANGELOG
+  outline.json                         chapters, sections, slots reviewed    CR_OUTLINE
+  front-matter.md                      the introduction          hand-written CR_FRONT_MATTER
   build/                               extract output            gitignored  CR_BUILD_DIR
 ```
 
@@ -41,7 +43,7 @@ The scripts are `client/engine/scripts/cr/*.mjs`. The gate is
 
 | kind | files | how it changes |
 |---|---|---|
-| **generated** | the document (`.md` `.html` `.txt`), Annex D, `discrepancies.*`, `findings.json` | re-run the scripts. A wrong sentence is fixed in its record, re-verified, re-rendered — never in the output. |
+| **generated** | the document (`.md` `.html` `.txt`), Annex D, `discrepancies.*`, `findings.json`, `changelog.md` | re-run the scripts. A wrong sentence is fixed in its record, re-verified, re-rendered — never in the output. |
 | **records** | `rules/*.json` | written by the draft/verify rounds; the document's source. |
 | **committed reviewed state** | `ledger.json`, `supersession.json`, `classification.json`, `verdicts.json` | append/edit only through the cr scripts. A decision someone made; nothing can rebuild it. |
 | **gitignored** | `build/` | scratch, rebuilt on every run |
@@ -135,8 +137,11 @@ own line in.
 ```bash
 node client/engine/scripts/cr/extract.mjs      # TODO(A2): sources -> build/
 node client/engine/scripts/cr/supersede.mjs    # TODO(A2): propose supersession edges
-node client/engine/scripts/cr/check.mjs        # TODO(A3): mechanical quote/test checks
-node client/engine/scripts/cr/render.mjs       # TODO(A3): records + ledger -> the document
+npm --prefix client run cr:render   # number unseen keys (ledger.json), write the document, Annex D,
+                                    # discrepancies.md and changelog.md
+npm --prefix client run cr:check    # the mechanical checks; exits 1 on any problem
+node client/engine/scripts/cr/ledger.mjs remove <key> "<reason>" [replacedByKey]   # tombstone a rule
+node client/engine/scripts/cr/ledger.mjs alias <oldKey> <newKey>                  # rename a key
 node --test client/engine/test/409-comprehensive-rules.test.ts   # the gate
 ```
 
