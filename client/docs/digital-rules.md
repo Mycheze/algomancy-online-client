@@ -30,13 +30,13 @@ All simultaneous triggers are ordered **by their owner, however they choose**; t
 onto the stack with **NIT's entering last** (thus resolving first). (Bena 2026-07-16,
 consistent with Manual Q&A p.43.)
 
-## R3 — Formation changes during combat
+## R3 — Formation changes during combat (its reach limited to the board by R261; its no-priority clause amended by R295)
 All formation changes are **recalculated immediately** (promotion, attribute sharing, column
 membership), but there is **no priority window between damage sub-steps** — e.g. between
 Swift damage and normal damage, the recalculated state applies but nobody can respond.
 (Bena 2026-07-16.)
 
-## R4 — Electric damage pathing
+## R4 — Electric damage pathing (its path amended by R317: each hop is optional, and a dead end is dealt)
 The **Electric source's controller** chooses the path. There are **no formation changes
 during damage distribution**: initial damage happens, then excess passes immediately along
 the chosen path (it is excess damage, resolved atomically within the damage event).
@@ -58,7 +58,7 @@ The **controller of the damage-dealing unit** decides how damage splits (includi
 voluntary over-assignment). **Piercing is automatic, not elective** (unlike MTG trample):
 whatever is left over after assignment is dealt to the opponent. (Bena 2026-07-16.)
 
-## R8 — Control change
+## R8 — Control change (narrowed by R172)
 The unit **swaps sides, straight up** — including joining the new controller's formations.
 No region ambiguity: see R12. (Bena 2026-07-16.)
 
@@ -66,7 +66,7 @@ No region ambiguity: see R12. (Bena 2026-07-16.)
 Once-per-turn ([once], bounded grafts) is **tracked per card**; changing controller does
 **not** reset a spent budget. (Bena 2026-07-16.)
 
-## R10 — Unaware's "interacting with"
+## R10 — Unaware's "interacting with" (replaced by R106)
 **Everything counts as interacting**: fight, battle (blocking/being blocked/dealing or
 receiving combat damage), targeting — all of it. Unaware and whatever it interacts with
 mutually ignore stat changes. (Bena 2026-07-16.)
@@ -92,7 +92,7 @@ is simply in its new controller's side of whatever region it occupies (R8); a re
 effect (Temporal Rift) affects only that region's battle and stack — other regions resolve
 later, unaffected. (Bena 2026-07-16.)
 
-## R13 ⚠ — Piercing through a fully-dead blocked column
+## R13 ⚠ — Piercing through a fully-dead blocked column (its reason corrected by R319; ⚠ resolved by RAQ "Piercing, side block and combat damage from defending formation")
 A blocked column stays blocked, but if all blockers are gone at damage time a
 **Piercing** column's damage carries entirely to the defending player (assignment
 over an empty column leaves everything as excess, and piercing excess is automatic
@@ -114,14 +114,14 @@ per phase, "this battle" = this region's battle. Deaths outside the battle phase
 don't count. ⚠ Engine call (the prototype counted across the whole phase globally).
 (Engine 2026-07-16.)
 
-## R15 ⚠ — Round-2 attackers when round 1 had no battle
+## R15 ⚠ — Round-2 attackers when round 1 had no battle (⚠ resolved by RAQ "Temporal Rift vs NIT sending counter-attack")
 If IT declines to attack (no round-1 battle), NIT never gets a block step and so
 never commits counterattackers — in that case NIT may attack round 2 with **any**
 of their units. If a round-1 battle happened, round-2 attackers are **exactly the
 units sent at block time** (Manual p.20-21), even if that set is empty (= no
 round-2 battle). (Engine 2026-07-16.)
 
-## R16 ⚠ — Burst casting order
+## R16 ⚠ — Burst casting order (its group amended by R81 to one name; its fixed stacking order replaced by R309: the caster orders the group)
 Casting one Burst token casts all your Burst tokens **of that name** in that
 region (R81 — this used to read "all your Burst tokens", which fused a Poison
 into a Fireball group); the engine currently stacks them in a fixed (entity id)
@@ -140,7 +140,7 @@ hidden information). A dormant Prismite cannot be exchanged. The engine and prot
 had wrongly treated them as wild-affinity and starting face-up.
 (Bena 2026-07-16, confirmed by Manual p.18.)
 
-## R18 — Haste step engine model
+## R18 — Haste step engine model (its skip and auto-done reversed by R224 and R228)
 The haste step (Manual p.18: after the resource step, only {Haste} cards playable, ends
 when everyone has played all they want) is modeled as a sub-step after both players
 finish planning: each haste play **resolves immediately** (planning is not interactive —
@@ -181,7 +181,7 @@ formation** (spell tokens riding along don't count as company). Two Sneaky units
 attacking are NOT alone — both blockable. ⚠ Engine reading of "unblockable if attacking
 alone". (Engine 2026-07-16.)
 
-## R21 ⚠ — Deadly specifics
+## R21 ⚠ — Deadly specifics (its Piercing pass-through amended by R319: the excess is elective; ⚠ resolved by RAQ "Excessive Combat Damage & interaction with Piercing, Deadly…")
 Any **nonzero** damage from a Deadly source kills the damaged unit, regardless of
 toughness. In combat, the auto-assignment treats 1 damage as lethal per victim (so a
 Deadly Piercing column sends everything past 1-per-blocker through); the kill happens in
@@ -202,7 +202,7 @@ an ambush on the stack counts as a "spell effect" for negation targeting (Dreadw
 Devourer can negate it → ambusher to the bin), and a mid-battle formation swap inherits
 the slot exactly (including a blocking slot). (Engine 2026-07-16.)
 
-## R23 ⚠ — Vulnerable's doubling vs assignment (and Powerful's)
+## R23 ⚠ — Vulnerable's doubling vs assignment (and Powerful's) (⚠ resolved by RAQ "Vulnerable + Piercing / Electric")
 **Powerful** doubles the source's total damage once, **before** assignment/overflow (a
 Powerful Piercing column pierces the doubled amount). **Vulnerable** doubles what the
 victim *receives*: in combat assignment only half the pool is needed for lethal and the
@@ -211,12 +211,12 @@ marked amount is doubled on commit — so Piercing overflow is computed on the
 Deadly's 1-is-lethal applies to the pool. ⚠ Engine call: the Manual gives no explicit
 ordering. (Engine 2026-07-16.)
 
-## R24 ⚠ — Thieving draws once per connecting column
+## R24 ⚠ — Thieving draws once per connecting column (⚠ resolved by RAQ "Thieving with 2 units in column?")
 "Combat damage to an opponent → draw" = **one card per Thieving column that deals combat
 damage to a player** in a damage sub-step (unblocked or Piercing overflow), not one per
 point of damage. ⚠ No numeric definition found in Manual/glossary. (Engine 2026-07-16.)
 
-## R25 ⚠ — "Each opponent" is region-scoped
+## R25 ⚠ — "Each opponent" is region-scoped (⚠ resolved by R239)
 "Each opponent/player" effects read the **event region's present seats** (R12, the
 Astral Tidewraith pattern). Consequence: a "when I despawn, each opponent loses 3"
 unit that dies **outside battle** (deployment sacrifice) affects nobody — the home
@@ -265,7 +265,7 @@ withdrawn rather than narrowed. R52, which confirmed it as the global default,
 is withdrawn with it. (Its one surviving half — spell tokens appear where the
 effect resolves — is now simply what R115 says about everything.)
 
-## R29 ⚠ — "An open spot in your formation" (Tiderunner Initiate)
+## R29 ⚠ — "An open spot in your formation" (Tiderunner Initiate) (its no-formation case amended by R322)
 Requires an EXISTING formation of yours (you attacked, or you declared
 blocks): join behind a lone survivor, take over an emptied column, or — as
 the attacker — front a fresh column beside the formation. With no formation
@@ -319,7 +319,7 @@ The life loss is unconditional per present player: a player with no unit to
 recall still loses 2. (Do as much as you can; the two clauses are not linked
 by "if you do".)
 
-## R31 ⚠ — Triggers between combat damage sub-steps
+## R31 ⚠ — Triggers between combat damage sub-steps (superseded by R261 and R295)
 Triggered abilities fired by a damage sub-step (Swift/normal/Sluggish)
 resolve IMMEDIATELY — as special actions, no priority window (R3) — before
 the next sub-step. A Swift unit's "when my column deals combat damage" rider
@@ -355,7 +355,7 @@ indistinguishable labels) and the outcome multiset is the same. Triggers
 from different cards/abilities, or composites whose parts differ (a spent
 bounded graft), still ask. (Bena 2026-08-18.)
 
-## R35 — Bracketed [costs] and X on spells are chosen and PAID AT CAST
+## R35 — Bracketed [costs] and X on spells are chosen and PAID AT CAST (its ability-cost half replaced by R196; its declinable riders reversed by R334)
 A spell's bracketed additional cost ("/[Sacrifice a unit]: …") and a spell's
 X are cast-time payments: the caster picks the sacrifice / the X value (only
 affordable values are offered) BEFORE the spell reaches the stack, the
@@ -384,7 +384,7 @@ action, logged like any other). Rationale: the player already committed the
 unit at block time; the only real choice left — whether a sent spell token
 rides — suppresses the forcing when present. (Playtest request 2026-08-18.)
 
-## R37 ⚠ — "Playing" a card means units and spells only; mods are APPLIED, not played
+## R37 ⚠ — "Playing" a card means units and spells only; mods are APPLIED, not played (⚠ resolved by RAQ "Mods are NOT Played")
 Only units and spells are "played" (from whatever zone — hand, bin, or
 elsewhere). Applying a modification — attaching a Virus, graft, or augment,
 whether it comes from your hand, your bin, or a glimpse — is NOT "playing a
@@ -416,7 +416,7 @@ it is deliberately the LAST thing in the resource step so that no further
 mana can be activated afterwards, and the mana spent is unavailable for
 casting this turn. (Caleb 2024-09-10, refined 2024-12-02; via Bena 2026-08-19.)
 
-## R40 — Trashing: a card entering a bin from anywhere but the stack
+## R40 — Trashing: a card entering a bin from anywhere but the stack (its Unstable sentence amended by R137, its mod trasher by R244; its token amendment reversed by R306)
 Discarding, sacrificing, milling and dying in combat all trash. A spell or
 ability going to the bin after resolving does NOT (it comes from the stack),
 so negating a spell is not trashing; erasing never touches the bin and so is
@@ -494,7 +494,7 @@ calls cache "a neutral zone like the hand and bin" (2024-02-25). Consequence:
 no server-side redaction for cache. (Bena's call 2026-08-19 — overturn if
 prophesied cards turn out to be face-down.)
 
-## R42 — Prophecy: cache during deployment for the banner cost, then play free
+## R42 — Prophecy: cache during deployment for the banner cost, then play free (its window amended by R277, its source zone by R308; its no-affinity cost corrected by R301)
 Prophesying is legal ONLY during the deployment phase (Caleb 2025-05-09) and
 costs the banner's plain mana number, no affinity. The card moves to cache
 with its prophecy attached. Only a card that says so may be prophesied from
@@ -600,7 +600,7 @@ kills anything. ⚠ One rot per affected controller per kill event, however
 many of their units died, is Bena's reading of the reminder text; no
 designer statement was found.
 
-## R49 ⚠ — Non-mana costs are paid when you pay them, not when they resolve
+## R49 ⚠ — Non-mana costs are paid when you pay them, not when they resolve (its closing X-cost note replaced by R64)
 A bracketed cast cost and an activated ability's cost are now modelled for
 real, beyond the old sacrifice-a-unit / mana / sacrifice-self pair. A spell may
 carry `[Pay N life]`, `[Discard N cards]` or `[Gain N debt]` (including the
@@ -852,7 +852,7 @@ The general rule: cast-time target *selection* constrains what can be chosen,
 never what will still be true later. Redirection, death, region changes and
 zone changes all happen in between. Re-validate at resolution.
 
-## R57 — Targets are chosen before costs are paid
+## R57 — Targets are chosen before costs are paid (narrowed by R64)
 
 *(Playtest round 6, 2026-08-19. Engine bug.)*
 
@@ -912,7 +912,7 @@ As in R56, cast-time legality is not an invariant. Fight re-checks both slots
 when it resolves: same unit twice, or an "ally" that changed controller while
 the spell was on the stack, and it does nothing.
 
-## R59 — Cost modifiers
+## R59 — Cost modifiers (its spell-token carve-out amended by R305)
 
 *(Playtest round 6, 2026-08-19.)*
 
@@ -946,7 +946,7 @@ Still parked for want of more than this layer: **Crevice Lurker** and the
 "choosing not to pay prevents the ability from triggering" shape, which needs a
 pay-to-trigger hook on every trigger entering the stack, not just a price.
 
-## R60 — "Target effect" vs "target spell effect", and the life half of the cost layer
+## R60 — "Target effect" vs "target spell effect", and the life half of the cost layer (its Nothyr pick replaced by R67; R128 reverses its stack-unit sentence)
 
 *(Playtest round 8, 2026-08-20, room DEYK.)*
 
@@ -1166,7 +1166,7 @@ literally:
 Granted text is silenced by R62 exactly like printed text — it is an ability
 the card has, and "loses all abilities" means all of them.
 
-## R64 — A bracketed cost is paid at cast; a printed restriction is a targeting restriction
+## R64 — A bracketed cost is paid at cast; a printed restriction is a targeting restriction (its no-recheck statement amended by R324)
 
 *(Playtest round 10, game PEMC, 2026-08-21.)*
 
@@ -1265,7 +1265,7 @@ Token"*. Both sides field generic tokens with identical art, so the option text
 was the only thing that could have carried the difference; `targetLabel` now
 names the controller of every unit it offers.
 
-## R65 — Discarding is not playing; conceding; the erased pile
+## R65 — Discarding is not playing; conceding; the erased pile (narrowed by R241)
 
 *(Playtest round 10, game PEMC, 2026-08-21.)*
 
@@ -1468,7 +1468,7 @@ engine's standing behaviour for every other target, and auto-filling forced
 targets would drop a `decide` from the action log and break replay of saved
 games — so it is left alone rather than special-cased here.
 
-## R68 — Negating an effect REMOVES it from the stack, then and there
+## R68 — Negating an effect REMOVES it from the stack, then and there (narrowed by R79)
 
 *(Playtest round 13, game UZRG, 2026-08-21.)*
 
@@ -1557,7 +1557,7 @@ clause just filled. **Bena to rule.** If the answer is "no, a card negated by
 this spell is not yet in the bin when this spell's own later clause looks",
 that is a per-card ordering note on Finality, not a change to R68.
 
-## R69 — A token entering a ZONE is really there, then a state-based sweep erases it; and Unstable is tested first
+## R69 — A token entering a ZONE is really there, then a state-based sweep erases it; and Unstable is tested first (its Unstable order amended by R137; its token-trash subsection reversed by R306)
 
 *(Playtest round 13, game UZRG, 2026-08-21. Sourced against the rules corpus
 and Caleb's Discord rulings; Bena's ruling on the trash half. **Extended from
@@ -1827,7 +1827,7 @@ originally scoped for this. The Wraith redesign (R71) removed its main
 justification — nothing needs a dead unit to keep existing as an addressable
 thing any more; it only needs its facts, and facts fit on an event.
 
-## R71 — The Wraith token, redesigned; and "an ally" is not a target
+## R71 — The Wraith token, redesigned; and "an ally" is not a target (narrowed by R144)
 
 *(Bena, 2026-08-21, supplying the printed card. Retires [R47](#r47--retired-2026-08-21-the-card-was-redesigned-see-r71).)*
 
@@ -1906,7 +1906,7 @@ Its art is `Wraith.jpg`, not the generic-unit scan it used to point at.
 `test/63-card-art.test.ts` now opens the file behind **every** registered
 card's `image`, so a card silently rendering as a generic can never hide again.
 
-## R72 — Formation gravity: the back row always promotes, the line closes ranks only before blocks
+## R72 — Formation gravity: the back row always promotes, the line closes ranks only before blocks (its no-side-block note replaced by R321)
 
 *(Playtest round 7, game BRDM, 2026-08-20 — reported, consciously deferred, and
 fixed in round 13, 2026-08-21. The rule is **printed**; the engine had simply
@@ -2334,7 +2334,7 @@ already said it at RESOLUTION, which is far too late to be of any use.
 the field exists so a client that cares can style it as a warning rather than as
 prose.
 
-## R75 — Joining a formation is a CHOICE; and "adjacent" means sides and above/below
+## R75 — Joining a formation is a CHOICE; and "adjacent" means sides and above/below (its edge adjacency replaced by R304; its attackers-only widening limited by R322)
 
 *(Bena, 2026-08-21, two rulings. Replaces five per-card approximations of the
 first and one of the second.)*
@@ -2494,7 +2494,7 @@ in one atomic `rekeyColumns` commit, which is observationally identical to
 letting the leftmost column be −1 and keeps the `declareBlocks` wire format (and
 therefore every saved game) replayable. See R72 for the full weighing.
 
-## R76 — Alluring duties are discharged TOGETHER, and `legalActions` has to be able to say so
+## R76 — Alluring duties are discharged TOGETHER, and `legalActions` has to be able to say so (its Alluring rule replaced by R84)
 
 *(Fuzz seed 1993, 2026-08-22. A stuck state: no legal action for either player,
 no pending decision.)*
@@ -2883,7 +2883,7 @@ safe but not obviously better. The report's complaint is answered by the *state*
 being visible rather than by moving the line, but if seeing "resolves" while
 someone is still choosing is what grates, the fix is one line and belongs here.
 
-## R79 — A Virus may be augmented onto a SPELL on the stack
+## R79 — A Virus may be augmented onto a SPELL on the stack (its spell-token exclusion replaced by R89)
 
 *(Playtest round 13, 2026-08-22. Sourced: Caleb 2025-04-06, 2025-03-06,
 2025-04-24; Manual pp.34-35.)*
@@ -3118,7 +3118,7 @@ amount is variable ("X = the damage dealt", "that much", "that many"), and
 names the batch total in the hint when it differs. Presentation only: a label
 this misses costs one badge, never a rule.
 
-## R81 — Burst groups by NAME
+## R81 — Burst groups by NAME (its entity-id order replaced by R309)
 
 *(Playtest round 15, game VEAV, 2026-08-22. Supersedes half of R16.)*
 
@@ -3906,7 +3906,7 @@ during deployment`, `78-round17-core.test.ts::only ATTRIBUTES transfer`,
 with it` and `78-round17-core.test.ts::the augment rides the token through a
 Harbinger regroup`.
 
-## R90 — A park note is a CLAIM: Prediction Prophet needed no new primitive
+## R90 — A park note is a CLAIM: Prediction Prophet needed no new primitive (its menu cap replaced by R197)
 
 *(Playtest round 17 audit, 2026-08-22. Unparks Prediction Prophet, whose note
 had read: "'predict your life total' needs a player action during the haste
@@ -3964,7 +3964,7 @@ matching it creates a 5/5`, `40-light-c.test.ts::the prediction survives battle
 and regroup, and a MISS creates nothing`, and `40-light-c.test.ts::predicting
 the life total you will END the battle on creates the 5/5`.
 
-## R91 — "Name a card" is a Decision; the region rule is not negotiable
+## R91 — "Name a card" is a Decision; the region rule is not negotiable (its duration note replaced by R118)
 
 *(Same audit. Unparks The Everywhere, whose note read: "a 'name a card' PLAYER
 ACTION. That is the only thing left." The action existed; something else was
@@ -4032,7 +4032,7 @@ copy of it IN MY REGION`, `38-light-a.test.ts::naming a card that is not in
 play silences nobody`, and the standing todo `38-light-a.test.ts::the silence
 should be CONTINUOUS`.
 
-## R92 — Three of the four COPY layers already ship (Apex Prime, partial)
+## R92 — Three of the four COPY layers already ship (Apex Prime, partial) (superseded by R118)
 
 > **SUPERSEDED BY R118 (2026-08-23).** The fourth layer shipped: copy is now
 > layer 0, and the "⚠ Still dead" list below — the NAME, `statics` and the
@@ -4365,7 +4365,7 @@ Lightning: one declared target on the SAME spell is Electric (the control)`, and
 `79-round17-layers.test.ts::R94: a unit's own damage ability reads the {Powerful} it was
 GRANTED, not its printed attrs`.
 
-## R95 — `ModPermission`: an opt-in permission to apply a mod (Rook)
+## R95 — `ModPermission`: an opt-in permission to apply a mod (Rook) (its Virus default reversed by R157; its cache sentence corrected by R311)
 
 > **Corrected by [R311](#r311--the-cache-plays-like-the-hand-for-every-mode)** (2026-10-04): the printed {Virus} battle window reaches the cache as well as the hand. Rook's own grant still names only "hand and bin".
 
@@ -4689,7 +4689,7 @@ stays a battle card even with the grant`, and `26-metal-a.test.ts::no Courier, n
 
 ---
 
-## R98 — PREVENTED damage was never dealt (and that is not what REPLACED damage means)
+## R98 — PREVENTED damage was never dealt (and that is not what REPLACED damage means) (its lethal-capped counters replaced by R114)
 
 **Playtest report #72 (GETD, 2026-08-22): "Phytochemical Protection is entirely non
 functional. Needs to work like the text says. Duh."** It was: the spell targeted, logged,
@@ -4874,7 +4874,7 @@ card you have to set up.
 
 Guarded by `40-light-c.test.ts::is enforced, and not just un-offered`.
 
-## R101 — TRANSFORM: turning a card over is a mutation of `Entity.card`, not a new unit
+## R101 — TRANSFORM: turning a card over is a mutation of `Entity.card`, not a new unit (its rot clause corrected by R102; its token transform reversed by R157)
 Playtest ledger #24 (room ZQPC, 2026-08-20): *"Scholar of the Void doesn't say what the
 Beyond card it can transform into does"*. The entry sat blocked for two days on a fact
 rather than a design question — **"Beyond, Codex Incarnate" existed in no data we hold**:
@@ -5138,7 +5138,7 @@ printed word decides the mechanism, and "target" is the switch.** Do not build
 one path and special-case the other — sort every card in ledger #60 by that
 test first.
 
-## R103 — {Piercing} pierces on NON-COMBAT damage too, into the unit's controller (its "automatic" half reversed by R340: the excess is elective)
+## R103 — {Piercing} pierces on NON-COMBAT damage too, into the unit's controller (its "automatic" half reversed by R340: the excess is elective; its Oorblak divergence replaced by R237; its Electric dead end amended by R317)
 
 *(Owner ruling, 2026-08-23, closing CARD-TODO #4 and the R79 "not in scope" note above.)*
 
@@ -5219,7 +5219,7 @@ the hook is an engine ordering decision, not the card's; until it is ruled on,
 a Deadly+Piercing column redirected into Oorblak absorbs its full toughness and
 pierces only the true remainder. Tests: `17-earth-b.test.ts`.
 
-## R104 — the REPLACEMENT-EFFECT LAYER: two families, and why they compose differently
+## R104 — the REPLACEMENT-EFFECT LAYER: two families, and why they compose differently (its unique-by-kind reversed by R157; its multiplicative bullet replaced by R162; its Conduit order reversed by R316)
 
 *(Owner ruling, restated three times; closing playtest ledger #60, #64 and #75,
 and CARD-TODO #10, #11 and #12.)*
@@ -5756,7 +5756,7 @@ fail, and under which this card stayed dead through two playtest reports and a c
 game — is gone.
 
 
-## R107 — OWNER is not CONTROLLER, and putting a card into play never transfers it
+## R107 — OWNER is not CONTROLLER, and putting a card into play never transfers it (its destination half reversed by R250: zones follow control)
 
 *(2026-08-23, closing CARD-TODO #17. Found by the fix round, not by a report.)*
 
@@ -6015,7 +6015,7 @@ Tests: 94-bounded-uses (all four answers, one test each), 93-engine-defects (the
 routes R113 keeps).
 
 
-## R114 — combat damage is DEALT in full; the split is elective, and only {Piercing} leaves the unit
+## R114 — combat damage is DEALT in full; the split is elective, and only {Piercing} leaves the unit (its Piercing leftover amended by R319: the excess is elective)
 
 *(Designer, 2026-08-23, two answers in one sitting — playtest reports #84 and #79.)*
 
@@ -6166,7 +6166,7 @@ inverted — the mid-attack token cannot block; the source scan; the two battle 
 deploy-timing negative control), plus the fifteen card tests that flipped from asserting
 the old rule.
 
-## R116 — An EXCHANGE is not an ACTIVATION: no affinity Shard for a traded Prismite
+## R116 — An EXCHANGE is not an ACTIVATION: no affinity Shard for a traded Prismite (superseded by R132)
 
 > ## ⚠ REVERSED BY [R132](#r132--a-prismite-does-activate-its-new-resource-r116-reversed).
 > The owner reversed this on 2026-08-24 from playtest ANBB (report #92):
@@ -6228,7 +6228,7 @@ conformance sweep and the self-counts-toward-its-own-three boundary.
 
 ---
 
-## R117 — "when my column deals combat damage" fires in MY column's sub-step
+## R117 — "when my column deals combat damage" fires in MY column's sub-step (its Swift-Sluggish case corrected by R157; its in-sub-step resolution replaced by R261)
 
 *(Owner ruling, 2026-08-23, closing the last open question on **Eldritch Dreamtender** —
 the `{ todo: true }` that outlived all four round-7 deferrals.)*
@@ -6290,7 +6290,7 @@ column into the normal sub-step, and `combatSubStepOf` answering `null` outside 
 
 ---
 
-## R118 — the COPY LAYER: a face in front of the identity, at layer 0 (ruling 2's Unstable half reversed by R336)
+## R118 — the COPY LAYER: a face in front of the identity, at layer 0 (ruling 2's Unstable half reversed by R336; its text half amended by R341; its no-radiating bullet reversed by R127)
 
 *(Owner rulings, 2026-08-23, unparking **Apex Prime**, **Borrower of Forms** and
 **Ancient One** — the last multi-card seam in the ledger. The activated-ability facet
@@ -6473,7 +6473,7 @@ column breaks), the per-face `[once]` budget, the permanent Borrower offer, and 
 
 ---
 
-## R119 — a paid-for cost reduction OUTLIVES its source ("you paid for it")
+## R119 — a paid-for cost reduction OUTLIVES its source ("you paid for it") (its stated reason corrected by R305)
 
 *(Card-drill follow-through, 2026-08-23. Owner's ruling.)*
 
@@ -6565,7 +6565,7 @@ that also loads a pre-R119 state with the field absent.
 
 ---
 
-## R120 — the ELECTIVE combat-damage split: the dealing side is ASKED
+## R120 — the ELECTIVE combat-damage split: the dealing side is ASKED (its Piercing exclusion reversed by R319)
 
 *(The deferred half of R114 / playtest report #84, built 2026-08-24. The ruling was already
 on the books; this is the engine catching up to it.)*
@@ -6635,7 +6635,7 @@ overflow beside an election, mid-election JSON round-trips, block-side election)
 
 ---
 
-## R121 — the ability-cost tax and the pay-to-trigger gate (Crevice Lurker)
+## R121 — the ability-cost tax and the pay-to-trigger gate (Crevice Lurker) (its untaxed combat triggers amended by R261)
 
 *(Card-drill follow-through, 2026-08-24. Designer rulings.)*
 
@@ -7420,7 +7420,7 @@ play already announces itself on `spellPlayed` or on the `spawned` line, so
   a "put counters on me when you play a card" trigger arguably wants the late
   one. Folding them together is a separate ruling, not a tidy-up.
 
-## R130 — every counter is a counter, and a placement carries its actor
+## R130 — every counter is a counter, and a placement carries its actor (its poison-proxy paragraph replaced by R237)
 
 *(2026-08-24. One engine parameter, three cards, two approximations retired.)*
 
@@ -7593,7 +7593,7 @@ ruling, if anyone wants it.
 Pinned by `test/121-another-identity.test.ts`.
 
 
-## R133 — tokens are NOT cards, and trashing never needed them to be
+## R133 — tokens are NOT cards, and trashing never needed them to be (its tokens-are-trashed half reversed by R306)
 
 *(Owner, 2026-08-24. No behaviour change: a REASONING repair.)*
 ⚠ **Its second half is WITHDRAWN by
@@ -7664,7 +7664,7 @@ premise verbatim and would have taught the next reader the wrong rule.
 It applied a fourth time: R306 is this ruling's own conclusion outliving
 its premise.
 
-## R137 — an {Unstable} unit that dies IS TRASHED: it passes through the bin, then is erased
+## R137 — an {Unstable} unit that dies IS TRASHED: it passes through the bin, then is erased (its mods section reversed by R244; its token argument amended by R306)
 
 *(Owner, 2026-08-24, from playtest report #93 / room ANBB. **This ruling
 DIVERGES from the printed reminder text and from a direct Caleb ruling.** Both
@@ -7981,7 +7981,7 @@ Both cost routes are covered because they are separate at the table even though
 they share `collectCastCosts`: a spell cast (Discharge, `from: 'allies'`) and an
 activated ability (Soul Reaver, `from: 'self'`).
 
-## R140 — a responder that reaches back into a bin must name the COPY the event named
+## R140 — a responder that reaches back into a bin must name the COPY the event named (its owner's-bin premise replaced by R250)
 
 *(2026-08-24. CARD-TODO #27. Not an owner ruling and not a new rule of the
 game: it is [R131](#r131--another-is-a-different-entity-not-a-different-card-name)
@@ -8145,7 +8145,7 @@ its own test **and the census sweep**; the Distiller's reddens its own; Biomass
 Devourer's reddens **both** of its (the swept-copy one and the stolen-unit
 one); dropping `eraseFromZone`'s index reddens the white-box pin.
 
-## R143 — "…gains control of me" on a spell unit is where it ENTERS, not a handover
+## R143 — "…gains control of me" on a spell unit is where it ENTERS, not a handover (its owner's-bin clause replaced by R250)
 
 *(Playtest reports #95 and #96, room SMVJ, 2026-08-24 — the same action index,
 one minute apart. #95 is the cause the owner diagnosed; #96 is the symptom he
@@ -8286,7 +8286,7 @@ and the assertions measure an unfinished turn instead of a wrong one.
 ⚠ **`83-card-todo` FAILS ON PURPOSE when this lands**, naming CT-29: that entry
 carries a proof which holds only while the bug lives. The failure is the
 designed signal that the fix worked, and the ledger's owner closes it.
-## R144 — deployment uses the stack, and a trigger may aim where an earlier one is about to fizzle it
+## R144 — deployment uses the stack, and a trigger may aim where an earlier one is about to fizzle it (its half (a) and its flash amended by R286)
 
 **OWNER RULING**, playtest report #101 (room SMVJ, action 318, 2026-08-24),
 verbatim and in full:
@@ -9484,7 +9484,7 @@ on the table as modified would be noise and the `state` row already prints
 "X = 5" — but if the badge should follow the substitution, that is a deliberate
 call and not something R151 should have made on the side.
 
-## R152 — the other three ways an exchange disagreed with `destroy`, and one erase that reached no pile
+## R152 — the other three ways an exchange disagreed with `destroy`, and one erase that reached no pile (its §2 replaced by R244 and R250; its §4 amended by R306)
 
 *2026-08-25. Follows directly from R146, which fixed the first of the four and listed these in its ⚠ section. Two of R146's three "not fixed" items are now fixed; the third is a RULING and is still open — see the bottom of this entry.*
 
@@ -9659,7 +9659,7 @@ R145 for what the rule actually says; it is not restated here.
 
 ---
 
-## R150 — a readable ceiling on the client, and one seat's decision no longer freezes the other
+## R150 — a readable ceiling on the client, and one seat's decision no longer freezes the other (its server half limited by R154)
 
 Two owner playtest reports from room SMVJ, carried as **CT-28** (#94) and
 **CT-32** (#98). Both are pacing/concurrency, neither is a rules change, and
@@ -9816,7 +9816,7 @@ up `catching up (1)…(2)…(3)` and one click on it empties the queue.
    in this repo, the browser pass is not a nicety on top of the tests — it is
    what tells the tests which shape to assert.
 
-## R153 — the disposal tail is one primitive, and the bin sweeps can no longer be aliased around
+## R153 — the disposal tail is one primitive, and the bin sweeps can no longer be aliased around (its steps 1 and 4 replaced by R244 and R250; its token trash amended by R306)
 
 *2026-08-25, CARD-TODO #43. Closes the loop R137 opened, R146 half-closed and
 R152 finished by hand: the sequence those three rulings are about existed in
@@ -10112,7 +10112,7 @@ Still genuinely parked, and untouched: Blightwalker's `[Switch1]` graft rider,
 the power/defense SWITCH, voluntary combat-damage over-assignment, burst-token
 cast order, Rotbeast's mod-moving approximation.
 
-## R156 — R65 is about the ERASE, not about the verb that caused it
+## R156 — R65 is about the ERASE, not about the verb that caused it (R262 corrects its erased-pile seat)
 
 *2026-08-25. Found while closing CARD-TODO #43; reported by the R153 agent as
 out of scope and confirmed by measurement before it was touched.*
@@ -10153,7 +10153,7 @@ its host leaves play`) on purpose. A per-route test would have passed on
 
 ---
 
-## R154 — the decision gate learns whose question it is, and what answering it will undo
+## R154 — the decision gate learns whose question it is, and what answering it will undo (its deployment hold amended by R286)
 
 *2026-08-25. CARD-TODO #44 — the half R150 could not reach. Playtest #98
 (SMVJ, action 238): "Rashi's start of combat (doing all her Wraith triggers)
@@ -10323,7 +10323,7 @@ what the queue still exists for; §3b and §4b are new.
    player still cannot use the other seat's now-legal deployment options. That
    is a presentation change, out of R154's scope, and reported rather than made.
 
-## R157 — the owner's answers to the 27 card questions of 2026-08-25
+## R157 — the owner's answers to the 27 card questions of 2026-08-25 (§17 limited by R221; §5 replaced by R261; §5 amended by R295; §23 amended by R264; §25 corrected by R305; §20 reversed by R326)
 
 *Bena, 2026-08-25, answering `Downloads/algomancy-card-rulings.md` in full.
 Verbatim quotes; the engine consequence follows each. Where the answer says the
@@ -10593,7 +10593,7 @@ over. Pinned by `test/135-exchange-and-zones.test.ts`.
 
 ---
 
-## R162 — the MULTIPLICATIVE amount layer, and 'shared' is constructed
+## R162 — the MULTIPLICATIVE amount layer, and 'shared' is constructed (its Rift repair replaced by R240; its fold replaced by R264; its reason corrected by R316)
 
 *(Implements R157 §2, §23 and §25. R104 built the additive amount family and
 named the multiplicative one as the thing it could not build; R157 §23 is the
@@ -10721,7 +10721,7 @@ Guarded by
 
 ---
 
-## R158 — the three cost contexts of an X card, and where an X spell's bill is paid
+## R158 — the three cost contexts of an X card, and where an X spell's bill is paid (its §3 Stasis Sentry price reversed by R326)
 
 *Engine consequence of R157 §1 and §20, implemented 2026-08-25. R157 is the
 ruling; this is the shape the engine took to obey it, recorded so the next
@@ -11876,7 +11876,7 @@ numbers is now a ticket with a shape rather than a share of one big number.
 
 ---
 
-## R172 — an ERASE is a despawn; the erase copies are one primitive; and a unit stolen mid-battle sits out until regroup
+## R172 — an ERASE is a despawn; the erase copies are one primitive; and a unit stolen mid-battle sits out until regroup (its erased-pile seat corrected by R262)
 
 *2026-08-25. Three related defects, all of the same shape: a route OUT of play
 that did not behave like the other routes out of play. R167 is the template and
@@ -12295,7 +12295,7 @@ above are recorded in its header.
 
 ---
 
-## R174 — a park note is a claim with a DATE on it, and three of them had outlived their reason
+## R174 — a park note is a claim with a DATE on it, and three of them had outlived their reason (its codeView repair replaced by R193)
 
 *(Round 26 stale-comment sweep. Structural — no player quote needed: every item
 below is a comment in `src/cards/sets/**` contradicted by the code sitting
@@ -12829,7 +12829,7 @@ test says so inline.
 
 ---
 
-## R184 — {Reaping} is a kill rider, and "target formation" can be targeted
+## R184 — {Reaping} is a kill rider, and "target formation" can be targeted (its per-body payout and no-reminder premise corrected by R283)
 
 Two primitives the pool's printed text was already asking for. Neither is a new
 ruling on the game; both are the engine catching up with words already on the
@@ -12944,7 +12944,7 @@ one, and the printed noun names it.
 
 ---
 
-## R178 — a condition belongs at the event; a *may* offered as you play is not an ability; and moving a mod moves everything, because nothing about it is stored
+## R178 — a condition belongs at the event; a *may* offered as you play is not an ability; and moving a mod moves everything, because nothing about it is stored (its §4 budget claim corrected by R331)
 
 Four things, and three of them are one shape: **the engine was asking the right
 question at the wrong moment.**
@@ -13566,7 +13566,7 @@ panel — rather than pretending to watch an event bubble it cannot see.
 
 ---
 
-## R190 — Reminder text: the printed card, the glossary, and the one list of upstream errors
+## R190 — Reminder text: the printed card, the glossary, and the one list of upstream errors (its Glimpse row amended by R206; its Rift row corrected by R240)
 
 **Report #106 (GYSR, action 154) was triaged wrong, and the wrong triage is the
 interesting part.** The report says: *"The reminder text for Glimpsing is wrong — it
@@ -13657,7 +13657,7 @@ the check fires. `122-cardtext-markup.test.ts` independently asserts that
 
 ---
 
-## R188 ⚠ OPEN QUESTION — a Glimpse reveal is public, but is it public *at the barrier* or *at the moment*?
+## R188 ⚠ OPEN QUESTION — a Glimpse reveal is public, but is it public *at the barrier* or *at the moment*? (absorbed into R310, after R235 answered it; ⚠ resolved by R310)
 
 **Report #104 (GYSR, CT-71), the owner's words:** *"Glimpse is supposed to
 REVEAL the cards, but opponents cannot see them right now."*
@@ -13857,7 +13857,7 @@ it.
 
 ---
 
-## R189 — a batch that is simultaneous in the rules must LOOK simultaneous, and a sequence must look sequential
+## R189 — a batch that is simultaneous in the rules must LOOK simultaneous, and a sequence must look sequential (its departure amended by R242; its sub-step examples replaced by R261)
 
 Playtest report #105 (GYSR, 2026-08-25), carried as CARD-TODO #72:
 
@@ -14087,7 +14087,7 @@ the consumer of this signal. Until it lands, **a change to `referenceKey`'s
 spelling is a change to the saved-game format.**
 ---
 
-## R193 — an exemption list that nothing checks is a blanket; and the sweep that says "clean" over `ui/` is not looking
+## R193 — an exemption list that nothing checks is a blanket; and the sweep that says "clean" over `ui/` is not looking (its ui/ exclusion replaced by R201)
 
 CARD-TODO #68. Two defects in `147-comment-conformance.test.ts` §4, the sweep
 that fails a helper with zero call sites. Both are the same shape as the rot the
@@ -14372,7 +14372,7 @@ the cost of waiting was measured in dead prefixes per round.
 
 ---
 
-## R195 — a combat life loss says WHICH columns dealt it, so "a unit deals combat damage to a player" is a question with an answer
+## R195 — a combat life loss says WHICH columns dealt it, so "a unit deals combat damage to a player" is a question with an answer (its replaced-hit reading amended by R238)
 
 `docs/16-divergence-inventory.md` §2a, row **PER-COLUMN FACE DAMAGE**;
 CARD-TODO #50. Nine cards, not the six the inventory names.
@@ -14906,7 +14906,7 @@ is still on the stack and that the opponent holding priority can read the chosen
 N off it before deciding. Every one reddens when its card is reverted.
 ---
 
-## R197 — an option list is not "any number"; a play window is not "right now"; and an unreachable premise is a finding, not a fix
+## R197 — an option list is not "any number"; a play window is not "right now"; and an unreachable premise is a finding, not a fix (its §3 Cinder Scuttler gap corrected by R238)
 
 Three rows of `docs/16-divergence-inventory.md` §2b, one card each. Two were
 real and are closed. **The third had an unreachable premise and nothing was
@@ -15744,7 +15744,7 @@ Two things the ticket said that the measurement corrected:
 
 ---
 
-## R206 — the glossary is a rules document, and 15 of its 43 rows were wrong
+## R206 — the glossary is a rules document, and 15 of its 43 rows were wrong (its Prophecy row corrected by R279; its Unaware and Prismite rows amended by R281; its Trash row reversed by R306)
 
 *(CT-80 + CT-76, 2026-08-26. Round 28. Written to the round scratchpad because
 the working agent may not edit this file; the orchestrator lands it.)*
@@ -15989,7 +15989,7 @@ Each test was run against the pre-fix code and observed to fail:
 
 ---
 
-## R208 — `E.eraseMod`: one door for taking a mod off a living host, built so a ruling can still be answered in one place
+## R208 — `E.eraseMod`: one door for taking a mod off a living host, built so a ruling can still be answered in one place (its held no-filing reversed by R219)
 
 CT-86's buildable half. The ticket's other half — *does a mod erased as a COST
 belong on the R65 public erased pile?* — is round-27's **Q3/Q9 and is
@@ -16322,7 +16322,7 @@ exactly like documentation.**
 
 ---
 
-## R212 — "for each" binds to the clause it is attached to, not to the whole sentence
+## R212 — "for each" binds to the clause it is attached to, not to the whole sentence (withdrawn by R234)
 
 **Card:** Torrential Reclamation (br/X, 1/3, {Battle} Elemental Spell)
 
@@ -17039,7 +17039,7 @@ findings, one was a real defect and one was the instrument misreading a card.
 
 ---
 
-## R222 — a reveal inside a hidden simultaneous step is public IMMEDIATELY
+## R222 — a reveal inside a hidden simultaneous step is public IMMEDIATELY (superseded by R310)
 
 *(2026-08-28, round 29. Owner ruling on round-27 Q1 / CARD-TODO #77.)*
 
@@ -18029,7 +18029,7 @@ control by name, and the restore is byte-identical.
 
 ---
 
-## R235 — A reveal inside a hidden simultaneous step is public IMMEDIATELY
+## R235 — A reveal inside a hidden simultaneous step is public IMMEDIATELY (superseded by R310)
 
 > **Superseded by [R310](#r310--a-glimpse-inside-a-hidden-step-waits-for-the-reveal-reverses-r235)** (owner, 2026-10-04): a glimpse inside a hidden step now waits for the barrier and plays in the recap. Kept for the history. The guard named below was renamed `server/test/203-reveal-waits-for-the-barrier.test.ts` and now pins the reverse.
 
@@ -18383,7 +18383,7 @@ inspector both print.
 
 ---
 
-## R239 — Region scoping is absolute
+## R239 — Region scoping is absolute (narrowed by R243)
 
 **Owner, 2026-08-28**, asked whether a region-scoped effect can reach a player who is not in the
 region:
@@ -19352,7 +19352,7 @@ so; whoever takes the handoff must replace, not add.
   ruled. Named here so the next reader can check it deliberately.
 
 
-## R244 — a mod is PART of the unit it sits on: the host's controller trashes it, and a mod erased with its host is not trashed at all
+## R244 — a mod is PART of the unit it sits on: the host's controller trashes it, and a mod erased with its host is not trashed at all (its §1 destination paragraph reversed by R250)
 
 *(Owner, 2026-08-29, from playtest report #129 / room DSVQ, actionIndex 117.
 **This ruling OVERRULES one section of [R137](#r137--an-unstable-unit-that-dies-is-trashed-it-passes-through-the-bin-then-is-erased)
@@ -19945,7 +19945,7 @@ now been wrong in each direction once; a third guess is not acceptable.
 
 ---
 
-## R252 — the manual is the second reminder channel, and it covers seven rows (report #118)
+## R252 — the manual is the second reminder channel, and it covers seven rows (report #118) (its Ambush row and §3/§4 claim corrected by R267)
 
 > Report #118, 2026-08-29, Bena verbatim, answering Q7: *"No, many of the things
 > in the client are NOT what's printed on the card and/or in the rules. Piercing,
@@ -20159,7 +20159,7 @@ one board and two modes, §2 the real client over the real wire).
 [68] still pass unedited — a pre-R251 arm carries no mode and means what it
 always meant.
 
-## R250 — Cosmic Reversal reaches the board; every trigger is respondable except where R3 says nobody has priority; and ZONES FOLLOW CONTROL
+## R250 — Cosmic Reversal reaches the board; every trigger is respondable except where R3 says nobody has priority; and ZONES FOLLOW CONTROL (its §3 combat half reversed by R261; its deployment half amended by R286; its §1 amended by R335 and R336)
 
 *(Owner, 2026-08-29, round-31 answer sheet Q1/Q4/Q5 plus the follow-up on Q5.
 Answers playtest reports #119 and #121, closes CARD-TODO #112 and #114, and
@@ -20557,7 +20557,7 @@ Both go green on restore.
 
 Related: R259 (the mirror failure on question sheets, same round, same shape —
 the register and a ledger disagreeing with nothing to notice).
-## R257 — a card explains what its TEXT names, not only what its type line carries; the browser and the inspector read the same glossary
+## R257 — a card explains what its TEXT names, not only what its type line carries; the browser and the inspector read the same glossary (its No-skip bullet amended by R282)
 
 *(Round 32, agent F. Closes CT-129 and CT-130. Answers the two paragraphs of the
 owner's Q7 message in `docs/questions-round31.md` that round 31 read past when it
@@ -20697,7 +20697,7 @@ and does not add one now, so those four cards are correctly explained after this
 ruling and merely look wrong. Fixing them is an **oracle-data** change, out of
 this ruling's scope, and is ticketed separately.
 
-## R256 — A RESTRICTIVE CLAUSE ON THE TARGET NOUN IS ASKED AT CAST, and the pool is swept for the rest
+## R256 — A RESTRICTIVE CLAUSE ON THE TARGET NOUN IS ASKED AT CAST, and the pool is swept for the rest (its never-re-asked remark amended by R324)
 
 *(Playtest report #134, round 32, 2026-08-29. CT-127. Third instance of the
 shape R64 and R88 already ruled on — see [R64](#r64), [R88](#r88--target-effect-targeting-me-is-a-targeting-restriction-and-a-virus-targets-its-host).)*
@@ -21120,7 +21120,7 @@ paints nothing at all", so open and shut the rules overlay to force a repaint �
 are now describing something that no longer happens; they are harmless and
 their comments want rewriting.
 
-## R254 — HOW MANY, AND OF WHAT SIZE: a burst group is a NAME, and X belongs where the next card cannot cover it (report #132)
+## R254 — HOW MANY, AND OF WHAT SIZE: a burst group is a NAME, and X belongs where the next card cannot cover it (report #132) (its §2 fixed order amended by R309)
 
 > Report #132, room PUCG, actionIndex 132: *"When casting a bunch of burst
 > spells, it's very hard to tell how many you have left and of which sizes they
@@ -21890,7 +21890,7 @@ Nineteen tier-1 announcements remain log-only. That is a ticket list, not a bug 
 
 ---
 
-## R261 — Combat-damage triggers resolve AFTER combat, on the stack, respondable
+## R261 — Combat-damage triggers resolve AFTER combat, on the stack, respondable (narrowed by R295)
 
 Owner, 2026-08-30, answering the round-32 sheet's **Q1** — the open half of playtest
 report **#119** (room YFUE) and ticket **CT-112**:
@@ -22958,7 +22958,7 @@ stripped before the scan, exactly as `main.ts`'s two log tables always were, and
 tally is 27 as before. The blindness was structural and is fixed; the measurement was
 right all along.
 
-## R277 — the [Haste] on a prophecy banner marks the PROPHESY window, not the release; R42 already said so and the engine did the opposite
+## R277 — the [Haste] on a prophecy banner marks the PROPHESY window, not the release; R42 already said so and the engine did the opposite (R301 replaces its no-affinity aside)
 
 *(Round 35, reports #151 and #152, CT-166 and CT-167. Not a new rules call on
 the release: R42 settled that in 2026-08-19 and this ruling records that the
@@ -23251,7 +23251,7 @@ board-counting `when` clause evaluated during the batch. R278 is about
 still not an ally for a count, and still gone from `s.entities` everywhere but
 the listener scan of the batch it died in.
 
-## R279 — What a card says about itself: a live value goes into the printed sentence, and one fact is stated once
+## R279 — What a card says about itself: a live value goes into the printed sentence, and one fact is stated once (its §2 copy premise replaced by R336)
 
 Round 35, room ZSPG (replays faithfully at HEAD, 236/236 actions, 0 refused,
 engine `e8aed524a8` — the deployed commit). Four owner reports, one surface:
@@ -24396,7 +24396,7 @@ to be an ally, so the only pick that could be wrong is the one being asked
 about. Escape still takes the whole cast back, one layer at a time, as it
 always did.
 
-## R289 — {Pure} outside combat: the same switch, per pairing
+## R289 — {Pure} outside combat: the same switch, per pairing (its ownAttrs sentence replaced by R294)
 
 *(2026-09-05. The glossary's Pure entry ended "(Outside combat: not implemented
 yet.)"; asked whether to reword it before showing the client to people, the
@@ -26218,7 +26218,7 @@ two-target spell has to take both, and only a third slot would be free.
   the Gatekeeper is still refused while no other slot holds it.
 - Guard: `engine/test/382-gatekeeper-multi-target.test.ts`.
 
-## R315 — {Resonant} is its source's trigger: damage, on the stack
+## R315 — {Resonant} is its source's trigger: damage, on the stack (its ⚠ replaced by R325: the rider reads last-known state)
 
 *(RAQ audit 2026-10-09, CT-200 and CT-212. The RAQ is the authority — the owner,
 2026-10-09: "Trust the RAQ over our rulings. Those are the actual judges.")*
@@ -26294,7 +26294,7 @@ with no ruling behind it, and the thread says otherwise.
 - Guard: `engine/test/387-raq-combat.test.ts`, "RAQ Resonant: Conduit adds its 1
   BEFORE Powerful doubles".
 
-## R317 — {Electric}'s jump is optional, and excess with nowhere to go is dealt
+## R317 — {Electric}'s jump is optional, and excess with nowhere to go is dealt (its Piercing dead end amended by R340: elective)
 
 *(RAQ audit 2026-10-09, CT-204. Extends R4.)*
 
@@ -26359,7 +26359,7 @@ Squish's damage included.
   Squish does not double" and "RAQ Squish: a Robot 10 squishing Unaware Bubb";
   `engine/test/399-raq-fix-combat.test.ts`, the two "R318: Fight" tests.
 
-## R319 — {Piercing} is elective in combat (reverses R7's "automatic")
+## R319 — {Piercing} is elective in combat (reverses R7's "automatic"; its noncombat note reversed by R340)
 
 *(RAQ audit 2026-10-09, CT-223. The RAQ is the authority — the owner, 2026-10-09:
 "Trust the RAQ over our rulings." Reverses the Piercing half of R7.)*
