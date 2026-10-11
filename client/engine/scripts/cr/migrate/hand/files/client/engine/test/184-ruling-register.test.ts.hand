@@ -110,6 +110,9 @@ const ALLOWED: { file: string; match: string; why: string }[] = [
   { file: 'ui/test/214-deck-page-wiring.test.ts', match: 'R1: it works', why: 'fixture: an arbitrary rulings line the card panel must show and not leak; not a citation' },
   { file: 'engine/test/184-ruling-register.test.ts', match: 'R', why: 'this file: the scans\' own positive controls and the allowlist itself' },
   { file: 'engine/scripts/cr/check.mjs', match: 'R', why: 'machinery: the doc of uncite(), which still reads the retired forms in frozen verdict spans' },
+  { file: 'ledgers/card-todo.ts', match: 'R157 §20 —', why: 'machinery: CT-235 quotes 133\'s pre-migration titles as its evidence; the retitle resolved its item (1)' },
+  { file: 'ledgers/card-todo.ts', match: 'R11: regroup runs its exact sequence', why: 'machinery: an open entry\'s evidence quotes a test title as it stood when filed' },
+  { file: 'ledgers/card-todo-closed.ts', match: 'R157 §17', why: 'freeze: CT-101\'s closing notes describe the retired 202 guard\'s control, as history' },
 ];
 const allowedLine = (rel: string, line: string): boolean => ALLOWED.some(a => a.file === rel && line.includes(a.match));
 
