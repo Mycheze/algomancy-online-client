@@ -1,0 +1,715 @@
+{
+ "decisions": {
+  "client/engine/src/apply.ts##R123#c673494e21#0": {
+   "action": "cite",
+   "nums": [
+    "504.7"
+   ],
+   "find": "R123: an erase-funded play (Writhing Host) is its own route",
+   "replace": "An erase-funded play (Writhing Host, CR 504.7) is its own route",
+   "note": "504.7 example is Writhing Host; 504.7 is not a rule about routes"
+  },
+  "client/engine/src/apply.ts##R96#1c163171c6#0": {
+   "action": "reword",
+   "find": "no R96 permission",
+   "replace": "no blanket bin permission",
+   "note": "405.9 is not a permission"
+  },
+  "client/engine/src/apply.ts##R197#9094150916#0": {
+   "action": "cite",
+   "nums": [
+    "405.9"
+   ],
+   "find": "R197: the SINGLE-CARD grant",
+   "replace": "The SINGLE-CARD grant (CR 405.9)",
+   "note": ""
+  },
+  "client/engine/src/apply.ts##R96#fbd352c5c4#0": {
+   "action": "reword",
+   "find": "from R96's blanket grant",
+   "replace": "from Abyssal Evocation's blanket grant",
+   "note": "R96 = Abyssal Evocation grant; no CR rule is a grant"
+  },
+  "client/engine/src/apply.ts##R96#f252df006b#0": {
+   "action": "cite",
+   "nums": [
+    "405.9a"
+   ],
+   "find": "R96 vs R123 on {Unstable}:",
+   "replace": "{Unstable} on a bin play (CR 405.9a):",
+   "note": "803.8d is duration, not this"
+  },
+  "client/engine/src/apply.ts##R123#f252df006b#0": {
+   "action": "cite",
+   "nums": [
+    "405.9a"
+   ],
+   "find": "R96 vs R123 on {Unstable}:",
+   "replace": "{Unstable} on a bin play (CR 405.9a):",
+   "note": "same edit as R96"
+  },
+  "client/engine/src/engine.ts##R319#06c5a70852#0": {
+   "action": "cite",
+   "nums": [
+    "802.16c"
+   ],
+   "find": "R319 had already made the combat strike\n     * elective and left this path automatic (R103's 2026-08-23 ruling).",
+   "replace": "An earlier fix had already made the combat strike\n     * elective (CR 802.16c) and left this path automatic (the 2026-08-23 ruling).",
+   "note": "two-line edit, covers R103"
+  },
+  "client/engine/src/engine.ts##R103#bcc677d98f#0": {
+   "action": "reword",
+   "find": "R319 had already made the combat strike\n     * elective and left this path automatic (R103's 2026-08-23 ruling).",
+   "replace": "An earlier fix had already made the combat strike\n     * elective (CR 802.16c) and left this path automatic (the 2026-08-23 ruling).",
+   "note": "same edit as R319"
+  },
+  "client/engine/src/engine.ts##R184#a9a5a3fa44#0": {
+   "action": "reword",
+   "find": "which is why R184 built this attribute without it.",
+   "replace": "which is why the attribute was first built without it.",
+   "note": "keeps period"
+  },
+  "client/engine/src/engine.ts##R12#b8bb8fada1#0": {
+   "action": "cite",
+   "nums": [
+    "101.6"
+   ],
+   "find": "(R12: other regions do not exist)",
+   "replace": "(CR 101.6: other regions do not exist)",
+   "note": "101.6 states it; 601.2 does not"
+  },
+  "client/engine/src/engine.ts##R286#319ce39edd#0": {
+   "action": "cite",
+   "nums": [
+    "507.5"
+   ],
+   "find": "⚠ R286 EMPTIED THE CASE THIS WAS BUILT FOR.",
+   "replace": "⚠ DEPLOYMENT MOVING ONTO THE STACK (CR 507.5) EMPTIED THE CASE THIS WAS BUILT FOR.",
+   "note": "keeps sentence break"
+  },
+  "client/engine/src/engine.ts##R195#07120ff138#0": {
+   "action": "reword",
+   "find": "Bloodwind Revenant (R195 put",
+   "replace": "Bloodwind Revenant (the per-column attribution fix put",
+   "note": "engine fix, not a rule"
+  },
+  "client/engine/src/engine.ts##R261#af98abe7fd#0": {
+   "action": "cite",
+   "nums": [
+    "608.9b"
+   ],
+   "find": "R261 only",
+   "replace": "holding the queue to after combat (CR 608.9b) only",
+   "note": "lowercase, keeps line 12053"
+  },
+  "client/engine/src/engine.ts##R195#44a21e5b8c#0": {
+   "action": "reword",
+   "find": "R195 carried the live",
+   "replace": "The per-column attribution fix carried the live",
+   "note": "a rule carries nothing"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R12#18e1722904#0": {
+   "action": "cite",
+   "nums": [
+    "101.6"
+   ],
+   "find": "region-scoped (R12)",
+   "replace": "region-scoped (CR 101.6)",
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R12#2847b72a0c#0": {
+   "action": "cite",
+   "nums": [
+    "101.6"
+   ],
+   "find": "and R12 fences information crossing",
+   "replace": "and the region rule (CR 101.6) fences effects crossing",
+   "note": "601.2 says nothing of fences"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R119#af5f4fbf66#0": {
+   "action": "cite",
+   "nums": [
+    "111.10k"
+   ],
+   "find": "Everything else in R119",
+   "replace": "Everything else about the charge (CR 111.10k)",
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-metal-a.ts##R118#ce28d69739#0": {
+   "action": "cite",
+   "nums": [
+    "710.7"
+   ],
+   "find": "OFFERED and ACCEPTED as of R118's second half:",
+   "replace": "OFFERED and ACCEPTED too (CR 710.7):",
+   "note": "no second half of a rule"
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R97#a9e0dbcdc1#0": {
+   "action": "cite",
+   "nums": [
+    "303.6"
+   ],
+   "find": "(docs/digital-rules, R97/R123 sections;",
+   "replace": "(CR 303.6;",
+   "note": "deleted file pointer"
+  },
+  "client/engine/src/cards/sets/batch-water-a.ts##R123#a9e0dbcdc1#0": {
+   "action": "cite",
+   "nums": [
+    "303.6"
+   ],
+   "find": "(docs/digital-rules, R97/R123 sections;",
+   "replace": "(CR 303.6;",
+   "note": "same edit"
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R96#5640fed392#0": {
+   "action": "cite",
+   "nums": [
+    "803.8c"
+   ],
+   "find": "and R96's `viaGrant` stamp is what",
+   "replace": "and the bin grant's `viaGrant` stamp (CR 803.8c) is what",
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R65#ef817b83eb#0": {
+   "action": "cite",
+   "nums": [
+    "407.1"
+   ],
+   "find": "real R65 pile",
+   "replace": "real erased pile (CR 407.1)",
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R197#f318bd998a#0": {
+   "action": "cite",
+   "nums": [
+    "702.2a"
+   ],
+   "find": "R197 shrank this to what the printed noun and R157 §12 between them allow:",
+   "replace": "This is narrowed to what the printed noun and CR 702.2a between them allow:",
+   "note": "one number once"
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R157#f318bd998a#0": {
+   "action": "cite",
+   "nums": [
+    "702.2a"
+   ],
+   "find": "R197 shrank this to what the printed noun and R157 §12 between them allow:",
+   "replace": "This is narrowed to what the printed noun and CR 702.2a between them allow:",
+   "note": "same edit"
+  },
+  "client/engine/src/cards/sets/batch-water-b.ts##R96#ee550bb4e4#0": {
+   "action": "reword",
+   "find": "already applies to R96's grant.",
+   "replace": "already applies to Abyssal Evocation's blanket grant.",
+   "note": "702.2a is not a grant"
+  },
+  "client/engine/src/cards/sets/batch-wood-b.ts##R184#97da341d96#0": {
+   "action": "reword",
+   "find": "R184 moved",
+   "replace": "A later fix moved",
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-wood-b.ts##R48#afd8eff9d8#0": {
+   "action": "cite",
+   "nums": [
+    "802.21b",
+    "802.23c"
+   ],
+   "find": "(the R48 {Afflicting} one)",
+   "replace": "(the one {Afflicting} uses; CR 802.21b, 802.23c)",
+   "note": ""
+  },
+  "client/ui/flash.ts##R80#f452b27e34#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "find": "R80 widens the same idea from stack items to NARRATIVE BEATS",
+   "replace": "The same idea also covers NARRATIVE BEATS, not just stack items (CR D5.4)",
+   "note": ""
+  },
+  "client/ui/inspect.ts##R99#6444da5e01#0": {
+   "action": "reword",
+   "find": "left alone in\n * R99)",
+   "replace": "left alone when the menu was narrowed)",
+   "note": "two-line edit fixes \"))\""
+  },
+  "client/ui/main.ts##R154#5a9bc4b479#0": {
+   "action": "cite",
+   "nums": [
+    "D2.1b"
+   ],
+   "find": "R154 taught\n   * the engine that",
+   "replace": "Per CR D2.1b,\n   * the engine knows that",
+   "note": ""
+  },
+  "client/ui/main.ts##R150#8b7f4aa5aa#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "find": "R150 only moved WHEN it runs",
+   "replace": "the pacing queue (CR D5.4) only moved WHEN it runs",
+   "note": "D1.1 moved nothing"
+  },
+  "client/ui/main.ts##R197#27dd4b6b7d#0": {
+   "action": "cite",
+   "nums": [
+    "D7.2a"
+   ],
+   "find": "R197 adds the",
+   "replace": "CR D7.2a's typed box is the",
+   "note": ""
+  },
+  "client/ui/style.css##R255#5d553a5e07#0": {
+   "action": "cite",
+   "nums": [
+    "D6.18"
+   ],
+   "find": "which is R255's own report,",
+   "replace": "which is report #133, the bug behind CR D6.18,",
+   "note": ""
+  },
+  "client/server/rooms.ts##R191#ef61886840#0": {
+   "action": "drop",
+   "find": "This is what R191's restart comparison",
+   "replace": "This is what the restart comparison",
+   "note": "no CR rule covers restart drift; 706.13 was wrong"
+  },
+  "client/server/scenarios-e.ts##R162#bac99685d9#0": {
+   "action": "cite",
+   "nums": [
+    "901.7b"
+   ],
+   "find": "R162 folded 'shared'",
+   "replace": "A shared game counts as constructed (CR 901.7b), which folds 'shared'",
+   "note": ""
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R3#6b93c5e6ff#0": {
+   "action": "freeze",
+   "note": "quote of the test as it used to read; keep verbatim (184 allowlist)"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R3#c7dd9bba0b#0": {
+   "action": "freeze",
+   "note": "quote of former test text"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#789ed11580#0": {
+   "action": "freeze",
+   "note": "quote of former test text"
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R3#1944f2e2db#0": {
+   "action": "freeze",
+   "note": "quote of former test text"
+  },
+  "client/engine/test/265-live-slots-without-a-board.test.ts##R274#0d20f5fb31#0": {
+   "action": "cite",
+   "nums": [
+    "D7.5"
+   ],
+   "find": "(R274 found that one the hard way)",
+   "replace": "(an earlier refusal bug found that one the hard way; CR D7.5)",
+   "note": ""
+  },
+  "client/engine/test/298-column-attrs-outside-combat.test.ts##R294#bc990fd2e8#0": {
+   "action": "cite",
+   "nums": [
+    "712.8a"
+   ],
+   "find": "R294 is the change that would",
+   "replace": "The column-sharing rule (CR 712.8a) is what would",
+   "note": ""
+  },
+  "client/engine/test/43-dark-c.test.ts##R31#2247b78334#0": {
+   "action": "freeze",
+   "note": "quote of the old assertion message"
+  },
+  "client/engine/test/43-dark-c.test.ts##R31#294815ec52#0": {
+   "action": "cite",
+   "nums": [
+    "801.2a"
+   ],
+   "find": "R31's finding is untouched:",
+   "replace": "That part still holds (CR 801.2a):",
+   "note": ""
+  },
+  "client/engine/test/47-costs-events.test.ts##R49#619eb4659a#0": {
+   "action": "drop",
+   "find": "R49: Entity.spawnedTurn",
+   "replace": "Entity.spawnedTurn",
+   "note": "no dangling colon"
+  },
+  "client/engine/test/60-cast-time-targets.test.ts##R5#eb06fca8dc#0": {
+   "action": "cite",
+   "nums": [
+    "704.6"
+   ],
+   "note": "704.6 is the fizzle rule"
+  },
+  "client/engine/test/stripcode.ts##R140#396bb58797#0": {
+   "action": "reword",
+   "find": "(R140's three\n *    fixed cards)",
+   "replace": "(three cards fixed in one round showed it)",
+   "note": ""
+  },
+  "client/ui/test/261-glossary-basis.test.ts##R42#0a2436a722#0": {
+   "action": "reword",
+   "find": "which is the shape R42 had on",
+   "replace": "which is the shape the prophecy ruling had on",
+   "note": "HAND-OWNED: keeps line break + period"
+  },
+  "client/ui/test/261-glossary-basis.test.ts##R9#187fe97bf8#0": {
+   "action": "reword",
+   "find": "the shape R9 had on {Once}.",
+   "replace": "the shape a control-change ruling had on {Once}.",
+   "note": "HAND-OWNED"
+  },
+  "client/ui/test/52-ui-glossary.test.ts##R61#307183562e#0": {
+   "action": "reword",
+   "find": "for two days after R61 implemented",
+   "replace": "for two days after the engine implemented",
+   "note": "next line is \"it.\""
+  },
+  "client/docs/16-divergence-inventory.md##R157#3dc07d86ff#0": {
+   "action": "reword",
+   "find": "27 answers (**R157**).",
+   "replace": "27 answers of 2026-08-25.",
+   "note": ""
+  },
+  "client/docs/17-oracle-text-audit.md##R157#f7e5ef0ba5#0": {
+   "action": "reword",
+   "find": "Ruled by the owner in R157 §25.",
+   "replace": "Ruled by the owner on 2026-08-25.",
+   "note": "200.2 is not where the owner ruled"
+  },
+  "client/docs/questions-round28.md##R224#668c27f8ac#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ],
+   "find": "recorded as **R224**.",
+   "replace": "recorded as a numbered ruling (now **CR 504.5**).",
+   "note": "historical"
+  },
+  "client/docs/questions-round31.md##R55#54e43248e4#0~1": {
+   "action": "freeze",
+   "note": "verbatim screen dump the owner comments on (\"references R numbers\")"
+  },
+  "client/docs/questions-round31.md##R79#54e43248e4#0~1": {
+   "action": "freeze",
+   "note": "verbatim screen dump"
+  },
+  "client/docs/questions-round31.md##R89#54e43248e4#0~1": {
+   "action": "freeze",
+   "note": "verbatim screen dump"
+  },
+  "client/docs/questions-round31.md##R95#54e43248e4#0~1": {
+   "action": "freeze",
+   "note": "verbatim screen dump"
+  },
+  "client/docs/questions-round32.md##R248#8c40207993#0": {
+   "action": "cite",
+   "nums": [
+    "D6.11"
+   ],
+   "find": "so R248",
+   "replace": "so the {Balanced} glossary row (now CR D6.11)",
+   "note": ""
+  },
+  "client/ledgers/card-todo.ts##R207#cdfd17a206#0": {
+   "action": "reword",
+   "find": "never hear the play. R207 '",
+   "replace": "never hear the play. The retired register '",
+   "note": "706.13 records no divergence"
+  },
+  "client/ledgers/card-todo.ts##R263#c4746f72f1#0": {
+   "action": "reword",
+   "find": "recorded the divergence; R263 threaded",
+   "replace": "recorded the divergence; the played-from-zone fix threaded",
+   "note": "lowercase after semicolon"
+  },
+  "client/ledgers/card-todo.ts##R198#b51977423c#0": {
+   "action": "reword",
+   "find": "which R198 had already fixed.",
+   "replace": "which the mid-resolution stack fix had already fixed.",
+   "note": "keeps period"
+  },
+  "client/ledgers/card-todo.ts##R198#6510c38606#0": {
+   "action": "reword",
+   "find": "38 down R198\\'s PUSH path,",
+   "replace": "38 down the stack PUSH path,",
+   "note": "keeps comma"
+  },
+  "client/ledgers/card-todo.ts##R129#0b02716f23#0": {
+   "action": "cite",
+   "nums": [
+    "108.1a",
+    "706.13"
+   ],
+   "find": "which fires R129\\'s cardPlayed with R207\\'s item id",
+   "replace": "which fires cardPlayed (CR 108.1a) with the play\\'s item id (CR 706.13)",
+   "note": ""
+  },
+  "client/ledgers/card-todo.ts##R207#0b02716f23#0": {
+   "action": "cite",
+   "nums": [
+    "108.1a",
+    "706.13"
+   ],
+   "find": "which fires R129\\'s cardPlayed with R207\\'s item id",
+   "replace": "which fires cardPlayed (CR 108.1a) with the play\\'s item id (CR 706.13)",
+   "note": "same edit"
+  },
+  "client/ledgers/card-todo.ts##R263#a1faf79b2b#0": {
+   "action": "reword",
+   "find": "synthetic \"R263 '",
+   "replace": "synthetic \"zone '",
+   "note": "the rig is now named 'zone test rig' in 241; removes doubled 'test rig'"
+  },
+  "client/ledgers/card-todo.ts##R207#98b3ee9ce8#0": {
+   "action": "reword",
+   "find": "Yes — R207 already built the encoding",
+   "replace": "Yes — the engine already has the encoding",
+   "note": ""
+  },
+  "client/ledgers/card-todo.ts##R207#b54a3dbad9#0": {
+   "action": "reword",
+   "find": "R207 ruled that a cardPlayed with no `item` means",
+   "replace": "The engine reads a cardPlayed with no `item` as meaning",
+   "note": "706.13 says nothing of item-less plays"
+  },
+  "client/ledgers/card-todo.ts##R198#44b00fe158#0": {
+   "action": "reword",
+   "find": "alongside five of R198\\'s own tests.",
+   "replace": "alongside five of the mid-resolution stack tests.",
+   "note": ""
+  },
+  "client/ledgers/card-todo.ts##R263#d69a230006#0": {
+   "action": "freeze",
+   "note": "evidence string"
+  },
+  "client/ledgers/card-todo.ts##R286#d3825a021b#0": {
+   "action": "cite",
+   "nums": [
+    "D2.7a"
+   ],
+   "find": "R286 point 5: ",
+   "replace": "the owner\\'s full-control answer (CR D2.7a): ",
+   "note": "D2.7a has no point 5"
+  },
+  "client/ledgers/card-todo.ts##R286#6d46ff9aaf#0": {
+   "action": "freeze",
+   "note": "evidence string; quote is the register's"
+  },
+  "client/ledgers/card-todo.ts##R286#51ea65c826#0": {
+   "action": "reword",
+   "find": "where R286 says it is",
+   "replace": "where the owner says it is",
+   "note": "keeps the semicolon after the quote"
+  },
+  "client/ledgers/card-todo.ts##R295#608df99912#0": {
+   "action": "cite",
+   "nums": [
+    "608.3b"
+   ],
+   "find": "R295 amended R3: a split",
+   "replace": "CR 608.3b: a split",
+   "note": "rule, not change event"
+  },
+  "client/ledgers/card-todo.ts##R3#608df99912#0": {
+   "action": "cite",
+   "nums": [
+    "608.3b"
+   ],
+   "find": "R295 amended R3: a split",
+   "replace": "CR 608.3b: a split",
+   "note": "same edit"
+  },
+  "client/ledgers/card-todo.ts##R3#608df99912#1": {
+   "action": "freeze",
+   "note": "quoted test title"
+  },
+  "client/ledgers/card-todo.ts##R3#409afc96ea#0": {
+   "action": "freeze",
+   "note": "evidence string"
+  },
+  "client/ledgers/card-todo.ts##R3#409afc96ea#1": {
+   "action": "freeze",
+   "note": "evidence string"
+  },
+  "client/ledgers/card-todo.ts##R324#85f73bdb0f#0": {
+   "action": "cite",
+   "nums": [
+    "704.5a"
+   ],
+   "find": "(R324's encoding)",
+   "replace": "(CR 704.5a)",
+   "note": "no double parens"
+  },
+  "client/ledgers/card-todo.ts##R158#2ad950d565#0": {
+   "action": "cite",
+   "nums": [
+    "107.3a"
+   ],
+   "find": "R158 §1 says Living Vault refuses X cards in hand;",
+   "replace": "the retired register said Living Vault refuses X cards in hand (CR 107.3a: an X card in hand costs 0);",
+   "note": "keeps separator"
+  },
+  "client/ledgers/card-todo.ts##R72#2ad950d565#0": {
+   "action": "reword",
+   "find": "R72 says the client does not re-seed",
+   "replace": "the retired register said the client does not re-seed",
+   "note": ""
+  },
+  "client/ledgers/card-todo.ts##R87#2ad950d565#0": {
+   "action": "reword",
+   "find": "R87 asks for a declareBlocks:spellTokens facet",
+   "replace": "the retired register asked for a declareBlocks:spellTokens facet",
+   "note": "610.3 asks for nothing"
+  },
+  "client/ledgers/card-todo.ts##R27#2ad950d565#0": {
+   "action": "reword",
+   "find": "R27 words Embermaw",
+   "replace": "the retired register worded Embermaw",
+   "note": "602.6h does not say owns"
+  },
+  "client/ledgers/card-todo.ts##R276#2ad950d565#0": {
+   "action": "cite",
+   "nums": [
+    "D7.4"
+   ],
+   "find": "R276 (CT-142) toasts every one.",
+   "replace": "the client toasts every one (CT-142; CR D7.4).",
+   "note": ""
+  },
+  "line:client/ledgers/card-todo.ts:620": {
+   "action": "reword",
+   "find": "Mark each warning resolved in place, naming what resolved it (the test or ruling), in the register's existing convention; do not add an R heading for any of them. Update the RAQ note.",
+   "replace": "Update the RAQ note. (The register warnings this entry listed went with the register, 2026-10.)",
+   "note": "PSEUDO-ID: no citation on this line; fix text described a deleted file"
+  },
+  "line:client/ledgers/card-todo.ts:618": {
+   "action": "reword",
+   "find": "title: \"the ruling register and the RAQ ledger still carry open warnings and claims that later work has settled\",",
+   "replace": "title: \"the RAQ ledger (and, until 2026-10, the ruling register) still carry open warnings and claims that later work has settled\",",
+   "note": "PSEUDO-ID: title names the deleted register as live"
+  },
+  "client/ledgers/card-todo.ts##R71#8bb1e47c51#0": {
+   "action": "cite",
+   "nums": [
+    "110.4a"
+   ],
+   "find": "but R71 item 4 and R265 settled that",
+   "replace": "but CR 110.4a settles that",
+   "note": "one number once"
+  },
+  "client/ledgers/card-todo.ts##R265#8bb1e47c51#0": {
+   "action": "cite",
+   "nums": [
+    "110.4a"
+   ],
+   "find": "but R71 item 4 and R265 settled that",
+   "replace": "but CR 110.4a settles that",
+   "note": "same edit"
+  },
+  "client/ledgers/card-todo.ts##R157#8bb1e47c51#0": {
+   "action": "reword",
+   "find": "R157 §12 ruled it (",
+   "replace": "the owner ruled it on 2026-08-25 (",
+   "note": "keeps \"if the owner rules otherwise\"; quote untouched"
+  },
+  "client/ledgers/card-todo.ts##R197#8bb1e47c51#0": {
+   "action": "cite",
+   "nums": [
+    "702.2a"
+   ],
+   "find": ", as R197 records.",
+   "replace": ", and CR 702.2a states it.",
+   "note": "a rule is not a log"
+  },
+  "client/ledgers/card-todo.ts##R71#11ae818d6f#0": {
+   "action": "freeze",
+   "note": "evidence string"
+  },
+  "client/ledgers/card-todo.ts##R58#0d0e0f3253#0": {
+   "action": "freeze",
+   "note": "quoted test title"
+  },
+  "client/ledgers/card-todo.ts##R36#19d0c52391#0": {
+   "action": "cite",
+   "nums": [
+    "D1.2c"
+   ],
+   "find": "R36 (a lone sent counterattacker auto-forms)",
+   "replace": "CR D1.2c (a lone sent counterattacker auto-forms)",
+   "note": "D1.2 says the opposite"
+  },
+  "client/ledgers/card-todo.ts##R36#f477b251d1#0": {
+   "action": "cite",
+   "nums": [
+    "D1.2c"
+   ],
+   "find": "R36 says a round-2",
+   "replace": "CR D1.2c says a round-2",
+   "note": ""
+  },
+  "client/ledgers/card-todo.ts##R36#f477b251d1#1": {
+   "action": "cite",
+   "nums": [
+    "D1.2c"
+   ],
+   "find": "No ruling records the reversal and R36's heading carries no mark, so the register presents R36 as current. A register fix,",
+   "replace": "CR D1.2c still states the forced action, marked only as an engine divergence (F-U23-4). A rules fix,",
+   "note": "register gone"
+  },
+  "client/ledgers/card-todo.ts##R36#f477b251d1#2": {
+   "action": "cite",
+   "nums": [
+    "D1.2c"
+   ],
+   "find": "No ruling records the reversal and R36's heading carries no mark, so the register presents R36 as current. A register fix,",
+   "replace": "CR D1.2c still states the forced action, marked only as an engine divergence (F-U23-4). A rules fix,",
+   "note": "same edit"
+  },
+  "client/ledgers/card-todo.ts##R36#bd5e2dfaa6#0": {
+   "action": "freeze",
+   "note": "evidence string"
+  },
+  "client/ledgers/card-todo.ts##R36#5906681ac9#0": {
+   "action": "cite",
+   "nums": [
+    "D1.2c"
+   ],
+   "find": "Confirm with the owner that the audit reversed R36, then add the reversal mark to R36's heading (citing the ruling that reverses it, which the orchestrator writes; an agent never invents the R-number).",
+   "replace": "Confirm with the owner that the audit reversed the lone-counterattacker rule, then correct CR D1.2c in its record and re-render (if the audit was not the owner's call, the engine is wrong instead).",
+   "note": ""
+  },
+  "client/ledgers/card-todo.ts##R36#5906681ac9#1": {
+   "action": "cite",
+   "nums": [
+    "D1.2c"
+   ],
+   "find": "Confirm with the owner that the audit reversed R36, then add the reversal mark to R36's heading (citing the ruling that reverses it, which the orchestrator writes; an agent never invents the R-number).",
+   "replace": "Confirm with the owner that the audit reversed the lone-counterattacker rule, then correct CR D1.2c in its record and re-render (if the audit was not the owner's call, the engine is wrong instead).",
+   "note": "same edit"
+  },
+  "client/ledgers/card-todo.ts##R165#57d9d0aadc#0": {
+   "action": "cite",
+   "nums": [
+    "707.10"
+   ],
+   "find": "R165 and R168 both say so (",
+   "replace": "CR 707.10 states it, and two retired rulings said so (",
+   "note": "one number once; quote untouched"
+  },
+  "client/ledgers/card-todo.ts##R168#57d9d0aadc#0": {
+   "action": "cite",
+   "nums": [
+    "707.10"
+   ],
+   "find": "R165 and R168 both say so (",
+   "replace": "CR 707.10 states it, and two retired rulings said so (",
+   "note": "same edit"
+  }
+ }
+}

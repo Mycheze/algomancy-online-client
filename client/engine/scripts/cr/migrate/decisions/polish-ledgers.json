@@ -1,0 +1,323 @@
+{
+ "decisions": {
+  "client/ledgers/card-todo.ts##R312#94189f2e47#0": {
+   "action": "freeze",
+   "note": "evidence string"
+  },
+  "client/ledgers/card-todo.ts##R220#e03f191659#0": {
+   "action": "reword",
+   "find": "ransom. R220 fixed",
+   "replace": "ransom. The batch-E scenario round (2026-08-26/27) fixed",
+   "note": "R220 is dated 08-26/27; verdict was 08-27"
+  },
+  "client/ledgers/card-todo.ts##R220#d04439852c#0": {
+   "action": "reword",
+   "find": "R220 fixed the client defect",
+   "replace": "The batch-E scenario round fixed the client defect",
+   "note": ""
+  },
+  "client/ledgers/card-todo.ts##R262#624b72c5d5#0": {
+   "action": "cite",
+   "nums": [
+    "400.4"
+   ],
+   "find": "The owner's ruling (R262):",
+   "replace": "The owner's ruling (now CR 400.4):",
+   "note": "the ruling is not the CR rule"
+  },
+  "client/ledgers/card-todo.ts##R317#9ee4c5b16b#0": {
+   "action": "cite",
+   "nums": [
+    "802.17d",
+    "802.17e"
+   ],
+   "find": "R317 makes each hop optional",
+   "replace": "CR 802.17d and 802.17e make each hop optional",
+   "note": "802.17 is only the reminder; d/e state optional hops and no loss"
+  },
+  "client/ledgers/card-todo.ts##R317#df51053a33#0": {
+   "action": "cite",
+   "nums": [
+    "802.17d",
+    "802.17e"
+   ],
+   "note": "same"
+  },
+  "client/ledgers/card-todo.ts##R303#fb39988985#0": {
+   "action": "freeze",
+   "note": "evidence string (quoted test title)"
+  },
+  "client/ledgers/card-todo.ts##R344#a3511df00c#0": {
+   "action": "freeze",
+   "note": "evidence string"
+  },
+  "client/ledgers/card-todo.ts##R119#d20acfd531#0": {
+   "action": "reword",
+   "find": "and R119's table still lists the clear in E.startTurn",
+   "replace": "and the retired register's table listed the clear in E.startTurn",
+   "note": "CR has no table"
+  },
+  "client/ledgers/card-todo.ts##R224#d20acfd531#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ],
+   "find": "R224/R228 open it every turn",
+   "replace": "CR 504.5 opens it every turn",
+   "note": ""
+  },
+  "client/ledgers/card-todo.ts##R228#d20acfd531#0": {
+   "action": "cite",
+   "nums": [
+    "504.5"
+   ],
+   "find": "R224/R228 open it every turn",
+   "replace": "CR 504.5 opens it every turn",
+   "note": "same edit"
+  },
+  "client/ledgers/card-todo.ts##R326#d20acfd531#0": {
+   "action": "cite",
+   "nums": [
+    "107.5"
+   ],
+   "find": "R326 reversed §20.",
+   "replace": "§20 no longer holds (CR 107.5).",
+   "note": "rule, not change event"
+  },
+  "client/ledgers/card-todo.ts##R286#d20acfd531#0": {
+   "action": "cite",
+   "nums": [
+    "507.5"
+   ],
+   "find": "R286 amended R38.",
+   "replace": "deployment now has a stack (CR 507.5).",
+   "note": ""
+  },
+  "client/ledgers/card-todo.ts##R38#d20acfd531#0": {
+   "action": "cite",
+   "nums": [
+    "507.5"
+   ],
+   "find": "R286 amended R38.",
+   "replace": "deployment now has a stack (CR 507.5).",
+   "note": "same edit"
+  },
+  "client/ledgers/card-todo.ts##R328#d20acfd531#0": {
+   "action": "cite",
+   "nums": [
+    "712.2"
+   ],
+   "find": "R328 reversed the veto.",
+   "replace": "CR 712.2 says otherwise: a strip takes only what the unit has when it applies.",
+   "note": ""
+  },
+  "client/ledgers/card-todo.ts##R118#ab0cb5cf25#0": {
+   "action": "freeze",
+   "note": "evidence string"
+  },
+  "client/ledgers/card-todo.ts##R140#ab0cb5cf25#0": {
+   "action": "freeze",
+   "note": "evidence string"
+  },
+  "client/ledgers/card-todo.ts##R38#ab0cb5cf25#0": {
+   "action": "freeze",
+   "note": "evidence string"
+  },
+  "client/ledgers/card-todo.ts##R42#ab0cb5cf25#0": {
+   "action": "freeze",
+   "note": "evidence string"
+  },
+  "client/ledgers/card-todo.ts##R46#ab0cb5cf25#0": {
+   "action": "freeze",
+   "note": "evidence string"
+  },
+  "client/ledgers/card-todo.ts##R62#ab0cb5cf25#0": {
+   "action": "freeze",
+   "note": "evidence string"
+  },
+  "client/ledgers/card-todo.ts##R119#ef78ab0b28#0": {
+   "action": "drop",
+   "find": " Correct the R119 table row.",
+   "replace": "",
+   "note": "the table went with the register"
+  },
+  "line:client/ledgers/card-todo.ts:613": {
+   "action": "reword",
+   "find": " || still('engine/test/util.ts', 'appears when someone holds a payable haste card')",
+   "replace": "",
+   "note": "PSEUDO-ID, HAND EDIT (code): recite requotes this needle to ' */' (always true) because the util.ts sentence was deleted; and drop the trailing still('docs/digital-rules.md', ...) clause, which reads a deleted file"
+  },
+  "client/ledgers/card-todo.ts##R299#3883bb8b98#0": {
+   "action": "cite",
+   "nums": [
+    "106.8d"
+   ],
+   "find": "(R299 rules only the Prismite-into-Prismite case).",
+   "replace": "(CR 106.8d excludes only the Prismite-into-Prismite case).",
+   "note": "keeps \").\""
+  },
+  "client/ledgers/card-todo.ts##R299#8210a1f1d2#0": {
+   "action": "freeze",
+   "note": "evidence string"
+  },
+  "client/ledgers/card-todo.ts##R12#1117df3f39#0": {
+   "action": "freeze",
+   "note": "evidence string"
+  },
+  "client/ledgers/card-todo.ts##R11#9340eaf24e#0": {
+   "action": "freeze",
+   "note": "quoted test title"
+  },
+  "client/ledgers/card-todo.ts##R129#c6d4c0c426#0": {
+   "action": "cite",
+   "nums": [
+    "111.10e"
+   ],
+   "note": "111.10e: an Ambush is a card played"
+  },
+  "client/ledgers/card-todo.ts##R122#c6d4c0c426#0": {
+   "action": "reword",
+   "find": "R122 records the exclusion as an undecided future decision",
+   "replace": "The retired register recorded the exclusion as an undecided future decision",
+   "note": "a CR rule records no open decision"
+  },
+  "client/ledgers/card-todo.ts##R122#5efc2d4016#0": {
+   "action": "freeze",
+   "note": "evidence string"
+  },
+  "client/ledgers/card-todo.ts##R122#5efc2d4016#1": {
+   "action": "freeze",
+   "note": "evidence string"
+  },
+  "client/ledgers/card-todo.ts##R59#5efc2d4016#0": {
+   "action": "freeze",
+   "note": "evidence string"
+  },
+  "client/ledgers/card-todo.ts##R59#5efc2d4016#1": {
+   "action": "freeze",
+   "note": "evidence string"
+  },
+  "client/ledgers/card-todo.ts##R60#5efc2d4016#0": {
+   "action": "freeze",
+   "note": "evidence string"
+  },
+  "client/ledgers/card-todo.ts##R60#5efc2d4016#1": {
+   "action": "freeze",
+   "note": "evidence string"
+  },
+  "client/ledgers/card-todo.ts##R122#d2453167ae#0": {
+   "action": "reword",
+   "find": "Ask the owner (R122's open decision).",
+   "replace": "Ask the owner (the Ambush play-tax question is still open).",
+   "note": ""
+  },
+  "client/ledgers/card-todo.ts##R137#1281f945e3#0": {
+   "action": "reword",
+   "find": "R137 (owner, still current) deliberately bins",
+   "replace": "The engine, under an owner ruling of 2026-08-24 that is still in force, deliberately bins",
+   "note": "fixes \"still in force, current)\""
+  },
+  "client/ledgers/card-todo.ts##R137#680a568a9e#0": {
+   "action": "freeze",
+   "note": "evidence string"
+  },
+  "client/ledgers/card-todo.ts##R137#978f451ec4#0": {
+   "action": "reword",
+   "find": "flip the R137 guards in 224 and 35",
+   "replace": "flip the CT-246 guards in 224 and 35",
+   "note": "the guards are titled CT-246 now; 803.8m is unrelated"
+  },
+  "client/ledgers/card-todo.ts##R86#95029b562f#0": {
+   "action": "freeze",
+   "note": "evidence string"
+  },
+  "client/ledgers/card-todo.ts##R19#e8569a4d31#0": {
+   "action": "cite",
+   "nums": [
+    "709.4b"
+   ],
+   "find": "The engine follows R19's engine call (printed attributes before mod attributes), so it balances first:",
+   "replace": "The engine takes printed attributes before mod attributes (CR 709.4b, engine differs F-U16-4), so it balances first:",
+   "note": "keeps colon"
+  },
+  "client/ledgers/card-todo.ts##R19#e8569a4d31#1": {
+   "action": "reword",
+   "find": "R19's premise that the Manual is silent is wrong for this pair.",
+   "replace": "The old premise that the Manual is silent is wrong for this pair.",
+   "note": "keeps period"
+  },
+  "client/ledgers/card-todo.ts##R262#ace4804bb8#0": {
+   "action": "cite",
+   "nums": [
+    "720.9"
+   ],
+   "find": "R262 moved the erased pile of a mod erased off a living host from mod.owner to mod.controller",
+   "replace": "Zones follow control, so a mod erased off a living host is filed on mod.controller's erased pile, not mod.owner's (CR 720.9)",
+   "note": "rule, not change event; quote untouched"
+  },
+  "client/ledgers/card-todo.ts##R65#800fab3583#0": {
+   "action": "freeze",
+   "note": "evidence string"
+  },
+  "client/ledgers/card-todo.ts##R219#483fcacea4#0": {
+   "action": "cite",
+   "nums": [
+    "720.9a"
+   ],
+   "find": "R219: ",
+   "replace": "The retired register (now CR 720.9a): ",
+   "note": "the quote after it stays verbatim"
+  },
+  "client/ledgers/card-todo.ts##R133#483fcacea4#0": {
+   "action": "freeze",
+   "note": "inside a quotation of the register"
+  },
+  "client/ledgers/card-todo.ts##R65#483fcacea4#0": {
+   "action": "freeze",
+   "note": "inside a quotation of the register"
+  },
+  "client/ledgers/card-todo.ts##R133#051038098c#0": {
+   "action": "freeze",
+   "note": "evidence string"
+  },
+  "client/ledgers/card-todo.ts##R65#051038098c#0": {
+   "action": "freeze",
+   "note": "evidence string"
+  },
+  "client/ledgers/card-todo.ts##R289#452f8f8dad#0": {
+   "action": "reword",
+   "find": "R289 (and R61 as it reads it) keeps",
+   "replace": "The engine, as the retired register read it, keeps",
+   "note": ""
+  },
+  "client/ledgers/card-todo.ts##R61#452f8f8dad#0": {
+   "action": "reword",
+   "find": "R289 (and R61 as it reads it) keeps",
+   "replace": "The engine, as the retired register read it, keeps",
+   "note": "same edit"
+  },
+  "client/ledgers/card-todo.ts##R106#452f8f8dad#0": {
+   "action": "reword",
+   "find": "R106 says the combat Unaware collapse",
+   "replace": "the retired register said the combat Unaware collapse",
+   "note": "keeps the quote \"survives {Pure}\""
+  },
+  "client/ledgers/card-todo.ts##R61#c53624723e#0": {
+   "action": "freeze",
+   "note": "evidence string"
+  },
+  "client/ledgers/card-todo.ts##R61#c53624723e#1": {
+   "action": "freeze",
+   "note": "evidence string"
+  },
+  "client/ledgers/card-todo.ts##R245#144b06c8f2#0": {
+   "action": "cite",
+   "nums": [
+    "D2.4"
+   ],
+   "find": "R245(b):",
+   "replace": "CR D2.4:",
+   "note": "D2.4 has no (b)"
+  }
+ }
+}

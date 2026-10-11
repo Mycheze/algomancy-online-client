@@ -41,7 +41,8 @@
  *
  * It is a weak check on purpose. It cannot read a sentence and tell you the
  * ruling means it — nothing here can. What it CAN do is refuse a citation that
- * was attached to make a row look sourced, which is the shape the prophecy ruling had on cachedTiming and the shape a control-change ruling had on {Once}
+ * was attached to make a row look sourced, which is the shape the prophecy ruling had on
+ * `cachedTiming` and the shape a control-change ruling had on {Once}.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';

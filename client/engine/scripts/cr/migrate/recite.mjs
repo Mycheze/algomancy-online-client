@@ -59,7 +59,7 @@ export function loadDecisions(dir = DECISIONS_DIR) {
   // unsure pass), audit (corrections), fixups (exact find/replace) — a later file wins by id
   // precedence (orchestrator 2026-10-11): remediation-* > cleanup > M0xx units > the script's auto picks;
   // audit corrections sit between cleanup and remediation; exact fix-ups, then the leftover pass, on top
-  const layer = (f) => (/^cleanup/.test(f) ? 1 : /^audit/.test(f) ? 2 : /^remediation/.test(f) ? 3 : /^fixup/.test(f) ? 4 : /^leftover/.test(f) ? 5 : 0);
+  const layer = (f) => (/^cleanup/.test(f) ? 1 : /^audit/.test(f) ? 2 : /^remediation/.test(f) ? 3 : /^fixup/.test(f) ? 4 : /^leftover/.test(f) ? 5 : /^polish/.test(f) ? 6 : 0);
   for (const f of readdirSync(dir).filter((x) => x.endsWith('.json')).sort((a, b) => layer(a) - layer(b) || a.localeCompare(b))) {
     const j = JSON.parse(readFileSync(join(dir, f), 'utf8'));
     for (const [id, d] of Object.entries(j.decisions ?? {})) D.set(id, { ...d, unit: j.unit ?? f });
@@ -368,6 +368,9 @@ export function anchorReword(logical, p, q, suggest) {
   if (first && core(first[1]) && core(first[1]) === core(prevWord)) out = out.slice(first[0].length);
   if (last && out && core(last[2]) && core(last[2]) === core(nextWord)) out = out.slice(0, out.length - last[0].length);
   if (!out.trim()) { const sep = /^\s*[\/,;·]\s*/.exec(logical.slice(rb)); if (sep) rb2 = rb + sep[0].length; }
+  // a suggestion opening with "(" (or closing with ")") beside the original's own bracket would double it
+  if (out.startsWith('(') && /\(\s*$/.test(logical.slice(0, ra2))) out = out.slice(1);
+  if (out.endsWith(')') && /^\s*\)/.test(logical.slice(rb2))) out = out.slice(0, -1);
   return { a: ra2, b: rb2, text: out };
 }
 
@@ -478,6 +481,25 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
       report.visible.applied++;
       for (const r of rows) if (r.file === v.file && r.line && m.offs[r.line - 1] + r.col >= i && m.offs[r.line - 1] + r.col < i + v.find.length) consumed.add(r.id);
     }
+  }
+
+  /* 0a. line pseudo-ids (`line:<file>:<original line>`): an exact find/replace on a line no citation
+   *     row names (a fix text, a title, a proof clause), found within ±3 lines of that line, once */
+  report.lineEdits = { applied: 0, failed: [] };
+  for (const [id, d] of decisions) {
+    const m0 = /^line:(.+):(\d+)$/.exec(id);
+    if (!m0 || !d.find) continue;
+    const [, rel, ln] = m0;
+    if (!existsSync(join(root, rel))) { report.lineEdits.failed.push(`${id}: no such file`); continue; }
+    const m = model(rel);
+    const i = Number(ln) - 1;
+    const lo = m.offs[Math.max(0, i - 3)], hi = m.offs[Math.min(m.lines.length, i + 4)] ?? m.text.length;
+    const win = m.text.slice(lo, hi);
+    const at = win.indexOf(d.find);
+    if (at < 0 || win.indexOf(d.find, at + 1) >= 0) { report.lineEdits.failed.push(`${id}: find ${at < 0 ? 'not found' : 'found twice'} near line ${ln}`); continue; }
+    addEdit(rel, { a: lo + at, b: lo + at + d.find.length, text: d.replace ?? '', why: `line ${id}` });
+    report.lineEdits.applied++;
+    for (const r of rows) if (r.file === rel && r.line) { const o = m.offs[r.line - 1] + r.col; if (o >= lo + at && o < lo + at + d.find.length) consumed.add(r.id); }
   }
 
   /* 0b. card-todo proof needles are re-cut from their target file, never cited on their own */
@@ -607,7 +629,11 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
         const h = hits.filter((x) => x <= at && at < x + it.exact.act.find.length);
         const lit = strAt(m, at);
         if (h.length !== 1 || overlaps(rel, h[0], h[0] + it.exact.act.find.length, pol)) { report.rewordUnapplied.push({ id: it.exact.row.id, file: rel, line: ln, suggest: it.exact.act.replace, text: normLine(line).slice(0, 200), why: `exact find ${h.length ? 'overlaps' : 'not found around the citation'}` }); continue; }
-        addEdit(rel, { a: h[0], b: h[0] + it.exact.act.find.length, text: it.exact.act.replace, why: `exact ${it.exact.row.id}` });
+        // inside one string literal, the replacement may not end the literal early: escape its delimiter
+        const litA = strAt(m, h[0]), litB = strAt(m, h[0] + it.exact.act.find.length - 1);
+        let repl = it.exact.act.replace;
+        if (litA && litA === litB && litA.q !== '`') repl = repl.replace(new RegExp(`(?<!\\\\)${litA.q}`, 'g'), `\\${litA.q}`);
+        addEdit(rel, { a: h[0], b: h[0] + it.exact.act.find.length, text: repl, why: `exact ${it.exact.row.id}` });
         for (const r2 of rows) if (r2.file === rel && r2.line) { const o = m.offs[r2.line - 1] + r2.col; if (o >= h[0] && o < h[0] + it.exact.act.find.length) consumed.add(r2.id); }
         void lit;
         continue;
@@ -886,10 +912,18 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
     const es = [];
     for (const sp of spans) {
       if (sp.fn === 'rx' || sp.tok.t !== 'str') continue;
+      if ((editsOf.get(rel) ?? []).some((e) => sp.s < e.b && e.a < sp.e)) continue; // a hand-written edit took this clause
       const target = `client/${sp.target}`;
       const nq = requote(target, sp.tok.v);
       if (nq === null) continue;
-      if (!nq) { report.requoted.failed.push(`${rel}: still(${sp.target}, ${sp.tok.v.slice(0, 60)})`); continue; }
+      // a needle that lost its words would make the proof vacuously true (or false): never write it
+      const words = (x) => (String(x).match(/[A-Za-z0-9]{3,}/g) ?? []).length;
+      if (!nq || words(nq) < Math.max(2, Math.ceil(words(sp.tok.v) / 2))) {
+        report.requoted.failed.push(`${rel}: still(${sp.target}, '${sp.tok.v.slice(0, 60)}') would become '${String(nq ?? '').slice(0, 40)}'`);
+        report.selfCheck ??= [];
+        (report.needleFailures ??= []).push({ file: rel, why: `proof needle lost its words: '${sp.tok.v.slice(0, 60)}' → '${String(nq ?? '').slice(0, 40)}'`, text: sp.tok.v.slice(0, 120) });
+        continue;
+      }
       const q = m0.text[sp.s];
       es.push({ a: sp.s, b: sp.e, text: `${q}${esc(nq, q)}${q}` });
       report.requoted.needles++;
@@ -975,7 +1009,7 @@ export function recite({ cites, decisions = loadDecisions(), dryRun = false, roo
     if (ch) jsonOut.set(abs, JSON.stringify(j, null, indentOf(t)) + (t.endsWith('\n') ? '\n' : ''));
   }
 
-  report.selfCheck = [];
+  report.selfCheck = [...(report.needleFailures ?? []).map((x) => ({ ...x, line: 0 }))];
   const BADLINE = [/\bCR [\dD][\d.a-z]* (?:is|was) (?:REVERSED|reversed|narrowed|superseded|NARROWED|SUPERSEDED)\b/, /\b(CR [\dD][\d.a-z]*) = \1(?![\d.a-z])/, /\b(?:test|it)\(\s*['"`](?:test|it)\(/];
   const doubles = (l) => [...l.matchAll(/\b([A-Za-z]{2,})\s+\1\b/gi)].map((x) => x[1].toLowerCase()).filter((w) => !['that', 'had', 'is', 'very', 'no'].includes(w) || true);
   for (const [rel, t] of after) {

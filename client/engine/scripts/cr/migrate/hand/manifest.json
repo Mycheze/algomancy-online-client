@@ -210,6 +210,11 @@
      "find": "/\\*\\* does client/<rel> still match `re`\\? \\*/\\nconst rx = \\(rel: string, re: RegExp\\): boolean => re\\.test\\(text\\(rel\\)\\);\\n",
      "replace": "",
      "note": "the only rx() proof read the retired register; an unused helper fails tsc (TS6133)"
+    },
+    {
+     "find": " \\|\\| still\\('docs/digital-rules\\.md', '\\| \\*\\*clear\\*\\* [^']*'\\)",
+     "replace": "",
+     "note": "CT-235: the register leg reads a deleted file"
     }
    ]
   },

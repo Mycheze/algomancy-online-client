@@ -1,0 +1,954 @@
+{
+ "decisions": {
+  "client/docs/16-divergence-inventory.md##R159#31ef60296d#0": {
+   "action": "freeze",
+   "note": "inside the quotation \"R159's shared predicate\""
+  },
+  "client/docs/16-divergence-inventory.md##R159#31ef60296d#1": {
+   "action": "reword",
+   "find": "There is no R159.",
+   "replace": "There was no such ruling.",
+   "note": "quote left verbatim"
+  },
+  "client/docs/16-divergence-inventory.md##R195#2d3a39eabd#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "find": "| **R195** |",
+   "replace": "| **the per-column attribution fix (CR 608.9a)** |",
+   "note": ""
+  },
+  "client/docs/16-divergence-inventory.md##R159#2d3a39eabd#0": {
+   "action": "freeze",
+   "note": "inside a quotation"
+  },
+  "client/docs/16-divergence-inventory.md##R159#2d3a39eabd#1": {
+   "action": "reword",
+   "find": "**there is no R159**",
+   "replace": "**there was no such ruling**",
+   "note": ""
+  },
+  "client/docs/16-divergence-inventory.md##R157#2d3a39eabd#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "find": "it is R157 §4 with R117's sub-step gate inside it.",
+   "replace": "it is the per-column rule with its sub-step gate inside it (CR 608.9a).",
+   "note": "one number once"
+  },
+  "client/docs/16-divergence-inventory.md##R117#2d3a39eabd#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "find": "it is R157 §4 with R117's sub-step gate inside it.",
+   "replace": "it is the per-column rule with its sub-step gate inside it (CR 608.9a).",
+   "note": "one number once"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R305#00f3c2f71c#0": {
+   "action": "cite",
+   "nums": [
+    "702.7a"
+   ],
+   "find": "R305\n//    (owner, 2026-09-28):",
+   "replace": "The\n//    owner (2026-09-28, now CR 702.7a):",
+   "note": "quote untouched"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R162#08cca4856e#0": {
+   "action": "cite",
+   "nums": [
+    "708.6"
+   ],
+   "find": "R162 UN-PARKS",
+   "replace": "THE MULTIPLIER RULE (CR 708.6) UN-PARKS",
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R104#f519604ca5#0": {
+   "action": "reword",
+   "find": "R104's own",
+   "replace": "the replacement layer's own",
+   "note": "quote untouched"
+  },
+  "client/engine/src/engine.ts##R40#fe0de503c3#0": {
+   "action": "drop",
+   "find": "gives R40's",
+   "replace": "gives the",
+   "note": "quote untouched"
+  },
+  "client/engine/src/engine.ts##R244#5b94d1162a#0": {
+   "action": "reword",
+   "find": "[R244]'s",
+   "replace": "the mods ruling's",
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R244#a4257f254e#0": {
+   "action": "reword",
+   "find": "and R244 wrote that paragraph knowing",
+   "replace": "and that paragraph was written knowing",
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R71#2f18964253#0": {
+   "action": "reword",
+   "find": "the way R71's",
+   "replace": "the way the target of",
+   "note": "quote untouched"
+  },
+  "client/engine/src/types.ts##R71#9e78a649ab#0": {
+   "action": "reword",
+   "find": "(R71's ",
+   "replace": "(the retired ally ruling: ",
+   "note": "quote untouched"
+  },
+  "client/engine/test/19-hybrids.test.ts##R157#04c393adf7#0": {
+   "action": "reword",
+   "find": "{ x: 5 }), 5,\n    'R157 #20: ",
+   "replace": "{ x: 5 }), 5,\n    'the owner, 2026-08-25: ",
+   "note": "quote untouched"
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R69#f418b1945c#0": {
+   "action": "reword",
+   "find": "R69 (Bena 2026-08-21, reversing R40's old flat",
+   "replace": "The owner's ruling (Bena 2026-08-21, reversing the old flat",
+   "note": "quote untouched, parens balanced"
+  },
+  "client/engine/test/35-rot-debt-trash.test.ts##R40#f418b1945c#0": {
+   "action": "reword",
+   "find": "R69 (Bena 2026-08-21, reversing R40's old flat",
+   "replace": "The owner's ruling (Bena 2026-08-21, reversing the old flat",
+   "note": "quote untouched, parens balanced"
+  },
+  "client/ledgers/card-todo-closed.ts##R10#e322cec3e0#0": {
+   "action": "reword",
+   "find": "and R10\\'s",
+   "replace": "and the first Unaware ruling\\'s",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R137#5f98f48645#0": {
+   "action": "reword",
+   "find": "R137 is amended rather than left alone: R244 overrules its",
+   "replace": "The Unstable-trash ruling is amended rather than left alone: the mods ruling overrules its",
+   "note": "quote untouched"
+  },
+  "client/ledgers/card-todo-closed.ts##R244#5f98f48645#0": {
+   "action": "reword",
+   "find": "R137 is amended rather than left alone: R244 overrules its",
+   "replace": "The Unstable-trash ruling is amended rather than left alone: the mods ruling overrules its",
+   "note": "quote untouched"
+  },
+  "client/ledgers/card-todo-closed.ts##R7#76a2b77486#1": {
+   "action": "reword",
+   "find": "so R7 is reversed.",
+   "replace": "so the 2026-07-16 ruling is reversed.",
+   "note": ""
+  },
+  "client/ui/glossary.ts##R248#8198d6cab2#0": {
+   "action": "cite",
+   "nums": [
+    "D6.11a"
+   ],
+   "find": "⚠ R248 / report #118:",
+   "replace": "⚠ Report #118 (CR D6.11a):",
+   "note": "quoted old text untouched"
+  },
+  "client/ui/test/231-manual-text.test.ts##R248#a77ac91894#0": {
+   "action": "reword",
+   "find": "and R248 deleted that render",
+   "replace": "and a fix deleted that render",
+   "note": ""
+  },
+  "client/engine/src/apply.ts##R42#4f6328ad6b#0": {
+   "action": "reword",
+   "find": "R42 said the banner was",
+   "replace": "An old ruling said the banner was",
+   "note": ""
+  },
+  "client/engine/src/cards/dsl.ts##R64#05522acfad#0": {
+   "action": "reword",
+   "find": "It described R64's",
+   "replace": "It described the targeting ruling's",
+   "note": ""
+  },
+  "client/engine/src/cards/dsl.ts##R157#d57d072f32#0": {
+   "action": "reword",
+   "find": "R157 §1's X rule",
+   "replace": "the X rule",
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R94#c55a20b8f4#0": {
+   "action": "cite",
+   "nums": [
+    "302.3"
+   ],
+   "find": "⚠ OPEN (R94):",
+   "replace": "SETTLED (CR 302.3: a spell token is a spell):",
+   "note": "isSpellEffect says yes, matching 302.3"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-b.ts##R104#9a990c2514#0": {
+   "action": "reword",
+   "find": "parked in R104's",
+   "replace": "parked in the replacement layer's",
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R95#89c9ac8da5#0": {
+   "action": "reword",
+   "find": "things are open and listed in R95:",
+   "replace": "things are open (the retired register listed them):",
+   "note": "status not re-verified, so not called settled"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R59#c6631c2960#0": {
+   "action": "reword",
+   "find": "on R59's old",
+   "replace": "on the old reading,",
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R244#cd9ea96538#0": {
+   "action": "reword",
+   "find": "**R244 (owner,",
+   "replace": "**the mods ruling (owner,",
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R137#d2e25cf9f7#0": {
+   "action": "reword",
+   "find": "overruled R137's",
+   "replace": "overruled the Unstable-trash ruling's",
+   "note": ""
+  },
+  "client/engine/src/types.ts##R296#c7953024c1#0": {
+   "action": "reword",
+   "find": "R296, which reads as",
+   "replace": "the recycle pile existed, which reads as",
+   "note": ""
+  },
+  "client/engine/src/types.ts##R296#71f771cc80#0": {
+   "action": "reword",
+   "find": "a pre-R296 room file",
+   "replace": "an older room file",
+   "note": ""
+  },
+  "client/engine/src/types.ts##R78#54e6a1bb5f#0": {
+   "action": "reword",
+   "find": "a pre-R78 saved state",
+   "replace": "an older saved state",
+   "note": ""
+  },
+  "client/engine/test/108-formation-class.test.ts##R225#d8807a6826#0": {
+   "action": "reword",
+   "find": "used to assert R225's",
+   "replace": "used to assert the earlier reading,",
+   "note": ""
+  },
+  "client/engine/test/119-play-and-token-events.test.ts##R59#8ca4da1ec2#0": {
+   "action": "reword",
+   "find": "overturned R59's",
+   "replace": "overturned the earlier",
+   "note": ""
+  },
+  "client/engine/test/137-multiplier-and-mode.test.ts##R157#7cbff4578e#0": {
+   "action": "reword",
+   "find": "It pinned R157 §23's formula",
+   "replace": "It pinned the owner's first formula",
+   "note": ""
+  },
+  "client/engine/test/141-despawn-mods.test.ts##R137#a224c5e9fc#0": {
+   "action": "reword",
+   "find": "(R137) from",
+   "replace": "(the Unstable-trash ruling) from",
+   "note": ""
+  },
+  "client/engine/test/174-secrecy-is-seat-aware.test.ts##R197b#46d2942ef3#0": {
+   "action": "reword",
+   "find": "R197b's three",
+   "replace": "the three",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R1#6fcd0f0e2e#0": {
+   "action": "reword",
+   "find": "and R1\\'s",
+   "replace": "and the trigger-condition ruling\\'s",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R150#96e22212f8#0": {
+   "action": "reword",
+   "find": "said the R150",
+   "replace": "said the",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R206#5f811ef8c8#0": {
+   "action": "reword",
+   "find": "safe - R206 rule 1 is",
+   "replace": "safe - rule 1 of that audit is",
+   "note": ""
+  },
+  "client/ledgers/raq.ts##R306#a9d0bde744#0": {
+   "action": "reword",
+   "find": "); R306 took back only the",
+   "replace": "); the 2026-09-28 ruling took back only the",
+   "note": ""
+  },
+  "client/ui/glossary.ts##R334#e5416322df#0": {
+   "action": "cite",
+   "nums": [
+    "111.15"
+   ],
+   "find": "Cites R334 in place of R110, which it narrows",
+   "replace": "Cites CR 111.15 rather than the general graft rule, which it narrows",
+   "note": ""
+  },
+  "client/ui/glossary.ts##R110#e5416322df#0": {
+   "action": "cite",
+   "nums": [
+    "111.15"
+   ],
+   "find": "Cites R334 in place of R110, which it narrows",
+   "replace": "Cites CR 111.15 rather than the general graft rule, which it narrows",
+   "note": ""
+  },
+  "client/ui/main.ts##R154#9dcda96f7e#0": {
+   "action": "reword",
+   "find": "pre-R154",
+   "replace": "old",
+   "note": ""
+  },
+  "client/ui/test/144-both-seats-decision-gate.test.ts##R154#8569a0663c#0": {
+   "action": "reword",
+   "find": "(digital-rules\n * R154 §",
+   "replace": "(the retired register,\n * §",
+   "note": "quote untouched"
+  },
+  "client/ui/test/144-both-seats-decision-gate.test.ts##R154#118513a93a#0": {
+   "action": "reword",
+   "find": "same pre-R154",
+   "replace": "same old",
+   "note": ""
+  },
+  "client/ui/test/244-log-is-not-the-only-surface.test.ts##R324#32e00b01b4#0": {
+   "action": "cite",
+   "nums": [
+    "704.5a"
+   ],
+   "find": "219 with R324 (CT-208,",
+   "replace": "219 with the target re-check (CR 704.5a; CT-208,",
+   "note": ""
+  },
+  "client/server/rooms.ts##R181#4ea70b28ae#0": {
+   "action": "drop",
+   "find": "where R181's two",
+   "replace": "where the two",
+   "note": "process ruling about tsc errors"
+  },
+  "client/ui/cardtext.ts##R151#7e1f6a431c#0": {
+   "action": "cite",
+   "nums": [
+    "D6.9"
+   ],
+   "find": "THE R151 SHAPE AND IT IS DELIBERATELY SOLVED THE R151 WAY. R151\n * (CT-33) is the ruling for",
+   "replace": "THE TOKEN-X SHAPE AND IT IS DELIBERATELY SOLVED THE SAME WAY. CR D6.9\n * (CT-33) is the rule for",
+   "note": "one number once"
+  },
+  "client/ui/cardtext.ts##R151#7e1f6a431c#1": {
+   "action": "cite",
+   "nums": [
+    "D6.9"
+   ],
+   "find": "THE R151 SHAPE AND IT IS DELIBERATELY SOLVED THE R151 WAY. R151\n * (CT-33) is the ruling for",
+   "replace": "THE TOKEN-X SHAPE AND IT IS DELIBERATELY SOLVED THE SAME WAY. CR D6.9\n * (CT-33) is the rule for",
+   "note": "one number once"
+  },
+  "client/ui/cardtext.ts##R151#7e1f6a431c#2": {
+   "action": "cite",
+   "nums": [
+    "D6.9"
+   ],
+   "find": "THE R151 SHAPE AND IT IS DELIBERATELY SOLVED THE R151 WAY. R151\n * (CT-33) is the ruling for",
+   "replace": "THE TOKEN-X SHAPE AND IT IS DELIBERATELY SOLVED THE SAME WAY. CR D6.9\n * (CT-33) is the rule for",
+   "note": "one number once"
+  },
+  "client/ui/cardtext.ts##R248#e2aaa75a91#0": {
+   "action": "cite",
+   "nums": [
+    "D6.11"
+   ],
+   "find": "wherever one exists (R248), the manual's where one does not (R252).",
+   "replace": "wherever one exists, the manual's where one does not (CR D6.11).",
+   "note": ""
+  },
+  "client/ui/cardtext.ts##R252#e2aaa75a91#0": {
+   "action": "cite",
+   "nums": [
+    "D6.11"
+   ],
+   "find": "wherever one exists (R248), the manual's where one does not (R252).",
+   "replace": "wherever one exists, the manual's where one does not (CR D6.11).",
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R117#387092bbc9#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "find": "(R117's sub-step gate, R157 §4's live-column",
+   "replace": "(CR 608.9a's sub-step gate, the live-column",
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R157#387092bbc9#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "find": "(R117's sub-step gate, R157 §4's live-column",
+   "replace": "(CR 608.9a's sub-step gate, the live-column",
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R115#2912632eb6#0": {
+   "action": "cite",
+   "nums": [
+    "601.5"
+   ],
+   "find": "(R115 withdrew R52/R28, which had moved this card to home, and\n// absorbed R33's Ember of Life carrier reading as the general rule.)",
+   "replace": "(Earlier readings had moved this card to home; CR 601.5, the Ember of Life\n// carrier reading made general, puts it where its source is.)",
+   "note": "no \"((\", rule not narrated as change"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R52#2912632eb6#0": {
+   "action": "cite",
+   "nums": [
+    "601.5"
+   ],
+   "find": "(R115 withdrew R52/R28, which had moved this card to home, and\n// absorbed R33's Ember of Life carrier reading as the general rule.)",
+   "replace": "(Earlier readings had moved this card to home; CR 601.5, the Ember of Life\n// carrier reading made general, puts it where its source is.)",
+   "note": "no \"((\", rule not narrated as change"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R28#2912632eb6#0": {
+   "action": "cite",
+   "nums": [
+    "601.5"
+   ],
+   "find": "(R115 withdrew R52/R28, which had moved this card to home, and\n// absorbed R33's Ember of Life carrier reading as the general rule.)",
+   "replace": "(Earlier readings had moved this card to home; CR 601.5, the Ember of Life\n// carrier reading made general, puts it where its source is.)",
+   "note": "no \"((\", rule not narrated as change"
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-a.ts##R33#9fbb92333d#0": {
+   "action": "cite",
+   "nums": [
+    "601.5"
+   ],
+   "find": "(R115 withdrew R52/R28, which had moved this card to home, and\n// absorbed R33's Ember of Life carrier reading as the general rule.)",
+   "replace": "(Earlier readings had moved this card to home; CR 601.5, the Ember of Life\n// carrier reading made general, puts it where its source is.)",
+   "note": "no \"((\", rule not narrated as change"
+  },
+  "client/server/scenarios-b.ts##R157#e14bd99a73#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ],
+   "find": "R157 §15 / R161 is the owner's own ruling on it,",
+   "replace": "The owner ruled on it (now CR 110.3a),",
+   "note": ""
+  },
+  "client/server/scenarios-b.ts##R161#e14bd99a73#0": {
+   "action": "cite",
+   "nums": [
+    "110.3a"
+   ],
+   "find": "R157 §15 / R161 is the owner's own ruling on it,",
+   "replace": "The owner ruled on it (now CR 110.3a),",
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R103#51b783a631#0": {
+   "action": "cite",
+   "nums": [
+    "802.16g"
+   ],
+   "find": "same sentence R103 writes for `poolToKill` and R114 for",
+   "replace": "same sentence (CR 802.16g) the engine writes for `poolToKill` and for",
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-earth-b.ts##R114#51b783a631#0": {
+   "action": "cite",
+   "nums": [
+    "802.16g"
+   ],
+   "find": "same sentence R103 writes for `poolToKill` and R114 for",
+   "replace": "same sentence (CR 802.16g) the engine writes for `poolToKill` and for",
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R117#d7a0808760#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "find": "R117's sub-step gate, R157 §4's column power gate, then",
+   "replace": "CR 608.9a's sub-step gate and column power gate, then",
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-fire-a.ts##R157#d7a0808760#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a"
+   ],
+   "find": "R117's sub-step gate, R157 §4's column power gate, then",
+   "replace": "CR 608.9a's sub-step gate and column power gate, then",
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-hybrids-fwe.ts##R157#f0292f35ea#0": {
+   "action": "reword",
+   "find": "(R157 §20 had Wildfire",
+   "replace": "(The earlier reading had Wildfire",
+   "note": "no \"((\""
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R157#1e8b278588#0": {
+   "action": "cite",
+   "nums": [
+    "109.9c"
+   ],
+   "find": "R157 §22 / R161 then REMOVED `xMin`:",
+   "replace": "`xMin` was then REMOVED (CR 109.9c):",
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R161#1e8b278588#0": {
+   "action": "cite",
+   "nums": [
+    "109.9c"
+   ],
+   "find": "R157 §22 / R161 then REMOVED `xMin`:",
+   "replace": "`xMin` was then REMOVED (CR 109.9c):",
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-hybrids-ld-c.ts##R69#e394341fef#0": {
+   "action": "cite",
+   "nums": [
+    "410.5b"
+   ],
+   "find": "(R69, extended to the hand",
+   "replace": "(CR 410.5b; extended to the hand",
+   "note": "no \"((\""
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R33#4c725042c8#0": {
+   "action": "cite",
+   "nums": [
+    "601.5"
+   ],
+   "find": "(R33, absorbed by R115: everything created",
+   "replace": "(CR 601.5: everything created",
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R115#4c725042c8#0": {
+   "action": "cite",
+   "nums": [
+    "601.5"
+   ],
+   "find": "(R33, absorbed by R115: everything created",
+   "replace": "(CR 601.5: everything created",
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R33#d6eedb90c3#0": {
+   "action": "cite",
+   "nums": [
+    "601.5"
+   ],
+   "find": "(R33, now just R115: ctx.region,",
+   "replace": "(CR 601.5: ctx.region,",
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-hybrids-wm-a.ts##R115#d6eedb90c3#0": {
+   "action": "cite",
+   "nums": [
+    "601.5"
+   ],
+   "find": "(R33, now just R115: ctx.region,",
+   "replace": "(CR 601.5: ctx.region,",
+   "note": ""
+  },
+  "client/engine/src/cards/sets/batch-metal-b.ts##R293#9739510caf#0": {
+   "action": "cite",
+   "nums": [
+    "712.3"
+   ],
+   "find": "See R293 for the report",
+   "replace": "See CR 712.3 for the rule, report",
+   "note": "no doubled phrase"
+  },
+  "client/engine/src/engine.ts##R244#59f84175be#0": {
+   "action": "cite",
+   "nums": [
+    "720.8",
+    "410.4a"
+   ],
+   "find": "R244 attribution, R250 §4 destination — and under R250 those are the",
+   "replace": "CR 720.8 attribution, CR 410.4a destination — and under the latter those are the",
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R250#59f84175be#0": {
+   "action": "cite",
+   "nums": [
+    "720.8",
+    "410.4a"
+   ],
+   "find": "R244 attribution, R250 §4 destination — and under R250 those are the",
+   "replace": "CR 720.8 attribution, CR 410.4a destination — and under the latter those are the",
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R250#59f84175be#1": {
+   "action": "cite",
+   "nums": [
+    "720.8",
+    "410.4a"
+   ],
+   "find": "R244 attribution, R250 §4 destination — and under R250 those are the",
+   "replace": "CR 720.8 attribution, CR 410.4a destination — and under the latter those are the",
+   "note": ""
+  },
+  "client/engine/src/engine.ts##R157#0cb180b6c4#0": {
+   "action": "cite",
+   "nums": [
+    "302.3"
+   ],
+   "find": "R157 §13 — ",
+   "replace": "CR 302.3 — ",
+   "note": "tokens are spells"
+  },
+  "client/engine/src/engine.ts##R305#0cb180b6c4#0": {
+   "action": "cite",
+   "nums": [
+    "702.7a"
+   ],
+   "find": "and R305 — casting",
+   "replace": "and CR 702.7a — casting",
+   "note": ""
+  },
+  "client/engine/test/108-formation-class.test.ts##R75#2be611de64#0": {
+   "action": "drop",
+   "find": "(R75 placeInFormation, R29 collectFormationSpot, R198",
+   "replace": "(placeInFormation, collectFormationSpot and",
+   "note": "function names need no rule numbers"
+  },
+  "client/engine/test/108-formation-class.test.ts##R29#2be611de64#0": {
+   "action": "drop",
+   "find": "(R75 placeInFormation, R29 collectFormationSpot, R198",
+   "replace": "(placeInFormation, collectFormationSpot and",
+   "note": "function names need no rule numbers"
+  },
+  "client/engine/test/108-formation-class.test.ts##R198#2be611de64#0": {
+   "action": "drop",
+   "find": "(R75 placeInFormation, R29 collectFormationSpot, R198",
+   "replace": "(placeInFormation, collectFormationSpot and",
+   "note": "function names need no rule numbers"
+  },
+  "client/engine/test/16-earth-a.test.ts##R121#2d7a117fc9#0": {
+   "action": "cite",
+   "nums": [
+    "720.4a"
+   ],
+   "find": "R121 — applying an augment during battle is NOT taxed (R37: a mod is not an activation)",
+   "replace": "CR 720.4a — applying an augment during battle is NOT taxed (a mod is not an activation)",
+   "note": "test title"
+  },
+  "client/engine/test/16-earth-a.test.ts##R37#2d7a117fc9#0": {
+   "action": "cite",
+   "nums": [
+    "720.4a"
+   ],
+   "find": "R121 — applying an augment during battle is NOT taxed (R37: a mod is not an activation)",
+   "replace": "CR 720.4a — applying an augment during battle is NOT taxed (a mod is not an activation)",
+   "note": "test title"
+  },
+  "client/engine/test/178-played-item-and-erased-mods.test.ts##R178#b2271b2c3a#0": {
+   "action": "cite",
+   "nums": [
+    "706.13"
+   ],
+   "find": "Precedents: Earthbound Replicator (R178), Origon and Hexbane Shiitake (R191), ",
+   "replace": "Precedents (CR 706.13): Earthbound Replicator, Origon and Hexbane Shiitake, ",
+   "note": ""
+  },
+  "client/engine/test/178-played-item-and-erased-mods.test.ts##R191#b2271b2c3a#0": {
+   "action": "cite",
+   "nums": [
+    "706.13"
+   ],
+   "find": "Precedents: Earthbound Replicator (R178), Origon and Hexbane Shiitake (R191), ",
+   "replace": "Precedents (CR 706.13): Earthbound Replicator, Origon and Hexbane Shiitake, ",
+   "note": ""
+  },
+  "client/engine/test/178-played-item-and-erased-mods.test.ts##R207#8f9b0ad9b3#0": {
+   "action": "drop",
+   "find": "Void Mandible (R207).",
+   "replace": "Void Mandible.",
+   "note": ""
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R244#14327a30d1#0": {
+   "action": "reword",
+   "find": "same way R244 derived its own:",
+   "replace": "same way the mod-attribution change derived its own:",
+   "note": "fixes \"the way the way\""
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R244#428e4fd5e0#0": {
+   "action": "reword",
+   "find": "R244 measured 203",
+   "replace": "That change measured 203",
+   "note": ""
+  },
+  "client/engine/test/229-cosmic-and-control.test.ts##R250#c5c1ac5238#0": {
+   "action": "cite",
+   "nums": [
+    "410.4a"
+   ],
+   "find": "R250 moves",
+   "replace": "the destination change (CR 410.4a) moves",
+   "note": ""
+  },
+  "client/engine/test/276-deployment-stack.test.ts##R154#2dfd6fb8d6#0": {
+   "action": "reword",
+   "find": "(R154's `withWraiths`, which this",
+   "replace": "(130-seat-aware-gate's `withWraiths`, which this",
+   "note": "130 defines withWraiths; no \"((\""
+  },
+  "client/engine/test/85-silent-branches.test.ts##R178#c370fd26b9#0": {
+   "action": "drop",
+   "find": "(R178: Maelstrom",
+   "replace": "(Maelstrom",
+   "note": "no \"((\""
+  },
+  "client/ledgers/card-todo-closed.ts##R8#3469c9cc2c#0": {
+   "action": "cite",
+   "nums": [
+    "711.1"
+   ],
+   "find": "A control-change is R8 and is NOT this — R8 moves",
+   "replace": "A control-change (CR 711.1) is NOT this — it moves",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R8#3469c9cc2c#1": {
+   "action": "cite",
+   "nums": [
+    "711.1"
+   ],
+   "find": "A control-change is R8 and is NOT this — R8 moves",
+   "replace": "A control-change (CR 711.1) is NOT this — it moves",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R152#781dad19e3#0": {
+   "action": "cite",
+   "nums": [
+    "400.2a"
+   ],
+   "find": "by R152 landing on top of R145.",
+   "replace": "by the exchange repair landing on top of the active-zone rule (CR 400.2a).",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R145#781dad19e3#0": {
+   "action": "cite",
+   "nums": [
+    "400.2a"
+   ],
+   "find": "by R152 landing on top of R145.",
+   "replace": "by the exchange repair landing on top of the active-zone rule (CR 400.2a).",
+   "note": ""
+  },
+  "client/ledgers/card-todo-closed.ts##R154#6c8e056cd7#0": {
+   "action": "reword",
+   "find": "the R154 decision guard",
+   "replace": "the open-decision guard",
+   "note": ""
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R154#366d159c18#0": {
+   "action": "reword",
+   "find": "the R154 decision guard",
+   "replace": "the open-decision guard",
+   "note": ""
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R157#adf5dc6c55#0": {
+   "action": "cite",
+   "nums": [
+    "111.11"
+   ],
+   "find": "R157 section 1 and R158 already ruled the paid X is the cost",
+   "replace": "the rulings already said the paid X is the cost (now CR 111.11)",
+   "note": ""
+  },
+  "client/ledgers/playtest-ledger-closed.ts##R158#adf5dc6c55#0": {
+   "action": "cite",
+   "nums": [
+    "111.11"
+   ],
+   "find": "R157 section 1 and R158 already ruled the paid X is the cost",
+   "replace": "the rulings already said the paid X is the cost (now CR 111.11)",
+   "note": ""
+  },
+  "client/ui/test/231-manual-text.test.ts##R248#e1123bd509#0": {
+   "action": "cite",
+   "nums": [
+    "D6.11"
+   ],
+   "find": "in the convention R248's scan could not see, and R252's own PRINTED BEATS",
+   "replace": "in the convention the earlier reminder scan could not see, and CR D6.11's own PRINTED BEATS",
+   "note": ""
+  },
+  "client/ui/test/231-manual-text.test.ts##R252#e1123bd509#0": {
+   "action": "cite",
+   "nums": [
+    "D6.11"
+   ],
+   "find": "in the convention R248's scan could not see, and R252's own PRINTED BEATS",
+   "replace": "in the convention the earlier reminder scan could not see, and CR D6.11's own PRINTED BEATS",
+   "note": ""
+  },
+  "client/engine/test/135-exchange-and-zones.test.ts##R65#cfab934e2f#0": {
+   "action": "cite",
+   "nums": [
+    "111.12a"
+   ],
+   "find": "(R65, confirmed by R157 §8)",
+   "replace": "(CR 111.12a)",
+   "note": ""
+  },
+  "client/engine/test/135-exchange-and-zones.test.ts##R157#cfab934e2f#0": {
+   "action": "cite",
+   "nums": [
+    "111.12a"
+   ],
+   "find": "(R65, confirmed by R157 §8)",
+   "replace": "(CR 111.12a)",
+   "note": ""
+  },
+  "client/engine/test/29-hybrids-wm-a.test.ts##R33#2846b231f1#0": {
+   "action": "cite",
+   "nums": [
+    "601.5"
+   ],
+   "find": "(Ember of Life, R33 — absorbed into R115)",
+   "replace": "(Ember of Life, CR 601.5)",
+   "note": ""
+  },
+  "client/engine/test/29-hybrids-wm-a.test.ts##R115#2846b231f1#0": {
+   "action": "cite",
+   "nums": [
+    "601.5"
+   ],
+   "find": "(Ember of Life, R33 — absorbed into R115)",
+   "replace": "(Ember of Life, CR 601.5)",
+   "note": ""
+  },
+  "client/engine/test/29-hybrids-wm-a.test.ts##R33#0856f7ef19#0": {
+   "action": "cite",
+   "nums": [
+    "601.5"
+   ],
+   "find": "(R33, absorbed into R115)",
+   "replace": "(CR 601.5)",
+   "note": "test title"
+  },
+  "client/engine/test/29-hybrids-wm-a.test.ts##R115#0856f7ef19#0": {
+   "action": "cite",
+   "nums": [
+    "601.5"
+   ],
+   "find": "(R33, absorbed into R115)",
+   "replace": "(CR 601.5)",
+   "note": "test title"
+  },
+  "client/engine/test/94-bounded-uses.test.ts##R49#063d4d11ca#0": {
+   "action": "cite",
+   "nums": [
+    "705.4"
+   ],
+   "find": "(R49, ruled in R196 —",
+   "replace": "(CR 705.4 —",
+   "note": ""
+  },
+  "client/engine/test/94-bounded-uses.test.ts##R196#063d4d11ca#0": {
+   "action": "cite",
+   "nums": [
+    "705.4"
+   ],
+   "find": "(R49, ruled in R196 —",
+   "replace": "(CR 705.4 —",
+   "note": ""
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R117#8b56784cd4#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a",
+    "608.2c"
+   ],
+   "find": "It is what R117 and R157 §5 are written on, and R157 §5's",
+   "replace": "It is what CR 608.9a and CR 608.2c are written on, and the latter's",
+   "note": ""
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R157#8b56784cd4#0": {
+   "action": "cite",
+   "nums": [
+    "608.9a",
+    "608.2c"
+   ],
+   "find": "It is what R117 and R157 §5 are written on, and R157 §5's",
+   "replace": "It is what CR 608.9a and CR 608.2c are written on, and the latter's",
+   "note": ""
+  },
+  "client/engine/test/134-column-and-substep.test.ts##R157#8b56784cd4#1": {
+   "action": "cite",
+   "nums": [
+    "608.9a",
+    "608.2c"
+   ],
+   "find": "It is what R117 and R157 §5 are written on, and R157 §5's",
+   "replace": "It is what CR 608.9a and CR 608.2c are written on, and the latter's",
+   "note": ""
+  },
+  "client/engine/test/232-log-modal.test.ts##R80#85a17dbd1c#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "find": "R80 paces the tail and R150 throttles updates;",
+   "replace": "The pacing rule (CR D5.4) paces the tail and throttles updates;",
+   "note": ""
+  },
+  "client/engine/test/232-log-modal.test.ts##R150#85a17dbd1c#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "find": "R80 paces the tail and R150 throttles updates;",
+   "replace": "The pacing rule (CR D5.4) paces the tail and throttles updates;",
+   "note": ""
+  },
+  "client/engine/test/252-viewport-and-log.test.ts##R80#6c31e63bfd#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "find": "R80 paces the tail and R150 throttles updates;",
+   "replace": "The pacing rule (CR D5.4) paces the tail and throttles updates;",
+   "note": ""
+  },
+  "client/engine/test/252-viewport-and-log.test.ts##R150#6c31e63bfd#0": {
+   "action": "cite",
+   "nums": [
+    "D5.4"
+   ],
+   "find": "R80 paces the tail and R150 throttles updates;",
+   "replace": "The pacing rule (CR D5.4) paces the tail and throttles updates;",
+   "note": ""
+  },
+  "client/engine/test/33-trigger-fixes.test.ts##R33#d4660212c8#0": {
+   "action": "cite",
+   "nums": [
+    "601.5"
+   ],
+   "find": "(R33, absorbed into R115).",
+   "replace": "(CR 601.5).",
+   "note": ""
+  },
+  "client/engine/test/33-trigger-fixes.test.ts##R115#d4660212c8#0": {
+   "action": "cite",
+   "nums": [
+    "601.5"
+   ],
+   "find": "(R33, absorbed into R115).",
+   "replace": "(CR 601.5).",
+   "note": ""
+  }
+ }
+}
